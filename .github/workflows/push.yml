@@ -9,8 +9,17 @@ on:
     branches:
       - '**'
 
+concurrency:
+  # On main/release, we don't want any jobs cancelled so the sha is used to name the group
+  # On PR branches, we cancel the job if new commits are pushed
+  # More info: https://stackoverflow.com/a/68422069/253468
+  group: ${{ github.ref == 'refs/heads/main' && format('ci-main-{0}', github.sha) || format('ci-main-{0}', github.ref) }}
+  cancel-in-progress: true
+
 jobs:
   multiplatform_build:
+    # Build PRs only if the event comes from Dependabot. Skip branch pushes
+    if: github.event.pull_request.user.login != 'dependabot[bot]' || github.event_name == 'pull_request'
     strategy:
       fail-fast: false
       matrix:
@@ -25,6 +34,7 @@ jobs:
             file: docker-transfer/Dockerfile
             context: ""
     runs-on: ubuntu-latest
+    name: ${{ matrix.component.name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
