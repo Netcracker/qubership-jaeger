@@ -11,6 +11,8 @@ on:
 
 jobs:
   multiplatform_build:
+    # Build PRs only if the event comes from Dependabot. Skip branch pushes
+    if: github.event.pull_request.user.login != 'dependabot[bot]' || github.event_name == 'pull_request'
     strategy:
       fail-fast: false
       matrix:
