@@ -1,5 +1,9 @@
 # Build the manager binary
-FROM golang:1.23.4-alpine3.21 AS builder
+# Note: this uses host platform for the build, and we ask go build to target the needed platform, so we do not spend time on qemu emulation when running "go build"
+FROM --platform=$BUILDPLATFORM golang:1.23.4-alpine3.21 AS builder
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
 ARG GOPROXY=""
 ENV GOSUMDB=off \
     GO111MODULE=on
@@ -16,7 +20,7 @@ RUN go mod download -x
 # Copy the go source
 COPY main.go main.go
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o probe .
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -a -o probe .
 
 # Main container
 FROM alpine:3.21.0
