@@ -9,9 +9,6 @@ on:
     branches:
       - '**'
 
-env:
-  TAG_NAME: ${{ github.event.release.tag_name || (github.ref == 'refs/heads/main' && 'main' || ( inputs.postfix != '' && format('{0}-{1}', github.ref, inputs.postfix) || 'none' )) }}
-
 jobs:
   multiplatform_build:
     strategy:
@@ -31,6 +28,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.component.name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -50,5 +56,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           # See https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions#fetching-metadata-about-a-pull-request
           push: ${{ github.event_name != 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]' }}
-          tags: ghcr.io/netcracker/${{ matrix.component.name }}:${{ env.TAG_NAME }}
           provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
