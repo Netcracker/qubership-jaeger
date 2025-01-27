@@ -1129,34 +1129,41 @@ Prepare args for readiness-probe container.
 {{- define "readinessProbe.args" -}}
     {{- if .Values.readinessProbe.args }}
         {{- range .Values.readinessProbe.args }}
-            - {{ . | quote }}
+                - {{ . | quote }}
         {{- end }}
     {{- else }}
-            - "-namespace={{ .Values.NAMESPACE | default .Release.Namespace }}"
+                - "-namespace={{ .Values.NAMESPACE | default .Release.Namespace }}"
         {{- if eq .Values.jaeger.storage.type "cassandra" }}
-            - "-storage=cassandra"
-            - "-authSecretName=jaeger-cassandra"
-            - "-datacenter={{ include "cassandraSchemaJob.datacenter" . }}"
+                - "-storage=cassandra"
+                - "-authSecretName=jaeger-cassandra"
+                - "-datacenter={{ include "cassandraSchemaJob.datacenter" . }}"
             {{- if .Values.cassandraSchemaJob.keyspace }}
-            - "-keyspace={{ .Values.cassandraSchemaJob.keyspace }}"
+                - "-keyspace={{ .Values.cassandraSchemaJob.keyspace }}"
             {{- end }}
-            - "-host={{ include "cassandraSchemaJob.host" . }}"
-            - "-port={{ include "cassandraSchemaJob.port" . }}"
+                - "-host={{ include "cassandraSchemaJob.host" . }}"
+                - "-port={{ include "cassandraSchemaJob.port" . }}"
             {{- if .Values.cassandraSchemaJob.tls.enabled }}
-            - "-tlsEnabled=true"
-            - "-caPath=/cassandra-tls/ca-cert.pem"
-            - "-crtPath=/cassandra-tls/client-cert.pem"
-            - "-keyPath=/cassandra-tls/client-key.pem"
+                - "-tlsEnabled=true"
+                {{- if .Values.cassandraSchemaJob.tls.insecureSkipVerify }}
+                - "-insecureSkipVerify=true"
+                {{- else }}
+                - "-caPath=/cassandra-tls/ca-cert.pem"
+                - "-crtPath=/cassandra-tls/client-cert.pem"
+                - "-keyPath=/cassandra-tls/client-key.pem"
+                {{- end }}
             {{- end }}
         {{- else }}
-            - "-storage=opensearch"
-            - "-host={{ include "elasticsearch.url" . }}"
-            - "-authSecretName=jaeger-elasticsearch"
+                - "-storage=opensearch"
+                - "-host={{ include "elasticsearch.url" . }}"
+                - "-authSecretName=jaeger-elasticsearch"
             {{- if .Values.elasticsearch.client.tls.enabled }}
-            - "-tlsEnabled=true"
-            - "-caPath=/es-tls/ca-cert.pem"
-            - "-crtPath=/es-tls/client-cert.pem"
-            - "-keyPath=/es-tls/client-key.pem"
+                - "-tlsEnabled=true"
+                {{- if .Values.elasticsearch.client.tls.insecureSkipVerify }}
+                - "-insecureSkipVerify=true"
+                {{- else }}
+                - "-caPath=/es-tls/ca-cert.pem"
+                - "-crtPath=/es-tls/client-cert.pem"
+                - "-keyPath=/es-tls/client-key.pem"
             {{- end }}
         {{- end }}
     {{- end }}

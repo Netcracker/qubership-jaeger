@@ -35,7 +35,7 @@ Readiness probe is used for executing checks and provide custom readiness probe 
 #### Helm
 
 Not applicable because the readiness probe is expected to be deployed along with Jaeger.
-For more details, see [Jaeger's Installation Guide: Readiness Probe](/docs/public/installation.md#readiness-probe).
+For more details, see [Jaeger's Installation Guide: Readiness Probe](/docs/installation.md#readiness-probe).
 
 ### Smoke tests
 
