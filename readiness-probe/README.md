@@ -1,13 +1,13 @@
 # Readiness probe
 
-* [Readiness Probe](#readiness-probe)
-  * [Overview](#overview)
-  * [Documents](#documents)
-  * [How to start](#how-to-start)
-    * [Build](#build)
-    * [Smoke tests](#smoke-tests)
-    * [How to debug](#how-to-debug)
-    * [How to troubleshoot](#how-to-troubleshoot)
+- [Readiness Probe](#readiness-probe)
+  - [Overview](#overview)
+  - [Documents](#documents)
+  - [How to start](#how-to-start)
+    - [Build](#build)
+    - [Smoke tests](#smoke-tests)
+    - [How to debug](#how-to-debug)
+    - [How to troubleshoot](#how-to-troubleshoot)
 
 ## Overview
 
@@ -15,7 +15,7 @@ Readiness probe is used for executing checks and provide custom readiness probe 
 
 ## Documents
 
-* [Installation](/docs/public/installation.md)
+- [Installation](/docs/public/installation.md)
 
 ## How to start
 
@@ -26,9 +26,9 @@ Readiness probe is used for executing checks and provide custom readiness probe 
 1. Use WSL or Linux VM
 2. Run commands:
 
-    ```bash
-    ./build.sh
-    ```
+   ```bash
+   ./build.sh
+   ```
 
 ### Deploy to k8s
 
