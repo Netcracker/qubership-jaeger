@@ -2,17 +2,17 @@ This section describes in detail some failover scenarios.
 
 # Table of Content
 
-* [Table of Content](#table-of-content)
-* [Deployment Issues](#deployment-issues)
-  * [Jaeger collector, query, cassandra schema job can't start/failed](#jaeger-collector-query-cassandra-schema-job-cant-startfailed)
-  * [no matches for kind "Ingress" in version "networking.k8s.io/v1beta1"](#no-matches-for-kind-ingress-in-version-networkingk8siov1beta1)
-  * [Labels and Annotations validation error](#labels-and-annotations-validation-error)
-* [Runtime Issues](#runtime-issues)
-  * [Jaeger lost connection to Cassandra after Cassandra's restart](#jaeger-lost-connection-to-cassandra-after-cassandras-restart)
-    * [gocql: no host available in the pool](#gocql-no-host-available-in-the-pool)
-    * [connection: no route to host](#connection-no-route-to-host)
-  * [Error reading `<name>` from storage: table `<name>` does not exist](#error-reading-name-from-storage-table-name-does-not-exist)
-  * [Ingress fails with 502 Bad Gateway error](#ingress-fails-with-502-bad-gateway-error)
+- [Table of Content](#table-of-content)
+- [Deployment Issues](#deployment-issues)
+  - [Jaeger collector, query, cassandra schema job can't start/failed](#jaeger-collector-query-cassandra-schema-job-cant-startfailed)
+  - [no matches for kind "Ingress" in version "networking.k8s.io/v1beta1"](#no-matches-for-kind-ingress-in-version-networkingk8siov1beta1)
+  - [Labels and Annotations validation error](#labels-and-annotations-validation-error)
+- [Runtime Issues](#runtime-issues)
+  - [Jaeger lost connection to Cassandra after Cassandra's restart](#jaeger-lost-connection-to-cassandra-after-cassandras-restart)
+    - [gocql: no host available in the pool](#gocql-no-host-available-in-the-pool)
+    - [connection: no route to host](#connection-no-route-to-host)
+  - [Error reading `<name>` from storage: table `<name>` does not exist](#error-reading-name-from-storage-table-name-does-not-exist)
+  - [Ingress fails with 502 Bad Gateway error](#ingress-fails-with-502-bad-gateway-error)
 
 # Deployment Issues
 
@@ -25,17 +25,19 @@ the issue may be related to connection issues or problems with Cassandra.
 
 Check the following:
 
-* Cassandra connection string is valid, and Cassandra running and operable
-* Cassandra's `user` and `password` are valid
-* Cassandra `datacenter` is valid for you Cassandra cluster
-* Keyspace can be created in Cassandra
-* You configure TLS parameters if TLS enabled and required for Cassandra
-* Cassandra must have at least 2 nodes (better >= 3 nodes) if Jaeger is installed in the `prod` mode
+- Cassandra connection string is valid, and Cassandra running and operable
+- Cassandra's `user` and `password` are valid
+- Cassandra `datacenter` is valid for you Cassandra cluster
+- Keyspace can be created in Cassandra
+- You configure TLS parameters if TLS enabled and required for Cassandra
+- Cassandra must have at least 2 nodes (better >= 3 nodes) if Jaeger is installed in the `prod` mode
 
 View the errors from the Cassandra logs if they exist.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## no matches for kind "Ingress" in version "networking.k8s.io/v1beta1"
@@ -72,12 +74,12 @@ already doesn't exist in Kubernetes and failed.
 If the service doesn't support migration by APIs or you already made a mistake and upgraded Kubernetes,
 you have only two options:
 
-* Make a clean install of Jaeger
-* Remove all secrets with names:
+- Make a clean install of Jaeger
+- Remove all secrets with names:
 
-    ```bash
-    sh.helm.release.<version>.<name>.<version>
-    ```
+  ```bash
+  sh.helm.release.<version>.<name>.<version>
+  ```
 
 **How to avoid this issue:**
 
@@ -87,7 +89,9 @@ If services support migration to new Kubernetes the correct way to upgrade it is
 2. Only after it upgrades Kubernetes to the new version
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Labels and Annotations validation error
@@ -112,7 +116,9 @@ annotations:
 This solution is proposed in [document](https://github.com/helm/helm/pull/7649)
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Runtime Issues
@@ -128,8 +134,8 @@ Jaeger during the use of Cassandra as a storage has by default used a
 [SimpleRetryPolicy](https://pkg.go.dev/github.com/gocql/gocql#SimpleRetryPolicy) from the Gocql module.
 It means that when Jaeger can't execute a query, it will retry the query with the following rules:
 
-* Will retry the specified number of retries
-* Will wait the specified time between retries
+- Will retry the specified number of retries
+- Will wait the specified time between retries
 
 By default, Jaeger will do `3` retries and wait `1m` between retries. So total it will retry `3 minutes`.
 If Jaeger can't successfully retry the query for `3 minutes` it will mark Cassandra's host as not available and
@@ -146,8 +152,8 @@ error reading service_names from storage: gocql: no hosts available in the pool
 
 You have to execute the following steps:
 
-* Verify that Cassandra is available and operable now
-* Restart the collector and query pods
+- Verify that Cassandra is available and operable now
+- Restart the collector and query pods
 
 **How to avoid this issue:**
 
@@ -159,12 +165,12 @@ can restart and change their IPs.
 
 The values of the retry count and wait interval can be specified using the CLI arguments or ENV variables:
 
-* CLI arguments
-  * `--cassandra.reconnect-interval` (default `1m`) - Reconnect interval to retry connecting to downed hosts
-  * `--cassandra.max-retry-attempts` (default `3`) - The number of attempts when reading from Cassandra
-* ENV variable
-  * `CASSANDRA_RECONNECT_INTERVAL` (default `1m`) - Reconnect interval to retry connecting to downed hosts
-  * `CASSANDRA_MAX_RETRY_ATTEMPTS` (default `3`) - The number of attempts when reading from Cassandra
+- CLI arguments
+  - `--cassandra.reconnect-interval` (default `1m`) - Reconnect interval to retry connecting to downed hosts
+  - `--cassandra.max-retry-attempts` (default `3`) - The number of attempts when reading from Cassandra
+- ENV variable
+  - `CASSANDRA_RECONNECT_INTERVAL` (default `1m`) - Reconnect interval to retry connecting to downed hosts
+  - `CASSANDRA_MAX_RETRY_ATTEMPTS` (default `3`) - The number of attempts when reading from Cassandra
 
 If you expect that Cassandra may not be available, you can try to increase the retry count or wait interval.
 
@@ -174,7 +180,7 @@ For example, you can specify these parameters as follows:
 # Example for using CLI arguments
 collector:
   cmdlineParams:
-    - '--cassandra.max-retry-attempts=10'
+    - "--cassandra.max-retry-attempts=10"
 
 # Example for using ENV variables
 query:
@@ -184,7 +190,9 @@ query:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ### connection: no route to host
@@ -270,7 +278,9 @@ cassandraSchemaJob:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Error reading `<name>` from storage: table `<name>` does not exist
@@ -313,7 +323,9 @@ In this case, you have to use Cassandra `nodetool` to remove some nodes from the
 data on nodes.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Ingress fails with 502 Bad Gateway error
@@ -335,7 +347,7 @@ During deploy, following parameters can be used to supply annotations.
 
 ```yaml
 query:
-  ...  
+  ...
   ingress:
     install: true
     host: jaeger-query.cloud.test.org
@@ -344,5 +356,7 @@ query:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
