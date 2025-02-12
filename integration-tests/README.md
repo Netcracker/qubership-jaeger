@@ -1,13 +1,13 @@
-* [Introduction](#introduction)
-* [Prerequisites](#prerequisites)
-* [Test cases](#test-cases)
-  * [Shared file](#shared-file)
-* [Deployment](#deployment)
-  * [Configuration](#configuration)
-    * [Jaeger Integration Tests Parameters](#jaeger-integration-tests-parameters)
-  * [Manual Deployment](#manual-deployment)
-    * [Installation](#installation)
-    * [Uninstalling](#uninstalling)
+- [Introduction](#introduction)
+- [Prerequisites](#prerequisites)
+- [Test cases](#test-cases)
+  - [Shared file](#shared-file)
+- [Deployment](#deployment)
+  - [Configuration](#configuration)
+    - [Jaeger Integration Tests Parameters](#jaeger-integration-tests-parameters)
+  - [Manual Deployment](#manual-deployment)
+    - [Installation](#installation)
+    - [Uninstalling](#uninstalling)
 
 # Introduction
 
@@ -16,46 +16,46 @@ The chart installs Jaeger Integration Tests service and pod in Kubernetes/Opensh
 
 # Prerequisites
 
-* Kubernetes 1.18+ or OpenShift 3.11+
-* `kubectl` 1.18+ or `oc` 3.11+ CLI
-* Helm 3.0+
+- Kubernetes 1.18+ or OpenShift 3.11+
+- `kubectl` 1.18+ or `oc` 3.11+ CLI
+- Helm 3.0+
 
 # Test cases
 
 1. [Smoke tests](/jaeger-integration-tests/integration-tests/robot/tests/smoke/smoke.robot)
 
-   * Check Deployments
-   This is test check that indicated namespace hasn't inactive deployments for Collector and Query deployments.
+   - Check Deployments
+     This is test check that indicated namespace hasn't inactive deployments for Collector and Query deployments.
 
-   * Check Collector Pods Are Running
-   This is test check that all pods from Collector deployment has been running state.
+   - Check Collector Pods Are Running
+     This is test check that all pods from Collector deployment has been running state.
 
-   * Check Query Pods Are Running
-   This is test check that all pods from Query deployment are in the running state.
+   - Check Query Pods Are Running
+     This is test check that all pods from Query deployment are in the running state.
 
-   * Jaeger can serve spans
-   This test check health status from Jaeger and send POST request with generated spans (template of the span can be found
-   [here](/jaeger-integration-tests/integration-tests/robot/tests/libs/resources/spans.json)).
-   After that will be checked that span was added to Jaeger (Will be sent GET request to Jaeger).
+   - Jaeger can serve spans
+     This test check health status from Jaeger and send POST request with generated spans (template of the span can be found
+     [here](/jaeger-integration-tests/integration-tests/robot/tests/libs/resources/spans.json)).
+     After that will be checked that span was added to Jaeger (Will be sent GET request to Jaeger).
 
 2. [Spans generator](/jaeger-integration-tests/integration-tests/robot/tests/spans_generator/generate.robot)
 
-   * Send spans
-   This test provides sending a lot of same spans (with different timestamp only) to Jaeger.
-   In deployment parameters you need to indicate host for get spans, count for sending and time between sending.
+   - Send spans
+     This test provides sending a lot of same spans (with different timestamp only) to Jaeger.
+     In deployment parameters you need to indicate host for get spans, count for sending and time between sending.
 
 3. [HA tests](/jaeger-integration-tests/integration-tests/robot/tests/tests_ha/ha.robot)
 
-   * Reboot query pod
-   This test check the integrity of the spans if there is a loss of Query Pod.
+   - Reboot query pod
+     This test check the integrity of the spans if there is a loss of Query Pod.
 
-   * Reboot collector pods
-   This test check the availability of sending spans to Jaeger if there is a failure of some Collector pods.
-   The Collector pods will be reboot one by one.
+   - Reboot collector pods
+     This test check the availability of sending spans to Jaeger if there is a failure of some Collector pods.
+     The Collector pods will be reboot one by one.
 
 4. [Hardcoded Images](/jaeger/integration-tests/robot/tests/image_tests/image_tests.robot)
-   * Test Hardcoded Images
-   This test compare images in pods with images from MF. Included in the `smoke` tag
+   - Test Hardcoded Images
+     This test compare images in pods with images from MF. Included in the `smoke` tag
 
 ## Shared file
 
@@ -166,10 +166,10 @@ helm install ${RELEASE_NAME} ./jaeger-integration-tests -n ${NAMESPACE}
 
 where:
 
-* `${RELEASE_NAME}` is the Helm Chart release name and the name of the Jaeger integration tests.
-For example, `jaeger-integration-tests`.
-* `${NAMESPACE}` is the Kubernetes namespace or Openshift workspace to deploy Jaeger service integration tests.
-For example, `jaeger`.
+- `${RELEASE_NAME}` is the Helm Chart release name and the name of the Jaeger integration tests.
+  For example, `jaeger-integration-tests`.
+- `${NAMESPACE}` is the Kubernetes namespace or Openshift workspace to deploy Jaeger service integration tests.
+  For example, `jaeger`.
 
 You can monitor the deployment process in the Kubernetes/Openshift dashboard or using `kubectl`/`oc` in the command line:
 
@@ -193,10 +193,9 @@ helm delete ${RELEASE_NAME} -n ${NAMESPACE}
 
 where:
 
-* `${RELEASE_NAME}` is the Helm Chart release name and the name of the Jaeger integration tests.
-For example, `jaeger-integration-tests`.
-* `${NAMESPACE}` is the Kubernetes namespace or Openshift workspace to deploy Jaeger service integration tests.
-For example, `jaeger`.
+- `${RELEASE_NAME}` is the Helm Chart release name and the name of the Jaeger integration tests.
+  For example, `jaeger-integration-tests`.
+- `${NAMESPACE}` is the Kubernetes namespace or Openshift workspace to deploy Jaeger service integration tests.
+  For example, `jaeger`.
 
 The command uninstalls all the Kubernetes resources associated with the chart and deletes the release.
-
