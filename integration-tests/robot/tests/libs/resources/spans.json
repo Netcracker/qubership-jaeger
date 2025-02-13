@@ -1,22 +1,22 @@
 [
   {
-    "traceId":"e6ea7a4d7580a96d",
-    "id":"e6ea7a4d7580a96d",
-    "name":"get /",
-    "timestamp":1554738032206736,
-    "duration":14861,
-    "localEndpoint":{
-      "serviceName":"first_service",
-      "ipv4":"10.0.2.15"
+    "traceId": "e6ea7a4d7580a96d",
+    "id": "e6ea7a4d7580a96d",
+    "name": "get /",
+    "timestamp": 1554738032206736,
+    "duration": 14861,
+    "localEndpoint": {
+      "serviceName": "first_service",
+      "ipv4": "10.0.2.15"
     },
-    "annotations":[
+    "annotations": [
       {
-        "timestamp":1554738032206736,
-        "value":"sr"
+        "timestamp": 1554738032206736,
+        "value": "sr"
       },
       {
-        "timestamp":1554738032221597,
-        "value":"ss"
+        "timestamp": 1554738032221597,
+        "value": "ss"
       }
     ]
   }
