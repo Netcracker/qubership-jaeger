@@ -4,26 +4,26 @@ e.g. to ensure that the backend is not saturated by too much tracing data.
 
 # Table of Content
 
-* [Table of Content](#table-of-content)
-* [Monitoring](#monitoring)
-  * [Integration with PlatformMonitoring](#integration-with-platformmonitoring)
-* [Logging](#logging)
-  * [Audit logs](#audit-logs)
-  * [Integration with Platform Logging](#integration-with-platform-logging)
-* [Traces](#traces)
-* [Metrics list](#metrics-list)
-  * [Collector](#collector)
-  * [Query](#query)
+- [Table of Content](#table-of-content)
+- [Monitoring](#monitoring)
+  - [Integration with PlatformMonitoring](#integration-with-platformmonitoring)
+- [Logging](#logging)
+  - [Audit logs](#audit-logs)
+  - [Integration with Platform Logging](#integration-with-platform-logging)
+- [Traces](#traces)
+- [Metrics list](#metrics-list)
+  - [Collector](#collector)
+  - [Query](#query)
 
 # Monitoring
 
 By default Jaeger microservices expose metrics in Prometheus format.
 It is controlled by the following command line options:
 
-* `--admin.http.host-port` the port number where the HTTP admin server is running
-* `--metrics-backend` controls how the measurements are exposed. The default value is prometheus,
+- `--admin.http.host-port` the port number where the HTTP admin server is running
+- `--metrics-backend` controls how the measurements are exposed. The default value is prometheus,
   another option is expvar, the Go standard mechanism for exposing process level statistics.
-* `--metrics-http-route` specifies the name of the HTTP endpoint used to scrape the metrics
+- `--metrics-http-route` specifies the name of the HTTP endpoint used to scrape the metrics
   (`/metrics` by default).
 
 Each Jaeger component exposes the metrics scraping endpoint on the admin port:
@@ -37,7 +37,9 @@ Each Jaeger component exposes the metrics scraping endpoint on the admin port:
 | `all-in-one`       | 14269 |
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Integration with PlatformMonitoring
@@ -46,11 +48,11 @@ Jaeger can be deployed with necessary Custom Resources (CR) for Platform Monitor
 
 Integration include:
 
-* ServiceMonitor for collector with name "jaeger-collector"
-* ServiceMonitor for query with name "jaeger-query"
-* ServiceMonitor for agent with name "jaeger-agent"
-* ServiceMonitor for proxy with name "proxy-service-monitor"
-* GrafanaDashboard with name "Jaeger-Overview"
+- ServiceMonitor for collector with name "jaeger-collector"
+- ServiceMonitor for query with name "jaeger-query"
+- ServiceMonitor for agent with name "jaeger-agent"
+- ServiceMonitor for proxy with name "proxy-service-monitor"
+- GrafanaDashboard with name "Jaeger-Overview"
 
 To install these CRs need add in deploy parameters:
 
@@ -63,7 +65,9 @@ jaeger:
 All necessary configurations will discovery by Prometheus or Grafana automatically.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Logging
@@ -81,7 +85,9 @@ configured to write log lines as JSON encoded strings, for example:
 The log level can be adjusted via `--log-level` command line switch; default level is `info`.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Audit logs
@@ -100,7 +106,7 @@ The `Envoy` can generate access logs that can be used for audit. Default pattern
 
 Examples of access log:
 
-* Failed login:
+- Failed login:
 
   ```bash
   [2024-08-21T08:58:50.838Z] audit_log_type GET /search HTTP/1.1 401 - 0 12 0 - 1.2.3.4 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 9bd9eaa74df911b9a1ae0cbafedff031 jaeger.<cloud_dns_name> -
@@ -108,7 +114,7 @@ Examples of access log:
 
   The `Envoy` send the `401 Unauthorized` response.
 
-* Successful login:
+- Successful login:
 
   ```bash
   [2024-08-21T08:58:50.838Z] audit_log_type GET /search HTTP/1.1 401 - 0 12 0 - 1.2.3.4 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 9bd9eaa74df911b9a1ae0cbafedff031 jaeger.<cloud_dns_name> -
@@ -121,7 +127,9 @@ Examples of access log:
 The `Envoy` will log all requests from UI in access logs.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Integration with Platform Logging
@@ -131,7 +139,7 @@ if logging agent deployed in Cloud and collect logs from pods.
 
 In Graylog you can use next queries for find Jaeger logs:
 
-* Stream "All messages", filter by namespace name:
+- Stream "All messages", filter by namespace name:
 
 ```yaml
 namespace_name: <namespace>
@@ -139,7 +147,7 @@ namespace_name: <namespace>
 # namespace_name: tracing
 ```
 
-* Stream "All messages", filter by pod name:
+- Stream "All messages", filter by pod name:
 
 ```yaml
 pod_name: <pod>
@@ -148,7 +156,9 @@ pod_name: <pod>
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Traces
@@ -164,7 +174,9 @@ docker run -e JAEGER_DISABLED=true -p 16686:16686 jaegertracing/all-in-one:1.33
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Metrics list
@@ -175,6 +187,7 @@ docker run -e JAEGER_DISABLED=true -p 16686:16686 jaegertracing/all-in-one:1.33
   <summary>Collector metrics</summary>
 
 <!-- markdownlint-disable line-length -->
+
 ```prometheus
 # HELP go_gc_duration_seconds A summary of the pause duration of garbage collection cycles.
 # TYPE go_gc_duration_seconds summary
@@ -946,6 +959,7 @@ process_virtual_memory_bytes 7.63445248e+08
 # TYPE process_virtual_memory_max_bytes gauge
 process_virtual_memory_max_bytes 1.8446744073709552e+19
 ```
+
 <!-- markdownlint-enable line-length -->
 
 </details>
@@ -956,6 +970,7 @@ process_virtual_memory_max_bytes 1.8446744073709552e+19
   <summary>Query metrics</summary>
 
 <!-- markdownlint-disable line-length -->
+
 ```prometheus
 # HELP go_gc_duration_seconds A summary of the pause duration of garbage collection cycles.
 # TYPE go_gc_duration_seconds summary
@@ -1773,6 +1788,7 @@ process_virtual_memory_bytes 7.64690432e+08
 # TYPE process_virtual_memory_max_bytes gauge
 process_virtual_memory_max_bytes 1.8446744073709552e+19
 ```
+
 <!-- markdownlint-enable line-length -->
 
 </details>
