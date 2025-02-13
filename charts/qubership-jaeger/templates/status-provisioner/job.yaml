@@ -83,5 +83,8 @@ spec:
         - name: robot-storage
           emptyDir: {}
       nodeSelector: {}
-      affinity: {}
+      {{- if .Values.statusProvisioner.affinity }}
+      affinity:
+        {{- toYaml .Values.statusProvisioner.affinity | nindent 8 }}
+      {{- end }}
 {{- end }}
