@@ -30,13 +30,13 @@ collector:
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-          - key: app.kubernetes.io/name
-            operator: In
-            values:
-            -  jaeger-collector
-        topologyKey: kubernetes.io/hostname
+        - labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - jaeger-collector
+          topologyKey: kubernetes.io/hostname
 
 query:
   install: true
@@ -56,14 +56,13 @@ query:
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-          - key: app.kubernetes.io/name
-            operator: In
-            values:
-            -  jaeger-query
-        topologyKey: kubernetes.io/hostname
-
+        - labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - jaeger-query
+          topologyKey: kubernetes.io/hostname
 
 # This section is optional and allow to deploy a test service to generate some traces
 # Useful if you want to verify how Jaeger receive, store and show traces
