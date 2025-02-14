@@ -2,11 +2,11 @@ This section provides information about Jaeger maintenance issues.
 
 # Table of Content
 
-* [Table of Content](#table-of-content)
-* [Change Cassandra User/Password](#change-cassandra-userpassword)
-* [Scaling Jaeger](#scaling-jaeger)
-* [Change Cassandra TTL](#change-cassandra-ttl)
-* [Cassandra is reinstalled](#cassandra-is-reinstalled)
+- [Table of Content](#table-of-content)
+- [Change Cassandra User/Password](#change-cassandra-userpassword)
+- [Scaling Jaeger](#scaling-jaeger)
+- [Change Cassandra TTL](#change-cassandra-ttl)
+- [Cassandra is reinstalled](#cassandra-is-reinstalled)
 
 # Change Cassandra User/Password
 
@@ -31,7 +31,9 @@ to change the Cassandra user/password you have to manually edit values in this s
 Restart all Jaeger pods manually to apply the new Cassandra credentials.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Scaling Jaeger
@@ -44,9 +46,9 @@ For example:
 jaeger:
   storage:
     type: "cassandra"
-    
+
 cassandraSchemaJob:
-  
+
 query:
   resources:
     requests:
@@ -55,7 +57,7 @@ query:
     limits:
       cpu: 200m
       memory: 200Mi
-      
+
 collector:
   replicas: 2
   resources:
@@ -68,7 +70,9 @@ collector:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Change Cassandra TTL
@@ -82,8 +86,8 @@ can be changed on first installation using the parameters:
 ```yaml
 cassandraSchemaJob:
   ttl:
-    trace: 172800    # in seconds
-    dependencies: 0  # in seconds
+    trace: 172800 # in seconds
+    dependencies: 0 # in seconds
 ```
 
 To change the TTL after the keyspace has already been created, you can connect to cassandra and change it manually.
@@ -111,7 +115,9 @@ ALTER TABLE dependencies_v2 WITH default_time_to_live = 86400;
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Cassandra is reinstalled
@@ -128,5 +134,7 @@ cassandraSchemaJob:
 The keyspace will be recreated and jaeger will work again.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
