@@ -4,47 +4,47 @@ for tracing the query.
 
 # Table of Content
 
-* [Table of Content](#table-of-content)
-* [Prerequisites](#prerequisites)
-  * [Common](#common)
-  * [Storage](#storage)
-    * [Cassandra](#cassandra)
-    * [OpenSearch/ElasticSearch](#opensearchelasticsearch)
-  * [Kubernetes](#kubernetes)
-  * [Azure](#azure)
-  * [AWS](#aws)
-  * [Google](#google)
-* [Best practices and recommendations](#best-practices-and-recommendations)
-  * [HWE](#hwe)
-  * [TLS](#tls)
-* [Parameters](#parameters)
-  * [Jaeger](#jaeger)
-  * [Collector](#collector)
-    * [Ingress](#ingress)
-    * [TLSConfig](#tlsconfig)
-  * [Query](#query)
-  * [Readiness probe](#readiness-probe)
-  * [Agent](#agent)
-  * [Cassandra](#cassandra-1)
-  * [ElasticSearch](#elasticsearch)
-    * [Index Cleaner](#index-cleaner)
-    * [Rollover](#rollover)
-    * [Lookback](#lookback)
-  * [Proxy](#proxy)
-  * [Hotrod](#hotrod)
-  * [Integration Tests](#integration-tests)
-  * [Status Provisioner](#status-provisioner)
-* [Installation](#installation)
-  * [Before you begin](#before-you-begin)
-    * [Helm](#helm)
-  * [On-prem](#on-prem)
-    * [HA scheme](#ha-scheme)
-    * [Non-HA scheme](#non-ha-scheme)
-* [Post Deploy Checks](#post-deploy-checks)
-  * [Jobs Post Deploy Check](#jobs-post-deploy-check)
-  * [Smoke test](#smoke-test)
-* [Frequently Asked Questions](#frequently-asked-questions)
-  * [Jaeger Sampling Configuration](#jaeger-sampling-configuration)
+- [Table of Content](#table-of-content)
+- [Prerequisites](#prerequisites)
+  - [Common](#common)
+  - [Storage](#storage)
+    - [Cassandra](#cassandra)
+    - [OpenSearch/ElasticSearch](#opensearchelasticsearch)
+  - [Kubernetes](#kubernetes)
+  - [Azure](#azure)
+  - [AWS](#aws)
+  - [Google](#google)
+- [Best practices and recommendations](#best-practices-and-recommendations)
+  - [HWE](#hwe)
+  - [TLS](#tls)
+- [Parameters](#parameters)
+  - [Jaeger](#jaeger)
+  - [Collector](#collector)
+    - [Ingress](#ingress)
+    - [TLSConfig](#tlsconfig)
+  - [Query](#query)
+  - [Readiness probe](#readiness-probe)
+  - [Agent](#agent)
+  - [Cassandra](#cassandra-1)
+  - [ElasticSearch](#elasticsearch)
+    - [Index Cleaner](#index-cleaner)
+    - [Rollover](#rollover)
+    - [Lookback](#lookback)
+  - [Proxy](#proxy)
+  - [Hotrod](#hotrod)
+  - [Integration Tests](#integration-tests)
+  - [Status Provisioner](#status-provisioner)
+- [Installation](#installation)
+  - [Before you begin](#before-you-begin)
+    - [Helm](#helm)
+  - [On-prem](#on-prem)
+    - [HA scheme](#ha-scheme)
+    - [Non-HA scheme](#non-ha-scheme)
+- [Post Deploy Checks](#post-deploy-checks)
+  - [Jobs Post Deploy Check](#jobs-post-deploy-check)
+  - [Smoke test](#smoke-test)
+- [Frequently Asked Questions](#frequently-asked-questions)
+  - [Jaeger Sampling Configuration](#jaeger-sampling-configuration)
 
 # Prerequisites
 
@@ -52,9 +52,9 @@ This section describes the prerequisites to deploy Jaeger in the Cloud.
 
 ## Common
 
-* Kubernetes 1.21+ or OpenShift 4.10+
-* kubectl 1.21+ or oc 4.10+ CLI
-* Helm 3.0+
+- Kubernetes 1.21+ or OpenShift 4.10+
+- kubectl 1.21+ or oc 4.10+ CLI
+- Helm 3.0+
 
 ## Storage
 
@@ -64,8 +64,8 @@ This section describes the prerequisites to deploy Jaeger in the Cloud.
 
 Supported Cassandra versions:
 
-* 4.x (recommended)
-* 3.x
+- 4.x (recommended)
+- 3.x
 
 Depending on the configuration of your Cassandra cluster you can configure different replication strategies
 for Jaeger's data.
@@ -92,7 +92,9 @@ cassandraSchemaJob:
 of a schema and other Jaeger pods won't start with this configuration.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ### OpenSearch/ElasticSearch
@@ -103,17 +105,19 @@ Selecting between OpenSearch and ElasticSearch we recommended using **OpenSearch
 
 Supported OpenSearch versions:
 
-* 2.x (recommended)
-* 1.x
+- 2.x (recommended)
+- 1.x
 
 Supported ElasticSearch versions:
 
-* 7.x
-* 6.x
-* 5.x
+- 7.x
+- 6.x
+- 5.x
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Kubernetes
@@ -128,9 +132,9 @@ metadata:
   namespace: <jaeger-namespace>
   name: deploy-user-role
 rules:
-- apiGroups: ["*"]
-  resources: ["*"]
-  verbs: ["*"]
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
 ```
 
 **Note:** It's not a role that you have to create. It's just an example with a minimal list of permissions.
@@ -157,16 +161,18 @@ At the container level, `allowPrivilegeEscalation: false` and `capabilities.drop
 It is recommended not to override these values because Kubernetes `restricted`` PSS expects these values.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Azure
 
-| Azure Managed Service                                                                           | Jaeger support |
-| ----------------------------------------------------------------------------------------------- | -------------- |
+| Azure Managed Service                                                                           | Jaeger support  |
+| ----------------------------------------------------------------------------------------------- | --------------- |
 | [Azure CosmosDB (Cassandra)](https://azure.microsoft.com/en-in/products/cosmos-db)              | ❌ Not Support  |
 | [Azure Cassandra](https://azure.microsoft.com/en-in/products/managed-instance-apache-cassandra) | ❔ Not Verified |
-| Azure OpenSearch                                                                                | - N/A          |
+| Azure OpenSearch                                                                                | - N/A           |
 
 We almost didn't verify Jaeger working with Azure managed services. But we know about some GitHub issues related
 to supporting Azure managed services. So we know that Jaeger doesn't support Azure CosmosDB now. GitHub issue
@@ -175,15 +181,17 @@ to supporting Azure managed services. So we know that Jaeger doesn't support Azu
 There is no Azure managed OpenSearch. You can find only custom solutions in the Azure marketplace from other vendors.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## AWS
 
 | AWS Managed Service       | Jaeger support |
 | ------------------------- | -------------- |
-| AWS Keyspaces (Cassandra) | ❌ Not Support  |
-| AWS OpenSearch            | ✅ Support      |
+| AWS Keyspaces (Cassandra) | ❌ Not Support |
+| AWS OpenSearch            | ✅ Support     |
 
 Jaeger doesn't support AWS Keyspaces because Keyspaces doesn't allow to creation of frozen structures and custom
 structures. GitHub issue
@@ -191,22 +199,24 @@ structures. GitHub issue
 
 But Jaeger supports AWS OpenSearch as a managed service. Recommendation for AWS OpenSearch:
 
-* OpenSearch 1.x and 2.x both supports
-* Recommended use OpenSearch with resources not less than:
-  * CPU: >= 2 cores
-  * Memory: >= 4-8 GB
-* To run Jaeger with AWS OpenSearch recommended using flavors not less than:
-  * r5.large.search
-  * m4.large.search
-  * c6g.large.search
-  * c5.large.search
-  * c4.large.search
+- OpenSearch 1.x and 2.x both supports
+- Recommended use OpenSearch with resources not less than:
+  - CPU: >= 2 cores
+  - Memory: >= 4-8 GB
+- To run Jaeger with AWS OpenSearch recommended using flavors not less than:
+  - r5.large.search
+  - m4.large.search
+  - c6g.large.search
+  - c5.large.search
+  - c4.large.search
 
 Full information on which steps should be executed before deploying in AWS and with AWS OpenSearch can be found in the
 user guide [AWS OpenSearch](user-guides/aws-opensearch.md).
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Google
@@ -220,7 +230,9 @@ Google has no officially managed Cassandra, OpenSearch or ElasticSearch. You can
 in the Google marketplace from other vendors.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Best practices and recommendations
@@ -244,17 +256,17 @@ should be increased, also if needed, the collector can be scaled horizontally.
 
 Disk space for storing Jaeger traces might be calculated in several ways:
 
-* First of all, trace might contain more than one span, it depends on how many services (APIs) call each request.
+- First of all, trace might contain more than one span, it depends on how many services (APIs) call each request.
   If you are able to calculate a number of spans as:
-  
+
   ```txt
-  Number of spans per second = number traces in your system(requests) * number of spans per trace 
+  Number of spans per second = number traces in your system(requests) * number of spans per trace
   ```
 
   Please note not all requests on prod env are sent traces in Jaeger, so you only need to count the traced requests.
   After that, you are able to calculate the total number of spans as:
 
-* If you have installed Jaeger on pre-production or production env you are able to check the number of spans per second
+- If you have installed Jaeger on pre-production or production env you are able to check the number of spans per second
   with Jaeger self metrics. See the "span creation rate" panel on the "Jaeger-overview" Grafana dashboard.
   Or you can calculate the value in Prometheus\/VMUI:
 
@@ -307,16 +319,19 @@ And disk space usage will be:
 90 720 000 * 0.0009 = 81648Mb or (~80Gb)
 80Gb + 30% = 105Gb
 ```
+
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## TLS
 
 Support matrix Jaeger as third-party:
 
-| Connection                 | Support TLS   |
-| -------------------------- | ------------- |
+| Connection                 | Support TLS    |
+| -------------------------- | -------------- |
 | Client to Agent            | ❌ Not Support |
 | Client to Collector        | ✅ Support     |
 | Agent to Collector         | ✅ Support     |
@@ -327,7 +342,9 @@ Detailed information about how to configure TLS and examples of deployment param
 [TLS](user-guides/tls.md).
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Parameters
@@ -341,17 +358,18 @@ It's a common section that contains some generic parameters.
 All parameters in the table below should be specified under the key:
 
 ```yaml
-jaeger:
-  ...
+jaeger: ...
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                       | Type    | Mandatory | Default value | Description                                                                            |
 | ------------------------------- | ------- | --------- | ------------- | -------------------------------------------------------------------------------------- |
 | `storage.type`                  | string  | yes       | cassandra     | Type of storage, available values: `cassandra` and `elasticsearch`                     |
 | `serviceName`                   | string  | no        | jaeger        | Jaeger base deployment or service name                                                 |
 | `prometheusMonitoring`          | boolean | no        | true          | Install ServiceMonitors that allow Monitoring collect metrics from Jaeger's components |
 | `prometheusMonitoringDashboard` | boolean | no        | true          | Install the GrafanaDashboard that visualize metrics collect by Monitoring              |
+
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -370,7 +388,9 @@ jaeger:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Collector
@@ -388,6 +408,7 @@ collector:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                           | Description                                                                                                                           |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                  | boolean                                                                                                                       | no        | true                                                                    | Allows enabling/disabling creating collector deployment                                                                               |
@@ -409,6 +430,7 @@ collector:
 | `tlsConfig`                | [TLSConfig](#tlsconfig)                                                                                                       | no        | `{}`                                                                    | Contains TLS settings for collector.                                                                                                  |
 | `labels`                   | map                                                                                                                           | no        | {}                                                                      | Labels for collector.                                                                                                                 |
 | `annotations`              | map                                                                                                                           | no        | {}                                                                      | Annotations for collector.                                                                                                            |
+
 <!-- markdownlint-enable line-length -->
 
 Example:
@@ -448,11 +470,10 @@ collector:
   zipkinPort: 9411
   samplingConfig: true
 
-  ingress:
-    ...
+  ingress: ...
 
   cmdlineParams:
-    - '--cassandra.max-retry-attempts=10'
+    - "--cassandra.max-retry-attempts=10"
   extraEnv:
     - name: ES_TIMEOUT
       value: 30s
@@ -473,7 +494,9 @@ collector:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ### Ingress
@@ -489,6 +512,7 @@ collector:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                      | Type    | Mandatory | Default value | Description                                                                                                                                                                                                                                                                                           |
 | ------------------------------ | ------- | --------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                      | boolean | no        | `-`           | Name of the pre-existing secret that contains TLS configuration for jaeger-collector. If specified, `generateCerts.enabled` must be set to `false`. The `existingSecret` is expected to contain CA certificate, TLS key and TLS certificate in `ca.crt`, `tls.key` and `tls.crt` fields respectively. |
@@ -501,6 +525,7 @@ collector:
 | `hosts[].paths[].prefix`       | string  | no        | `-`           | Endpoint path that will listen and handle by Ingress controller (for example: `/`, `/zipkin`)                                                                                                                                                                                                         |
 | `hosts[].paths[].service.name` | string  | no        | `-`           | Service name to which will route requests from declared in this section endpoint, by default will use `{{ .jaeger.serviceName }}-collector` (usually will be `jaeger-collector`)                                                                                                                      |
 | `hosts[].paths[].service.port` | integer | no        | `-`           | Service port to which will route requests from declared in this section endpoint                                                                                                                                                                                                                      |
+
 <!-- markdownlint-enable line-length -->
 
 Example:
@@ -551,7 +576,9 @@ collector:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ### TLSConfig
@@ -567,6 +594,7 @@ collector:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                            | Type    | Mandatory | Default value                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | ------------------------------------ | ------- | --------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `existingSecret`                     | string  | no        | `-`                           | Name of the pre-existing secret that contains TLS configuration for jaeger-collector. If specified, `generateCerts.enabled` must be set to `false`. The `existingSecret` is expected to contain CA certificate, TLS key and TLS certificate in `ca.crt`, `tls.key` and `tls.crt` fields respectively.                                                                                                                                                      |
@@ -601,6 +629,7 @@ collector:
 | `zipkin.cipherSuites`                | string  | no        | `-`                           | Comma-separated list of cipher suites for the server.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `zipkin.maxVersion`                  | string  | no        | `-`                           | Maximum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3).                                                                                                                                                                                                                                                                                                                                                                                       |
 | `zipkin.minVersion`                  | string  | no        | `-`                           | Minimum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3).                                                                                                                                                                                                                                                                                                                                                                                       |
+
 <!-- markdownlint-enable line-length -->
 
 Example:
@@ -656,7 +685,9 @@ collector:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Query
@@ -673,6 +704,7 @@ query:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                              | Description                                                                                                                         |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                  | boolean                                                                                                                       | no        | true                                                                       | Allows enabling/disabling creating query deployment                                                                                 |
@@ -692,6 +724,7 @@ query:
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                        | PriorityClassName assigned to the Pods to prevent them from evicting                                                                |
 | `labels`                   | map                                                                                                                           | no        | {}                                                                         | Labels for query                                                                                                                    |
 | `annotations`              | map                                                                                                                           | no        | {}                                                                         | Annotations for query                                                                                                               |
+
 <!-- markdownlint-enable line-length -->
 
 **Note:** It's just an example of a parameter's format, not recommended parameters.
@@ -706,10 +739,10 @@ query:
   image: jaegertracing/jaeger-query:1.62.0
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
-  - name: jaeger-pull-secret
+    - name: jaeger-pull-secret
 
   cmdlineParams:
-    - '--cassandra.max-retry-attempts=10'
+    - "--cassandra.max-retry-attempts=10"
   extraEnv:
     - name: CASSANDRA_TIMEOUT
       value: 30s
@@ -752,7 +785,9 @@ query:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Readiness probe
@@ -762,17 +797,18 @@ query:
 All parameters in the table below should be specified under the key:
 
 ```yaml
-readinessProbe:
-  ...
+readinessProbe: ...
 ```
 
 <!-- markdownlint-disable line-length -->
-| Parameter         | Type   | Mandatory | Default value                                                              | Description                                                                                                                                                   |
-| ----------------- | ------ | --------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `image`           | string | no        | -                                                                          | Docker image to use for a readiness-probe container                                                                                                           |
-| `imagePullPolicy` | string | no        | IfNotPresent                                                               | `imagePullPolicy` for a container and the tag of the image affects when the kubelet attempts to pull (download) the specified image                           |
-| `args`            | object | yes       | []                                                                         | Cmd line opts to be configured. More [here](readiness-probe.md) |
-| `resources`       | object | no        | {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 200m, memory: 256Mi}} | Describes computing resource requests and limits for single Pods                                                                                              |
+
+| Parameter         | Type   | Mandatory | Default value                                                              | Description                                                                                                                         |
+| ----------------- | ------ | --------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `image`           | string | no        | -                                                                          | Docker image to use for a readiness-probe container                                                                                 |
+| `imagePullPolicy` | string | no        | IfNotPresent                                                               | `imagePullPolicy` for a container and the tag of the image affects when the kubelet attempts to pull (download) the specified image |
+| `args`            | object | yes       | []                                                                         | Cmd line opts to be configured. More [here](readiness-probe.md)                                                                     |
+| `resources`       | object | no        | {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 200m, memory: 256Mi}} | Describes computing resource requests and limits for single Pods                                                                    |
+
 <!-- markdownlint-enable line-length -->
 
 **Note:** It's just an example of a parameter's format, not recommended parameters.
@@ -809,7 +845,9 @@ readinessProbe:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Agent
@@ -833,6 +871,7 @@ agent:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                            | Description                                                                                                                         |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                  | boolean                                                                                                                       | no        | false                                                                    | Enabling/disabling deploy agent daemon-set                                                                                          |
@@ -858,6 +897,7 @@ agent:
 | `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                       | Holds pod-level security attributes                                                                                                 |
 | `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                       | Holds container-level security attributes                                                                                           |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                      | PriorityClassName assigned to the Pods to prevent them from evicting.                                                               |
+
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -872,7 +912,7 @@ agent:
   image: jaegertracing/jaeger-agent:1.62.0
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
-  - name: jaeger-pull-secret
+    - name: jaeger-pull-secret
 
   labels:
     example.label/key: example-label-value
@@ -889,16 +929,16 @@ agent:
     samplingPort: 5778
 
   cmdlineParams:
-    - '--processor.jaeger-compact.server-queue-size=1000'
+    - "--processor.jaeger-compact.server-queue-size=1000"
   extraEnv:
     - name: LOG_LEVEL
       value: info
   extraConfigmapMounts:
-    - name: extra-config-file-name  # name of mount in pod
-      configMap: extra-configmap-name  # name of ConfigMap in the Kubernetes
+    - name: extra-config-file-name # name of mount in pod
+      configMap: extra-configmap-name # name of ConfigMap in the Kubernetes
   extraSecretMounts:
-    - name: extra-config-file-name  # name of mount in pod
-      secretMap: extra-secret-name  # name of Secret in the Kubernetes
+    - name: extra-config-file-name # name of mount in pod
+      secretMap: extra-secret-name # name of Secret in the Kubernetes
 
   resources:
     requests:
@@ -930,7 +970,9 @@ agent:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Cassandra
@@ -950,6 +992,7 @@ cassandraSchemaJob:
 
 <!-- markdownlint-disable no-inline-html -->
 <!-- markdownlint-disable line-length -->
+
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                                                                                             | Description                                                                                                                                                                                                                                                                                                                                           |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `image`                    | string                                                                                                                        | no        | -                                                                                                                                         | The docker image to use for a `cassandraSchemaJob` container                                                                                                                                                                                                                                                                                          |
@@ -980,8 +1023,9 @@ cassandraSchemaJob:
 | `ttl.trace`                | integer                                                                                                                       | no        | -                                                                                                                                         | Time to live for traces (in seconds) data                                                                                                                                                                                                                                                                                                             |
 | `ttl.dependencies`         | integer                                                                                                                       | no        | -                                                                                                                                         | Time to live for dependencies (in seconds)data                                                                                                                                                                                                                                                                                                        |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                                                                                       | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                                                                                                                                                                                                                                 |
-| `labels`                   | map                                                                                                                           | no        | {}                                                                                                                                        | Labels for cassandra schema job.                                                                                                                                                                |
-| `annotations`              | map                                                                                                                           | no        | {}                                                                                                                                        | Annotations for cassandra schema job.                                                                                                                                                           |
+| `labels`                   | map                                                                                                                           | no        | {}                                                                                                                                        | Labels for cassandra schema job.                                                                                                                                                                                                                                                                                                                      |
+| `annotations`              | map                                                                                                                           | no        | {}                                                                                                                                        | Annotations for cassandra schema job.                                                                                                                                                                                                                                                                                                                 |
+
 <!-- markdownlint-enable line-length -->
 <!-- markdownlint-enable no-inline-html -->
 
@@ -1048,7 +1092,7 @@ cassandraSchemaJob:
   extraEnv:
     - name: CASSANDRA_TIMEOUT
       value: 30s
-  
+
   resources:
     requests:
       cpu: 100m
@@ -1075,7 +1119,9 @@ cassandraSchemaJob:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## ElasticSearch
@@ -1083,11 +1129,11 @@ cassandraSchemaJob:
 All parameters in the table below should be specified under the key:
 
 ```yaml
-elasticsearch:
-  ...
+elasticsearch: ...
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                       | Type    | Mandatory | Default value | Description                                                                                                                                                                                     |
 | ------------------------------- | ------- | --------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `existingSecret`                | string  | no        | -             | Name of the existing secret with ElasticSearch username and password                                                                                                                            |
@@ -1104,6 +1150,7 @@ elasticsearch:
 | `client.ts.cert`                | string  | no        | -             | The private part of the certificate. The mandatory field when using an SSL connection to Cassandra. Ignored if the `existingSecret` is specified.                                               |
 | `client.tls.key`                | string  | no        | -             | Specifying the public key of the certificate. The mandatory field when using an SSL connection to Cassandra. Ignored if the `existingSecret` is specified.                                      |
 | `client.tls.insecureSkipVerify` | boolean | no        | -             | Disabling certificate validation check for OpenSearch/ElasticSearch TLS connection                                                                                                              |
+
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -1112,11 +1159,11 @@ Examples:
 
 ```yaml
 elasticsearch:
-  existingSecret: 
-  indexPrefix: custom-  # result name of indexes will be custom-jaeger-spans, custom-jaeger-.....
+  existingSecret:
+  indexPrefix: custom- # result name of indexes will be custom-jaeger-spans, custom-jaeger-.....
   extraEnv:
-  - name: ES_TIMEOUT
-    value: 30s
+    - name: ES_TIMEOUT
+      value: 30s
 
   client:
     url: opensearch.opensearch.svc
@@ -1151,7 +1198,9 @@ elasticsearch:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ### Index Cleaner
@@ -1160,11 +1209,11 @@ All parameters in the table below should be specified under the key:
 
 ```yaml
 elasticsearch:
-  indexCleaner:
-    ...
+  indexCleaner: ...
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                    | Type                                                                                                                          | Mandatory | Default value                                                              | Description                                                                                                                             |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                    | boolean                                                                                                                       | no        | false                                                                      | Enabling or disabling creating indexCleaner CronJob                                                                                     |
@@ -1189,6 +1238,7 @@ elasticsearch:
 | `securityContext`            | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                         | Holds pod-level security attributes                                                                                                     |
 | `containerSecurityContext`   | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                         | Holds container-level security attributes                                                                                               |
 | `priorityClassName`          | string                                                                                                                        | no        | `-`                                                                        | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                   |
+
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -1223,11 +1273,11 @@ elasticsearch:
       - name: ES_TIMEOUT
         value: 30s
     extraConfigmapMounts:
-      - name: extra-config-file-name  # name of mount in pod
-        configMap: extra-configmap-name  # name of ConfigMap in the Kubernetes
+      - name: extra-config-file-name # name of mount in pod
+        configMap: extra-configmap-name # name of ConfigMap in the Kubernetes
     extraSecretMounts:
-      - name: extra-config-file-name  # name of mount in pod
-        secretMap: extra-secret-name  # name of Secret in the Kubernetes
+      - name: extra-config-file-name # name of mount in pod
+        secretMap: extra-secret-name # name of Secret in the Kubernetes
 
     resources:
       requests:
@@ -1251,15 +1301,17 @@ elasticsearch:
     nodeSelector:
       node-role.kubernetes.io/worker: worker
     tolerations:
-    - key: key1
-      operator: Equal
-      value: value1
-      effect: NoSchedule
+      - key: key1
+        operator: Equal
+        value: value1
+        effect: NoSchedule
     priorityClassName: priority-class
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ### Rollover
@@ -1286,6 +1338,7 @@ elasticsearch:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                          | Type                                                                                                                          | Mandatory | Default value | Description                                                                                                                             |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                          | boolean                                                                                                                       | no        | false         | Enabling or disabling creating rollover CronJob                                                                                         |
@@ -1312,6 +1365,7 @@ elasticsearch:
 | `initHook.ttlSecondsAfterFinished` | integer                                                                                                                       | no        | 120           | TTL in seconds after the finished initial job                                                                                           |
 | `initHook.extraEnv`                | object                                                                                                                        | no        | []            | Rollover-init related extra env vars to be configured on the concerned components                                                       |
 | `priorityClassName`                | string                                                                                                                        | no        | `-`           | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                   |
+
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -1350,11 +1404,11 @@ elasticsearch:
       - name: ES_TIMEOUT
         value: 30s
     extraConfigmapMounts:
-      - name: extra-config-file-name  # name of mount in pod
-        configMap: extra-configmap-name  # name of ConfigMap in the Kubernetes
+      - name: extra-config-file-name # name of mount in pod
+        configMap: extra-configmap-name # name of ConfigMap in the Kubernetes
     extraSecretMounts:
-      - name: extra-config-file-name  # name of mount in pod
-        secretMap: extra-secret-name  # name of Secret in the Kubernetes
+      - name: extra-config-file-name # name of mount in pod
+        secretMap: extra-secret-name # name of Secret in the Kubernetes
 
     resources:
       requests:
@@ -1386,7 +1440,9 @@ elasticsearch:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ### Lookback
@@ -1408,6 +1464,7 @@ elasticsearch:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                    | Type                                                                                                                          | Mandatory | Default value                                                              | Description                                                                                                                             |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                    | boolean                                                                                                                       | no        | false                                                                      | Enabling or disabling creating lookback CronJob                                                                                         |
@@ -1430,6 +1487,7 @@ elasticsearch:
 | `securityContext`            | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                         | Holds pod-level security attributes                                                                                                     |
 | `containerSecurityContext`   | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                         | Holds container-level security attributes                                                                                               |
 | `priorityClassName`          | string                                                                                                                        | no        | `-`                                                                        | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                   |
+
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -1462,11 +1520,11 @@ elasticsearch:
       - name: ES_TIMEOUT
         value: 30s
     extraConfigmapMounts:
-      - name: extra-config-file-name  # name of mount in pod
-        configMap: extra-configmap-name  # name of ConfigMap in the Kubernetes
+      - name: extra-config-file-name # name of mount in pod
+        configMap: extra-configmap-name # name of ConfigMap in the Kubernetes
     extraSecretMounts:
-      - name: extra-config-file-name  # name of mount in pod
-        secretMap: extra-secret-name  # name of Secret in the Kubernetes
+      - name: extra-config-file-name # name of mount in pod
+        secretMap: extra-secret-name # name of Secret in the Kubernetes
 
     resources:
       requests:
@@ -1498,7 +1556,9 @@ elasticsearch:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Proxy
@@ -1512,6 +1572,7 @@ proxy:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                      | Type                                                                                                                          | Mandatory | Default value                                                             | Description                                                                                                       |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `install`                      | boolean                                                                                                                       | no        | false                                                                     | Allows enabling/disabling creating the proxy container                                                            |
@@ -1527,6 +1588,7 @@ proxy:
 | `resources`                    | object                                                                                                                        | no        | {requests: {cpu: 50m, memory: 100Mi}, limits: {cpu: 100m, memory: 200Mi}} | Describes computing resource requests and limits for single Pods                                                  |
 | `securityContext`              | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                        | Describes pod-level security attributes                                                                           |
 | `containerSecurityContext`     | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                        | Holds container-level security attributes                                                                         |
+
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -1540,8 +1602,8 @@ proxy:
   type: oauth2
 
   basic:
-    - YWRtaW46YWRtaW4=    # admin:admin encoded in base64
-    - dGVzdDp0ZXN0        # test:test  encoded in base64
+    - YWRtaW46YWRtaW4= # admin:admin encoded in base64
+    - dGVzdDp0ZXN0 # test:test  encoded in base64
 
   oauth2:
     tokenEndpoint: https://example-url.com/token
@@ -1572,7 +1634,9 @@ proxy:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Hotrod
@@ -1588,6 +1652,7 @@ hotrod:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                              | Description                                                                                                                             |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                  | boolean                                                                                                                       | no        | false                                                                      | Enabling or disabling creating hotrod deployment                                                                                        |
@@ -1613,6 +1678,7 @@ hotrod:
 | `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                         | Holds pod-level security attributes                                                                                                     |
 | `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                         | Holds container-level security attributes                                                                                               |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                        | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                   |
+
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -1637,7 +1703,7 @@ hotrod:
   otelExporter:
     host: jaeger-collector
     port: 14268
-  
+
   agent:
     host: jaeger-agent
     port: 6831
@@ -1681,7 +1747,9 @@ hotrod:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Integration Tests
@@ -1697,6 +1765,7 @@ integrationTests:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                            | Type                                                                                                                          | Mandatory | Default value                                                            | Description                                                                                                                                                                                                                                                                                                                                         |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                            | boolean                                                                                                                       | no        | false                                                                    | Enabling or disabling creating integration tests deployment                                                                                                                                                                                                                                                                                         |
@@ -1716,6 +1785,7 @@ integrationTests:
 | `securityContext`                    | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                       | Describes pod-level security attributes                                                                                                                                                                                                                                                                                                             |
 | `containerSecurityContext`           | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                       | Holds container-level security attributes                                                                                                                                                                                                                                                                                                           |
 | `priorityClassName`                  | string                                                                                                                        | no        | `-`                                                                      | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                                                                                                                                                                                                                               |
+
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -1762,7 +1832,9 @@ integrationTests:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Status Provisioner
@@ -1778,6 +1850,7 @@ statusProvisioner:
 ```
 
 <!-- markdownlint-disable line-length -->
+
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                            | Description                                                                                                                  |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
 | `install`                  | boolean                                                                                                                       | no        | true                                                                     | Status provisioner is always expected to be enabled                                                                          |
@@ -1789,6 +1862,7 @@ statusProvisioner:
 | `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                       | Describes pod-level security attributes                                                                                      |
 | `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                       | Holds container-level security attributes                                                                                    |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                      | PriorityClassName assigned to the Pods to prevent them from evicting.                                                        |
+
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -1824,7 +1898,9 @@ statusProvisioner:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Installation
@@ -1833,8 +1909,8 @@ This section describes how to install Jaeger to the Kubernetes.
 
 ## Before you begin
 
-* Make sure that selecting Jaeger storage is alive and operable
-* Make sure that you configure expected retention data settings
+- Make sure that selecting Jaeger storage is alive and operable
+- Make sure that you configure expected retention data settings
 
 ### Helm
 
@@ -1863,7 +1939,9 @@ elasticsearch:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## On-prem
@@ -1878,7 +1956,7 @@ The minimal template for the HA scheme is as follows:
 jaeger:
   storage:
     type: cassandra
-    
+
 cassandraSchemaJob:
   host: cassandra.cassandra.svc
   keyspace: jaeger
@@ -1900,7 +1978,9 @@ More information about how to deploy Jaeger in High Availability can be found in
 [High Availability](user-guides/high-availability.md).
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ### Non-HA scheme
@@ -1911,7 +1991,7 @@ The minimal template for the Non-HA scheme is as follows:
 jaeger:
   storage:
     type: cassandra
-    
+
 cassandraSchemaJob:
   host: cassandra.cassandra.svc
   keyspace: jaeger
@@ -1934,11 +2014,15 @@ collector:
 ```
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Post Deploy Checks
@@ -1946,7 +2030,9 @@ collector:
 There are some options to check after deploy that Jaeger deployed and working correctly.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 ## Smoke test
@@ -2050,13 +2136,15 @@ Or you can use Jaeger UI to check that it works without any errors.
 If you have deployed a CloudCore-base application, you can try to find any traces of the `gateway` service.
 To find it in UI you need:
 
-* Go to Jaeger UI
-* Select `gateway` in the dropdown list of the "Service" parameter
-* Click "Find Traces"
-* Check that traces collected and available
+- Go to Jaeger UI
+- Select `gateway` in the dropdown list of the "Service" parameter
+- Click "Find Traces"
+- Check that traces collected and available
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
 
 # Frequently Asked Questions
@@ -2073,5 +2161,7 @@ so you have to edit it again.
 In other cases, the configuration is done on the application side.
 
 <!-- #GFCFilterMarkerStart# -->
+
 [Back to TOC](#table-of-content)
+
 <!-- #GFCFilterMarkerEnd# -->
