@@ -1,31 +1,28 @@
-import datetime
 import json
 import random
-from datetime import timezone
+from datetime import datetime, timezone
 
 
 def generate_trace():
     with open('./tests/libs/resources/spans.json') as f:
         data = json.load(f)
 
-    dt = datetime.datetime.now(timezone.utc)
+    timestamp = _generate_timestamp()
 
-    utc_time = dt.replace(tzinfo=timezone.utc)
-    timestamp = utc_time.timestamp()
     parent_id = _generate_id(16)
 
     fs = data[0]
     fs['traceId'] = parent_id
     fs['id'] = parent_id
-    fs['timestamp'] = _format_tmstmp(timestamp)
-    fs['annotations'][0]['timestamp'] = _format_tmstmp(timestamp)
-    fs['annotations'][1]['timestamp'] = _format_tmstmp(timestamp + 0.014861)
-
+    fs['timestamp'] = timestamp
+    fs['annotations'][0]['timestamp'] = timestamp
+    fs['annotations'][1]['timestamp'] = timestamp + 14861
     return data
 
 
-def _format_tmstmp(timestamp, ch_count=17):
-    return int(''.join(str(timestamp).split('.'))[:ch_count])
+def _generate_timestamp():
+    timestamp = int(datetime.now(timezone.utc).timestamp() * 1_000_000)
+    return timestamp if timestamp % 10 != 0 else timestamp - 1
 
 
 def _generate_id(n):
