@@ -6,9 +6,6 @@ ENV USER_UID=1000 \
     ROBOT_OUTPUT=/opt/robot/output \
     SERVICE_CHECKER_SCRIPT=${ROBOT_HOME}/jaeger_pods_checker.py
 
-# Copy configuration for pip
-COPY pip.conf /etc/pip.conf
-
 # Copy tests source code
 COPY requirements.txt ${ROBOT_HOME}/requirements.txt
 COPY robot ${ROBOT_HOME}
