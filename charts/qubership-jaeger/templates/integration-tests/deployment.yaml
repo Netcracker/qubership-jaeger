@@ -34,7 +34,7 @@ spec:
       serviceAccountName: {{ .Values.integrationTests.serviceAccount.name }}
       {{- if .Values.integrationTests.affinity }}
       affinity:
-        {{ toYaml .Values.integrationTests.affinity }}
+        {{- toYaml .Values.integrationTests.affinity }}
       {{- end }}
       {{- if .Values.integrationTests.priorityClassName }}
       priorityClassName: {{ .Values.integrationTests.priorityClassName }}
