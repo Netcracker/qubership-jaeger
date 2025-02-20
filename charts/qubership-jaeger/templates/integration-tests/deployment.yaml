@@ -34,7 +34,7 @@ spec:
       serviceAccountName: {{ .Values.integrationTests.serviceAccount.name }}
       {{- if .Values.integrationTests.affinity }}
       affinity:
-        {{ toYaml .Values.integrationTests.affinity }}
+        {{- toYaml .Values.integrationTests.affinity }}
       {{- end }}
       {{- if .Values.integrationTests.priorityClassName }}
       priorityClassName: {{ .Values.integrationTests.priorityClassName }}
@@ -67,8 +67,8 @@ spec:
             - name: IS_SHORT_STATUS_MESSAGE
               value: {{ .Values.integrationTests.statusWriting.isShortStatusMessage | quote }}
             - name: STATUS_CUSTOM_RESOURCE_PATH
-              value: {{ toYaml .Values.integrationTests.statusWriting.customResourcePath }}
-          resources: {{ toYaml .Values.integrationTests.resources | nindent 12 }}
+              value: {{- toYaml .Values.integrationTests.statusWriting.customResourcePath }}
+          resources: {{- toYaml .Values.integrationTests.resources | nindent 12 }}
           securityContext:
             {{- include "integrationTests.containerSecurityContext" . }}
           volumeMounts:
