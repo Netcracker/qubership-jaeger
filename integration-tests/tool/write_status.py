@@ -1,9 +1,11 @@
-from PlatformLibrary import PlatformLibrary
+import os
+import re
+import sys
 from datetime import datetime
 from enum import Enum
-import os
-import sys
-import re
+
+from PlatformLibrary import PlatformLibrary
+
 
 class CustomResourceStatusResolver:
     def __init__(self, **kwargs):
@@ -20,7 +22,8 @@ class CustomResourceStatusResolver:
     def resolve_custom_resource_by_path(self):
         parts = self.path.split("/")
         if len(parts) != 5:
-            raise Exception(f'Path to custom resource must contain exactly five parts, {len(parts)} given')
+            raise Exception(
+                f'Path to custom resource must contain exactly five parts, {len(parts)} given')
         self.group = parts[0]
         self.version = parts[1]
         self.namespace = parts[2]
@@ -85,6 +88,7 @@ class ConditionStatus(Enum):
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
+
 class Condition:
     def __init__(self,
                  is_in_progress: bool = False,
@@ -135,7 +139,8 @@ class Condition:
 
 if __name__ == '__main__':
     argv = sys.argv[1:]
-    is_in_progress = False if len(argv) < 1 or argv[0] != "in_progress" else True
+    is_in_progress = False if len(
+        argv) < 1 or argv[0] != "in_progress" else True
 
     condition = Condition(is_in_progress=is_in_progress)
     condition.generate_condition_state()

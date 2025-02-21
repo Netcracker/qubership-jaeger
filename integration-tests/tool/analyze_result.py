@@ -1,21 +1,24 @@
+import logging
 from datetime import datetime
 from enum import Enum
-import logging
 
 from robot.api import ExecutionResult
 from robot.model import TestSuite
 
 space = "\n**********************************************************************************************************\n"
 
+
 class Status(str, Enum):
     PASS = "PASS"
     FAIL = "FAIL"
+
 
 def analyze_result():
     try:
         result = ExecutionResult("./output/output.xml")
     except Exception as e:
-        logging.error("Exception occurred while open tests result file: {}".format(str(e)))
+        logging.error(
+            "Exception occurred while open tests result file: {}".format(str(e)))
         return
 
     logging.debug("Start parsing the robotframework test result")
@@ -51,10 +54,13 @@ def get_keywords(entity):
 def print_test_cases(test_cases, level=0):
     result_str = ""
     for test_case in test_cases:
-        start_time = datetime.strptime(test_case.starttime, "%Y%m%d %H:%M:%S.%f")
+        start_time = datetime.strptime(
+            test_case.starttime, "%Y%m%d %H:%M:%S.%f")
         end_time = datetime.strptime(test_case.endtime, "%Y%m%d %H:%M:%S.%f")
-        duration = int((end_time - start_time).total_seconds() * 1000) # Total time in milliseconds
-        result_str += "{}{}\t|\tStatus: '{}'|\tDuration: {}\n".format("\t" * level, test_case.name, test_case.status, duration)
+        duration = int((end_time - start_time).total_seconds()
+                       * 1000)  # Total time in milliseconds
+        result_str += "{}{}\t|\tStatus: '{}'|\tDuration: {}\n".format(
+            "\t" * level, test_case.name, test_case.status, duration)
         if test_case.status != Status.PASS:
             keywords = get_keywords(test_case)
             if keywords:
@@ -67,7 +73,8 @@ def print_test_cases(test_cases, level=0):
 def print_keywords(keywords, level=0):
     result_str = ""
     for keyword in keywords:
-        result_str += "{}{}\t|\tStatus: '{}'\n".format("\t" * level, keyword.kwname, keyword.status)
+        result_str += "{}{}\t|\tStatus: '{}'\n".format(
+            "\t" * level, keyword.kwname, keyword.status)
         if keyword.status == Status.FAIL:
             if keyword.messages:
                 result_str += "{}Messages:\n".format("\t" * level)
@@ -82,7 +89,8 @@ def print_keywords(keywords, level=0):
 def print_messages(messages, level=0):
     result_str = ""
     for message in messages:
-        result_str += "{}{}\t|\tLevel: '{}'\n".format("\t" * level, message.message.replace("\n", ""), message.level)
+        result_str += "{}{}\t|\tLevel: '{}'\n".format(
+            "\t" * level, message.message.replace("\n", ""), message.level)
     return result_str
 
 

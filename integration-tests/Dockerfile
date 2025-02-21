@@ -12,7 +12,8 @@ COPY robot ${ROBOT_HOME}
 
 RUN \
     # Install requirements
-    python3 -m pip install -r ${ROBOT_HOME}/requirements.txt \
+    python3 -m pip install --no-cache-dir \
+        -r ${ROBOT_HOME}/requirements.txt \
     # Cleanup pip cache
     && rm -rf /var/cache/apk/* \
     # Create output directory for test results
