@@ -20,7 +20,7 @@ run_ttyd() {
     TTYD_PORT=8080
   fi
 
-  exec ttyd -p ${TTYD_PORT} bash
+  exec ttyd -p "${TTYD_PORT}" bash
 }
 
 run_custom_script() {
@@ -35,9 +35,9 @@ create_tags_resolver_array() {
       tags_resolver_script=${TAGS_RESOLVER_SCRIPT}
     fi
     tags_resolver_array=()
-    while IFS=";"; read -d ";" line; do
-        tags_resolver_array+=($line)
-    done < <(python ${tags_resolver_script})
+    while IFS=";"; read -r -d ";" line; do
+        tags_resolver_array+=("$line")
+    done < <(python "${tags_resolver_script}")
 }
 
 # Process some known arguments to run integration tests
@@ -61,7 +61,7 @@ case $1 in
         if [[ -n "$SERVICE_CHECKER_SCRIPT_TIMEOUT" ]]; then
             timeout=${SERVICE_CHECKER_SCRIPT_TIMEOUT}
         fi
-        python ${SERVICE_CHECKER_SCRIPT} ${timeout}
+        python "${SERVICE_CHECKER_SCRIPT}" "${timeout}"
         if [[ $? -ne 0 ]]; then
             echo "Service is not ready at least $timeout seconds or some exception occurred"
             exit 1
@@ -72,14 +72,14 @@ case $1 in
     if [[ ${IS_TAGS_RESOLVER_ENABLED} == "true" ]]; then
         create_tags_resolver_array
         echo "Excluded tags: ${tags_resolver_array[0]}"
-        echo ${tags_resolver_array[1]}  # print all excluded tags with matched reason
+        echo "${tags_resolver_array[1]}"  # print all excluded tags with matched reason
         excluded_tags=${tags_resolver_array[0]}
     fi
 
     if [[ -z "$TAGS" ]]; then
-      robot ${excluded_tags} ./tests
+      robot "${excluded_tags}" ./tests
     else
-      robot -i ${TAGS} ${excluded_tags} ./tests
+      robot -i "${TAGS}" "${excluded_tags}" ./tests
     fi
     robot_result=$?
     if [[ ${robot_result} -ne 0 ]]; then
