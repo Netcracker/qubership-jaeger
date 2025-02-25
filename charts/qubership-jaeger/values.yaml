@@ -1886,36 +1886,46 @@ collector:
   #  annotation-key: annotation-value
 
   ingress:
-    install: false
-    hosts: []
-    defaultPaths:
-      # Format:
-      # - prefix: <endpoint>
-      #   service:
-      #     name: <service_name>
-      #     port: <port_number>
-      - prefix: /
-        service:
-          # name: jaeger-collector
-          port: 16269
-      - prefix: /zipkin
-        service:
-          port: 9411
-      - prefix: /otlp/grpc
-        service:
-          port: 4317
-      - prefix: /otlp/http
-        service:
-          port: 4318
-      - prefix: /thrift/tchannel
-        service:
-          port: 14250
-      - prefix: /thrift/grpc
-        service:
-          port: 14267
-      - prefix: /thrift/http
-        service:
-          port: 14268
+    http:
+      install: false
+      hosts: []
+      defaultPaths:
+        # Format:
+        # - prefix: <endpoint>
+        #   service:
+        #     name: <service_name>
+        #     port: <port_number>
+        - prefix: /
+          service:
+            # name: jaeger-collector
+            port: 16269
+        - prefix: /zipkin
+          service:
+            port: 9411
+        - prefix: /otlp/http
+          service:
+            port: 4318
+        - prefix: /thrift/tchannel
+          service:
+            port: 14250
+        - prefix: /thrift/http
+          service:
+            port: 14268
+    grpc:
+      install: false
+      hosts: []
+      defaultPaths:
+        # Format:
+        # - prefix: <endpoint>
+        #   service:
+        #     name: <service_name>
+        #     port: <port_number>          
+        - prefix: /otlp/grpc
+          service:
+            port: 4317          
+        - prefix: /thrift/grpc
+          service:
+            port: 14267
     tls: {}
 
 hotrod:

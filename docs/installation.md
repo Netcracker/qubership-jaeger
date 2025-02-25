@@ -480,27 +480,41 @@ collector:
 
 This section describes Ingress configuration for `jaeger-collector`.
 
-All parameters in the table below should be specified under the key:
+Two ingresses are created separately for `http` and `grpc` protocols. Parameters must be configured for both the
+protocols under `collector.ingress` section.
 
 ```yaml
 collector:
   ingress:
-    install: true
+    http:
+      install: true
+    grpc:
+      install: true
 ```
 
 <!-- markdownlint-disable line-length -->
 | Parameter                      | Type    | Mandatory | Default value | Description                                                                                                                                                                                                                                                                                           |
 | ------------------------------ | ------- | --------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `install`                      | boolean | no        | `-`           | Name of the pre-existing secret that contains TLS configuration for jaeger-collector. If specified, `generateCerts.enabled` must be set to `false`. The `existingSecret` is expected to contain CA certificate, TLS key and TLS certificate in `ca.crt`, `tls.key` and `tls.crt` fields respectively. |
-| `annotations`                  | map     | no        | `-`           | Annotations for collector Ingress                                                                                                                                                                                                                                                                     |
-| `labels`                       | map     | no        | `-`           | Labels for collector Ingress                                                                                                                                                                                                                                                                          |
-| `host`                         | string  | no        | `-`           | DNS name of Ingress host that should be created                                                                                                                                                                                                                                                       |
-| `hosts`                        | array   | no        | `-`           | List of hosts                                                                                                                                                                                                                                                                                         |
-| `hosts[].host`                 | string  | no        | `-`           | DNS name of Ingress host that should be created                                                                                                                                                                                                                                                       |
-| `hosts[].paths`                | array   | no        | `-`           | List of paths and endpoints in Ingress                                                                                                                                                                                                                                                                |
-| `hosts[].paths[].prefix`       | string  | no        | `-`           | Endpoint path that will listen and handle by Ingress controller (for example: `/`, `/zipkin`)                                                                                                                                                                                                         |
-| `hosts[].paths[].service.name` | string  | no        | `-`           | Service name to which will route requests from declared in this section endpoint, by default will use `{{ .jaeger.serviceName }}-collector` (usually will be `jaeger-collector`)                                                                                                                      |
-| `hosts[].paths[].service.port` | integer | no        | `-`           | Service port to which will route requests from declared in this section endpoint                                                                                                                                                                                                                      |
+| `http.install`                      | boolean | no        | `false`           | Install the HTTP ingress |
+| `http.annotations`                  | map     | no        | `-`           | Annotations for HTTP collector Ingress                                                                                                                                                                                                                                                                     |
+| `http.labels`                       | map     | no        | `-`           | Labels for HTTP collector Ingress                                                                                                                                                                                                                                                                          |
+| `http.host`                         | string  | no        | `-`           | DNS name of HTTP Ingress host that should be created. If specified, ingress rules cannot be customized. Rules are auto-populated to cover all supported protocols.                                                                                                                                                                                                                                                       |
+| `http.hosts`                        | array   | no        | `-`           | List of hosts                                                                                                                                                                                                                                                                                         |
+| `http.hosts[].host`                 | string  | no        | `-`           | DNS name of HTTP Ingress host that should be created                                                                                                                                                                                                                                                       |
+| `http.hosts[].paths`                | array   | no        | `-`           | List of paths and endpoints in HTTP Ingress                                                                                                                                                                                                                                                                |
+| `http.hosts[].paths[].prefix`       | string  | no        | `-`           | Endpoint path that will listen and handle by Ingress controller (for example: `/`, `/zipkin`)                                                                                                                                                                                                         |
+| `http.hosts[].paths[].service.name` | string  | no        | `-`           | Service name to which will route requests from declared in this section endpoint, by default will use `{{ .jaeger.serviceName }}-collector` (usually will be `jaeger-collector`)                                                                                                                      |
+| `http.hosts[].paths[].service.port` | integer | no        | `-`           | Service port to which will route requests from declared in this section endpoint                                                                                                                                                                                                                      |
+| `grpc.install`                      | boolean | no        | `false`           | Install the GRPC ingress |
+| `grpc.annotations`                  | map     | no        | `-`           | Annotations for GRPC collector Ingress                                                                                                                                                                                                                                                                     |
+| `grpc.labels`                       | map     | no        | `-`           | Labels for GRPC collector Ingress                                                                                                                                                                                                                                                                          |
+| `grpc.host`                         | string  | no        | `-`           | DNS name of GRPC Ingress host that should be created. If specified, ingress rules cannot be customized. Rules are auto-populated to cover all supported protocols.                                                                                                                                                                                                                                                       |
+| `grpc.hosts`                        | array   | no        | `-`           | List of hosts                                                                                                                                                                                                                                                                                         |
+| `grpc.hosts[].host`                 | string  | no        | `-`           | DNS name of GRPC Ingress host that should be created                                                                                                                                                                                                                                                       |
+| `grpc.hosts[].paths`                | array   | no        | `-`           | List of paths and endpoints in GRPC Ingress                                                                                                                                                                                                                                                                |
+| `grpc.hosts[].paths[].prefix`       | string  | no        | `-`           | Endpoint path that will listen and handle by Ingress controller (for example: `/`, `/zipkin`)                                                                                                                                                                                                         |
+| `grpc.hosts[].paths[].service.name` | string  | no        | `-`           | Service name to which will route requests from declared in this section endpoint, by default will use `{{ .jaeger.serviceName }}-collector` (usually will be `jaeger-collector`)                                                                                                                      |
+| `grpc.hosts[].paths[].service.port` | integer | no        | `-`           | Service port to which will route requests from declared in this section endpoint                                                                                                                                                                                                                      |
 <!-- markdownlint-enable line-length -->
 
 Example:
@@ -510,44 +524,63 @@ Example:
 ```yaml
 collector:
   ingress:
-    # Enable or disable Ingress deployment
-    install: true
+    grpc:
+      # Enable or disable Ingress deployment
+      install: true
 
-    annotations:
-      example.annotation/key: example-annotation-value
-    labels:
-      example.label/key: example-label-value
+      annotations:
+        example.annotation/key: example-annotation-value
+      labels:
+        example.label/key: example-label-value
 
-    # An ability to set a single host name, like in other places
-    host: jaeger-collector.test.org
+      # An ability to set a single host name, like in other places
+      host: jaeger-collector-grpc.test.org
 
-    # An ability set one or more hosts with custom list of paths
-    hosts:
-      - host: otlp.jaeger-collector.test.org
-        paths:
-          - prefix: /otlp/grpc
-            service:
-              port: 4317
-          - prefix: /otlp/http
-            service:
-              port: 4318
-      - host: other.jaeger-collector.test.org
-        paths:
-          - prefix: /
-            service:
-              port: 16269
-          - prefix: /zipkin
-            service:
-              port: 9411
-          - prefix: /thrift/tchannel
-            service:
-              port: 14250
-          - prefix: /thrift/grpc
-            service:
-              port: 14267
-          - prefix: /thrift/http
-            service:
-              port: 14268
+      # An ability set one or more hosts with custom list of paths
+      hosts:
+        - host: otlp-grpc.jaeger-collector.test.org
+          paths:
+            - prefix: /otlp/grpc
+              service:
+                port: 4317
+        - host: other-grpc.jaeger-collector.test.org
+          paths:
+            - prefix: /thrift/grpc
+              service:
+                port: 14267
+    http:
+      # Enable or disable Ingress deployment
+      install: true
+
+      annotations:
+        example.annotation/key: example-annotation-value
+      labels:
+        example.label/key: example-label-value
+
+      # An ability to set a single host name, like in other places
+      host: jaeger-collector-http.test.org
+
+      # An ability set one or more hosts with custom list of paths
+      hosts:
+        - host: otlp-http.jaeger-collector.test.org
+          paths:
+            - prefix: /otlp/http
+              service:
+                port: 4318
+        - host: other-http.jaeger-collector.test.org
+          paths:
+            - prefix: /
+              service:
+                port: 16269
+            - prefix: /zipkin
+              service:
+                port: 9411
+            - prefix: /thrift/tchannel
+              service:
+                port: 14250
+            - prefix: /thrift/http
+              service:
+                port: 14268
 ```
 
 <!-- #GFCFilterMarkerStart# -->

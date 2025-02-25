@@ -1,0 +1,32 @@
+{{- if and .Values.collector.install .Values.collector.ingress.grpc.install }}
+{{- $defaultServiceName := printf "%s-collector" $.Values.jaeger.serviceName -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.jaeger.serviceName }}-grpc-collector
+  labels:
+    name: {{ .Values.jaeger.serviceName }}-grpc-collector
+    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-grpc-collector
+    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-grpc-collector-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
+    app.kubernetes.io/component: collector
+    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- if .Values.collector.ingress.grpc.labels }}
+      {{- toYaml .Values.collector.ingress.grpc.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.collector.ingress.grpc.annotations }}
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: GRPC       # mandatory annotation
+    nginx.ingress.kubernetes.io/grpc-backend-for-port: grpc  # mandatory annotation
+    {{- toYaml .Values.collector.ingress.grpc.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.collector.ingress.className }}
+  ingressClassName: {{ .Values.collector.ingress.className }}
+  {{- end }}
+  {{- if .Values.collector.ingress.tls }}
+  tls:
+    {{- toYaml .Values.collector.ingress.tls | nindent 4 }}
+  {{- end }}
+  rules: {{ include "collector.ingress.grpc.rules" . | nindent 4 }}
+{{- end }}

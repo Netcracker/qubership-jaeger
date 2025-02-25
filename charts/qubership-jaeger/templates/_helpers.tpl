@@ -58,17 +58,32 @@ app.kubernetes.io/version: {{ .Chart.AppVersion }}
 Return list of hosts for Ingress.
 Support as already existing syntax with only one .host and syntax to specify list of hosts inside one Ingress
 */}}
-{{- define "collector.ingress.rules" -}}
-{{- if .Values.collector.ingress.host -}}
-- host: {{ .Values.collector.ingress.host | quote }}
+{{- define "collector.ingress.grpc.rules" -}}
+{{- if .Values.collector.ingress.grpc.host -}}
+- host: {{ .Values.collector.ingress.grpc.host | quote }}
   http:
-    paths: {{ include "collector.ingress.hostPaths" (list $ .) | nindent 6 }}
+    paths: {{ include "collector.ingress.grpc.hostPaths" (list $ .) | nindent 6 }}
 {{- end -}}
-{{- if .Values.collector.ingress.hosts -}}
-{{- range .Values.collector.ingress.hosts }}
+{{- if .Values.collector.ingress.grpc.hosts -}}
+{{- range .Values.collector.ingress.grpc.hosts }}
 - host: {{ tpl .host $ | quote }}
   http:
-    paths: {{ include "collector.ingress.hostPaths" (list $ .) | nindent 6 }}
+    paths: {{ include "collector.ingress.grpc.hostPaths" (list $ .) | nindent 6 }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "collector.ingress.http.rules" -}}
+{{- if .Values.collector.ingress.http.host -}}
+- host: {{ .Values.collector.ingress.http.host | quote }}
+  http:
+    paths: {{ include "collector.ingress.http.hostPaths" (list $ .) | nindent 6 }}
+{{- end -}}
+{{- if .Values.collector.ingress.http.hosts -}}
+{{- range .Values.collector.ingress.http.hosts }}
+- host: {{ tpl .host $ | quote }}
+  http:
+    paths: {{ include "collector.ingress.http.hostPaths" (list $ .) | nindent 6 }}
 {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -76,13 +91,35 @@ Support as already existing syntax with only one .host and syntax to specify lis
 {{/*
 Return list of paths and endpoints for one host
 */}}
-{{- define "collector.ingress.hostPaths" -}}
+{{- define "collector.ingress.grpc.hostPaths" -}}
+{{/* Restore the global context in the "$" */}}
+{{/* Start render template in the relative content, here .Values.jaeger.collector.ingress.grpc.hosts */}}
+{{- $ := index . 0 }}
+{{- $defaultServiceName := printf "%s-collector" $.Values.jaeger.serviceName -}}
+{{- with index . 0 }}
+{{- $pathsToApply := coalesce .paths $.Values.collector.ingress.grpc.defaultPaths -}}
+{{- range $pathsToApply }}
+- path: {{ .prefix }}
+  pathType: Prefix
+  backend:
+    service:
+      name: {{ coalesce .service.name $defaultServiceName }}
+      port:
+        number: {{ .service.port }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return list of paths and endpoints for one host
+*/}}
+{{- define "collector.ingress.http.hostPaths" -}}
 {{/* Restore the global context in the "$" */}}
 {{- $ := index . 0 }}
 {{- $defaultServiceName := printf "%s-collector" $.Values.jaeger.serviceName -}}
-{{/* Start render template in the relative content, here .Values.jaeger.collector.ingress.hosts */}}
+{{/* Start render template in the relative content, here .Values.jaeger.collector.ingress.http.hosts */}}
 {{- with index . 1 }}
-{{- $pathsToApply := coalesce .paths $.Values.collector.ingress.defaultPaths -}}
+{{- $pathsToApply := coalesce .paths $.Values.collector.ingress.http.defaultPaths -}}
 {{- range $pathsToApply }}
 - path: {{ .prefix }}
   pathType: Prefix
