@@ -1527,11 +1527,11 @@ collector:
     cors:
       allowedHeaders: ""
   
-    # Comma-separated CORS allowed origins.
-    # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
-    # Type: string
-    #
-    allowedOrigins: ""
+      # Comma-separated CORS allowed origins.
+      # See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
+      # Type: string
+      #
+      allowedOrigins: ""
 
 
     # KeepAlive configures allow Keep-Alive for Zipkin HTTP server
@@ -2585,3 +2585,215 @@ readinessProbe:
     # capabilities:
     #   drop:
     #     - ALL
+spark:
+  # Allow disabling creation of SparkDependencies cron job
+  # Type: boolean
+  # Default: false
+  # 
+  install: false
+  
+   # Map of string keys and values that can be used to organize and categorize (scope and select) objects.
+  # May match selectors of replication controllers and services.
+  # More info: https://kubernetes.io/docs/user-guide/labels
+  # Type: map[string]string
+  # Mandatory: no
+  # Default: not set
+  #
+  labels: {}
+  #  label-key: label-value
+  
+  # Annotations is an unstructured key value map stored
+  # with a resource that may be set by external tools to store and retrieve arbitrary metadata.
+  # They are not queryable and should be preserved when modifying objects.
+  # More info: https://kubernetes.io/docs/user-guide/annotations
+  # Type: map[string]string
+  # Mandatory: no
+  # Default: not set
+  #
+  annotations: {}
+  #  annotation-key: annotation-value
+
+  # The imagePullPolicy for a container and the tag of the image affect when the kubelet
+  # attempts to pull (download) the specified image.
+  #   Available value : "IfNotPresent", "Always" and "Never"
+  # Default: IfNotPresent
+  #
+  imagePullPolicy: IfNotPresent
+
+  # Only pods which provide own keys can access the private registry.
+  # Default: []
+  #
+  imagePullSecrets: []
+
+  # Java options to pass to spark dependencies job
+  # Type: string
+  # Default: "" 
+  javaOpts: ""
+
+  # The name of the secret containing the truststore password
+  trustStoreSecretName: "jaeger-spark-dependencies-truststore-secret"
+  
+  
+  elasticsearch:
+    # Optional date separator of Jaeger indices. For example `.` will find index "jaeger-span-2020.11.25"
+    # Type: string
+    # Default: ""
+    #
+    indexDateSeparator: ""
+
+    # How far in the past the job should look to for spans, the maximum and default is `24h`.
+    # Any value accepted by (https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html#date-math)
+    # can be used here, but the anchor is always `now`.
+    # Type: string
+    # Default: "24h"
+    #
+    timeRange: ""
+
+    # Set to true to use index alias names to read from and write to.Usually required when using rollover indices.
+    # Type: boolean
+    # Default: false
+    #
+    useAliases: ""
+
+
+  # Defines how k8s/openshift manages failures of containers.
+  # Always: Automatically restarts the container after any termination.
+  # OnFailure: Only restarts the container if it exits with an error (non-zero exit status).
+  # Never: Does not automatically restart the terminated container.
+  # Type: string
+  # Default: ""
+  #
+  restartPolicy: ""
+  
+  # The resources describe to compute resource requests and limits for single Pods.
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  init:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 10m
+        memory: 128Mi
+
+  truststorePassword: "passw0rd"
+  
+  # Allow defining which Nodes the Pods are scheduled on.
+  # Type: map[string]
+  # Mandatory: no
+  # Default: not set
+  #
+  nodeSelector: {}
+
+  # Tolerations allow the pods to schedule onto nodes with matching taints.
+  # Type: object
+  # Mandatory: no
+  #
+  tolerations: {}
+
+  # If specified, the pod's scheduling constraints
+  # More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core
+  # Type: object
+  # Mandatory: no
+  # Default: see below
+  #
+  affinity: {}
+
+  # Specifies how to treat concurrent executions of a Job that is created by this CronJob. The spec may specify only one of the following concurrency policies:
+  # Allow: The CronJob allows concurrently running Jobs
+  # Forbid: The CronJob does not allow concurrent runs; if it is time for a new Job run and the previous Job run hasn't finished yet,
+  # the CronJob skips the new Job run. Also note that when the previous Job run finishes, .spec.startingDeadlineSeconds is still taken into account and may result in a new Job run.
+  # Replace: If it is time for a new Job run and the previous Job run hasn't finished yet, the CronJob replaces the currently running Job run with a new Job run
+  # Type: string
+  # Default: Forbid
+  #
+  concurrencyPolicy: Forbid
+  
+  # This field specifies the number of successful finished jobs to keep. Setting this field to 0 will not keep any successful jobs.
+  # Type: integer
+  # Default: 5
+  #
+  successfulJobsHistoryLimit: 5
+
+  # This field specifies the number of failed finished jobs to keep. Setting this field to 0 will not keep any failed jobs.
+  # Type: integer
+  # Default: 5
+  #
+  failedJobsHistoryLimit: 5
+
+  # The activeDeadlineSeconds applies to the duration of the job, no matter how many Pods are created.
+  # Once a Job reaches activeDeadlineSeconds, all of its running Pods are terminated and the Job status will become type: Failed with reason: DeadlineExceeded.
+  # Type: integer
+  # 
+  activeDeadlineSeconds: ""
+
+  # Kubernetes TTL-after-finished controller provides a TTL (time to live) mechanism to limit the lifetime of Job objects that have finished execution.
+  # Type: integer
+  #
+  ttlSecondsAfterFinished: ""
+
+  # SecurityContext holds pod-level security attributes.
+  # The parameters are required if a Pod Security Policy is enabled
+  #  for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.
+  # Type: object
+  # Mandatory: no
+  #
+  securityContext: {}
+    # The UID to run the entrypoint of the container process.
+    # Defaults to user specified in image metadata if unspecified.
+    # Type: integer
+    # Mandatory: no
+    #
+    # runAsUser: 2000
+
+    # A special supplemental group that applies to all containers in a pod.
+    # Some volume types allow the Kubelet to change the ownership of that volume
+    # to be owned by the pod:
+    #   1. The owning GID will be the FSGroup
+    #   2. The setgid bit is set (new files created in the volume will be owned by FSGroup)
+    #   3. The permission bits are OR'd with rw-rw----
+    # If unset, the Kubelet will not modify the ownership and permissions of any volume.
+    # Type: integer
+    # Mandatory: no
+    #
+    # fsGroup: 2000
+
+    # Set mandatory flag to run as non root user
+    # Type: bool
+    # Mandatory: no
+    #
+    # runAsNonRoot: true
+
+    # Seccomp profile for Pod
+    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Type: object
+    # Mandatory: no
+    #
+    # seccompProfile:
+    #   type: RuntimeDefault
+
+  containerSecurityContext: {}
+    # Controls whether a process can gain more privileges than its parent process.
+    # This bool directly controls whether the 'no_new_privs' flag gets set on the container process.
+    # Type: bool
+    # Mandatory: no
+    #
+    # allowPrivilegeEscalation: false
+
+    # Allow to give or drop a process some privileges, but not all the privileges of the root user.
+    # Type: object
+    # Mandatory: no
+    #
+    # capabilities:
+    #   drop:
+    #     - ALL
+
+  # PriorityClassName assigned to the Pods to prevent them from evicting.
+  # Type: string
+  # priorityClassName: "priorityClassName"

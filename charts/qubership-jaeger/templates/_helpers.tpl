@@ -236,6 +236,17 @@ Find a readiness-probe image in various places.
   {{- end -}}
 {{- end -}}
 
+{{/*
+Find a Spark Dependencies image in various places.
+*/}}
+{{- define "spark-dependencies.image" -}}
+  {{- if .Values.spark.image -}}
+    {{- printf "%s" .Values.spark.image -}}
+  {{- else -}}
+    {{- print "ghcr.io/jaegertracing/spark-dependencies/spark-dependencies:latest" -}}
+  {{- end -}}
+{{- end -}}
+
 {{/******************************************************************************************************************/}}
 
 {{/*
