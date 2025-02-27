@@ -120,6 +120,10 @@ Examples of access log:
 
 The `Envoy` will log all requests from UI in access logs.
 
+**Note:** To disable audit logs, we can manually remove
+`access_log` section from `proxy-config` secret and restart
+`jaeger-query` pod.
+
 <!-- #GFCFilterMarkerStart# -->
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
