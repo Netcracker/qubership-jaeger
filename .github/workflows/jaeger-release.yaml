@@ -25,74 +25,76 @@ on:
             #     required: true
 
 jobs:
-    check-tag:
-        runs-on: ubuntu-latest
-        steps:
-          - name: Input parameters
-            run: |
-              echo "Version: ${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+  check-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Input parameters
+        run: |
+          echo "Version: ${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
 
-          - name: Checkout code
-            uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-          - name: Check if tag exists
-            id: check_tag
-            uses: netcracker/qubership-workflow-hub/actions/tag-checker@main
-            with:
-              tag: 'v${{ github.event.inputs.version }}'
-            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-          - name: Output result
-            run: |
-              echo "Tag exists: ${{ steps.check_tag.outputs.exists }}"
-              echo "Tag name: v${{ github.event.inputs.version }}"
-
-          - name: Fail if tag exists
-            if: steps.check_tag.outputs.exists == 'true'
-            run: |
-              echo "Tag already exists: v${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
-              echo "Tag already exists: v${{ github.event.inputs.version }}"
-              exit 1
-    load-docker-build-components:
-        needs: [check-tag]
-        runs-on: ubuntu-latest
-        outputs:
-            component: ${{ steps.load_component.outputs.component }}
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Load Docker Configuration
-              id: load_component
-              run:  |
-                      content=$(jq -c . "$GITHUB_WORKSPACE/.github/docker-build-config.json")
-                      echo "component=${content}" >> $GITHUB_OUTPUT
-    change-chart:
-        needs: [check-tag]
-        runs-on: ubuntu-latest
-        steps:
-            - name: Change Chart Version Action
-              uses: nookyo/qubership-workflow-hub/actions/chart-version@main
-              with:
-                  new-chart-version: ${{ github.event.inputs.version }}
-                  chart-yaml-path: ${{ github.event.inputs.path-to-chart }}
-
-            - name: Run Commit and Push Action
-              uses: Netcracker/qubership-workflow-hub/actions/commit-and-push@main
-              with:
-                  commit_message: "Update chart version to v${{ github.event.inputs.version }}"
-    tag:
-        needs: [change-chart]
-        uses: netcracker/qubership-workflow-hub/.github/workflows/tag-creator.yml@main
+      - name: Check if tag exists
+        id: check_tag
+        uses: netcracker/qubership-workflow-hub/actions/tag-checker@main
         with:
-            tag-name: "v${{ github.event.inputs.version }}"
+          tag: 'v${{ github.event.inputs.version }}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    docker-build:
-        needs: [tag, load-docker-build-components]
-        uses: nookyo/qubership-workflow-hub/.github/workflows/docker-publish.yml@main
+      - name: Output result
+        run: |
+          echo "Tag exists: ${{ steps.check_tag.outputs.exists }}"
+          echo "Tag name: v${{ github.event.inputs.version }}"
+
+      - name: Fail if tag exists
+        if: steps.check_tag.outputs.exists == 'true'
+        run: |
+          echo "Tag already exists: v${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Tag already exists: v${{ github.event.inputs.version }}"
+          exit 1
+  load-docker-build-components:
+    needs: [check-tag]
+    runs-on: ubuntu-latest
+    outputs:
+      component: ${{ steps.load_component.outputs.component }}
+      platforms: ${{ steps.load_component.outputs.platforms }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Load Docker Configuration
+        id: load_component
+        run:  |
+          echo "component=$(jq -c ".components" "$GITHUB_WORKSPACE/.github/docker-build-config.json"))" >> $GITHUB_OUTPUT
+          echo "platforms=$(jq -c ".platforms" "$GITHUB_WORKSPACE/.github/docker-build-config.json"))" >> $GITHUB_OUTPUT
+  change-chart:
+    needs: [check-tag]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Change Chart Version Action
+        uses: netcracker/qubership-workflow-hub/actions/chart-version@main
         with:
-            ref: v${{ inputs.version }}
-            download-artifact: false
-            dry-run: ${{ inputs.dry-run }}
-            component: ${{ needs.load-docker-build-components.outputs.component }}
+          new-chart-version: ${{ github.event.inputs.version }}
+          chart-yaml-path: ${{ github.event.inputs.path-to-chart }}
+
+      - name: Run Commit and Push Action
+        uses: Netcracker/qubership-workflow-hub/actions/commit-and-push@main
+        with:
+          commit_message: "Update chart version to v${{ github.event.inputs.version }}"
+  tag:
+    needs: [change-chart]
+    uses: netcracker/qubership-workflow-hub/.github/workflows/tag-creator.yml@main
+    with:
+      tag-name: "v${{ github.event.inputs.version }}"
+
+  docker-build:
+    needs: [tag, load-docker-build-components]
+    uses: netcracker/qubership-workflow-hub/.github/workflows/docker-publish.yml@main
+    with:
+      ref: v${{ inputs.version }}
+      download-artifact: false
+      dry-run: ${{ inputs.dry-run }}
+      component: ${{ needs.load-docker-build-components.outputs.component }}
+      platforms: ${{ needs.load-docker-build-components.outputs.platforms }}
