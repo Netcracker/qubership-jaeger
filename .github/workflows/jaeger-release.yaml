@@ -67,8 +67,8 @@ jobs:
       - name: Load Docker Configuration
         id: load_component
         run:  |
-          echo "component=$(jq -c ".components" "$GITHUB_WORKSPACE/.github/docker-build-config.json"))" >> $GITHUB_OUTPUT
-          echo "platforms=$(jq -c ".platforms" "$GITHUB_WORKSPACE/.github/docker-build-config.json"))" >> $GITHUB_OUTPUT
+          echo "component=$(jq -c ".components" "$GITHUB_WORKSPACE/.github/docker-build-config.json")" >> $GITHUB_OUTPUT
+          echo "platforms=$(jq -c ".platforms | join(\",\")" "$GITHUB_WORKSPACE/.github/docker-build-config.json")" >> $GITHUB_OUTPUT
   change-chart:
     needs: [check-tag]
     runs-on: ubuntu-latest
