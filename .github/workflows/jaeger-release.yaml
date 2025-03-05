@@ -67,25 +67,28 @@ jobs:
       - name: Load Docker Configuration
         id: load_component
         run:  |
-          json_type=$(jq -r ".|type" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
-          if [ "$json_type" == "array" ]; then
-            components=$(jq -c "." "$GITHUB_WORKSPACE/.github/docker-build-config.json")
-            platforms="linux/amd64"
-          elif [ "$json_type" == "object" ]; then
+          verify=$(cat "$GITHUB_WORKSPACE/.github/docker-build-config.json" | jq '
+          def verify_structure:
+          .components as $components
+          | .platforms as $platforms
+          | ($components | type == "array")
+          and (all($components[]; has("name") and has("file") and has("context")))
+          and ($platforms | type == "string");
+          verify_structure
+          | if . then true else false end
+          ')
+          if [ ${verify} == 'true' ]; then
+            echo "✅ $GITHUB_WORKSPACE/.github/docker-build-config.json file is valid"
             components=$(jq -c ".components" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
-            platforms=$(jq -c ".platforms | join(\",\")" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
+            platforms=$(jq -c ".platforms" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
           else
-            echo "Invalid docker-build-config.json format"
+            echo "❗ $GITHUB_WORKSPACE/.github/docker-build-config.json file is invalid"
+            echo "❗ $GITHUB_WORKSPACE/.github/docker-build-config.json file is invalid" >> $GITHUB_STEP_SUMMARY
             exit 1
-          fi
-          if [ -z "$components" ]; then
-            echo "components is empty"
-            exit 1
-          elif [ -z "$platforms" ]; then
-            platforms="linux/amd64"
           fi
           echo "components=${components}" >> $GITHUB_OUTPUT
           echo "platforms=${platforms}" >> $GITHUB_OUTPUT
+
   change-chart:
     needs: [check-tag]
     runs-on: ubuntu-latest
