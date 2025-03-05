@@ -58,7 +58,7 @@ jobs:
     needs: [check-tag]
     runs-on: ubuntu-latest
     outputs:
-      component: ${{ steps.load_component.outputs.component }}
+      component: ${{ steps.load_component.outputs.components }}
       platforms: ${{ steps.load_component.outputs.platforms }}
     steps:
       - name: Checkout code
@@ -67,8 +67,25 @@ jobs:
       - name: Load Docker Configuration
         id: load_component
         run:  |
-          echo "component=$(jq -c ".components" "$GITHUB_WORKSPACE/.github/docker-build-config.json")" >> $GITHUB_OUTPUT
-          echo "platforms=$(jq -c ".platforms | join(\",\")" "$GITHUB_WORKSPACE/.github/docker-build-config.json")" >> $GITHUB_OUTPUT
+          json_type=$(jq -r ".|type" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
+          if [ "$json_type" == "array" ]; then
+            components=$(jq -c "." "$GITHUB_WORKSPACE/.github/docker-build-config.json")
+            platforms="linux/amd64"
+          elif [ "$json_type" == "object" ]; then
+            components=$(jq -c ".components" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
+            platforms=$(jq -c ".platforms | join(\",\")" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
+          else
+            echo "Invalid docker-build-config.json format"
+            exit 1
+          fi
+          if [ -z "$components" ]; then
+            echo "components is empty"
+            exit 1
+          elif [ -z "$platforms" ]; then
+            platforms="linux/amd64"
+          fi
+          echo "components=${components}" >> $GITHUB_OUTPUT
+          echo "platforms=${platforms}" >> $GITHUB_OUTPUT
   change-chart:
     needs: [check-tag]
     runs-on: ubuntu-latest
