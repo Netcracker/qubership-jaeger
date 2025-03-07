@@ -112,9 +112,9 @@ proxy:
     #   test:test -> dGVzdDp0ZXN0
     # Default: no
     #
-     users:
-       - YWRtaW46YWRtaW4=
-       - dGVzdDp0ZXN0
+    users:
+    - YWRtaW46YWRtaW4=
+    - dGVzdDp0ZXN0
 
   # The resources describe to compute resource requests and limits for single Pods.
   # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
@@ -394,7 +394,7 @@ elasticsearch:
       #
       # capabilities:
       #   drop:
-      #     - ALL
+      #   - ALL
 
     # Specify number of day that job will be executed.
     # Default: 7
@@ -583,7 +583,7 @@ elasticsearch:
       #
       # capabilities:
       #   drop:
-      #     - ALL
+      #   - ALL
 
     # Allow defining which Nodes the Pods are scheduled on.
     # Type: map[string]
@@ -792,7 +792,7 @@ elasticsearch:
       #
       # capabilities:
       #   drop:
-      #     - ALL
+      #   - ALL
 
     # Allow defining which Nodes the Pods are scheduled on.
     # Type: map[string]
@@ -915,16 +915,16 @@ cassandraSchemaJob:
   # Default: []
   #
   defaultAllowedAuthenticators:
-    - org.apache.cassandra.auth.PasswordAuthenticator
-    - com.instaclustr.cassandra.auth.SharedSecretAuthenticator
-    - com.datastax.bdp.cassandra.auth.DseAuthenticator
-    - io.aiven.cassandra.auth.AivenAuthenticator
-    - com.ericsson.bss.cassandra.ecaudit.auth.AuditPasswordAuthenticator
-    - com.amazon.helenus.auth.HelenusAuthenticator
-    - com.ericsson.bss.cassandra.ecaudit.auth.AuditAuthenticator
-    - com.scylladb.auth.SaslauthdAuthenticator
-    - com.scylladb.auth.TransitionalAuthenticator
-    - com.instaclustr.cassandra.auth.InstaclustrPasswordAuthenticator
+  - org.apache.cassandra.auth.PasswordAuthenticator
+  - com.instaclustr.cassandra.auth.SharedSecretAuthenticator
+  - com.datastax.bdp.cassandra.auth.DseAuthenticator
+  - io.aiven.cassandra.auth.AivenAuthenticator
+  - com.ericsson.bss.cassandra.ecaudit.auth.AuditPasswordAuthenticator
+  - com.amazon.helenus.auth.HelenusAuthenticator
+  - com.ericsson.bss.cassandra.ecaudit.auth.AuditAuthenticator
+  - com.scylladb.auth.SaslauthdAuthenticator
+  - com.scylladb.auth.TransitionalAuthenticator
+  - com.instaclustr.cassandra.auth.InstaclustrPasswordAuthenticator
 
   tls:
     # Allow disabling create tls.
@@ -1029,7 +1029,13 @@ cassandraSchemaJob:
   # Type: object
   # Mandatory: no
   #
-  resources: {}
+  resources:
+    requests:
+      cpu: 50m
+      memory: 50Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
 
   # SecurityContext holds pod-level security attributes.
   # The parameters are required if a Pod Security Policy is enabled
@@ -1085,7 +1091,7 @@ cassandraSchemaJob:
     #
     # capabilities:
     #   drop:
-    #     - ALL
+    #   - ALL
 
   # Map of string keys and values that can be used to organize and categorize (scope and select) objects.
   # May match selectors of replication controllers and services.
@@ -1108,7 +1114,7 @@ cassandraSchemaJob:
   annotations: {}
   #  annotation-key: annotation-value
 
-  ttl:
+  ttl: {}
     # Time to live for trace data, in seconds
     # default: 172800 (2 days)
     #
@@ -1170,7 +1176,6 @@ remotegRPC:
     # Default: false
     #
     # insecureSkipVerify: true
-
 
 
 agent:
@@ -1739,7 +1744,6 @@ collector:
   # Mandatory: no
   #
   securityContext: {}
-
     # The UID to run the entrypoint of the container process.
     # Defaults to user specified in image metadata if unspecified.
     # Type: integer
@@ -1890,42 +1894,42 @@ collector:
       install: false
       hosts: []
       defaultPaths:
-        # Format:
-        # - prefix: <endpoint>
-        #   service:
-        #     name: <service_name>
-        #     port: <port_number>
-        - prefix: /
-          service:
-            # name: jaeger-collector
-            port: 16269
-        - prefix: /zipkin
-          service:
-            port: 9411
-        - prefix: /otlp/http
-          service:
-            port: 4318
-        - prefix: /thrift/tchannel
-          service:
-            port: 14250
-        - prefix: /thrift/http
-          service:
-            port: 14268
+      # Format:
+      # - prefix: <endpoint>
+      #   service:
+      #     name: <service_name>
+      #     port: <port_number>
+      - prefix: /
+        service:
+          # name: jaeger-collector
+          port: 16269
+      - prefix: /zipkin
+        service:
+          port: 9411
+      - prefix: /otlp/http
+        service:
+          port: 4318
+      - prefix: /thrift/tchannel
+        service:
+          port: 14250
+      - prefix: /thrift/http
+        service:
+          port: 14268
     grpc:
       install: false
       hosts: []
       defaultPaths:
-        # Format:
-        # - prefix: <endpoint>
-        #   service:
-        #     name: <service_name>
-        #     port: <port_number>
-        - prefix: /otlp/grpc
-          service:
-            port: 4317
-        - prefix: /thrift/grpc
-          service:
-            port: 14267
+      # Format:
+      # - prefix: <endpoint>
+      #   service:
+      #     name: <service_name>
+      #     port: <port_number>
+      - prefix: /otlp/grpc
+        service:
+          port: 4317
+      - prefix: /thrift/grpc
+        service:
+          port: 14267
     tls: {}
 
 hotrod:
@@ -1987,7 +1991,6 @@ hotrod:
   # Mandatory: no
   #
   securityContext: {}
-
     # The UID to run the entrypoint of the container process.
     # Defaults to user specified in image metadata if unspecified.
     # Type: integer
@@ -2277,7 +2280,6 @@ query:
   # Mandatory: no
   #
   securityContext: {}
-
     # The UID to run the entrypoint of the container process.
     # Defaults to user specified in image metadata if unspecified.
     # Type: integer
@@ -2412,7 +2414,6 @@ integrationTests:
   # Mandatory: no
   #
   securityContext: {}
-
     # The UID to run the entrypoint of the container process.
     # Defaults to user specified in image metadata if unspecified.
     # Type: integer
@@ -2485,7 +2486,6 @@ statusProvisioner:
   # Mandatory: no
   #
   securityContext: {}
-
     # The UID to run the entrypoint of the container process.
     # Defaults to user specified in image metadata if unspecified.
     # Type: integer
@@ -2602,7 +2602,7 @@ spark:
   #
   install: false
 
-   # Map of string keys and values that can be used to organize and categorize (scope and select) objects.
+  # Map of string keys and values that can be used to organize and categorize (scope and select) objects.
   # May match selectors of replication controllers and services.
   # More info: https://kubernetes.io/docs/user-guide/labels
   # Type: map[string]string
