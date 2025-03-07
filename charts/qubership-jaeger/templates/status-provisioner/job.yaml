@@ -15,7 +15,7 @@ metadata:
     # This is what defines this resource as a hook. Without this line, the
     # job is considered part of the release.
     "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed 
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
 spec:
   {{- if or (gt .Capabilities.KubeVersion.Major "1") (ge .Capabilities.KubeVersion.Minor "12") }}
   ttlSecondsAfterFinished: {{ .Values.statusProvisioner.lifetimeAfterCompletion | default 300 }}
@@ -66,7 +66,7 @@ spec:
           - name: STATUS_WRITING_ENABLED
             value: {{ .Values.integrationTests.statusWriting.enabled | quote }}
           {{- if and .Values.integrationTests.install .Values.integrationTests.statusWriting.enabled }}
-          - name: INTEGRATION_TESTS_RESOURCE 
+          - name: INTEGRATION_TESTS_RESOURCE
             value: {{ printf "apps v1 deployments %s" .Values.integrationTests.service.name }}
           - name: ONLY_INTEGRATION_TESTS
             value: {{ .Values.integrationTests.statusWriting.onlyIntegrationTests | quote }}

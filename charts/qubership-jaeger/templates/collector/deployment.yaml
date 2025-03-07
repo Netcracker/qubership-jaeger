@@ -1,4 +1,4 @@
-{{- $otelhttpTlsConfigEnabled := .Values.collector.tlsConfig.otelHttp.enabled }} 
+{{- $otelhttpTlsConfigEnabled := .Values.collector.tlsConfig.otelHttp.enabled }}
 {{- $otelgrpcTlsConfigEnabled := .Values.collector.tlsConfig.otelgRPC.enabled }}
 {{- $jaegerhttpTlsConfigEnabled := .Values.collector.tlsConfig.jaegerHttp.enabled }}
 {{- $jaegergrpcTlsConfigEnabled := .Values.collector.tlsConfig.jaegergRPC.enabled }}
@@ -276,8 +276,8 @@ spec:
               subPath: "client-key.pem"
               readOnly: true
             {{- end }}
-            {{- if or .Values.collector.tlsConfig.otelHttp.enabled 
-                    .Values.collector.tlsConfig.otelgRPC.enabled 
+            {{- if or .Values.collector.tlsConfig.otelHttp.enabled
+                    .Values.collector.tlsConfig.otelgRPC.enabled
                     .Values.collector.tlsConfig.jaegerHttp.enabled
                     .Values.collector.tlsConfig.jaegergRPC.enabled
                     .Values.collector.tlsConfig.zipkin.enabled }}
@@ -327,7 +327,7 @@ spec:
             items:
               - key: config.yaml
                 path: config.yaml
-            defaultMode: 420            
+            defaultMode: 420
         {{- if .Values.cassandraSchemaJob.tls.enabled }}
         - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
           secret:
