@@ -1,10 +1,17 @@
 root = true
 
 [*]
+charset = utf-8
 end_of_line = lf
+indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
-indent_style = space
+
+[{*.sh,gradlew}]
+end_of_line = lf
+
+[{*.bat,*.cmd}]
+end_of_line = crlf
 
 [*.md]
 # Trailing whitespace is important in Markdown (they distinguish a new line from a new paragraph)
