@@ -1,59 +1,51 @@
 name: Jaeger Release
 
 on:
-    workflow_dispatch:
-        inputs:
-            version:
-                description: 'Version'
-                required: true
-            dry-run:
-                type: boolean
-                description: 'Dry run'
-                required: false
-                default: true
-            path-to-chart:
-                description: 'Path to chart'
-                required: true
-                default: './charts/qubership-jaeger/Chart.yaml'
-            # component:
-            #     default:  '[
-            #         {"name": "jaeger-integration-tests", "file": "integration-tests/Dockerfile", "context": "integration-tests"},
-            #         {"name": "jaeger-readiness-probe", "file": "readiness-probe/Dockerfile", "context": "readiness-probe"},
-            #         {"name": "jaeger-transfer", "file": "docker-transfer/Dockerfile", "context": "docker-transfer"}
-            #       ]'
-            #     description: 'Component to docker build'
-            #     required: true
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version'
+        required: true
+      dry-run:
+        type: boolean
+        description: 'Dry run'
+        required: false
+        default: true
+      path-to-chart:
+        description: 'Path to chart'
+        required: true
+        default: './charts/qubership-jaeger/Chart.yaml'
 
 jobs:
   check-tag:
     runs-on: ubuntu-latest
     steps:
-      - name: Input parameters
-        run: |
-          echo "Version: ${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+    - name: Input parameters
+      run: |
+        echo "Version: ${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
 
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Check if tag exists
-        id: check_tag
-        uses: netcracker/qubership-workflow-hub/actions/tag-checker@main
-        with:
-          tag: 'v${{ github.event.inputs.version }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Check if tag exists
+      id: check_tag
+      uses: netcracker/qubership-workflow-hub/actions/tag-checker@main
+      with:
+        tag: 'v${{ github.event.inputs.version }}'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Output result
-        run: |
-          echo "Tag exists: ${{ steps.check_tag.outputs.exists }}"
-          echo "Tag name: v${{ github.event.inputs.version }}"
+    - name: Output result
+      run: |
+        echo "Tag exists: ${{ steps.check_tag.outputs.exists }}"
+        echo "Tag name: v${{ github.event.inputs.version }}"
 
-      - name: Fail if tag exists
-        if: steps.check_tag.outputs.exists == 'true'
-        run: |
-          echo "Tag already exists: v${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "Tag already exists: v${{ github.event.inputs.version }}"
-          exit 1
+    - name: Fail if tag exists
+      if: steps.check_tag.outputs.exists == 'true'
+      run: |
+        echo "Tag already exists: v${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "Tag already exists: v${{ github.event.inputs.version }}"
+        exit 1
   load-docker-build-components:
     needs: [check-tag]
     runs-on: ubuntu-latest
@@ -61,48 +53,48 @@ jobs:
       component: ${{ steps.load_component.outputs.components }}
       platforms: ${{ steps.load_component.outputs.platforms }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Load Docker Configuration
-        id: load_component
-        run:  |
-          verify=$(cat "$GITHUB_WORKSPACE/.github/docker-build-config.json" | jq '
-          def verify_structure:
-          .components as $components
-          | .platforms as $platforms
-          | ($components | type == "array")
-          and (all($components[]; has("name") and has("file") and has("context")))
-          and ($platforms | type == "string");
-          verify_structure
-          | if . then true else false end
-          ')
-          if [ ${verify} == 'true' ]; then
-            echo "✅ $GITHUB_WORKSPACE/.github/docker-build-config.json file is valid"
-            components=$(jq -c ".components" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
-            platforms=$(jq -c ".platforms" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
-          else
-            echo "❗ $GITHUB_WORKSPACE/.github/docker-build-config.json file is invalid"
-            echo "❗ $GITHUB_WORKSPACE/.github/docker-build-config.json file is invalid" >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
-          echo "components=${components}" >> $GITHUB_OUTPUT
-          echo "platforms=${platforms}" >> $GITHUB_OUTPUT
+    - name: Load Docker Configuration
+      id: load_component
+      run:  |
+        verify=$(cat "$GITHUB_WORKSPACE/.github/docker-build-config.json" | jq '
+        def verify_structure:
+        .components as $components
+        | .platforms as $platforms
+        | ($components | type == "array")
+        and (all($components[]; has("name") and has("file") and has("context")))
+        and ($platforms | type == "string");
+        verify_structure
+        | if . then true else false end
+        ')
+        if [ ${verify} == 'true' ]; then
+          echo "✅ $GITHUB_WORKSPACE/.github/docker-build-config.json file is valid"
+          components=$(jq -c ".components" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
+          platforms=$(jq -c ".platforms" "$GITHUB_WORKSPACE/.github/docker-build-config.json")
+        else
+          echo "❗ $GITHUB_WORKSPACE/.github/docker-build-config.json file is invalid"
+          echo "❗ $GITHUB_WORKSPACE/.github/docker-build-config.json file is invalid" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+        echo "components=${components}" >> $GITHUB_OUTPUT
+        echo "platforms=${platforms}" >> $GITHUB_OUTPUT
 
   change-chart:
     needs: [check-tag]
     runs-on: ubuntu-latest
     steps:
-      - name: Change Chart Version Action
-        uses: netcracker/qubership-workflow-hub/actions/chart-version@main
-        with:
-          new-chart-version: ${{ github.event.inputs.version }}
-          chart-yaml-path: ${{ github.event.inputs.path-to-chart }}
+    - name: Change Chart Version Action
+      uses: netcracker/qubership-workflow-hub/actions/chart-version@main
+      with:
+        new-chart-version: ${{ github.event.inputs.version }}
+        chart-yaml-path: ${{ github.event.inputs.path-to-chart }}
 
-      - name: Run Commit and Push Action
-        uses: Netcracker/qubership-workflow-hub/actions/commit-and-push@main
-        with:
-          commit_message: "Update chart version to v${{ github.event.inputs.version }}"
+    - name: Run Commit and Push Action
+      uses: Netcracker/qubership-workflow-hub/actions/commit-and-push@main
+      with:
+        commit_message: "Update chart version to v${{ github.event.inputs.version }}"
   tag:
     needs: [change-chart]
     uses: netcracker/qubership-workflow-hub/.github/workflows/tag-creator.yml@main
@@ -130,16 +122,15 @@ jobs:
     needs: [github-release]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Archive and Upload Assets
-        uses: netcracker/qubership-workflow-hub/actions/archive-and-upload-assets@main
-        with:
-          config-path: './.github/assets-config.yml'
-          dist-path: './dist'
-          upload: true
-          ref: v${{ github.event.inputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+    - name: Archive and Upload Assets
+      uses: netcracker/qubership-workflow-hub/actions/archive-and-upload-assets@main
+      with:
+        config-path: './.github/assets-config.yml'
+        dist-path: './dist'
+        upload: true
+        ref: v${{ github.event.inputs.version }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

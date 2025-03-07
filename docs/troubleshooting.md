@@ -1,6 +1,8 @@
+# Troubleshooting
+
 This section describes in detail some failover scenarios.
 
-# Table of Content
+## Table of Content
 
 * [Table of Content](#table-of-content)
 * [Deployment Issues](#deployment-issues)
@@ -14,9 +16,9 @@ This section describes in detail some failover scenarios.
   * [Error reading `<name>` from storage: table `<name>` does not exist](#error-reading-name-from-storage-table-name-does-not-exist)
   * [Ingress fails with 502 Bad Gateway error](#ingress-fails-with-502-bad-gateway-error)
 
-# Deployment Issues
+## Deployment Issues
 
-## Jaeger collector, query, cassandra schema job can't start/failed
+### Jaeger collector, query, cassandra schema job can't start/failed
 
 If the `Jaeger` cassandra schema job fails to complete, with different errors related to the Cassandra connection,
 the issue may be related to connection issues or problems with Cassandra.
@@ -38,7 +40,7 @@ View the errors from the Cassandra logs if they exist.
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## no matches for kind "Ingress" in version "networking.k8s.io/v1beta1"
+### no matches for kind "Ingress" in version "networking.k8s.io/v1beta1"
 
 We are using Helm to deploy Jaeger. Helm tracks all resources that it created in special secrets with names:
 
@@ -90,7 +92,7 @@ If services support migration to new Kubernetes the correct way to upgrade it is
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Labels and Annotations validation error
+### Labels and Annotations validation error
 
 Helm doesn't allow a resource to be owned by more than one deployment. During jaeger upgrade it's possible you create
 resources that already existed and created outside of Helm. In such cases you may see error related to labels and
@@ -115,14 +117,14 @@ This solution is proposed in [document](https://github.com/helm/helm/pull/7649)
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Runtime Issues
+## Runtime Issues
 
-## Jaeger lost connection to Cassandra after Cassandra's restart
+### Jaeger lost connection to Cassandra after Cassandra's restart
 
 Now we know about the two most often issues related to Cassandra's connections. Both issues and ways to solve them
 are described above.
 
-### gocql: no host available in the pool
+#### gocql: no host available in the pool
 
 Jaeger during the use of Cassandra as a storage has by default used a
 [SimpleRetryPolicy](https://pkg.go.dev/github.com/gocql/gocql#SimpleRetryPolicy) from the Gocql module.
@@ -171,12 +173,12 @@ If you expect that Cassandra may not be available, you can try to increase the r
 For example, you can specify these parameters as follows:
 
 ```yaml
-# Example for using CLI arguments
+## Example for using CLI arguments
 collector:
   cmdlineParams:
     - '--cassandra.max-retry-attempts=10'
 
-# Example for using ENV variables
+## Example for using ENV variables
 query:
   extraEnv:
     - name: CASSANDRA_RECONNECT_INTERVAL
@@ -187,7 +189,7 @@ query:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-### connection: no route to host
+#### connection: no route to host
 
 Now Jaeger during start resolving the IP address of the Cassandra node by DNS service name. Also Jaeger during the start
 ask Cassandra about other nodes in the Cassandra cluster and add them to the pool. IPs from this pool will be used to
@@ -273,7 +275,7 @@ cassandraSchemaJob:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Error reading `<name>` from storage: table `<name>` does not exist
+### Error reading `<name>` from storage: table `<name>` does not exist
 
 For this error, you usually can see in `collector` and `query` pods logs as follows:
 
@@ -316,7 +318,7 @@ data on nodes.
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Ingress fails with 502 Bad Gateway error
+### Ingress fails with 502 Bad Gateway error
 
 When Jaeger UI is opened via Ingress URL, it is possible that it shows `502 Bad Gateway` error.
 The ingress-nginx-controller's logs may show an error as follows:

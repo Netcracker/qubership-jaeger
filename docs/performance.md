@@ -1,3 +1,4 @@
+# Performance
 Jaeger collector performance can be affected by many factors.
 
 When you are using Jaeger under high load, you must consider the following:
@@ -17,7 +18,7 @@ When you are using Jaeger under high load, you must consider the following:
   queue size or use Kafka in the deployment schema. By the default values that are used in this deployment,
   the queue size is 2000.
 
-# Jaeger Performance Metrics
+## Jaeger Performance Metrics
 
 Jaeger exposes Prometheus metrics. To install the service monitor, you can use the `jaeger.prometheusMonitoring` parameter.
 

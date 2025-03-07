@@ -81,7 +81,7 @@ integrationTests:
     allowPrivilegeEscalation: false
     capabilities:
       drop:
-        - ALL
+      - ALL
 
 statusProvisioner:
   enabled: true
@@ -106,4 +106,4 @@ statusProvisioner:
     allowPrivilegeEscalation: false
     capabilities:
       drop:
-        - ALL
+      - ALL

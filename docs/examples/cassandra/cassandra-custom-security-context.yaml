@@ -30,7 +30,7 @@ collector:
     allowPrivilegeEscalation: false
     capabilities:
       drop:
-        - ALL
+      - ALL
 
 query:
   install: true
@@ -44,7 +44,7 @@ query:
     allowPrivilegeEscalation: false
     capabilities:
       drop:
-        - ALL
+      - ALL
   ingress:
     install: true
     host: query.<cloud_dns_name>
@@ -63,7 +63,7 @@ hotrod:
     allowPrivilegeEscalation: false
     capabilities:
       drop:
-        - ALL
+      - ALL
   ingress:
     install: true
     host: hotrod.<cloud_dns_name>

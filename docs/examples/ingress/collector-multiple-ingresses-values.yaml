@@ -7,27 +7,27 @@ collector:
   ingress:
     install: true
     hosts:
-      - host: zipkin.jaeger-collector.test.org
-        paths:
-          - prefix: /zipkin
-            service:
-              port: 9411
-      - host: trift.jaeger-collector.test.org
-        paths:
-          - prefix: /thrift/tchannel
-            service:
-              port: 14250
-          - prefix: /thrift/grpc
-            service:
-              port: 14267
-          - prefix: /thrift/http
-            service:
-              port: 14268
-      - host: otel.jaeger-collector.test.org
-        paths:
-          - prefix: /otlp/grpc
-            service:
-              port: 4317
-          - prefix: /otlp/http
-            service:
-              port: 4318
+    - host: zipkin.jaeger-collector.test.org
+      paths:
+      - prefix: /zipkin
+        service:
+          port: 9411
+    - host: trift.jaeger-collector.test.org
+      paths:
+      - prefix: /thrift/tchannel
+        service:
+          port: 14250
+      - prefix: /thrift/grpc
+        service:
+          port: 14267
+      - prefix: /thrift/http
+        service:
+          port: 14268
+    - host: otel.jaeger-collector.test.org
+      paths:
+      - prefix: /otlp/grpc
+        service:
+          port: 4317
+      - prefix: /otlp/http
+        service:
+          port: 4318
