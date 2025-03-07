@@ -99,7 +99,7 @@ data:
                   basic:
                     username: "${env:CASSANDRA_USERNAME}"
                     password: "${env:CASSANDRA_PASSWORD}"
-                    allowed_authenticators: 
+                    allowed_authenticators:
                     {{- toYaml .Values.cassandraSchemaJob.allowedAuthenticators | nindent 22 }}
           {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
           main_elasticsearch:
@@ -148,14 +148,14 @@ data:
                 cert_file: /grpc-tls/client-cert.pem
                 key_file: /grpc-tls/client-key.pem
                 {{- end }}
-              {{- end }}      
+              {{- end }}
           {{- end }}
     receivers:
       jaeger:
         protocols:
           thrift_binary:
           thrift_compact:
-          thrift_http:            
+          thrift_http:
     processors:
       batch:
     exporters:

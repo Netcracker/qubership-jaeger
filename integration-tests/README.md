@@ -1,3 +1,4 @@
+# Integration Tests
 * [Introduction](#introduction)
 * [Prerequisites](#prerequisites)
 * [Test cases](#test-cases)
@@ -9,18 +10,18 @@
     * [Installation](#installation)
     * [Uninstalling](#uninstalling)
 
-# Introduction
+## Introduction
 
 This guide covers the necessary steps to install and execute Jaeger service tests on Kubernetes/Openshift using Helm.
 The chart installs Jaeger Integration Tests service and pod in Kubernetes/Openshift.
 
-# Prerequisites
+## Prerequisites
 
 * Kubernetes 1.18+ or OpenShift 3.11+
 * `kubectl` 1.18+ or `oc` 3.11+ CLI
 * Helm 3.0+
 
-# Test cases
+## Test cases
 
 1. [Smoke tests](/jaeger-integration-tests/integration-tests/robot/tests/smoke/smoke.robot)
 
@@ -57,21 +58,21 @@ The chart installs Jaeger Integration Tests service and pod in Kubernetes/Opensh
    * Test Hardcoded Images
    This test compare images in pods with images from MF. Included in the `smoke` tag
 
-## Shared file
+### Shared file
 
 The `shared.robot` [file](jaeger-integration-tests/integration-tests/robot/tests/shared/shared.robot)
 contains main keywords and main settings. For example, settings for retries and time between retries,
 connection parameters, convectors, etc.
 
-# Deployment
+## Deployment
 
 Jaeger integration tests installation is based on Helm Chart directory.
 
-## Configuration
+### Configuration
 
 This section provides the list of parameters required for Jaeger Integration Tests installation and execution.
 
-### Jaeger Integration Tests Parameters
+#### Jaeger Integration Tests Parameters
 
 The `integrationTests.service.name` parameter specifies the name of Jaeger Integration Tests service.
 
@@ -130,9 +131,9 @@ that should be used to write status of integration-tests execution. The value is
 selfLink without `apis` prefix and `namespace` part. The path should be composed according to the following template:
 `<group>/<apiversion>/<namespace>/<plural>/<customResourceName>`
 
-## Manual Deployment
+### Manual Deployment
 
-### Installation
+#### Installation
 
 To deploy Jaeger integration tests with Helm you need to customize the `values.yaml` file. For example:
 
@@ -183,7 +184,7 @@ OR
 oc get pod
 ```
 
-### Uninstalling
+#### Uninstalling
 
 To uninstall Jaeger integration tests from Kubernetes/Openshift you need to execute the following command:
 

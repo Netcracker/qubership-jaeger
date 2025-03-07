@@ -1,11 +1,12 @@
-# Table of Content
+# Readiness Probe
+## Table of Content
 
 * [Table of Content](#table-of-content)
 * [Parameters](#parameters)
 * [HWE and Limits](#hwe-and-limits)
 * [Command line arguments](#command-line-arguments)
 
-## Parameters
+### Parameters
 
 Probe is installed in Kubernetes as a sidecar for extending its probe.
 
@@ -38,7 +39,7 @@ Example:
 /app/probe -endpoint=http://localhost:8080 -authSecretName=auth-secret
 ```
 
-## HWE and Limits
+### HWE and Limits
 
 Probe is installed in Kubernetes as a sidecar container in the pod.
 
@@ -49,6 +50,6 @@ It requires:
 
 But usually will use much much less
 
-## Command line arguments
+### Command line arguments
 
 The entrypoint of is `/app/probe`.

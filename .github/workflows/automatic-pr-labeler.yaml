@@ -1,6 +1,5 @@
 ---
 name: Automatic PR Labeler
-
 on:
   pull_request_target:
     branches: [main]

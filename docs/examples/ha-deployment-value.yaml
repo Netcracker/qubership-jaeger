@@ -35,7 +35,7 @@ collector:
           - key: app.kubernetes.io/name
             operator: In
             values:
-            -  jaeger-collector
+            - jaeger-collector
         topologyKey: kubernetes.io/hostname
 
 query:
@@ -61,7 +61,7 @@ query:
           - key: app.kubernetes.io/name
             operator: In
             values:
-            -  jaeger-query
+            - jaeger-query
         topologyKey: kubernetes.io/hostname
 
 

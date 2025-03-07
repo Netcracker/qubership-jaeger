@@ -1,14 +1,16 @@
+# Installation Notes
+
 This chapter describes the procedure to deploy the Jaeger application in the Kubernetes/OpenShift project.
 The deployment includes a collector to collect the data, a query for UI purposes, and an agent in a query pod
 for tracing the query.
 
-# Table of Content
+## Table of Content
 
 * [Table of Content](#table-of-content)
 * [Prerequisites](#prerequisites)
   * [Common](#common)
   * [Storage](#storage)
-    * [Cassandra](#cassandra)
+    * [Cassandra](#cassandra-storage)
     * [OpenSearch/ElasticSearch](#opensearchelasticsearch)
   * [Kubernetes](#kubernetes)
   * [Azure](#azure)
@@ -25,7 +27,7 @@ for tracing the query.
   * [Query](#query)
   * [Readiness probe](#readiness-probe)
   * [Agent](#agent)
-  * [Cassandra](#cassandra-1)
+  * [Cassandra](#cassandra)
   * [ElasticSearch](#elasticsearch)
     * [Index Cleaner](#index-cleaner)
     * [Rollover](#rollover)
@@ -41,24 +43,23 @@ for tracing the query.
     * [HA scheme](#ha-scheme)
     * [Non-HA scheme](#non-ha-scheme)
 * [Post Deploy Checks](#post-deploy-checks)
-  * [Jobs Post Deploy Check](#jobs-post-deploy-check)
   * [Smoke test](#smoke-test)
 * [Frequently Asked Questions](#frequently-asked-questions)
   * [Jaeger Sampling Configuration](#jaeger-sampling-configuration)
 
-# Prerequisites
+## Prerequisites
 
 This section describes the prerequisites to deploy Jaeger in the Cloud.
 
-## Common
+### Common
 
 * Kubernetes 1.21+ or OpenShift 4.10+
 * kubectl 1.21+ or oc 4.10+ CLI
 * Helm 3.0+
 
-## Storage
+### Storage
 
-### Cassandra
+#### Cassandra Storage
 
 **Note:** This section is applicable only to cases when Cassandra is used as a store.
 
@@ -95,7 +96,7 @@ of a schema and other Jaeger pods won't start with this configuration.
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-### OpenSearch/ElasticSearch
+#### OpenSearch/ElasticSearch
 
 **Note:** This section applies only to cases when OpenSearch/ElasticSearch is used as a store.
 
@@ -116,7 +117,7 @@ Supported ElasticSearch versions:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Kubernetes
+### Kubernetes
 
 To deploy Jaeger in the Kubernetes/OpenShift you must have at least a namespace admin role.
 You should have at least permissions like the following:
@@ -160,7 +161,7 @@ It is recommended not to override these values because Kubernetes `restricted`` 
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Azure
+### Azure
 
 | Azure Managed Service                                                                           | Jaeger support |
 | ----------------------------------------------------------------------------------------------- | -------------- |
@@ -178,7 +179,7 @@ There is no Azure managed OpenSearch. You can find only custom solutions in the 
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## AWS
+### AWS
 
 | AWS Managed Service       | Jaeger support |
 | ------------------------- | -------------- |
@@ -209,7 +210,7 @@ user guide [AWS OpenSearch](user-guides/aws-opensearch.md).
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Google
+### Google
 
 | Google Managed Service | Jaeger support |
 | ---------------------- | -------------- |
@@ -223,9 +224,9 @@ in the Google marketplace from other vendors.
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Best practices and recommendations
+## Best practices and recommendations
 
-## HWE
+### HWE
 
 The minimal hardware values with which Jaeger can start:
 
@@ -311,7 +312,7 @@ And disk space usage will be:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## TLS
+### TLS
 
 Support matrix Jaeger as third-party:
 
@@ -330,11 +331,11 @@ Detailed information about how to configure TLS and examples of deployment param
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Parameters
+## Parameters
 
 This section describes parameters that can be used to deploy Jaeger and its components in the Cloud.
 
-## Jaeger
+### Jaeger
 
 It's a common section that contains some generic parameters.
 
@@ -373,7 +374,7 @@ jaeger:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Collector
+### Collector
 
 `jaeger-collector` receives traces, runs them through a processing pipeline for validation and clean-up/enrichment,
 and stores them in a storage backend. Jaeger comes with built-in support for several storage backends,
@@ -476,7 +477,7 @@ collector:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-### Ingress
+#### Ingress
 
 This section describes Ingress configuration for `jaeger-collector`.
 
@@ -587,7 +588,7 @@ collector:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-### TLSConfig
+#### TLSConfig
 
 This section describes TLS configuration for `jaeger-collector`.
 
@@ -692,7 +693,7 @@ collector:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Query
+### Query
 
 `jaeger-query` is a service that exposes the APIs for retrieving traces from storage and hosts a Web UI for searching
 and analyzing traces.
@@ -788,7 +789,7 @@ query:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Readiness probe
+### Readiness probe
 
 `readiness-probe` is a sidecar container in the collector and query services that checks health of volume.
 
@@ -845,7 +846,7 @@ readinessProbe:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Agent
+### Agent
 
 **Note:** `jaeger-agent` is **deprecated**. The OpenTelemetry data can be sent directly to the Jaeger backend,
 or the OpenTelemetry Collector can be used as an agent.
@@ -966,7 +967,7 @@ agent:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Cassandra
+### Cassandra
 
 **Note:** Since Jaeger release `1.57.x`, `cassandraSchemaJob.install` parameter has been removed.
 `cassandraSchemaJob` will be installed if `jaeger.storage.type` is set to `cassandra`.
@@ -1111,7 +1112,7 @@ cassandraSchemaJob:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## ElasticSearch
+### ElasticSearch
 
 All parameters in the table below should be specified under the key:
 
@@ -1187,7 +1188,7 @@ elasticsearch:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-### Index Cleaner
+#### Index Cleaner
 
 All parameters in the table below should be specified under the key:
 
@@ -1295,7 +1296,7 @@ elasticsearch:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-### Rollover
+#### Rollover
 
 Elasticsearch Rollover is an index management strategy that optimizes use of resources allocated to indices.
 For example, indices that do not contain any data still allocate shards, and conversely, a single index might contain
@@ -1422,7 +1423,7 @@ elasticsearch:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-### Lookback
+#### Lookback
 
 It's a part of [ElasticSearch Rollover](#rollover) to remove old indices from read aliases.
 It means that old data will not be available for search.
@@ -1534,7 +1535,7 @@ elasticsearch:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Proxy
+### Proxy
 
 All parameters in the table below should be specified under the key:
 
@@ -1608,7 +1609,7 @@ proxy:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Hotrod
+### Hotrod
 
 `jaeger-hotrod` is a test service that allows to generate of some traces to verify Jaeger's work.
 
@@ -1717,7 +1718,7 @@ hotrod:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Integration Tests
+### Integration Tests
 
 `jaeger-integration-tests` is a service that is used to run integration tests.
 
@@ -1798,7 +1799,7 @@ integrationTests:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Status Provisioner
+### Status Provisioner
 
 `statusProvisioner` is a service that is used to write integration tests results into a job.
 
@@ -1860,16 +1861,16 @@ statusProvisioner:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Installation
+## Installation
 
 This section describes how to install Jaeger to the Kubernetes.
 
-## Before you begin
+### Before you begin
 
 * Make sure that selecting Jaeger storage is alive and operable
 * Make sure that you configure expected retention data settings
 
-### Helm
+#### Helm
 
 For manual installation, you have to specify images manually in `values.yaml` file.
 
@@ -1899,11 +1900,11 @@ elasticsearch:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## On-prem
+### On-prem
 
 This section contains examples of deployment parameters to deploy on-premise Clouds.
 
-### HA scheme
+#### HA scheme
 
 The minimal template for the HA scheme is as follows:
 
@@ -1936,7 +1937,7 @@ More information about how to deploy Jaeger in High Availability can be found in
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-### Non-HA scheme
+#### Non-HA scheme
 
 The minimal template for the Non-HA scheme is as follows:
 
@@ -1974,7 +1975,7 @@ collector:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Post Deploy Checks
+## Post Deploy Checks
 
 There are some options to check after deploy that Jaeger deployed and working correctly.
 
@@ -1982,7 +1983,7 @@ There are some options to check after deploy that Jaeger deployed and working co
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Smoke test
+### Smoke test
 
 This section contains some steps that can help to check Jaeger's deploy and verify that it has minimal functionality.
 
@@ -2092,9 +2093,9 @@ To find it in UI you need:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Frequently Asked Questions
+## Frequently Asked Questions
 
-## Jaeger Sampling Configuration
+### Jaeger Sampling Configuration
 
 Jaeger collector sampling configuration can be configured in the `jaeger.serviceName-sampling-configuration` config map.
 For more information, refer to _Collector Sampling Configuration Documentation_ at

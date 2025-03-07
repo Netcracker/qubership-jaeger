@@ -31,11 +31,11 @@ proxy:
   type: basic
   basic:
     users:
-      # Contains string with "<username>:<password>" encoded in base64
-      # Some values can be specified during deploy, for example:
-      # - YWRtaW46YWRtaW4=    # admin:admin
-      # - dGVzdDp0ZXN0        # test:test
-      - YWRtaW46YWRtaW4=
+    # Contains string with "<username>:<password>" encoded in base64
+    # Some values can be specified during deploy, for example:
+    # - YWRtaW46YWRtaW4=    # admin:admin
+    # - dGVzdDp0ZXN0        # test:test
+    - YWRtaW46YWRtaW4=
   resources:
     limits:
       cpu: 100m

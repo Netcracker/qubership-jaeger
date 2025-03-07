@@ -314,7 +314,7 @@ spec:
             items:
               - key: config.yaml
                 path: config.yaml
-            defaultMode: 420                    
+            defaultMode: 420
         {{- if .Values.proxy.install }}
         - name: envoy-config
           secret:

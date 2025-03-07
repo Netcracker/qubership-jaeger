@@ -1,6 +1,8 @@
+# Maintenance
+
 This section provides information about Jaeger maintenance issues.
 
-# Table of Content
+## Table of Content
 
 * [Table of Content](#table-of-content)
 * [Change Cassandra User/Password](#change-cassandra-userpassword)
@@ -8,7 +10,7 @@ This section provides information about Jaeger maintenance issues.
 * [Change Cassandra TTL](#change-cassandra-ttl)
 * [Cassandra is reinstalled](#cassandra-is-reinstalled)
 
-# Change Cassandra User/Password
+## Change Cassandra User/Password
 
 To change the Cassandra user/password, you can run the upgrade job with new parameters, for example:
 
@@ -34,7 +36,7 @@ Restart all Jaeger pods manually to apply the new Cassandra credentials.
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Scaling Jaeger
+## Scaling Jaeger
 
 It is possible to update collector replicas, resources, and query resources using the upgrade job. All other parameters
 during the upgrade should be the same.
@@ -71,7 +73,7 @@ collector:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Change Cassandra TTL
+## Change Cassandra TTL
 
 Cassandra Time To Live (TTL) is set during keyspace creation (first jaeger installation) and **can't be changed** during
 jaeger upgrade procedure.
@@ -114,7 +116,7 @@ ALTER TABLE dependencies_v2 WITH default_time_to_live = 86400;
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Cassandra is reinstalled
+## Cassandra is reinstalled
 
 In case Cassandra has been reinstalled or cleared, then the keyspace has been removed. Keyspace is required for jaeger
 operation, so you need to recreate it. To do this, run the upgrade job. For example:
