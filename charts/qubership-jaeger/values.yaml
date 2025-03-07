@@ -51,6 +51,8 @@ proxy:
   #
   type: "basic"
 
+  access_logs_enabled: true
+
   # Settings for oauth2 authentication.
   #
   oauth2:

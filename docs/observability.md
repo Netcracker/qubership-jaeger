@@ -120,6 +120,9 @@ Examples of access log:
 
 The `Envoy` will log all requests from UI in access logs.
 
+**Note:** To disable audit logs, need to set deployment
+parameter `access_logs_enabled` as false.
+
 <!-- #GFCFilterMarkerStart# -->
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->

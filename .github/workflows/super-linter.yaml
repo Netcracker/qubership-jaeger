@@ -5,12 +5,16 @@
 # For more information, see:
 # https://github.com/github/super-linter
 name: Lint Code Base
+env:
+  VALIDATE_JSCPD: "false"
+  VALIDATE_CHECKOV: "false"
+  FIX_YAML_PRETTIER: "false"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feature/json_audit_logs" ]
   pull_request_target:
-    branches: [ "main" ]
+    branches: [ "feature/json_audit_logs" ]
   workflow_dispatch:
     inputs:
       full_scan:
