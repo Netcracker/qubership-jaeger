@@ -3,7 +3,7 @@ set -e
 
 ARTIFACT_NAME="readiness-probe"
 
-cd $(dirname "$0")
+cd "$(dirname "$0")"
 
 docker build -t ${ARTIFACT_NAME}  ./
 

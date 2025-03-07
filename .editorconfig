@@ -15,4 +15,21 @@ end_of_line = crlf
 
 [*.md]
 # Trailing whitespace is important in Markdown (they distinguish a new line from a new paragraph)
+eclint_indent_style = unset
 trim_trailing_whitespace = false
+
+[*.json]
+insert_final_newline = false
+
+[{Makefile,go.mod,go.sum,*.go,.gitmodules}]
+indent_size = 4
+indent_style = tab
+
+[Dockerfile]
+indent_size = 4
+
+[*.py]
+profile = black
+
+[*.sh]
+indent_size = 4

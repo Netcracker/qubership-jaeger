@@ -2,12 +2,10 @@
 #### Config file for yamllint
 # Rules: https://yamllint.readthedocs.io/en/stable/rules.html
 
-# Include to check only CRDs and config file
-yaml-files:
-- 'monitoring.coreos.com*.yaml'
-- 'qubership.org*.yaml'
-- 'integreatly.org*.yaml'
-- '.yamllint.yaml'
+# Exclude not required files
+ignore-from-file:
+  - .gitignore
+  - .yamlignore
 
 rules:
   braces:
@@ -54,7 +52,7 @@ rules:
   key-duplicates: enable
   key-ordering: disable
   line-length: disable
-  #   max: 100
+  # max: 100
   # allow-non-breakable-words: true
   # allow-non-breakable-inline-mappings: true
   new-line-at-end-of-file: disable
@@ -65,5 +63,3 @@ rules:
     forbid-explicit-octal: false
   trailing-spaces: enable
   truthy: disable
-#    level: warning
-
