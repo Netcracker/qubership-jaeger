@@ -1,4 +1,4 @@
-{{- $otelhttpTlsConfigEnabled := .Values.collector.tlsConfig.otelHttp.enabled }} 
+{{- $otelhttpTlsConfigEnabled := .Values.collector.tlsConfig.otelHttp.enabled }}
 {{- $otelgrpcTlsConfigEnabled := .Values.collector.tlsConfig.otelgRPC.enabled }}
 {{- $jaegerhttpTlsConfigEnabled := .Values.collector.tlsConfig.jaegerHttp.enabled }}
 {{- $jaegergrpcTlsConfigEnabled := .Values.collector.tlsConfig.jaegergRPC.enabled }}
@@ -167,7 +167,7 @@ data:
               cert_file: /collector-tls/tls.crt
               key_file: /collector-tls/tls.key
               {{- if .Values.collector.tlsConfig.otelgRPC.cipherSuites }}
-              cipher_suites: 
+              cipher_suites:
               {{- range  .Values.collector.tlsConfig.otelgRPC.cipherSuites | split "," }}
                 - {{ . }}
               {{- end }}
@@ -178,7 +178,7 @@ data:
               {{- if .Values.collector.tlsConfig.otelgRPC.minVersion }}
               min_version: {{ .Values.collector.tlsConfig.otelgRPC.minVersion | quote }}
               {{- end }}
-            {{- end }} 
+            {{- end }}
             {{- if or .Values.collector.otlp.grpc.maxConnectionAge .Values.collector.otlp.grpc.maxConnectionAgeGrace }}
             keepalive:
               server_parameters:
@@ -191,7 +191,7 @@ data:
             {{- end }}
             {{- if .Values.collector.otlp.grpc.maxRecvMsgSizeMib }}
             max_recv_msg_size_mib: {{ .Values.collector.otlp.grpc.maxRecvMsgSizeMib }}
-            {{- end }}            
+            {{- end }}
           http:
             endpoint: "0.0.0.0:4318"
             {{- if $otelhttpTlsConfigEnabled }}
@@ -200,7 +200,7 @@ data:
               cert_file: /collector-tls/tls.crt
               key_file: /collector-tls/tls.key
               {{- if .Values.collector.tlsConfig.otelHttp.cipherSuites }}
-              cipher_suites: 
+              cipher_suites:
               {{- range $suite := .Values.collector.tlsConfig.otelHttp.cipherSuites | split "," }}
                 - {{ $suite }}
               {{- end }}
@@ -241,7 +241,7 @@ data:
             endpoint: "0.0.0.0:14268"
             {{- if $jaegerhttpTlsConfigEnabled }}
             tls:
-              cert_file: /collector-tls/tls.crt 
+              cert_file: /collector-tls/tls.crt
               client_ca_file: /collector-tls/ca.crt
               key_file: /collector-tls/tls.key
               {{- if .Values.collector.tlsConfig.jaegerHttp.maxVersion }}
@@ -250,8 +250,8 @@ data:
               {{- if .Values.collector.tlsConfig.jaegerHttp.minVersion }}
               min_version: {{ .Values.collector.tlsConfig.jaegerHttp.minVersion | quote }}
               {{- end }}
-              {{- if .Values.collector.tlsConfig.jaegerHttp.cipherSuites }}    
-              cipher_suites: 
+              {{- if .Values.collector.tlsConfig.jaegerHttp.cipherSuites }}
+              cipher_suites:
               {{- range $suite := .Values.collector.tlsConfig.jaegerHttp.cipherSuites | split "," }}
                 - {{ $suite }}
               {{- end }}
@@ -270,7 +270,7 @@ data:
             endpoint: "0.0.0.0:14250"
             {{- if $jaegergrpcTlsConfigEnabled }}
             tls:
-              cert_file: /collector-tls/tls.crt 
+              cert_file: /collector-tls/tls.crt
               client_ca_file: /collector-tls/ca.crt
               key_file: /collector-tls/tls.key
               {{- if .Values.collector.tlsConfig.jaegergRPC.maxVersion }}

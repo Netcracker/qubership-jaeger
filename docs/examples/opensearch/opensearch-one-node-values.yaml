@@ -20,25 +20,25 @@ elasticsearch:
     # These parameters specify how the initial rollout job will create indices
     initHook:
       extraEnv:
-        # Specify 0 replicas and 5 shards
-        - name: REPLICAS
-          value: "0"
-        - name: SHARDS
-          value: "5"
+      # Specify 0 replicas and 5 shards
+      - name: REPLICAS
+        value: "0"
+      - name: SHARDS
+        value: "5"
 
 collector:
   install: true
   extraEnv:
-    # Specify 0 replicas
-    - name: ES_NUM_REPLICAS
-      value: "0"
+  # Specify 0 replicas
+  - name: ES_NUM_REPLICAS
+    value: "0"
 
 query:
   install: true
   extraEnv:
-    # Specify 0 replicas
-    - name: ES_NUM_REPLICAS
-      value: "0"
+  # Specify 0 replicas
+  - name: ES_NUM_REPLICAS
+    value: "0"
   ingress:
     install: true
     host: query.<cloud_dns_name>

@@ -13,6 +13,6 @@ cassandraSchemaJob:
 
   # This section allow to override list of default allowed authenticators during deploy
   allowedAuthenticators:
-    - org.apache.cassandra.auth.PasswordAuthenticator
-    - com.instaclustr.cassandra.auth.SharedSecretAuthenticator
-    - com.datastax.bdp.cassandra.auth.DseAuthenticator
+  - org.apache.cassandra.auth.PasswordAuthenticator
+  - com.instaclustr.cassandra.auth.SharedSecretAuthenticator
+  - com.datastax.bdp.cassandra.auth.DseAuthenticator

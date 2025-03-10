@@ -75,7 +75,7 @@ spec:
                 - name: TRUSTSTORE_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.spark.trustStoreSecretName }} 
+                      name: {{ .Values.spark.trustStoreSecretName }}
                       key: password
               resources:
                 {{- toYaml .Values.spark.init.resources | nindent 16 }}
@@ -102,9 +102,9 @@ spec:
               image: {{ template "spark-dependencies.image" . }}
               {{- if or .Values.cassandraSchemaJob.tls.enabled .Values.elasticsearch.client.tls.enabled }}
               command: ["/bin/sh", "-c"]
-              args: 
+              args:
                 - "export JAVA_OPTS=\"$JAVA_OPTS -Djavax.net.ssl.trustStore=/truststore/truststore.jks -Djavax.net.ssl.trustStorePassword=${TRUSTSTORE_PASSWORD}\" && exec /entrypoint.sh java $JAVA_OPTS -jar $APP_HOME/jaeger-spark-dependencies-0.0.1-SNAPSHOT.jar"
-              {{- end }}  
+              {{- end }}
               env:
                 - name: STORAGE
                   value: {{ .Values.jaeger.storage.type }}

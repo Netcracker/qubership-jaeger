@@ -7,12 +7,12 @@ collector:
   ingress:
     install: true
     hosts:
-      - host: jaeger-collector.test.org
-        paths:
-          - prefix: /zipkin
-            service:
-              # The "name" parameter allow to set Service name that will use
-              # By default will use Service name creating during Jaeger deploy
-              # It usually has a name: jaeger-collector
-              name: my-awesome-service-name
-              port: 9411
+    - host: jaeger-collector.test.org
+      paths:
+      - prefix: /zipkin
+        service:
+          # The "name" parameter allow to set Service name that will use
+          # By default will use Service name creating during Jaeger deploy
+          # It usually has a name: jaeger-collector
+          name: my-awesome-service-name
+          port: 9411

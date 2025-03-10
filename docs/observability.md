@@ -1,8 +1,10 @@
+# Observability
+
 Jaeger itself is a distributed, microservices based system. If you run it in production,
 you will likely want to setup adequate monitoring for different components,
 e.g. to ensure that the backend is not saturated by too much tracing data.
 
-# Table of Content
+## Table of Content
 
 * [Table of Content](#table-of-content)
 * [Monitoring](#monitoring)
@@ -15,7 +17,7 @@ e.g. to ensure that the backend is not saturated by too much tracing data.
   * [Collector](#collector)
   * [Query](#query)
 
-# Monitoring
+## Monitoring
 
 By default Jaeger microservices expose metrics in Prometheus format.
 It is controlled by the following command line options:
@@ -40,7 +42,7 @@ Each Jaeger component exposes the metrics scraping endpoint on the admin port:
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Integration with PlatformMonitoring
+### Integration with PlatformMonitoring
 
 Jaeger can be deployed with necessary Custom Resources (CR) for Platform Monitoring.
 
@@ -66,7 +68,7 @@ All necessary configurations will discovery by Prometheus or Grafana automatical
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Logging
+## Logging
 
 Jaeger components only log to standard out, using structured logging library `go.uber.org/zap`
 configured to write log lines as JSON encoded strings, for example:
@@ -84,7 +86,7 @@ The log level can be adjusted via `--log-level` command line switch; default lev
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Audit logs
+### Audit logs
 
 Jaeger has no authentication and authorization as a part of application. Instead, Jaeger's authors offer
 to use external tools or proxies to add authentication and/or authorization.
@@ -124,7 +126,7 @@ The `Envoy` will log all requests from UI in access logs.
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-## Integration with Platform Logging
+### Integration with Platform Logging
 
 Integration Jaeger with logging doesn't require any specify actions. All works out of the box
 if logging agent deployed in Cloud and collect logs from pods.
@@ -135,23 +137,23 @@ In Graylog you can use next queries for find Jaeger logs:
 
 ```yaml
 namespace_name: <namespace>
-# for example:
-# namespace_name: tracing
+## for example:
+## namespace_name: tracing
 ```
 
 * Stream "All messages", filter by pod name:
 
 ```yaml
 pod_name: <pod>
-# for example:
-# pods_name: jaeger-collector-7bb5bcd6d4-qlqhh
+## for example:
+## pods_name: jaeger-collector-7bb5bcd6d4-qlqhh
 ```
 
 <!-- #GFCFilterMarkerStart# -->
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Traces
+## Traces
 
 Jaeger has the ability to trace some of its own components, namely the requests to the Query
 service. For example, if you start `all-in-one` as described in Getting Started, and refresh
@@ -167,9 +169,9 @@ docker run -e JAEGER_DISABLED=true -p 16686:16686 jaegertracing/all-in-one:1.33
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
 
-# Metrics list
+## Metrics list
 
-## Collector
+### Collector
 
 <details>
   <summary>Collector metrics</summary>
@@ -950,7 +952,7 @@ process_virtual_memory_max_bytes 1.8446744073709552e+19
 
 </details>
 
-## Query
+### Query
 
 <details>
   <summary>Query metrics</summary>

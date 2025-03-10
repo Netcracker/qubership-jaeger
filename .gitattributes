@@ -1,0 +1,32 @@
+.editorconfig text
+.flake8 text
+.gitattributes text
+.gitignore text
+.helmignore text
+.prettierignore text
+
+* text=auto
+*.env text eol=lf
+*.go text
+*.json text
+*.md text
+*.mod text
+*.py text
+*.robot text
+*.sh text eol=lf
+*.sum text
+*.tpl text
+*.txt text
+*.yaml text
+*.yml text
+
+LICENSE text
+Dockerfile text
+CODEOWNERS text
+
+/CHANGELOG.md merge=union
+/contributors.json merge=union
+/CODE-OF-CONDUCT.md text
+/CONTRIBUTING.md text
+/README.md text
+/SECURITY.md text

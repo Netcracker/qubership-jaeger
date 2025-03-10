@@ -1,6 +1,6 @@
 {{- if not .Values.collector.tlsConfig.existingSecret }}
-{{- if and .Values.collector.tlsConfig.generateCerts.enabled (or .Values.collector.tlsConfig.otelHttp.enabled 
-            .Values.collector.tlsConfig.otelgRPC.enabled 
+{{- if and .Values.collector.tlsConfig.generateCerts.enabled (or .Values.collector.tlsConfig.otelHttp.enabled
+            .Values.collector.tlsConfig.otelgRPC.enabled
             .Values.collector.tlsConfig.jaegerHttp.enabled
             .Values.collector.tlsConfig.jaegergRPC.enabled
             .Values.collector.tlsConfig.zipkin.enabled) (not .Values.collector.tlsConfig.clusterIssuerName)}}
