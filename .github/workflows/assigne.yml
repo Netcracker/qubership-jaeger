@@ -1,0 +1,19 @@
+name: Assignee
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+    assignee:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Assignee
+          run: |
+                ASSIGNEES=( $(yq eval '.assignees[]' ./.github/assigne-config.yml) )
+                ARGS=()
+                for assignee in "${ASSIGNEES[@]}"; do
+                    ARGS+=(--add-assignee "$assignee")
+                done
+                PR_NUMBER="${{ github.event.pull_request.number }}"
+                gh pr edit "$PR_NUMBER" "${ARGS[@]}"
