@@ -48,7 +48,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- if .Values.spark.priorityClassName }}
-           priorityClassName: {{ .Values.spark.priorityClassName }}
+          priorityClassName: {{ .Values.spark.priorityClassName }}
           {{- end }}
           restartPolicy: {{ .Values.spark.restartPolicy | default "OnFailure" }}
           serviceAccount: spark-dependencies-sa
