@@ -12,7 +12,7 @@ docker run \
   --env-file .github/super-linter.env \
   -v ${PWD}:/tmp/lint \
   --rm \
-  ghcr.io/super-linter/super-linter:$(sed -nE 's#.*uses:\s+super-linter/super-linter/slim@([^\s]+).*#\1#p' .github/workflows/super-linter.yaml)
+  ghcr.io/super-linter/super-linter:slim-$(sed -nE 's#.*uses:\s+super-linter/super-linter/slim@([^\s]+).*#\1#p' .github/workflows/super-linter.yaml)
 ```
 
 ## Documents
