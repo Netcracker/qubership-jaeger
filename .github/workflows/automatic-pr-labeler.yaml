@@ -1,14 +1,24 @@
 ---
+
+# The workflow template for automatic PR labeler.
+# It requires to have a configuration file with labels and conditions to apply them.
+# The configuration file should be placed in the .github folder and named auto-labeler-config.yaml.
+# Example file can be found there:
+# https://github.com/Netcracker/qubership-workflow-hub/blob/main/docs/examples/auto-labeler-config.yaml
+
 name: Automatic PR Labeler
+
 on:
-  pull_request_target:
+  pull_request:
     branches: [main]
     types:
       [opened, reopened, synchronize]
+
 permissions:
-  contents: read
-  issues: read
   pull-requests: write
+  contents: read
+  issues: write
+
 jobs:
   assign-labels:
     uses: Netcracker/qubership-workflow-hub/.github/workflows/auto-labeler.yaml@main
