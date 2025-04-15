@@ -102,14 +102,22 @@ jobs:
       tag-name: "v${{ github.event.inputs.version }}"
 
   docker-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        component: ${{ fromJson(needs.load-docker-build-components.outputs.component) }}
     needs: [tag, load-docker-build-components]
-    uses: netcracker/qubership-workflow-hub/.github/workflows/docker-publish.yml@main
-    with:
-      ref: v${{ inputs.version }}
-      download-artifact: false
-      dry-run: ${{ inputs.dry-run }}
-      component: ${{ needs.load-docker-build-components.outputs.component }}
-      platforms: ${{ needs.load-docker-build-components.outputs.platforms }}
+    steps:
+      - name: "Docker Build"
+        id: docker_build
+        uses: netcracker/qubership-workflow-hub/actions/docker-action@main
+        with:
+          ref: v${{ inputs.version }}
+          download-artifact: false
+          dry-run: ${{ inputs.dry-run }}
+          component: ${{ matrix.component }}
+          platforms: ${{ needs.load-docker-build-components.outputs.platforms }}
 
   github-release:
     needs: [tag, docker-build]
