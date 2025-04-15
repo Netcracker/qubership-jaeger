@@ -203,9 +203,6 @@ But Jaeger supports AWS OpenSearch as a managed service. Recommendation for AWS 
   * c5.large.search
   * c4.large.search
 
-Full information on which steps should be executed before deploying in AWS and with AWS OpenSearch can be found in the
-user guide [AWS OpenSearch](user-guides/aws-opensearch.md).
-
 <!-- #GFCFilterMarkerStart# -->
 [Back to TOC](#table-of-content)
 <!-- #GFCFilterMarkerEnd# -->
@@ -237,7 +234,7 @@ Collector:
 | collector | 50m          | 64Mi            | 100m       | 128Mi         |
 | query     | 100m         | 64Mi            | 150m       | 128Mi         |
 
-For more information about Jaeger's performance, refer to the [Jaeger Service Performance Monitoring](/docs/public/performance.md)
+For more information about Jaeger's performance, refer to the [Jaeger Service Performance Monitoring](performance.md)
 section in the _Cloud Platform Monitoring Guide_.
 
 **Note**: The above resources are required for starting, not for working under load. For production, the resources
@@ -277,7 +274,7 @@ Total number of spans = Number of spans per second * Retention period in seconds
 
 **Warning!** TTL for Jaeger's Cassandra tables **can't be changed** during update!
 You must set correct TTL values during first deploy! If you didn't do it, please read the
-[Maintenance: Change Cassandra TTL](/docs/public/maintenance.md#change-cassandra-ttl).
+[Maintenance: Change Cassandra TTL](maintenance.md#change-cassandra-ttl).
 
 To find the retention period see `ttl` for [Cassandra](#cassandra) and `numberOfDays` for
 [Elasticsearch\/Opensearch](#index-cleaner).
@@ -323,9 +320,6 @@ Support matrix Jaeger as third-party:
 | Agent to Collector         | ✅ Support     |
 | Collector/Query to Storage | ✅ Support     |
 | Browser to UI              | ❌ Not Support |
-
-Detailed information about how to configure TLS and examples of deployment parameters you can find in the user guide
-[TLS](user-guides/tls.md).
 
 <!-- #GFCFilterMarkerStart# -->
 [Back to TOC](#table-of-content)
@@ -974,7 +968,7 @@ agent:
 
 **Warning!** TTL for Jaeger's Cassandra tables **can't be changed** during update!
 You must set correct TTL values during first deploy! If you didn't do it, please read the
-[Maintenance: Change Cassandra TTL](/docs/public/maintenance.md#change-cassandra-ttl).
+[Maintenance: Change Cassandra TTL](maintenance.md#change-cassandra-ttl).
 
 ```yaml
 cassandraSchemaJob:
@@ -1930,9 +1924,6 @@ collector:
   install: true
   replicas: 2
 ```
-
-More information about how to deploy Jaeger in High Availability can be found in the user guide
-[High Availability](user-guides/high-availability.md).
 
 <!-- #GFCFilterMarkerStart# -->
 [Back to TOC](#table-of-content)

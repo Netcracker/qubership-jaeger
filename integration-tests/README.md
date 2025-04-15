@@ -23,7 +23,7 @@ The chart installs Jaeger Integration Tests service and pod in Kubernetes/Opensh
 
 ## Test cases
 
-1. [Smoke tests](/jaeger-integration-tests/integration-tests/robot/tests/smoke/smoke.robot)
+1. [Smoke tests](robot/tests/smoke/smoke.robot)
 
    * Check Deployments
    This is test check that indicated namespace hasn't inactive deployments for Collector and Query deployments.
@@ -36,16 +36,16 @@ The chart installs Jaeger Integration Tests service and pod in Kubernetes/Opensh
 
    * Jaeger can serve spans
    This test check health status from Jaeger and send POST request with generated spans (template of the span can be found
-   [here](/jaeger-integration-tests/integration-tests/robot/tests/libs/resources/spans.json)).
+   [here](robot/tests/libs/resources/spans.json)).
    After that will be checked that span was added to Jaeger (Will be sent GET request to Jaeger).
 
-2. [Spans generator](/jaeger-integration-tests/integration-tests/robot/tests/spans_generator/generate.robot)
+2. [Spans generator](robot/tests/spans_generator/generate.robot)
 
    * Send spans
    This test provides sending a lot of same spans (with different timestamp only) to Jaeger.
    In deployment parameters you need to indicate host for get spans, count for sending and time between sending.
 
-3. [HA tests](/jaeger-integration-tests/integration-tests/robot/tests/tests_ha/ha.robot)
+3. [HA tests](robot/tests/tests_ha/ha.robot)
 
    * Reboot query pod
    This test check the integrity of the spans if there is a loss of Query Pod.
@@ -54,13 +54,13 @@ The chart installs Jaeger Integration Tests service and pod in Kubernetes/Opensh
    This test check the availability of sending spans to Jaeger if there is a failure of some Collector pods.
    The Collector pods will be reboot one by one.
 
-4. [Hardcoded Images](/jaeger/integration-tests/robot/tests/image_tests/image_tests.robot)
+4. [Hardcoded Images](robot/tests/image_tests/image_tests.robot)
    * Test Hardcoded Images
    This test compare images in pods with images from MF. Included in the `smoke` tag
 
 ### Shared file
 
-The `shared.robot` [file](jaeger-integration-tests/integration-tests/robot/tests/shared/shared.robot)
+The `shared.robot` [file](robot/tests/shared/shared.robot)
 contains main keywords and main settings. For example, settings for retries and time between retries,
 connection parameters, convectors, etc.
 
