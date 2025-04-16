@@ -7,7 +7,6 @@
 name: Lint Code Base
 
 on:
-  push: null
   pull_request: null
   merge_group: null
   workflow_dispatch:
