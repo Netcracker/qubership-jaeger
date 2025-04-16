@@ -1,0 +1,52 @@
+---
+name: Build Artifacts
+
+on:
+  push:
+    branches:
+    - '**'
+    paths-ignore:
+    - '.github/**'
+    - 'docs/**'
+    - 'CODE-OF-CONDUCT.md'
+    - 'CONTRIBUTING.md'
+    - 'LICENSE'
+    - 'README.md'
+    - 'SECURITY.md'
+
+concurrency:
+  group: ${{ format('test-build-{0}', github.ref) }}
+  cancel-in-progress: true
+
+jobs:
+  multiplatform_build:
+    strategy:
+      fail-fast: false
+      matrix:
+        component:
+        - name: jaeger-integration-tests
+          file: integration-tests/Dockerfile
+          context: integration-tests
+        - name: jaeger-readiness-probe
+          file: readiness-probe/Dockerfile
+          context: readiness-probe
+        - name: jaeger-transfer
+          file: docker-transfer/Dockerfile
+          context: ""
+    runs-on: ubuntu-latest
+    name: ${{ matrix.component.name }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      with:
+        no-cache: true
+        context: ${{ matrix.component.context }}
+        file: ${{ matrix.component.file }}
+        platforms: linux/amd64
+        push: false
