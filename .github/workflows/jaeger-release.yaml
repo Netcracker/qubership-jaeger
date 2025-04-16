@@ -116,7 +116,7 @@ jobs:
           ref: v${{ inputs.version }}
           download-artifact: false
           dry-run: ${{ inputs.dry-run }}
-          component: ${{ matrix.component }}
+          component: ${{ toJson(matrix.component) }}
           platforms: ${{ needs.load-docker-build-components.outputs.platforms }}
 
   github-release:
