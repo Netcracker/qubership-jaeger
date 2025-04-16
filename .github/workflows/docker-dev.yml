@@ -2,9 +2,9 @@ name: Build Docker with Matrix Strategy
 
 on:
   pull_request:
-      types: [opened, synchronize, reopened]
-      branches:
-        - main
+    types: [opened, synchronize, reopened]
+    branches:
+    - main
   workflow_dispatch:
     inputs:
       tags:
@@ -25,34 +25,34 @@ jobs:
       components: ${{ steps.load_component.outputs.components }}
       platforms: ${{ steps.load_component.outputs.platforms }}
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-      - name: Load Docker Configuration
-        id: load_component
-        shell: bash
-        run: |
-          verify=$(cat "$GITHUB_WORKSPACE/.github/docker-dev-config.json" | jq '
-            def verify_structure:
-              .components as $components
-              | .platforms as $platforms
-              | ($components | type == "array")
-              and (all($components[]; has("name") and has("file") and has("context")))
-              and ($platforms | type == "string");
-            verify_structure
-            | if . then true else false end
-          ')
-          if [ "${verify}" == "true" ]; then
-            echo "✅ $GITHUB_WORKSPACE/.github/docker-dev-config.json file is valid"
-            components=$(jq -c ".components" "$GITHUB_WORKSPACE/.github/docker-dev-config.json")
-            platforms=$(jq -c ".platforms" "$GITHUB_WORKSPACE/.github/docker-dev-config.json")
-          else
-            echo "❗ $GITHUB_WORKSPACE/.github/docker-dev-config.json file is invalid"
-            echo "❗ $GITHUB_WORKSPACE/.github/docker-dev-config.json file is invalid" >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
-          echo "components=${components}" >> "$GITHUB_OUTPUT"
-          echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
+    - name: Load Docker Configuration
+      id: load_component
+      shell: bash
+      run: |
+        verify=$(cat "$GITHUB_WORKSPACE/.github/docker-dev-config.json" | jq '
+          def verify_structure:
+            .components as $components
+            | .platforms as $platforms
+            | ($components | type == "array")
+            and (all($components[]; has("name") and has("file") and has("context")))
+            and ($platforms | type == "string");
+          verify_structure
+          | if . then true else false end
+        ')
+        if [ "${verify}" == "true" ]; then
+          echo "✅ $GITHUB_WORKSPACE/.github/docker-dev-config.json file is valid"
+          components=$(jq -c ".components" "$GITHUB_WORKSPACE/.github/docker-dev-config.json")
+          platforms=$(jq -c ".platforms" "$GITHUB_WORKSPACE/.github/docker-dev-config.json")
+        else
+          echo "❗ $GITHUB_WORKSPACE/.github/docker-dev-config.json file is invalid"
+          echo "❗ $GITHUB_WORKSPACE/.github/docker-dev-config.json file is invalid" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+        echo "components=${components}" >> "$GITHUB_OUTPUT"
+        echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
 
   perform-version:
     runs-on: ubuntu-latest
@@ -61,34 +61,34 @@ jobs:
       metadata: "${{ steps.metadata.outputs.result }}"
       tags: "${{ steps.prepare_tags.outputs.tags }}"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Create name
-        uses: netcracker/qubership-workflow-hub/actions/metadata-action@main
-        id: metadata
-        with:
-          configuration-path: .github/dev-metadata-config.yml
-          short-sha: 11
+    - name: Create name
+      uses: netcracker/qubership-workflow-hub/actions/metadata-action@main
+      id: metadata
+      with:
+        configuration-path: .github/dev-metadata-config.yml
+        short-sha: 11
 
-      - name: Echo metadata
-        run: echo "Metadata result ${{ steps.metadata.outputs.result }}" >> $GITHUB_STEP_SUMMARY
+    - name: Echo metadata
+      run: echo "Metadata result ${{ steps.metadata.outputs.result }}" >> $GITHUB_STEP_SUMMARY
 
-      - name: Prepare tags
-        id: prepare_tags
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          BASE_TAG="${{ steps.metadata.outputs.result }}"
-          EXTRA_TAG="${{ github.event.inputs.tags }}"
-          if [ -n "$EXTRA_TAG" ]; then
-            TAGS="${BASE_TAG}, ${EXTRA_TAG}"
-          else
-            TAGS="${BASE_TAG}"
-          fi
-          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-          echo "tags: ${TAGS}" >> $GITHUB_STEP_SUMMARY
-          echo "github.head_ref = $HEAD_REF"
+    - name: Prepare tags
+      id: prepare_tags
+      env:
+        HEAD_REF: ${{ github.head_ref }}
+      run: |
+        BASE_TAG="${{ steps.metadata.outputs.result }}"
+        EXTRA_TAG="${{ github.event.inputs.tags }}"
+        if [ -n "$EXTRA_TAG" ]; then
+          TAGS="${BASE_TAG}, ${EXTRA_TAG}"
+        else
+          TAGS="${BASE_TAG}"
+        fi
+        echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+        echo "tags: ${TAGS}" >> $GITHUB_STEP_SUMMARY
+        echo "github.head_ref = $HEAD_REF"
   build:
     name: "Build Docker Images"
     needs: [load_config, perform-version]
@@ -98,14 +98,14 @@ jobs:
       matrix:
         component: ${{ fromJson(needs.load_config.outputs.components) }}
     steps:
-      - name: Docker
-        uses: netcracker/qubership-workflow-hub/actions/docker-action@main
-        with:
-          ref: ${{ github.ref }}
-          dry-run: ${{ inputs.dry-run }}
-          download-artifact: false
-          component: ${{ toJson(matrix.component) }}
-          platforms: ${{ needs.load_config.outputs.platforms }}
-          tags: ${{ needs.perform-version.outputs.tags }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Docker
+      uses: netcracker/qubership-workflow-hub/actions/docker-action@main
+      with:
+        ref: ${{ github.ref }}
+        dry-run: ${{ inputs.dry-run }}
+        download-artifact: false
+        component: ${{ toJson(matrix.component) }}
+        platforms: ${{ needs.load_config.outputs.platforms }}
+        tags: ${{ needs.perform-version.outputs.tags }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
