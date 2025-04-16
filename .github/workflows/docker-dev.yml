@@ -76,6 +76,8 @@ jobs:
 
       - name: Prepare tags
         id: prepare_tags
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           BASE_TAG="${{ steps.metadata.outputs.result }}"
           EXTRA_TAG="${{ github.event.inputs.tags }}"
@@ -86,7 +88,7 @@ jobs:
           fi
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "tags: ${TAGS}" >> $GITHUB_STEP_SUMMARY
-          echo "github.head_ref = ${{ github.head_ref }}"
+          echo "github.head_ref = $HEAD_REF"
   build:
     name: "Build Docker Images"
     needs: [load_config, perform-version]
