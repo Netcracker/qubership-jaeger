@@ -109,15 +109,15 @@ jobs:
         component: ${{ fromJson(needs.load-docker-build-components.outputs.component) }}
     needs: [tag, load-docker-build-components]
     steps:
-      - name: "Docker Build"
-        id: docker_build
-        uses: netcracker/qubership-workflow-hub/actions/docker-action@main
-        with:
-          ref: v${{ inputs.version }}
-          download-artifact: false
-          dry-run: ${{ inputs.dry-run }}
-          component: ${{ toJson(matrix.component) }}
-          platforms: ${{ needs.load-docker-build-components.outputs.platforms }}
+    - name: "Docker Build"
+      id: docker_build
+      uses: netcracker/qubership-workflow-hub/actions/docker-action@main
+      with:
+        ref: v${{ inputs.version }}
+        download-artifact: false
+        dry-run: ${{ inputs.dry-run }}
+        component: ${{ toJson(matrix.component) }}
+        platforms: ${{ needs.load-docker-build-components.outputs.platforms }}
 
   github-release:
     needs: [tag, docker-build]
