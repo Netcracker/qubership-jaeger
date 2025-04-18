@@ -25,6 +25,8 @@ import (
 
 var Logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
+var isHealth = false
+
 type HttpClient struct {
 	client   http.Client
 	user     string
@@ -67,6 +69,15 @@ func main() {
 	}
 
 	go func() {
+		slog.Info("Readiness probe process is starting")
+		for {
+			isHealth = s.isHealth()
+			slog.Info("Sleep for 10 sec and try again")
+			time.Sleep(10 * time.Second)
+		}
+	}()
+
+	go func() {
 		slog.Info(fmt.Sprintf("The service is listening on 0.0.0.0:%d", s.servicePort))
 		if err := server.ListenAndServe(); err != nil {
 			if err != http.ErrServerClosed {
@@ -102,8 +113,8 @@ func initServer() *Server {
 	storage := flag.String("storage", "cassandra", "The type of storage for checking probe")
 	host := flag.String("host", "", "The host for probe")
 	port := flag.Int("port", 0, "The port for probe")
-	errors := flag.Int("errors", 5, "The number of retries for checking probe")
-	retries := flag.Int("retries", 5, "The number of allowed errors for checking probe")
+	errors := flag.Int("errors", 3, "The number of retries for checking probe")
+	retries := flag.Int("retries", 3, "The number of allowed errors for checking probe")
 	timeout := flag.Int("timeout", 5, "The number of seconds for failing probe by timeout")
 	tlsEnabled := flag.Bool("tlsEnabled", false, "Enabling TLS for connection to the storage")
 	insecureSkipVerify := flag.Bool("insecureSkipVerify", false, "Disabling host verification for TLS")
@@ -196,12 +207,10 @@ func createCassandraClient(host string, port int, user string, password string, 
 	cluster.NumConns = 1
 	if tlsEnabled {
 		if verification {
-			cluster.SslOpts.Config.InsecureSkipVerify = true
 			cluster.SslOpts = &gocql.SslOptions{
 				EnableHostVerification: !verification,
 			}
 		} else {
-			cluster.SslOpts.Config.InsecureSkipVerify = false
 			cluster.SslOpts = &gocql.SslOptions{
 				CertPath:               crt,
 				CaPath:                 ca,
@@ -275,7 +284,7 @@ func (s *Server) livenessProbe(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (s *Server) readinessProbe(w http.ResponseWriter, _ *http.Request) {
-	if s.isHealth() {
+	if isHealth {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/text")
 		_, err := io.WriteString(w, http.StatusText(http.StatusOK))
@@ -314,8 +323,8 @@ func (s *Server) cassandraHealth() bool {
 		if errors >= s.errorsCount {
 			return false
 		}
-		slog.Info("Sleep for 10 sec and try again")
-		time.Sleep(10 * time.Second)
+		slog.Info("Sleep for 5 sec and try again")
+		time.Sleep(5 * time.Second)
 	}
 	return false
 }
