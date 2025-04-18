@@ -1,0 +1,207 @@
+---
+name: Test qubership-jaeger installation
+
+on:
+  workflow_run:
+    workflows: ["Build Docker with Matrix Strategy"]
+    types:
+    - completed
+  workflow_dispatch: {}
+  pull_request:
+    branches:
+    - main
+
+env:
+  kind_version: v0.27.0
+  cassandra_namespace: k8ssandra-operator
+  namespace: jaeger
+  max_attempts: 50
+  delay: 10
+
+jobs:
+  Run-Integration-Tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        path: qubership-jaeger
+
+    - name: Set up Kind
+      run: |
+        curl -sLo ./kind https://kind.sigs.k8s.io/dl/${{ env.kind_version }}/kind-linux-amd64
+        chmod +x ./kind
+        sudo mv ./kind /usr/local/bin/
+        kind create cluster
+      shell: bash
+
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      shell: bash
+
+    - name: Install cert-manager
+      run: |
+        helm repo add jetstack https://charts.jetstack.io --force-update
+        helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager \
+          --create-namespace --version v1.16.3 --set prometheus.enabled=true   --set crds.enabled=true
+      shell: bash
+
+    - name: Install k8ssandra operator
+      run: |
+        helm repo add k8ssandra https://helm.k8ssandra.io/stable --force-update
+        helm upgrade --install k8ssandra-operator k8ssandra/k8ssandra-operator \
+          --namespace ${{ env.cassandra_namespace }} --create-namespace
+      shell: bash
+
+    - name: Check k8ssandra-operator pod status
+      run: |
+        attempt=1
+        max_attempts=${{ env.max_attempts }}
+        while [[ $attempt -le $max_attempts ]]; do
+          echo "Attempt $attempt/$max_attempts: Checking k8ssandra-operator pod status..."
+          phase=$(kubectl get pod -l app.kubernetes.io/name=k8ssandra-operator -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "NotFound")
+          ready=$(kubectl get pod -l app.kubernetes.io/name=k8ssandra-operator -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "NotFound")
+          scheduled=$(kubectl get pod -l app.kubernetes.io/name=k8ssandra-operator -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.conditions[?(@.type=="PodScheduled")].status}' 2>/dev/null || echo "SchedulingError")
+          if [[ "$ready" == "True" ]]; then
+            echo "k8ssandra-operator pod is ready."
+            break
+          elif [[ "$ready" == "False" && "$phase" == "Running" ]]; then
+            echo "k8ssandra-operator pod is not ready yet."
+            sleep ${{ env.delay }}
+            ((attempt++))
+          elif [[ "$phase" == "Pending" && "$scheduled" == "True" ]]; then
+            echo "k8ssandra-operator pod status: $phase. Retrying in ${{ env.delay }} seconds..."
+            sleep ${{ env.delay }}
+            ((attempt++))
+          else
+            echo "k8ssandra-operator pod status: $phase"
+            cass_operator_pod=$(kubectl get pods -l app.kubernetes.io/name=k8ssandra-operator -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0]}' -o custom-columns=":metadata.name" --no-headers)
+            kubectl events -n ${{ env.cassandra_namespace }} --for pod/"$cass_operator_pod"
+            exit 1
+          fi
+        done
+        if [[ "$ready" != "True" && "$phase" != "Running" ]]; then
+          echo "ERROR: Maximum attempts reached. k8ssandra-operator pod is not healthy."
+          kubectl get pods -n ${{ env.cassandra_namespace }}
+          echo -e "\n======================================================================"
+          kubectl get events -n ${{ env.cassandra_namespace }}
+          exit 1
+        fi
+      shell: bash
+
+    - name: Deploy k8ssandra cluster
+      run: |
+        cat <<EOF | kubectl apply -n ${{ env.cassandra_namespace }} -f -
+        apiVersion: k8ssandra.io/v1alpha1
+        kind: K8ssandraCluster
+        metadata:
+          name: cassandra
+        spec:
+          cassandra:
+            serverVersion: "4.0.1"
+            datacenters:
+              - metadata:
+                  name: dc1
+                size: 1
+                storageConfig:
+                  cassandraDataVolumeClaimSpec:
+                    storageClassName: standard
+                    accessModes:
+                      - ReadWriteOnce
+                    resources:
+                      requests:
+                        storage: 5Gi
+                config:
+                  jvmOptions:
+                    heapSize: 512M
+        EOF
+      shell: bash
+
+    - name: Check k8ssandra cluster status
+      run: |
+        attempt=1
+        max_attempts=${{ env.max_attempts }}
+        echo "Delaying for ${{ env.delay }} seconds before checking cassandra cluster..."
+        sleep ${{ env.delay }}
+        while [[ $attempt -le $max_attempts ]]; do
+          echo "Attempt $attempt/$max_attempts: Checking k8ssandra cluster status..."
+          phase=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "NotFound")
+          ready=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "NotFound")
+          scheduled=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.conditions[?(@.type=="PodScheduled")].status}' 2>/dev/null || echo "SchedulingError")
+          if [[ "$ready" == "True" ]]; then
+            echo "k8ssandra cluster is ready."
+            break
+          elif [[ "$ready" == "False" && "$phase" == "Running" ]]; then
+            echo "k8ssandra cluster is not ready yet."
+            sleep ${{ env.delay }}
+            ((attempt++))
+          elif [[ "$phase" == "Pending" && "$scheduled" == "True" ]]; then
+            echo "k8ssandra cluster status: $phase. Retrying in ${{ env.delay }} seconds..."
+            sleep ${{ env.delay }}
+            ((attempt++))
+          else
+            echo "k8ssandra cluster status: $phase"
+            cassandra_pod=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0]}' -o custom-columns=":metadata.name" --no-headers)
+            kubectl events -n ${{ env.cassandra_namespace }} --for pod/"$cassandra_pod"
+            exit 1
+          fi
+        done
+        if [[ "$ready" != "True" && "$phase" != "Running" ]]; then
+          echo "ERROR: Maximum attempts reached. k8ssandra cluster is not ready."
+          kubectl get pods -n ${{ env.cassandra_namespace }}
+          echo -e "\n======================================================================"
+          kubectl get events -n ${{ env.cassandra_namespace }}
+          exit 1
+        fi
+      shell: bash
+
+    - name: Install jaeger
+      run: |
+        TAG="${GITHUB_SHA:0:11}"
+        CASSANDRA_USER=$(kubectl get secret -n ${{ env.cassandra_namespace }} cassandra-superuser -o json | jq -r '.data.username' | base64 -d)
+        CASSANDRA_PASSWORD=$(kubectl get secret -n ${{ env.cassandra_namespace }} cassandra-superuser -o json | jq -r '.data.password' | base64 -d)
+        CASSANDRA_SVC="cassandra-dc1-service.${{ env.cassandra_namespace }}"
+        helm upgrade --install qubership-jaeger ./qubership-jaeger/charts/qubership-jaeger --namespace ${{ env.namespace }} \
+          --create-namespace --set jaeger.prometheusMonitoringDashboard=false --set jaeger.prometheusMonitoring=false \
+          --set "cassandraSchemaJob.host=$CASSANDRA_SVC" --set "cassandraSchemaJob.username=$CASSANDRA_USER" \
+          --set "cassandraSchemaJob.password=$CASSANDRA_PASSWORD" --set cassandraSchemaJob.datacenter=dc1 \
+          --set "readinessProbe.image=ghcr.io/netcracker/jaeger-readiness-probe:$TAG"
+      shell: bash
+
+    - name: Save artifacts
+      if: always()
+      run: |
+        mkdir artifacts
+        kubectl get pods -n ${{ env.namespace }} > artifacts/pods.txt
+        kubectl get events -n ${{ env.namespace }} --sort-by=.metadata.creationTimestamp > artifacts/events.txt
+        kubectl get pods -n ${{ env.namespace }} -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[*].name}{"\n"}{end}' | while read -r pod containers; do
+          for container in $containers; do
+            echo "Fetching logs for pod: $pod, container: $container"
+            kubectl logs -n ${{ env.namespace }} $pod -c $container > "artifacts/$pod-$container.log"
+          done
+        done
+      shell: bash
+
+    - name: Generate artifact name
+      if: always()
+      env:
+        HEAD_REF: ${{ github.head_ref || github.ref_name }}
+      run: |
+        # ▶️ Generate artifact name
+        release_name=$(echo "$HEAD_REF" | tr '/' '_' || echo "")
+        ARTIFACT_NAME="${{ github.job }}_${{ env.namespace }}_${release_name}_artifacts_$(date -u +'%Y%m%d%H%M%S')"
+        echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Upload artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.ARTIFACT_NAME }}
+        path: artifacts/
+
+    - name: Cleanup
+      run: |
+        kind delete cluster
