@@ -133,7 +133,7 @@ spec:
           args:
             {{- template "collector.args" . }}
           env:
-            {{- /* Section with Cassandra enviroment variables */}}
+            {{- /* Section with Cassandra environment variables */}}
             {{- if eq .Values.jaeger.storage.type "cassandra" }}
             - name: CASSANDRA_USERNAME
               valueFrom:
@@ -145,7 +145,7 @@ spec:
                 secretKeyRef:
                   name: {{ template "cassandraSchemaJob.secretName" . }}
                   key: password
-            {{- /* Section with ElasticSearch/OpenSearch enviroment variables */}}
+            {{- /* Section with ElasticSearch/OpenSearch environment variables */}}
             {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
             - name: ES_USERNAME
               valueFrom:
@@ -158,6 +158,16 @@ spec:
                   name: {{ if .Values.elasticsearch.existingSecret }}{{ .Values.elasticsearch.existingSecret }}{{- else }}jaeger-elasticsearch{{- end }}
                   key: password
             {{- end }}
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /
+              port: admin-http
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
           {{- if .Values.readinessProbe.install }}
           readinessProbe:
             failureThreshold: 1
@@ -166,31 +176,21 @@ spec:
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 1
-            periodSeconds: 300
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 10 }}
             successThreshold: 1
-            timeoutSeconds: 600
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 5 }}
           {{- else }}
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              path: /status
-              port: healtcheck
+              path: /
+              port: admin-http
               scheme: HTTP
             initialDelaySeconds: 1
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
           {{- end }}
-          livenessProbe:
-            failureThreshold: 5
-            httpGet:
-              path: /status
-              port: healthcheck
-              scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 15
-            successThreshold: 1
-            timeoutSeconds: 1
           ports:
             {{- if .Values.collector.zipkinPort }}
             - containerPort: {{ .Values.collector.zipkinPort }}
