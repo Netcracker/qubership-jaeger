@@ -113,9 +113,11 @@ func initServer() *Server {
 	storage := flag.String("storage", "cassandra", "The type of storage for checking probe")
 	host := flag.String("host", "", "The host for probe")
 	port := flag.Int("port", 0, "The port for probe")
-	errors := flag.Int("errors", 3, "The number of retries for checking probe")
-	retries := flag.Int("retries", 3, "The number of allowed errors for checking probe")
+
+	errors := flag.Int("errors", 3, "The number of allowed errors for checking probe")
+	retries := flag.Int("retries", 3, "The number of retries for checking probe")
 	timeout := flag.Int("timeout", 5, "The number of seconds for failing probe by timeout")
+
 	tlsEnabled := flag.Bool("tlsEnabled", false, "Enabling TLS for connection to the storage")
 	insecureSkipVerify := flag.Bool("insecureSkipVerify", false, "Disabling host verification for TLS")
 
