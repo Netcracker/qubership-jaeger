@@ -1,3 +1,6 @@
+---
+name: Cleanup Old Docker Container Versions
+run-name: "${{ github.event_name }} - ${{ github.actor }}"
 on:
     schedule:
       - cron: "0 0 * * 0" # Runs weekly on Sunday at midnight
@@ -24,8 +27,14 @@ jobs:
       runs-on: ubuntu-latest
 
       steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+        - name: "Summary"
+          run: |
+            echo "**Event**: ${{ github.event_name }}"
+            echo "**Actor**: ${{ github.actor }}"
+            echo "**Threshold days**: ${{ github.event.inputs.threshold-days || 8 }}"
+            echo "**Included tags**: ${{ github.event.inputs.included-tags || 'dev*' }}"
+            echo "**Excluded tags**: ${{ github.event.inputs.excluded-tags || 'release*' }}"
+            echo "**Dry-run**: ${{ github.event.inputs.dry-run || 'false' }}"
         - name: Run Container Package Cleanup Action
           uses: Netcracker/qubership-workflow-hub/actions/container-package-cleanup@main
           with:
