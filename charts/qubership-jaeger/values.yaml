@@ -119,7 +119,7 @@ proxy:
     - dGVzdDp0ZXN0
 
   # The resources describe to compute resource requests and limits for single Pods.
-  # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   # Type: object
   # Mandatory: no
   # Default:
@@ -435,7 +435,7 @@ elasticsearch:
     tolerations: {}
 
     # The resources describe to compute resource requests and limits for single Pods.
-    # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+    # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
     # Type: object
     # Mandatory: no
     #
@@ -620,7 +620,7 @@ elasticsearch:
 
 
     # The resources describe to compute resource requests and limits for single Pods.
-    # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+    # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
     # Type: object
     # Mandatory: no
     #
@@ -828,7 +828,7 @@ elasticsearch:
     extraSecretMounts: []
 
     # The resources describe to compute resource requests and limits for single Pods.
-    # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+    # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
     # Type: object
     # Mandatory: no
     #
@@ -1027,7 +1027,7 @@ cassandraSchemaJob:
   password: ""
 
   # The resources describe to compute resource requests and limits for single Pods.
-  # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   # Type: object
   # Mandatory: no
   #
@@ -1339,7 +1339,7 @@ agent:
   tolerations: {}
 
   # The resources describe to compute resource requests and limits for single Pods.
-  # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   # Type: object
   # Mandatory: no
   #
@@ -1826,7 +1826,7 @@ collector:
         topologyKey: kubernetes.io/hostname
 
   # The resources describe to compute resource requests and limits for single Pods.
-  # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   # Type: object
   # Mandatory: no
   #
@@ -2071,7 +2071,7 @@ hotrod:
     port: 6831
 
   # The resources describe to compute resource requests and limits for single Pods.
-  # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   # Type: object
   # Mandatory: no
   #
@@ -2331,7 +2331,7 @@ query:
     #     - ALL
 
   # The resources describe to compute resource requests and limits for single Pods.
-  # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   # Type: object
   # Mandatory: no
   #
@@ -2569,8 +2569,22 @@ readinessProbe:
   #   - "-retries=5"
   #   - "-timeout=5"
 
+  # How often (in seconds) to perform the readiness probe.
+  # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
+  # Type: integer
+  # Mandatory: no
+  #
+  # periodSeconds: 10
+
+  # Number of seconds after which the readiness probe times out.
+  # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
+  # Type: integer
+  # Mandatory: no
+  #
+  # periodSeconds: 5
+
   # The resources describe to compute resource requests and limits for single Pods.
-  # Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   # Type: object
   # Mandatory: no
   #
