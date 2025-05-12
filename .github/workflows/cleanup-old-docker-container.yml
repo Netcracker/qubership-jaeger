@@ -13,11 +13,11 @@ on:
       included-tags:
         description: "Tags to include for deletion"
         required: false
-        default: ""
+        default: "*"
       excluded-tags:
         description: "Tags to exclude from deletion"
         required: false
-        default: "release*"
+        default: "main,latest,release*,*.*"
       dry-run:
         description: "Enable dry-run mode"
         required: false
@@ -44,4 +44,4 @@ jobs:
           excluded-tags: ${{ github.event.inputs.excluded-tags || 'release*' }}
           dry-run: ${{ github.event.inputs.dry-run || 'false' }}
         env:
-          PACKAGE_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          PACKAGE_TOKEN: ${{ secrets.GH_RWD_PACKAGE_TOKEN }}
