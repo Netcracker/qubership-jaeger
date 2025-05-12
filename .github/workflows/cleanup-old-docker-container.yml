@@ -23,7 +23,7 @@ on:
       excluded-tags:
         description: "Tags to exclude from deletion"
         required: false
-        default: "main*,latest*,release*,*.*"
+        default: "main,latest,release*,*.*"
       dry-run:
         description: "Enable dry-run mode"
         required: false
