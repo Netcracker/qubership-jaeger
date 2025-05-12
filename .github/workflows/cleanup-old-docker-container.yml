@@ -11,7 +11,7 @@ on:
         required: false
         default: "7"
       # Include to cleanup images for all tags, branches
-      # Using the "excluded-tags" we will remove from the delete process all images that should be save 
+      # Using the "excluded-tags" we will remove from the delete process all images that should be saved
       included-tags:
         description: "Tags to include for deletion"
         required: false
