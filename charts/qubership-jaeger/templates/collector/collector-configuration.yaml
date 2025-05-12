@@ -288,6 +288,7 @@ data:
             max_recv_msg_size_mib: {{ .Values.collector.jaeger.grpc.maxRecvMsgSizeMib }}
             {{- end }}
       zipkin:
+        endpoint: "0.0.0.0:9411"
         {{- if $zipkinTlsConfigEnabled }}
         {{- if .Values.collector.zipkin.disableKeepAlives }}
         disable_keep_alives: true
