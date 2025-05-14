@@ -79,7 +79,7 @@ jobs:
         dry-run: ${{ inputs.dry-run }}
 
   build:
-    name: "Build Docker Images"
+    name: Build Docker Images
     needs: [prepare]
     runs-on: ubuntu-latest
     permissions:
