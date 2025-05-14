@@ -67,7 +67,7 @@ jobs:
         echo "components=${components}" >> "$GITHUB_OUTPUT"
         echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
 
-    - name: Create tags for Docker images
+    - name: Create tags for images
       uses: nookyo/qubership-workflow-hub/actions/metadata-action@main
       id: metadata
       with:
