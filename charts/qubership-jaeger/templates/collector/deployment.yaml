@@ -128,11 +128,9 @@ spec:
             timeoutSeconds: 1
           {{- end }}
           ports:
-            {{- if .Values.collector.zipkinPort }}
             - containerPort: {{ .Values.collector.zipkinPort }}
               name: zipkin
               protocol: TCP
-            {{- end }}
             - containerPort: 13133
               name: healthcheck
               protocol: TCP
@@ -141,10 +139,6 @@ spec:
               protocol: TCP
             - containerPort: 14268
               name: thrift-http
-              protocol: TCP
-            # TODO: is it still actual?
-            - containerPort: 14269
-              name: admin-http
               protocol: TCP
             - containerPort: 4317
               name: otlp-grpc

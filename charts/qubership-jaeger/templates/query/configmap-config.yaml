@@ -19,17 +19,30 @@ metadata:
 data:
   config.yaml: |
     service:
-      extensions: [jaeger_storage,jaeger_query,healthcheckv2]
+      extensions: [jaeger_storage, jaeger_query, healthcheckv2]
       pipelines:
         traces:
           receivers: [jaeger]
           processors: [batch]
           exporters: [debug]
+      telemetry:
+        resource:
+          service.name: jaeger-query
+        metrics:
+          level: detailed
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
+        logs:
+          level: info
     extensions:
       healthcheckv2:
         use_v2: true
         http:
-          endpoint: "0.0.0.0:13133"
+          endpoint: 0.0.0.0:13133
       jaeger_query:
         storage:
           traces: {{ if eq .Values.jaeger.storage.type "cassandra" }}main_cassandra{{- else if eq .Values.jaeger.storage.type "elasticsearch" }}main_elasticsearch{{- else if eq .Values.jaeger.storage.type "remotegRPC"}}remote_grpc{{- end }}
@@ -52,9 +65,9 @@ data:
         bearer_token_propagation: true
         {{- end }}
         grpc:
-          endpoint: "0.0.0.0:16685"
+          endpoint: 0.0.0.0:16685
         http:
-          endpoint: "0.0.0.0:16686"
+          endpoint: 0.0.0.0:16686
           {{- if .Values.query.additionalHeaders }}
           headers:
           {{ toYaml .Values.query.additionalHeaders | nindent 12 }}

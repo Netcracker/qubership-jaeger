@@ -56,7 +56,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.jaeger.serviceName }}-query
       containers:
-        - name: jaeger-query
+        - name: query
           image: {{ template "query.image" . }}
           imagePullPolicy: {{ .Values.query.imagePullPolicy }}
           args:
@@ -140,9 +140,6 @@ spec:
             - containerPort: 16686
               name: query-http
               protocol: TCP
-            - containerPort: 16687
-              name: admin-http
-              protocol: TCP
           resources:
             {{- toYaml .Values.query.resources | nindent 12 }}
           securityContext:
@@ -166,9 +163,9 @@ spec:
             - '--service-cluster envoy'
             - '--service-node envoy'
           ports:
-            - containerPort: 16688
-              protocol: TCP
             - containerPort: 9901
+              protocol: TCP
+            - containerPort: 16688
               protocol: TCP
           env:
             - name: ENVOY_UID

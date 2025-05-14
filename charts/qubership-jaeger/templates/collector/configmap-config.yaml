@@ -24,15 +24,15 @@ metadata:
 data:
   config.yaml: |
     service:
-      extensions: {{ if .Values.collector.sampling.type }}[jaeger_storage,healthcheckv2,remote_sampling]{{ else }}[jaeger_storage,healthcheckv2]{{- end }}
+      extensions: {{ if .Values.collector.sampling.type }}[jaeger_storage, healthcheckv2, remote_sampling]{{ else }}[jaeger_storage ,healthcheckv2]{{- end }}
       pipelines:
         traces:
-          receivers: [otlp,jaeger,zipkin]
+          receivers: [otlp, jaeger, zipkin]
           processors: [batch]
           exporters: [jaeger_storage_exporter]
       telemetry:
         resource:
-          service.name: jaeger
+          service.name: jaeger-collector
         metrics:
           level: detailed
           readers:
@@ -42,7 +42,7 @@ data:
                     host: 0.0.0.0
                     port: 8888
         logs:
-          level: debug
+          level: info
     extensions:
       {{- if .Values.collector.sampling.type }}
       remote_sampling:
@@ -59,7 +59,7 @@ data:
       healthcheckv2:
         use_v2: true
         http:
-          endpoint: "0.0.0.0:13133"
+          endpoint: 0.0.0.0:13133
       jaeger_storage:
         backends:
           {{- if eq .Values.jaeger.storage.type "cassandra" }}
@@ -152,7 +152,7 @@ data:
       otlp:
         protocols:
           grpc:
-            endpoint: "0.0.0.0:4317"
+            endpoint: 0.0.0.0:4317
             {{- if $otelgrpcTlsConfigEnabled }}
             tls:
               client_ca_file: /collector-tls/ca.crt
@@ -185,7 +185,7 @@ data:
             max_recv_msg_size_mib: {{ .Values.collector.otlp.grpc.maxRecvMsgSizeMib }}
             {{- end }}
           http:
-            endpoint: "0.0.0.0:4318"
+            endpoint: 0.0.0.0:4318
             {{- if $otelhttpTlsConfigEnabled }}
             tls:
               client_ca_file: /collector-tls/ca.crt
@@ -230,7 +230,7 @@ data:
           thrift_binary:
           thrift_compact:
           thrift_http:
-            endpoint: "0.0.0.0:14268"
+            endpoint: 0.0.0.0:14268
             {{- if $jaegerhttpTlsConfigEnabled }}
             tls:
               cert_file: /collector-tls/tls.crt
@@ -259,7 +259,7 @@ data:
             read_timeout: {{ .Values.collector.jaeger.http.readTimeout }}
             {{- end }}
           grpc:
-            endpoint: "0.0.0.0:14250"
+            endpoint: 0.0.0.0:14250
             {{- if $jaegergrpcTlsConfigEnabled }}
             tls:
               cert_file: /collector-tls/tls.crt

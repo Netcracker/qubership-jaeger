@@ -1696,7 +1696,7 @@ collector:
       - prefix: /
         service:
           # name: jaeger-collector
-          port: 16269
+          port: 13133
       - prefix: /zipkin
         service:
           port: 9411
@@ -1723,7 +1723,7 @@ collector:
           port: 4317
       - prefix: /thrift/grpc
         service:
-          port: 14267
+          port: 14250
     tls: {}
 
 hotrod:
