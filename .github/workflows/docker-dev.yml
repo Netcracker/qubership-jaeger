@@ -71,7 +71,6 @@ jobs:
       uses: netcracker/qubership-workflow-hub/actions/metadata-action@main
       id: metadata
       with:
-        configuration-path: .github/dev-metadata-config.yml
         short-sha: 11
         extra-tags: ${{ github.event.inputs.tags }}
         default-template: "{{ref-name}}-{{timestamp}}, {{ref-name}}-{{short-sha}}, {{ref-name}}, {{short-sha}}"
