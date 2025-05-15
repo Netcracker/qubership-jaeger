@@ -68,7 +68,7 @@ jobs:
         echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
 
     - name: Create tags for images
-      uses: nookyo/qubership-workflow-hub/actions/metadata-action@main
+      uses: netcracker/qubership-workflow-hub/actions/metadata-action@main
       id: metadata
       with:
         configuration-path: .github/dev-metadata-config.yml
