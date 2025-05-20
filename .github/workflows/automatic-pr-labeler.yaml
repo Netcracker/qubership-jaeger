@@ -39,7 +39,7 @@ jobs:
         if: ${{ github.event.pull_request.base.repo.id != github.event.pull_request.head.repo.id }}
         run: |
           {
-            echo "⚠️ Pull request from fork! ⚠️"
-            echo "Labels will not be applied to PR. Assign them manually please."
-            echo "Labels to assign: ${{ steps.action-assign-labels.outputs.labels-next }}"
-          } >> "$GITHUB_STEP_SUMMARY"
+            echo "⚠️ Pull request from fork! ⚠️";
+            echo "Labels will not be applied to PR. Assign them manually please.";
+            echo "Labels to assign: ${{ steps.action-assign-labels.outputs.labels-next }}";
+          } >> $GITHUB_STEP_SUMMARY
