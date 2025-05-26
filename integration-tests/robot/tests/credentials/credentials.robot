@@ -1,21 +1,20 @@
 *** Variables ***
-${OPERATION_RETRY_COUNT}        30x
-${OPERATION_RETRY_INTERVAL}     5s
 ${secret_name}                  proxy-config
-${JAEGER_URL}                   http://jaeger-query.observability:16688/
+${JAEGER_URL}                   http://jaeger-query.jaeger:16686
 
 *** Settings ***
 Resource  ../shared/shared.robot
 Suite Setup  Preparation
 Library    credentials.py
+Library    Process
 
 *** Keywords ***
 Restart Jaeger Query Pod
     [Arguments]  ${namespace}
     ${pods}=  Get Pods  ${namespace}
     FOR  ${pod}  IN  @{pods}
-        ${name}=    Get From Dictionary    ${pod.metadata}    name
-        Run Keyword If    '${name}' starts with 'jaeger-query-'    Delete Pod By Pod Name    ${name}    ${namespace}
+        ${name}=  Get From Dictionary  ${pod.metadata}  name
+        Run Keyword If  '${name}' starts with 'jaeger-query-'  Delete Pod By Pod Name  ${name}  ${namespace}
     END
     Sleep    60s
 
@@ -27,8 +26,8 @@ Check Credentials Change and Jaeger Auth
     ${original}=  Convert To String  ${response}
     ${secret}=  Evaluate  replace_basic_auth_structured("""${original}""")  modules=credentials.py
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret}
-    Restart Jaeger Query Pod    ${JAEGER_NAMESPACE}
-    ${result}=    Run Process    curl -s -o /dev/null -w "%{http_code}" -u test1:test1 ${JAEGER_URL}    shell=True
-    Should Be Equal As Strings    ${result.stdout}    200
+    Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
+    ${result}=  Run Process  curl -s -o /dev/null -w  %%{http_code} -u test1:test1 ${JAEGER_URL}  shell=True
+    Should Be Equal As Strings  ${result.stdout}  200
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${original}
-    Restart Jaeger Query Pod    ${JAEGER_NAMESPACE}
+    Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
