@@ -5,7 +5,6 @@ ${JAEGER_URL}                   http://jaeger-query.jaeger:16686
 *** Settings ***
 Resource  ../shared/shared.robot
 Suite Setup  Preparation
-Library    credentials.py
 Library    Process
 
 *** Keywords ***
