@@ -24,7 +24,7 @@ Check Credentials Change and Jaeger Auth
     ${response}=  Get Secret  ${secret_name}  ${JAEGER_NAMESPACE}
     Should Be Equal As Strings  ${response.metadata.name}  ${secret_name}
     ${original}=  Convert To String  ${response}
-    ${secret}=  Evaluate  replace_basic_auth_structured("""${original}""")  modules=credentials.py
+    ${secret}=  Evaluate  replace_basic_auth_structured("""${original}""")
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret}
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
     ${result}=  Run Process  curl -s -o /dev/null -w  %%{http_code} -u test1:test1 ${JAEGER_URL}  shell=True
