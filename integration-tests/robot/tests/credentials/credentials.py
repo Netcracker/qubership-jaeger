@@ -13,5 +13,6 @@ def replace_basic_auth_structured(yaml_text: str) -> str:
 
     encoded = base64.b64encode(b"test1:test1").decode()
     parsed = yaml.safe_load(yaml_text)
+    parsed.pop("metadata", None)
     updated = update(parsed, encoded)
     return updated
