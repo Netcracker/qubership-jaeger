@@ -143,7 +143,7 @@ Image can be found from:
   {{- if .Values.collector.image -}}
     {{- printf "%s" .Values.collector.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger:2.2.0" -}}
+    {{- print "jaegertracing/jaeger:2.5.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -156,7 +156,7 @@ Image can be found from:
   {{- if .Values.query.image -}}
     {{- printf "%s" .Values.query.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger:2.2.0" -}}
+    {{- print "jaegertracing/jaeger:2.5.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -182,7 +182,7 @@ Image can be found from:
   {{- if .Values.cassandraSchemaJob.image -}}
     {{- printf "%s" .Values.cassandraSchemaJob.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-cassandra-schema:1.62.0" -}}
+    {{- print "jaegertracing/jaeger-cassandra-schema:1.68.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -195,7 +195,7 @@ Image can be found from:
   {{- if .Values.hotrod.image -}}
     {{- printf "%s" .Values.hotrod.image -}}
   {{- else -}}
-    {{- print "jaegertracing/example-hotrod:1.62.0" -}}
+    {{- print "jaegertracing/example-hotrod:1.68.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -208,7 +208,7 @@ Image can be found from:
   {{- if .Values.elasticsearch.indexCleaner.image -}}
     {{- printf "%s" .Values.elasticsearch.indexCleaner.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-es-index-cleaner:1.62.0" -}}
+    {{- print "jaegertracing/jaeger-es-index-cleaner:1.68.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -221,7 +221,7 @@ Image can be found from:
   {{- if .Values.elasticsearch.rollover.image -}}
     {{- printf "%s" .Values.elasticsearch.rollover.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-es-rollover:1.62.0" -}}
+    {{- print "jaegertracing/jaeger-es-rollover:1.68.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -1195,7 +1195,7 @@ Generate certificate volumes for TLS configuration
           path: client-key.pem
 {{- end }}
 {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-- name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
+- name: {{ template "elasticsearch.tls.secretName" . }}
   projected:
     sources:
     - secret:
@@ -1277,7 +1277,7 @@ Generate certificate volumes for OpenSearch jobs TLS configuration
 */}}
 {{- define "jaeger.opensearchCertificateVolumes" -}}
 {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-- name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
+- name: {{ template "elasticsearch.tls.secretName" . }}
   projected:
     sources:
     - secret:
@@ -1297,7 +1297,7 @@ Generate certificate volume mounts for OpenSearch jobs TLS configuration
 */}}
 {{- define "jaeger.opensearchCertificateVolumeMounts" -}}
 {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-- name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
+- name: {{ template "elasticsearch.tls.secretName" . }}
   mountPath: "/es-tls"
   readOnly: true
 {{- end }}

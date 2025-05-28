@@ -101,7 +101,7 @@ spec:
           securityContext:
             {{- include "elasticsearch.rolloverjob.containerSecurityContext" . }}
           volumeMounts:
-          {{- include "jaeger.opensearchCertificateVolumeMounts" . | nindent 10 }}
+          {{- include "jaeger.opensearchCertificateVolumeMounts" (merge (dict "prehook" true) .) | nindent 10 }}
           {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
@@ -115,7 +115,7 @@ spec:
               readOnly: {{ .readOnly }}
           {{- end }}
       volumes:
-      {{- include "jaeger.opensearchCertificateVolumes" . | nindent 6 }}
+      {{- include "jaeger.opensearchCertificateVolumes" (merge (dict "prehook" true) .) | nindent 6 }}
       {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
         - name: {{ .name }}
           configMap:

@@ -94,18 +94,8 @@ spec:
               value: {{ $value | quote }}
             {{- end }}
           {{- end }}
-          livenessProbe:
-            failureThreshold: 5
-            httpGet:
-              path: /status
-              port: healthcheck
-              scheme: HTTP
-            initialDelaySeconds: 15
-            periodSeconds: 15
-            successThreshold: 1
-            timeoutSeconds: 1
           {{- if .Values.readinessProbe.install }}
-          readinessProbe:
+          livenessProbe:
             failureThreshold: 1
             httpGet:
               path: /health
@@ -116,7 +106,7 @@ spec:
             successThreshold: 1
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 5 }}
           {{- else }}
-          readinessProbe:
+          livenessProbe:
             failureThreshold: 3
             httpGet:
               path: /status
@@ -127,6 +117,16 @@ spec:
             successThreshold: 1
             timeoutSeconds: 1
           {{- end }}
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /status
+              port: healthcheck
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
           ports:
             - containerPort: 8888
               name: metrics
@@ -226,6 +226,16 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
+          readinessProbe:
+            failureThreshold: 1
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 10 }}
+            successThreshold: 1
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 5 }}
           resources:
             {{- toYaml .Values.readinessProbe.resources | nindent 12 }}
           securityContext:
