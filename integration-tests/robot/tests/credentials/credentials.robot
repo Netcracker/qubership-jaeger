@@ -13,7 +13,7 @@ Restart Jaeger Query Pod
     [Arguments]  ${namespace}
     ${pods}=  Get Pods  ${namespace}
     FOR  ${pod}  IN  @{pods}
-        Log  ${pods}
+        Log  ${pods}  console=True
         ${name}=  Get From Dictionary  ${pod.metadata}  name
         Run Keyword If  '${name}' starts with 'jaeger-query-'  Delete Pod By Pod Name  ${name}  ${namespace}
     END
@@ -25,7 +25,9 @@ Check Credentials Change and Jaeger Auth
     ${response}=  Get Secret  ${secret_name}  ${JAEGER_NAMESPACE}
     Should Be Equal As Strings  ${response.metadata.name}  ${secret_name}
     ${secret}=  Replace Basic Auth Structured  ${response}
+    Log  ${secret}  console=True
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret}
+    Log  restart  console=True
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
     ${result}=  Run Process  curl -s -o /dev/null -w  %%{http_code} -u test1:test1 ${JAEGER_URL}  shell=True
     Should Be Equal As Strings  ${result.stdout}  200
