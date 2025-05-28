@@ -13,6 +13,7 @@ Restart Jaeger Query Pod
     [Arguments]  ${namespace}
     ${pods}=  Get Pods  ${namespace}
     FOR  ${pod}  IN  @{pods}
+        Log  ${pods}
         ${name}=  Get From Dictionary  ${pod.metadata}  name
         Run Keyword If  '${name}' starts with 'jaeger-query-'  Delete Pod By Pod Name  ${name}  ${namespace}
     END
