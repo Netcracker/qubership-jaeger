@@ -2,6 +2,12 @@ import yaml, base64
 
 def replace_basic_auth_structured(secret):
     print(">>> Начало обработки секрета")
+
+    # Преобразование V1Secret в обычный dict (если надо)
+    if not isinstance(secret, dict):
+        print(">>> Преобразуем объект V1Secret в dict")
+        secret = ApiClient().sanitize_for_serialization(secret)
+
     print(f"Исходные ключи: {list(secret.keys())}")
 
     for k in ['kind', 'apiVersion', 'metadata']: 
@@ -34,3 +40,5 @@ def replace_basic_auth_structured(secret):
     encoded_yaml = base64.b64encode(yaml.dump(s).encode()).decode()
     secret['data']['config.yaml'] = encoded_yaml
     print(">>> Готово, возвращаю патч")
+
+    return secret
