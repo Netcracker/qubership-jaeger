@@ -99,6 +99,9 @@ data:
                 port: {{ if .Values.cassandraSchemaJob.port}}{{.Values.cassandraSchemaJob.port}}{{ else }}{{ if .Values.INFRA_CASSANDRA_PORT }}{{ .Values.INFRA_CASSANDRA_PORT }}{{ else}} 9042{{ end }}{{ end }}
                 tls:
                   {{- if .Values.cassandraSchemaJob.tls.enabled }}
+                  {{- if .Values.cassandraSchemaJob.tls.commonName }}
+                  server_name_override: {{ .Values.cassandraSchemaJob.tls.commonName }}
+                  {{- end }}
                   {{- if .Values.cassandraSchemaJob.tls.insecureSkipVerify }}
                   insecure_skip_verify: true
                   {{- end }}
