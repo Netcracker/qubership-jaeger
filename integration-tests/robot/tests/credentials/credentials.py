@@ -1,18 +1,24 @@
 import base64
 import yaml
 
-def replace_basic_auth_structured(yaml_text: str) -> str:
-    def update(data, new_encoded):
-        if isinstance(data, dict):
-            return {k: update(v, new_encoded) for k, v in data.items()}
-        if isinstance(data, list):
-            return [update(i, new_encoded) for i in data]
-        if isinstance(data, str) and data.strip().startswith("Basic "):
-            return f"Basic {new_encoded}"
-        return data
+class ReplaceAuthLibrary:
+    def replace_basic_auth_structured(self, secret: dict) -> dict:
+        """
+        Принимает Kubernetes Secret (dict), заменяет Basic Auth строки в config.yaml,
+        возвращает обновлённый dict.
+        """
+        b64_config = secret['data']['config.yaml']
+        yaml_string = base64.b64decode(b64_config).decode('utf-8')
 
-    encoded = base64.b64encode(b"test1:test1").decode()
-    parsed = yaml.safe_load(yaml_text)
-    parsed.pop("metadata", None)
-    updated = update(parsed, encoded)
-    return updated
+        new_basic = "Basic " + base64.b64encode(b"test1:test1").decode()
+        modified_yaml_string = "\n".join([
+            new_basic if line.strip().startswith("Basic ") else line
+            for line in yaml_string.splitlines()
+        ])
+
+        new_b64_config = base64.b64encode(modified_yaml_string.encode()).decode('utf-8')
+
+        updated = dict(secret)
+        updated['data'] = dict(secret['data'])
+        updated['data']['config.yaml'] = new_b64_config
+        return updated
