@@ -6,7 +6,8 @@ ${JAEGER_URL}                   http://jaeger-query.jaeger:16686
 Resource  ../shared/shared.robot
 Suite Setup  Preparation
 Library    Process
-Library  credentials.py
+Library    credentials.py
+Library    OperatingSystem
 
 *** Keywords ***
 Restart Jaeger Query Pod
@@ -27,7 +28,7 @@ Check Credentials Change and Jaeger Auth
 
     Log To Console  \n[ROBOT] Получаем секрет из Kubernetes...
     ${response}=  Get Secret  ${secret_name}  ${JAEGER_NAMESPACE}
-
+    ${original}=  Set Variable  ${response.data}
     Should Be Equal As Strings  ${response.metadata.name}  ${secret_name}
 
     Log To Console  \n[ROBOT] Заменяем логин:пароль в config.yaml...
@@ -43,8 +44,7 @@ Check Credentials Change and Jaeger Auth
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
 
     Log To Console    \n[ROBOT] Проверяем доступ по test1:test1...
-    ${cmd}=    Set Variable    bash -c "curl -s -o /dev/null -w '%{http_code}' -u test1:test1 ${JAEGER_URL}"
-    ${result}=    Run Process    ${cmd}    shell=True
+    ${result}=    Run Process    curl    -s    -o    /dev/null    -w    '%{http_code}'    -u    test1:test1    ${JAEGER_URL}    shell=True
     Should Be Equal As Strings    ${result.stdout}    200
 
     Log To Console  \n[ROBOT] Возвращаем старый секрет...
