@@ -16,9 +16,10 @@ Restart Jaeger Query Pod
         Log To Console  ======== INSPECTING POD =========
         Log To Console  ${pod.metadata.name}
         ${name}=  Set Variable  ${pod.metadata.name}
-        Run Keyword If  '${name}'.startswith('jaeger-query-') == True  Delete Pod By Pod Name  ${name}  ${namespace}
+        ${match}=  Run Keyword And Return Status  Should Start With  ${name}  jaeger-query-
+        Run Keyword If  ${match}  Delete Pod By Pod Name  ${name}  ${namespace}
     END
-    Sleep    60s
+    Sleep  60s
 
 *** Test Cases ***
 Check Credentials Change and Jaeger Auth
