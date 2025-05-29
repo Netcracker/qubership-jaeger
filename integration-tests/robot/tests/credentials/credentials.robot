@@ -43,9 +43,9 @@ Check Credentials Change and Jaeger Auth
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
 
     Log To Console    \n[ROBOT] Проверяем доступ по test1:test1...
-    ${cmd}=    Set Variable    curl -s -o /dev/null -w '%{http_code}' -u test1:test1 ${JAEGER_URL}
-    ${result}=  Run Process  bash  -c  "${cmd}"
-    Should Be Equal As Strings  ${result.stdout}  200
+    ${cmd}=    Set Variable    bash -c "curl -s -o /dev/null -w '%{http_code}' -u test1:test1 ${JAEGER_URL}"
+    ${result}=    Run Process    ${cmd}    shell=True
+    Should Be Equal As Strings    ${result.stdout}    200
 
     Log To Console  \n[ROBOT] Возвращаем старый секрет...
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${original}
