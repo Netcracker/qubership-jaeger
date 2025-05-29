@@ -13,8 +13,8 @@ COPY robot ${ROBOT_HOME}
 RUN \
     # Install requirements
     python3 -m pip install --no-cache-dir \
-        && apk add --no-cache curl \
         -r "${ROBOT_HOME}/requirements.txt" \
+    && apk add --no-cache curl \
     # Cleanup pip cache
     && rm -rf /var/cache/apk/* \
     # Create output directory for test results
