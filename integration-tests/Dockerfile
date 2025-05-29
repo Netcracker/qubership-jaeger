@@ -1,5 +1,5 @@
-# Based on python:3.10.14-alpine3.20
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.2.1
+# Based on python:3.13.2-alpine3.21
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:feature-remove-openshift-lib-usage
 
 # User with UID=1000 already added in ghcr.io/netcracker/qubership-docker-integration-tests image
 ENV USER_UID=1000 \
