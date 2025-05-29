@@ -23,14 +23,28 @@ Restart Jaeger Query Pod
 *** Test Cases ***
 Check Credentials Change and Jaeger Auth
     [Tags]  credentials
+
+    Log To Console  \n[ROBOT] Получаем секрет из Kubernetes...
     ${response}=  Get Secret  ${secret_name}  ${JAEGER_NAMESPACE}
+
     Should Be Equal As Strings  ${response.metadata.name}  ${secret_name}
-    ${secret}=  Replace Basic Auth Structured  ${response} modules=credentials
+
+    Log To Console  \n[ROBOT] Заменяем логин:пароль в config.yaml...
+    ${secret}=  Replace Basic Auth Structured  ${response}
+
+    Log To Console  \n[ROBOT] Новый секрет подготовлен. Логирую результат:
     Log  ${secret}  console=True
+
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret}
+
+    Log To Console  \n[ROBOT] Перезапускаем Jaeger-под...
     Log  restart  console=True
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
+
+    Log To Console  \n[ROBOT] Проверяем доступ по test1:test1...
     ${result}=  Run Process  curl -s -o /dev/null -w  %%{http_code} -u test1:test1 ${JAEGER_URL}  shell=True
     Should Be Equal As Strings  ${result.stdout}  200
+
+    Log To Console  \n[ROBOT] Возвращаем старый секрет...
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${original}
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
