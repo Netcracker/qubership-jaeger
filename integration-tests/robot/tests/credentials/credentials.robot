@@ -25,7 +25,7 @@ Check Credentials Change and Jaeger Auth
     [Tags]  credentials
     ${response}=  Get Secret  ${secret_name}  ${JAEGER_NAMESPACE}
     Should Be Equal As Strings  ${response.metadata.name}  ${secret_name}
-    ${secret}=  Replace Basic Auth Structured  ${response}
+    ${secret}=  Replace Basic Auth Structured  ${response} modules=credentials
     Log  ${secret}  console=True
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret}
     Log  restart  console=True
