@@ -2,6 +2,7 @@ import base64
 import yaml
 
 class Credentials:
+    @keyword("Replace Basic Auth Structured")
     def replace_basic_auth_structured(self, secret: dict) -> dict:
         """
         Принимает Kubernetes Secret (dict), заменяет Basic Auth строки в config.yaml,
