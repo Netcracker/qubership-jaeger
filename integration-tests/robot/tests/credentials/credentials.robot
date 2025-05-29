@@ -35,8 +35,6 @@ Check Credentials Change and Jaeger Auth
     ${secret}=  Replace Basic Auth Structured  ${response}
 
     Log To Console  \n[ROBOT] Новый секрет подготовлен. Логирую результат:
-    Log  ${secret}  console=True
-
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret}
 
     Log To Console  \n[ROBOT] Перезапускаем Jaeger-под...
