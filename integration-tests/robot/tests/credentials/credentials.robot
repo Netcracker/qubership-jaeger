@@ -16,7 +16,7 @@ Restart Jaeger Query Pod
         Log To Console  ======== INSPECTING POD =========
         Log To Console  ${pod.metadata.name}
         ${name}=  Set Variable  ${pod.metadata.name}
-        Run Keyword If    '${name}'.startswith('jaeger-query-')    Delete Pod By Pod Name    ${name}    ${namespace}
+        Run Keyword If  '${name}'.startswith('jaeger-query-') == True  Delete Pod By Pod Name  ${name}  ${namespace}
     END
     Sleep    60s
 
