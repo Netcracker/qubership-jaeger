@@ -1,6 +1,6 @@
 import yaml, base64
 
-def patch_creds(secret):
+def replace_basic_auth_structured(secret):
     print(">>> Начало обработки секрета")
     print(f"Исходные ключи: {list(secret.keys())}")
 

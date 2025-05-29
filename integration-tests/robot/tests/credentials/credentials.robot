@@ -30,7 +30,7 @@ Check Credentials Change and Jaeger Auth
     Should Be Equal As Strings  ${response.metadata.name}  ${secret_name}
 
     Log To Console  \n[ROBOT] Заменяем логин:пароль в config.yaml...
-    ${secret}=  Patch Creds ${response}
+    ${secret}=  Replace Basic Auth Structured  ${response}
 
     Log To Console  \n[ROBOT] Новый секрет подготовлен. Логирую результат:
     Log  ${secret}  console=True
