@@ -30,7 +30,7 @@ def replace_basic_auth_structured(secret):
     rec(parsed)
 
     print(">>> Кодируем YAML обратно в base64")
-    updated_yaml = base64.b64encode(yaml.dump(parsed).encode()).decode()
+    updated_yaml = base64.b64encode(yaml.dump(parsed, default_flow_style=False, sort_keys=False, allow_unicode=True).encode()).decode()
 
     # Обновляем секрет
     secret.data['config.yaml'] = updated_yaml
