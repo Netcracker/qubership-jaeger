@@ -1,44 +1,36 @@
-import base64
-import yaml
-from copy import deepcopy
+import yaml, base64
 
-def replace_basic_auth_structured(secret):
-    print("[INFO] Получаем config.yaml из секрета и декодируем base64...")
+def patch_creds(secret):
+    print(">>> Начало обработки секрета")
+    print(f"Исходные ключи: {list(secret.keys())}")
 
-    # Получаем base64 строку из secret.data (атрибут объекта)
-    encoded = secret.data['config.yaml']
-    yaml_string = base64.b64decode(encoded).decode('utf-8')
+    for k in ['kind', 'apiVersion', 'metadata']: 
+        if k in secret: 
+            print(f"Удаление ключа: {k}")
+            secret.pop(k)
 
-    print("[INFO] YAML-документ после декодирования:")
-    print(yaml_string)
+    raw_b64 = secret['data']['config.yaml']
+    print(">>> Декодирование config.yaml из base64")
+    raw_yaml = base64.b64decode(raw_b64).decode()
+    s = yaml.safe_load(raw_yaml)
+    print(">>> YAML успешно разобран")
 
-    data = yaml.safe_load(yaml_string)
+    def rec(o): 
+        if isinstance(o, dict): 
+            for k, v in o.items(): 
+                if k == 'credentials' and isinstance(v, list): 
+                    print(f"Патчим credentials: было {v}")
+                    o[k] = ["Basic " + base64.b64encode(b"test1:test1").decode()]
+                    print(f"Стало: {o[k]}")
+                else: 
+                    rec(v)
+        elif isinstance(o, list): 
+            for i in o: rec(i)
 
-    print("[INFO] Заменяем значение Basic авторизации...")
-    new_auth = "Basic " + base64.b64encode(b"test1:test1").decode()
-    replaced = False
+    print(">>> Поиск и замена credentials")
+    rec(s)
 
-    for item in data.get('auths', []):
-        if isinstance(item, dict) and 'value' in item:
-            if item['value'].startswith("Basic "):
-                print(f"[DEBUG] Было значение: {item['value']}")
-                item['value'] = new_auth
-                print(f"[DEBUG] Стало значение: {item['value']}")
-                replaced = True
-
-    if not replaced:
-        print("[WARN] Ничего не заменено: ключ 'auths' отсутствует или нет подходящих значений.")
-
-    print("[INFO] Собираем YAML обратно и кодируем в base64...")
-    new_yaml = yaml.safe_dump(data)
-    updated_encoded = base64.b64encode(new_yaml.encode()).decode()
-
-    print("[INFO] YAML после изменений:")
-    print(new_yaml)
-
-    print("[INFO] Возвращаем обновлённый секрет.")
-    # Копируем исходный объект, чтобы не менять оригинал
-    new_secret = deepcopy(secret)
-    new_secret.data = dict(secret.data)  # копия словаря data
-    new_secret.data['config.yaml'] = updated_encoded
-    return new_secret
+    print(">>> Обратное кодирование YAML в base64")
+    encoded_yaml = base64.b64encode(yaml.dump(s).encode()).decode()
+    secret['data']['config.yaml'] = encoded_yaml
+    print(">>> Готово, возвращаю патч")

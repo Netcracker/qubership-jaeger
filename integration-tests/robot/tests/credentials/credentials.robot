@@ -14,7 +14,7 @@ Restart Jaeger Query Pod
     ${pods}=  Get Pods  ${namespace}
     FOR  ${pod}  IN  @{pods}
         Log To Console  ======== INSPECTING POD =========
-        Log To Console  ${pod}
+        Log To Console  ${pod.metadata.name}
         ${name}=  Evaluate  ${pod.metadata.name}
         Run Keyword If  '${name}' starts with 'jaeger-query-'  Delete Pod By Pod Name  ${name}  ${namespace}
     END
@@ -30,7 +30,7 @@ Check Credentials Change and Jaeger Auth
     Should Be Equal As Strings  ${response.metadata.name}  ${secret_name}
 
     Log To Console  \n[ROBOT] Заменяем логин:пароль в config.yaml...
-    ${secret}=  Replace Basic Auth Structured  ${response}
+    ${secret}=  Patch Creds ${response}
 
     Log To Console  \n[ROBOT] Новый секрет подготовлен. Логирую результат:
     Log  ${secret}  console=True
