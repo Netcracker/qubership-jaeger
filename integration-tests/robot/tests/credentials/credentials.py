@@ -1,17 +1,17 @@
 import base64
 import yaml
+from copy import deepcopy
 
 def replace_basic_auth_structured(secret):
     print("[INFO] Получаем config.yaml из секрета и декодируем base64...")
-    
-    # Здесь secret.data — это dict[str, str]
+
+    # Получаем base64 строку из secret.data (атрибут объекта)
     encoded = secret.data['config.yaml']
     yaml_string = base64.b64decode(encoded).decode('utf-8')
 
     print("[INFO] YAML-документ после декодирования:")
     print(yaml_string)
 
-    print("[INFO] Парсим YAML в словарь...")
     data = yaml.safe_load(yaml_string)
 
     print("[INFO] Заменяем значение Basic авторизации...")
@@ -37,13 +37,8 @@ def replace_basic_auth_structured(secret):
     print(new_yaml)
 
     print("[INFO] Возвращаем обновлённый секрет.")
-    
-    # Создаём новый объект с таким же типом, копируем данные, заменяем config.yaml
-    from kubernetes.client.models import V1Secret
-    from copy import deepcopy
-    
+    # Копируем исходный объект, чтобы не менять оригинал
     new_secret = deepcopy(secret)
-    new_secret.data = dict(secret.data)
+    new_secret.data = dict(secret.data)  # копия словаря data
     new_secret.data['config.yaml'] = updated_encoded
-    
     return new_secret
