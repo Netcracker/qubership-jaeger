@@ -315,6 +315,7 @@ jobs:
           if echo "$logs" | grep -qE "Report:  /opt/robot/output/report.html" ; then
             stats_line=$(echo "$logs" | grep -E '[0-9]+\ tests,\ [0-9]+\ passed,\ [0-9]+\ failed(,\ [0-9]+\ skipped)?' | tail -n 1)
             read -r total passed failed skipped <<< "$(echo "$stats_line" | awk '{ gsub(",", "", $0); print $1, $3, $5, $7}')"
+            skipped="${skipped:-0}"
             if [[ "$failed" == "0" ]]; then
               TEST_RESULTS=$(echo "$logs" | awk -v RS='\r?\n' '/^==============================================================================$/ && !found {found=1; print; next} found && /^Output:/ {exit} found')
         cat <<EOF >> $GITHUB_OUTPUT
