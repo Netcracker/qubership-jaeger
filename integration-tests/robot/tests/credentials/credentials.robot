@@ -30,7 +30,7 @@ Check Credentials Change and Jaeger Auth
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret}
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
     Log To Console    \n[ROBOT] Проверяем доступ по test1:test1...
-    ${result}=    Run Process    curl    -s -i -u    test1:test1    ${JAEGER_URL}    shell=True
+    ${result}=    Run Process    curl -s -i -u test1:test1 ${JAEGER_URL}    shell=True
     Log To Console    ${result.stdout}
     Should Contain    ${result.stdout}    HTTP/1.1 200
     Log To Console  \n[ROBOT] Возвращаем старый секрет...
