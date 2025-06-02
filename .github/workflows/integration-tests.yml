@@ -46,6 +46,13 @@ jobs:
         kind create cluster
       shell: bash
 
+    - name: Set up Kubectl
+      run: |
+        curl -sLo ./kubectl https://dl.k8s.io/release/`curl -LS https://dl.k8s.io/release/stable.txt`/bin/linux/amd64/kubectl
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/
+      shell: bash
+
     - name: Install Helm
       run: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
@@ -130,6 +137,7 @@ jobs:
       shell: bash
 
     - name: Check k8ssandra cluster status
+      id: check_k8ssandra_status
       run: |
         attempt=1
         max_attempts=${{ env.max_attempts }}
@@ -177,19 +185,204 @@ jobs:
           --create-namespace --set jaeger.prometheusMonitoringDashboard=false --set jaeger.prometheusMonitoring=false \
           --set "cassandraSchemaJob.host=$CASSANDRA_SVC" --set "cassandraSchemaJob.username=$CASSANDRA_USER" \
           --set "cassandraSchemaJob.password=$CASSANDRA_PASSWORD" --set cassandraSchemaJob.datacenter=dc1 \
-          --set "readinessProbe.image=ghcr.io/netcracker/jaeger-readiness-probe:$TAG"
+          --set "readinessProbe.image=ghcr.io/netcracker/jaeger-readiness-probe:$TAG" \
+          --set "integrationTests.install=true" \
+          --set "integrationTests.image=ghcr.io/netcracker/jaeger-integration-tests:$TAG"
       shell: bash
 
-    - name: Save artifacts
+    - name: Checking jaeger status
+      id: check_jaeger
+      run: |
+        echo "Checking status of jaeger..."
+
+        check_pod_status() {
+          local label=$1
+          local namespace=$2
+          local json
+          json=$(kubectl get pod -l "$label" -n "$namespace" -o json 2>/dev/null)
+          local phase ready scheduled
+          phase=$(echo "$json" | jq -r '.items[0].status.phase // empty')
+          ready=$(echo "$json" | jq -r '.items[0].status.conditions[]? | select(.type == "Ready") | .status // empty')
+          scheduled=$(echo "$json" | jq -r '.items[0].status.conditions[]? | select(.type == "PodScheduled") | .status // empty')
+          echo "$phase|$ready|$scheduled"
+        }
+
+        is_problem_pods() {
+          local namespace=$1
+          local problem_pods
+          problem_pods=$(kubectl get pods -n "$namespace" 2>/dev/null | grep -E "ImagePullBackOff|ErrImagePull|InvalidImageName" || true)
+          if [[ -n "$problem_pods" ]]; then
+            echo "::error::❌ Some images cannot be pulled:"
+            echo "$problem_pods"
+            return 0
+          fi
+          return 1
+        }
+
+        attempt=1
+        max_attempts=${{ env.max_attempts }}
+        delay=${{ env.delay }}
+
+        while [[ $attempt -le $max_attempts ]]; do
+          if is_problem_pods "${{ env.namespace }}"; then
+            exit 1
+          fi
+
+          echo "Attempt $attempt/$max_attempts: Checking jaeger pods status..."
+
+          IFS="|" read -r collector_phase collector_ready collector_scheduled < <(check_pod_status "name=jaeger-collector" "${{ env.namespace }}")
+          IFS="|" read -r query_phase query_ready query_scheduled < <(check_pod_status "name=jaeger-query" "${{ env.namespace }}")
+
+          if [[ "$collector_ready" == "True" && "$query_ready" == "True" ]]; then
+            echo "✅ Jaeger collector and query are ready."
+            break
+          elif { [[ "$collector_ready" == "False" && "$collector_phase" == "Running" ]] || [[ "$query_ready" == "False" && "$query_phase" == "Running" ]]; }; then
+            echo "Jaeger is not ready yet. Retrying in $delay seconds..."
+            kubectl get pods -n ${{ env.namespace }}
+            sleep $delay
+            ((attempt++))
+          elif { [[ "$collector_phase" == "Pending" && "$collector_scheduled" == "True" ]] || [[ "$query_phase" == "Pending" && "$query_scheduled" == "True" ]]; }; then
+            echo "Jaeger status: collector: $collector_phase, query: $query_phase. Retrying in $delay seconds..."
+            kubectl get pods -n ${{ env.namespace }}
+            sleep $delay
+            ((attempt++))
+          else
+            echo "::error::❌ Jaeger pods cannot start"
+            echo -e "Events for jaeger namespace pod:\n$(kubectl get events -n ${{ env.namespace }})"
+            echo -e "Pods status in ${{ env.namespace }} namespace:\n$(kubectl get pods -n ${{ env.namespace }})"
+            exit 1
+          fi
+        done
+
+        if [[ "$collector_ready" != "True" || "$query_ready" != "True" ]]; then
+          echo "::error::❌ Maximum attempts reached. Jaeger is not ready."
+          exit 1
+        fi
+      shell: bash
+
+    - name: Check integration tests status
+      run: |
+        echo "Checking status of integration tests pod..."
+        attempt=1
+        max_attempts=${{ env.max_attempts }}
+        while [[ $attempt -le $max_attempts ]]; do
+          problem_pods=$(kubectl get pods -n ${{ env.namespace }} 2>/dev/null| grep -E "ImagePullBackOff|ErrImagePull|InvalidImageName" || true)
+          if [[ -n "$problem_pods" ]]; then
+            echo -e"::error::❌ Some images cannot be pulled:\n$problem_pods"
+            exit 1
+          fi
+          echo "Attempt $attempt/$max_attempts: Checking integration-tests pod status..."
+          pod=$(kubectl get pod -l name=jaeger-integration-tests-runner -n ${{ env.namespace }} -o jsonpath='{.items[0]}')
+          phase=$(echo "$pod" | jq -r '.status.phase')
+          ready=$(echo "$pod" | jq -r '.status.conditions[] | select(.type == "Ready") | .status')
+          scheduled=$(echo "$pod" | jq -r '.status.conditions[] | select(.type == "PodScheduled") | .status')
+          if [[ "$ready" == "True" ]]; then
+            echo "✅Integration tests pod is ready."
+            break
+          elif [[ "$ready" == "False" && "$phase" == "Running" ]]; then
+            echo "Integration tests pod is not ready yet. Retrying in ${{ env.delay }} seconds..."
+            sleep ${{ env.delay }}
+            ((attempt++))
+          elif [[ "$phase" == "Pending" && "$scheduled" == "True" ]]; then
+              echo "Integration tests pod status: $phase. Retrying in ${{ env.delay }} seconds..."
+              kubectl get pods -n ${{ env.namespace }}
+              sleep ${{ env.delay }}
+              ((attempt++))
+          else
+            kubectl get pods -n ${{ env.namespace }}
+            pod_events=$(kubectl events -n ${{ env.namespace }} --for pod/"$(echo $pod | jq -r '.metadata.name')")
+            echo "::error::❌ Integration tests pod cannot start"
+            echo -e "Events for integration tests pod:\n$pod_events"
+            echo -e "Pods status in ${{ env.namespace }} namespace:\n$(kubectl get pods -n ${{ env.namespace }})"
+            exit 1
+          fi
+        done
+        if [[ "$ready" != "True" ]]; then
+          echo "::error::❌ Maximum attempts reached. Integration tests pod is not ready."
+          exit 1
+        fi
+      shell: bash
+
+    - name: Check integration tests results
+      id: check_integration_tests
+      run: |
+        echo "Checking integration tests results..."
+        attempt=1
+        max_attempts=${{ env.max_attempts }}
+        while [[ $attempt -le $max_attempts ]]; do
+          echo "Attempt $attempt/$max_attempts: Checking tests results..."
+          logs=$(kubectl logs -l name=jaeger-integration-tests-runner -n ${{ env.namespace }} --tail=-1)
+          if [[ -n $(echo "$logs" | grep -E "Report:  /opt/robot/output/report.html") ]]; then
+            stats_line=$(echo "$logs" | grep -E '[0-9]+\ tests,\ [0-9]+\ passed,\ [0-9]+\ failed(,\ [0-9]+\ skipped)?' | tail -n 1)
+            read total passed failed skipped <<< $(echo "$stats_line" | awk '{ gsub(",", "", $0); print $1, $3, $5, $7}')
+            if [[ "$failed" == "0" ]]; then
+              echo "total=$total" >> $GITHUB_OUTPUT
+              echo "failed=$failed" >> $GITHUB_OUTPUT
+              echo "skipped=$skipped" >> $GITHUB_OUTPUT
+              echo "passed=$passed" >> $GITHUB_OUTPUT
+              TEST_RESULTS=$(echo "$logs" | awk -v RS='\r?\n' '/^==============================================================================$/ && !found {found=1; print; next} found && /^Output:/ {exit} found')
+        cat <<EOF >> $GITHUB_OUTPUT
+        test_results<<END
+        $TEST_RESULTS
+        END
+        EOF
+              exit 0
+            else
+              echo "::error::❌ Smoke test has failed steps"
+              echo "status=❌failed" >> $GITHUB_OUTPUT
+              echo "details=Check logs in uploaded artifacts" >> $GITHUB_OUTPUT
+              TEST_RESULTS=$(echo "$logs" | awk -v RS='\r?\n' '/^==============================================================================$/ && !found {found=1; print; next} found && /^Output:/ {exit} found')
+        cat <<EOF >> $GITHUB_OUTPUT
+        test_results<<END
+        $TEST_RESULTS
+        END
+        EOF
+              exit 1
+            fi
+          else
+            echo "Smoke test is not completed yet. Checking in ${{ env.delay }} seconds..."
+            sleep ${{ env.delay }}
+            ((attempt++))
+          fi
+        done
+        echo "::error::❌ Maximum attempts reached waiting for Integration test completion"
+        echo "status=❌failed" >> $GITHUB_OUTPUT
+        cat <<EOF >> $GITHUB_OUTPUT
+        test_results<<END
+        $logs
+        END
+        EOF
+        echo "details=Check logs in uploaded artifacts" >> $GITHUB_OUTPUT
+        exit 1
+      shell: bash
+
+    - name: Save jaeger artifacts
+      id: jaeger_artifacts
       if: always()
       run: |
-        mkdir artifacts
-        kubectl get pods -n ${{ env.namespace }} > artifacts/pods.txt
-        kubectl get events -n ${{ env.namespace }} --sort-by=.metadata.creationTimestamp > artifacts/events.txt
-        kubectl get pods -n ${{ env.namespace }} -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[*].name}{"\n"}{end}' | while read -r pod containers; do
+        mkdir -p "artifacts/${{ env.namespace }}"
+        pods=$(kubectl get pods -n ${{ env.namespace }} -o wide)
+        echo "$pods" > artifacts/${{ env.namespace }}/pods.txt
+        PODS_TABLE=$(kubectl get pods -n ${{ env.namespace }} -o wide)
+        cat <<EOF >> $GITHUB_OUTPUT
+        jaeger_pods<<END
+        $PODS_TABLE
+        END
+        EOF
+        kubectl get events -n "${{ env.namespace }}" --sort-by=.metadata.creationTimestamp > artifacts/${{ env.namespace }}/events.txt
+        kubectl get pods -n "${{ env.namespace }}" -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[*].name}{"\n"}{end}' | while read -r pod containers; do
           for container in $containers; do
-            echo "Fetching logs for pod: $pod, container: $container"
-            kubectl logs -n ${{ env.namespace }} $pod -c $container > "artifacts/$pod-$container.log"
+            echo "Fetching logs in ${{ env.namespace }} namespace for pod: $pod, container: $container"
+            if logs=$(kubectl logs -n "${{ env.namespace }}" "$pod" -c "$container" 2>&1); then
+              echo "$logs" > "artifacts/${{ env.namespace }}/$pod-$container.log"
+            else
+              echo "Could not fetch logs for $pod/$container: $logs" >&2
+            fi
+            if logs=$(kubectl logs -n "${{ env.namespace }}" "$pod" -c "$container" --previous 2>&1); then
+              echo "$logs" > "artifacts/${{ env.namespace }}/$pod-$container-previous.log"
+            else
+              :
+            fi
           done
         done
       shell: bash
@@ -215,3 +408,35 @@ jobs:
     - name: Cleanup
       run: |
         kind delete cluster
+
+    - name: Generate Status Summary
+      if: always()
+      run: |
+        echo "## Install Jaeger" >> $GITHUB_STEP_SUMMARY
+        echo "Check jaeger status: ${{ steps.check_jaeger.outputs.status || '❓unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo "${{ steps.check_jaeger.outputs.details || '❓unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo 'Pods running in jaeger namespace:' >> $GITHUB_STEP_SUMMARY
+        echo '```sh' >> $GITHUB_STEP_SUMMARY
+        echo "${{ steps.jaeger_artifacts.outputs.jaeger_pods || '❓unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+
+        echo "## Check integration tests results" >> $GITHUB_STEP_SUMMARY
+        echo "Check integration tests status: ${{ steps.check_integration_tests.outputs.status || '❓unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo "${{ steps.check_integration_tests.outputs.details || '' }}" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "Total tests: ${{ steps.check_integration_tests.outputs.total || '❓unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo "Failed tests: ${{ steps.check_integration_tests.outputs.failed || '❓unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo "Skipped tests: ${{ steps.check_integration_tests.outputs.skipped || '❓unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo "Passed tests: ${{ steps.check_integration_tests.outputs.passed || '❓unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo "${{ steps.check_integration_tests.outputs.warning || '' }}" >> $GITHUB_STEP_SUMMARY
+        echo "${{ steps.check_integration_tests.outputs.details || '' }}" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+
+        echo "<details>" >> $GITHUB_STEP_SUMMARY
+        echo "<summary><b>🔍 See full test logs</b></summary>" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo '```sh' >> $GITHUB_STEP_SUMMARY
+        echo "${{ steps.check_integration_tests.outputs.test_results || '❓unknown' }}" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "</details>" >> $GITHUB_STEP_SUMMARY
