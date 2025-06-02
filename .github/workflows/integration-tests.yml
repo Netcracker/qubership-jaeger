@@ -48,7 +48,7 @@ jobs:
 
     - name: Set up Kubectl
       run: |
-        curl -sLo ./kubectl https://dl.k8s.io/release/$(curl -LS https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+        curl -sLo ./kubectl "https://dl.k8s.io/release/$(curl -LS https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
         chmod +x ./kubectl
         sudo mv ./kubectl /usr/local/bin/
       shell: bash
@@ -314,14 +314,14 @@ jobs:
           logs=$(kubectl logs -l name=jaeger-integration-tests-runner -n ${{ env.namespace }} --tail=-1)
           if echo "$logs" | grep -qE "Report:  /opt/robot/output/report.html" ; then
             stats_line=$(echo "$logs" | grep -E '[0-9]+\ tests,\ [0-9]+\ passed,\ [0-9]+\ failed(,\ [0-9]+\ skipped)?' | tail -n 1)
-            read total passed failed skipped <<< $(echo "$stats_line" | awk '{ gsub(",", "", $0); print $1, $3, $5, $7}')
+            read -r total passed failed skipped <<< "$(echo "$stats_line" | awk '{ gsub(",", "", $0); print $1, $3, $5, $7}')"
             if [[ "$failed" == "0" ]]; then
-              echo "total=$total" >> $GITHUB_OUTPUT
-              echo "failed=$failed" >> $GITHUB_OUTPUT
-              echo "skipped=$skipped" >> $GITHUB_OUTPUT
-              echo "passed=$passed" >> $GITHUB_OUTPUT
               TEST_RESULTS=$(echo "$logs" | awk -v RS='\r?\n' '/^==============================================================================$/ && !found {found=1; print; next} found && /^Output:/ {exit} found')
         cat <<EOF >> $GITHUB_OUTPUT
+        total=${total}
+        failed=${failed}
+        skipped=${skipped}
+        passed=${passed}
         test_results<<END
         $TEST_RESULTS
         END
@@ -329,10 +329,10 @@ jobs:
               exit 0
             else
               echo "::error::❌ Smoke test has failed steps"
-              echo "status=❌failed" >> $GITHUB_OUTPUT
-              echo "details=Check logs in uploaded artifacts" >> $GITHUB_OUTPUT
               TEST_RESULTS=$(echo "$logs" | awk -v RS='\r?\n' '/^==============================================================================$/ && !found {found=1; print; next} found && /^Output:/ {exit} found')
         cat <<EOF >> $GITHUB_OUTPUT
+        status=❌failed
+        details=Check logs in uploaded artifacts
         test_results<<END
         $TEST_RESULTS
         END
@@ -420,9 +420,7 @@ jobs:
         \`\`\`sh
         ${{ steps.jaeger_artifacts.outputs.jaeger_pods || '❓unknown' }}
         \`\`\`
-        EOF
 
-        cat <<EOF >> $GITHUB_STEP_SUMMARY
         ## Check integration tests results
         Check integration tests status: ${{ steps.check_integration_tests.outputs.status || '❓unknown' }}
         ${{ steps.check_integration_tests.outputs.details || '' }}
@@ -433,9 +431,7 @@ jobs:
         Passed tests: ${{ steps.check_integration_tests.outputs.passed || '❓unknown' }}
         ${{ steps.check_integration_tests.outputs.warning || '' }}
         \`\`\`
-        EOF
 
-        cat <<EOF >> $GITHUB_STEP_SUMMARY
         <details>
         <summary><b>🔍 See full test logs</b></summary>
 
