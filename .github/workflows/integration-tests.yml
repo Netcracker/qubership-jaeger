@@ -346,8 +346,8 @@ jobs:
           fi
         done
         echo "::error::❌ Maximum attempts reached waiting for Integration test completion"
-        echo "status=❌failed" >> $GITHUB_OUTPUT
         cat <<EOF >> $GITHUB_OUTPUT
+        status=❌failed
         test_results<<END
         $logs
         END
