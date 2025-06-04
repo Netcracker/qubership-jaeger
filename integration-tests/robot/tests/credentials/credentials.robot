@@ -24,12 +24,12 @@ Restart Jaeger Query Pod
 Check Credentials Change and Jaeger Auth
     [Tags]  credentials
     ${response}=  Get Secret  ${secret_name}  ${JAEGER_NAMESPACE}
-    ${original}=  Set Variable  ${response}
+    Log To Console    ${response}
     Should Be Equal As Strings  ${response.metadata.name}  ${secret_name}
     ${secret}=  Replace Basic Auth Structured  ${response}
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret}
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
     ${result}=    Run Process    curl -s -i -u test1:test1 ${JAEGER_URL}    shell=True
     Should Contain    ${result.stdout}    HTTP/1.1 200
-    ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${original}
+    ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${response}
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
