@@ -1,5 +1,15 @@
 import yaml, base64
 
+def clean_secret(secret_obj):
+    print('Start clean')
+    secret_dict = secret_obj.to_dict()
+    print('Stage 2')
+    for key in ["creation_timestamp", "resource_version", "uid", "managed_fields", "self_link"]:
+        print('Stage 3')
+        secret_dict["metadata"].pop(key, None)
+    print('Stage 4')
+    return secret_dict
+
 def replace_basic_auth_structured(secret):
     if not hasattr(secret, 'data') or 'config.yaml' not in secret.data:
         raise ValueError("Secret doesnt contain config.yaml in data")
