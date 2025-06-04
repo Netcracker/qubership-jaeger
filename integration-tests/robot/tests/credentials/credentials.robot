@@ -24,8 +24,10 @@ Restart Jaeger Query Pod
 Check Credentials Change and Jaeger Auth
     [Tags]  credentials
     ${response}=  Get Secret  ${secret_name}  ${JAEGER_NAMESPACE}
-    ${text}=    Evaluate    str(${response})
-    Log To Console    ${text}
+    ${secret_dict}=  Evaluate  ${response.to_dict()}
+    Log To Console  ${secret_dict}
+    Run Keyword And Ignore Error  Delete From Dictionary  ${secret_dict["metadata"]}  creation_timestamp  resource_version  uid  managed_fields
+    Log To Console  ${secret_dict}
     Should Be Equal As Strings  ${response.metadata.name}  ${secret_name}
     ${secret}=  Replace Basic Auth Structured  ${response}
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret}
