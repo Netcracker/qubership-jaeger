@@ -31,5 +31,5 @@ Check Credentials Change and Jaeger Auth
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
     ${result}=    Run Process    curl -s -i -u test1:test1 ${JAEGER_URL}    shell=True
     Should Contain    ${result.stdout}    HTTP/1.1 200
-    ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret_dict}
+    ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${original}
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
