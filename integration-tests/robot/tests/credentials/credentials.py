@@ -2,13 +2,9 @@ import yaml, base64
 from robot.libraries.BuiltIn import BuiltIn
 
 def clean_secret(secret_obj):
-    BuiltIn().log('Start clean', level='INFO')
     secret_dict = secret_obj.to_dict()
-    BuiltIn().log('Stage 2', level='INFO')
     for key in ["creation_timestamp", "resource_version", "uid", "managed_fields", "self_link"]:
-        BuiltIn().log(f'Removing key: {key}', level='INFO')
         secret_dict["metadata"].pop(key, None)
-    BuiltIn().log('Stage 4', level='INFO')
     return secret_dict
 
 def replace_basic_auth_structured(secret):

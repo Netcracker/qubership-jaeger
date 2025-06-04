@@ -29,7 +29,7 @@ Check Credentials Change and Jaeger Auth
     ${secret}=  Replace Basic Auth Structured  ${response}
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${secret}
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
-    ${result}=    Run Process    curl -s -i -u test1:test1 ${JAEGER_URL}    shell=True
-    Should Contain    ${result.stdout}    HTTP/1.1 200
+    ${result}=  Run Process  curl -s -i -u test1:test1 ${JAEGER_URL}  shell=True
+    Should Contain  ${result.stdout}  HTTP/1.1 200
     ${patch}=  Patch Secret  ${secret_name}  ${JAEGER_NAMESPACE}  ${original}
     Restart Jaeger Query Pod  ${JAEGER_NAMESPACE}
