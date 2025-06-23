@@ -4,49 +4,6 @@ This chapter describes the procedure to deploy the Jaeger application in the Kub
 The deployment includes a collector to collect the data, a query for UI purposes in a query pod
 for tracing the query.
 
-## Table of Content
-
-* [Installation Notes](#installation-notes)
-  * [Table of Content](#table-of-content)
-  * [Prerequisites](#prerequisites)
-    * [Common](#common)
-    * [Storage](#storage)
-      * [Cassandra Storage](#cassandra-storage)
-      * [OpenSearch/ElasticSearch](#opensearchelasticsearch)
-    * [Kubernetes](#kubernetes)
-    * [Azure](#azure)
-    * [AWS](#aws)
-    * [Google](#google)
-  * [Best practices and recommendations](#best-practices-and-recommendations)
-    * [HWE](#hwe)
-    * [TLS](#tls)
-  * [Parameters](#parameters)
-    * [Jaeger](#jaeger)
-    * [Collector](#collector)
-      * [Ingress](#ingress)
-      * [TLSConfig](#tlsconfig)
-    * [Query](#query)
-    * [Readiness probe](#readiness-probe)
-    * [Cassandra](#cassandra)
-    * [ElasticSearch](#elasticsearch)
-      * [Index Cleaner](#index-cleaner)
-      * [Rollover](#rollover)
-      * [Lookback](#lookback)
-    * [Proxy](#proxy)
-    * [Hotrod](#hotrod)
-    * [Integration Tests](#integration-tests)
-    * [Status Provisioner](#status-provisioner)
-  * [Installation](#installation)
-    * [Before you begin](#before-you-begin)
-      * [Helm](#helm)
-    * [On-prem](#on-prem)
-      * [HA scheme](#ha-scheme)
-      * [Non-HA scheme](#non-ha-scheme)
-  * [Post Deploy Checks](#post-deploy-checks)
-    * [Smoke test](#smoke-test)
-  * [Frequently Asked Questions](#frequently-asked-questions)
-    * [Jaeger Sampling Configuration](#jaeger-sampling-configuration)
-
 ## Prerequisites
 
 This section describes the prerequisites to deploy Jaeger in the Cloud.
@@ -92,9 +49,6 @@ cassandraSchemaJob:
 **Warning!** The `mode: prod` **can't be used** if you have **only 1** Cassandra node. Jaeger won't allow to create
 of a schema and other Jaeger pods won't start with this configuration.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### OpenSearch/ElasticSearch
 
@@ -113,9 +67,6 @@ Supported ElasticSearch versions:
 * 6.x
 * 5.x
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Kubernetes
 
@@ -157,9 +108,6 @@ At the pod level, `runAsNonRoot: true` and `seccompProfile.type: "RuntimeDefault
 At the container level, `allowPrivilegeEscalation: false` and `capabilities.drop: - ALL` will be added automatically.
 It is recommended not to override these values because Kubernetes `restricted`` PSS expects these values.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Azure
 
@@ -175,9 +123,6 @@ to supporting Azure managed services. So we know that Jaeger doesn't support Azu
 
 There is no Azure managed OpenSearch. You can find only custom solutions in the Azure marketplace from other vendors.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### AWS
 
@@ -203,9 +148,6 @@ But Jaeger supports AWS OpenSearch as a managed service. Recommendation for AWS 
   * c5.large.search
   * c4.large.search
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Google
 
@@ -217,9 +159,6 @@ But Jaeger supports AWS OpenSearch as a managed service. Recommendation for AWS 
 Google has no officially managed Cassandra, OpenSearch or ElasticSearch. You can find only custom solutions
 in the Google marketplace from other vendors.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Best practices and recommendations
 
@@ -305,9 +244,6 @@ And disk space usage will be:
 90 720 000 * 0.0009 = 81648Mb or (~80Gb)
 80Gb + 30% = 105Gb
 ```
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### TLS
 
@@ -319,9 +255,6 @@ Support matrix Jaeger as third-party:
 | Collector/Query to Storage | ✅ Support     |
 | Browser to UI              | ❌ Not Support |
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Parameters
 
@@ -362,9 +295,6 @@ jaeger:
   prometheusMonitoringDashboard: true
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Collector
 
@@ -465,9 +395,6 @@ collector:
     example.label/key: example-label-value
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### Ingress
 
@@ -576,9 +503,6 @@ collector:
                 port: 14268
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### TLSConfig
 
@@ -681,9 +605,6 @@ collector:
       minVersion: 1.2
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Query
 
@@ -777,9 +698,6 @@ query:
     example.label/key: example-label-value
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Readiness probe
 
@@ -834,9 +752,6 @@ readinessProbe:
       memory: 50Mi
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Cassandra
 
@@ -979,9 +894,6 @@ cassandraSchemaJob:
     example.label/key: example-label-value
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### ElasticSearch
 
@@ -1055,9 +967,6 @@ elasticsearch:
       insecureSkipVerify: true
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### Index Cleaner
 
@@ -1163,9 +1072,6 @@ elasticsearch:
     priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### Rollover
 
@@ -1290,9 +1196,6 @@ elasticsearch:
     priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### Lookback
 
@@ -1402,9 +1305,6 @@ elasticsearch:
     priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Proxy
 
@@ -1477,9 +1377,6 @@ proxy:
         - ALL
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Hotrod
 
@@ -1580,9 +1477,6 @@ hotrod:
   priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Integration Tests
 
@@ -1661,9 +1555,6 @@ integrationTests:
   priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Status Provisioner
 
@@ -1723,9 +1614,6 @@ statusProvisioner:
   priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Installation
 
@@ -1760,9 +1648,6 @@ elasticsearch:
     image: jaegertracing/jaeger-es-rollover:1.62.0
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### On-prem
 
@@ -1794,9 +1679,6 @@ collector:
   replicas: 2
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### Non-HA scheme
 
@@ -1828,21 +1710,12 @@ collector:
   install: true
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Post Deploy Checks
 
 There are some options to check after deploy that Jaeger deployed and working correctly.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Smoke test
 
@@ -1947,9 +1820,6 @@ To find it in UI you need:
 * Click "Find Traces"
 * Check that traces collected and available
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Frequently Asked Questions
 
@@ -1964,6 +1834,3 @@ so you have to edit it again.
 **Note**: The application uses collector sampling configuration only if it is configured to use a remote sampler.
 In other cases, the configuration is done on the application side.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->

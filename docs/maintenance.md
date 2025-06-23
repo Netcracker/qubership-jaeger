@@ -2,14 +2,6 @@
 
 This section provides information about Jaeger maintenance issues.
 
-## Table of Content
-
-* [Table of Content](#table-of-content)
-* [Change Cassandra User/Password](#change-cassandra-userpassword)
-* [Scaling Jaeger](#scaling-jaeger)
-* [Change Cassandra TTL](#change-cassandra-ttl)
-* [Cassandra is reinstalled](#cassandra-is-reinstalled)
-
 ## Change Cassandra User/Password
 
 To change the Cassandra user/password, you can run the upgrade job with new parameters, for example:
@@ -31,10 +23,6 @@ If you used the existing secret and the `cassandraSchemaJob.existingSecret` para
 to change the Cassandra user/password you have to manually edit values in this secret.
 
 Restart all Jaeger pods manually to apply the new Cassandra credentials.
-
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Scaling Jaeger
 
@@ -68,10 +56,6 @@ collector:
       cpu: 200m
       memory: 200Mi
 ```
-
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Change Cassandra TTL
 
@@ -112,10 +96,6 @@ USE jaegerkeyspace;
 ALTER TABLE dependencies_v2 WITH default_time_to_live = 86400;
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
-
 ## Cassandra is reinstalled
 
 In case Cassandra has been reinstalled or cleared, then the keyspace has been removed. Keyspace is required for jaeger
@@ -128,7 +108,3 @@ cassandraSchemaJob:
 ```
 
 The keyspace will be recreated and jaeger will work again.
-
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->

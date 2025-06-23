@@ -2,3 +2,6 @@
 *.tar.gz
 .vscode
 **/last
+
+# MkDocs build output
+site/
