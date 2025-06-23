@@ -11,7 +11,6 @@ edit_uri: edit/main/docs/
 theme:
   name: material
   language: en
-  
   palette:
     # Dark theme by default
     - media: "(prefers-color-scheme)"
@@ -21,7 +20,6 @@ theme:
       toggle:
         icon: material/brightness-auto
         name: Switch to light mode
-    
     # Light theme option
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -29,8 +27,7 @@ theme:
       accent: amber
       toggle:
         icon: material/brightness-7
-        name: Switch to dark mode
-    
+        name: Switch to dark mode    
     # Dark theme option (default)
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
@@ -39,7 +36,6 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
-
   # Advanced features
   features:
     - navigation.tabs
@@ -56,7 +52,6 @@ theme:
     - content.code.copy
     - content.code.select
     - content.code.annotate
-
   # Icons and fonts
   favicon: assets/favicon.ico
   icon:
@@ -64,11 +59,9 @@ theme:
     repo: fontawesome/brands/github
     edit: material/pencil
     view: material/eye
-
   font:
     text: Roboto
     code: Roboto Mono
-
 # Extensions with all requested features
 markdown_extensions:
   # Basic extensions
@@ -82,7 +75,6 @@ markdown_extensions:
       permalink: true
       title: On this page
       toc_depth: 6
-
   # Enhanced code highlighting for YAML, JSON, Java, Go, Python
   - pymdownx.highlight:
       anchor_linenums: true
@@ -94,26 +86,22 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets:
       base_path: docs
-
   # Mermaid diagrams support
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
-
   # Advanced content features
   - pymdownx.details
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.tasklist:
       custom_checkbox: true
-
   # Emoji support
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
-
   # Additional formatting
   - pymdownx.keys
   - pymdownx.mark
@@ -122,12 +110,10 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.betterem:
       smart_enable: all
-
 # Plugins
 plugins:
   - search:
       separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
-
 # Navigation 
 nav:
   - Home: README.md
@@ -146,4 +132,4 @@ nav:
     - Readiness Probe: readiness-probe.md
     - Maintenance: maintenance.md
     - Performance: performance.md
-    - Troubleshooting: troubleshooting.md 
+    - Troubleshooting: troubleshooting.md

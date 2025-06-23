@@ -34,9 +34,9 @@ For example:
 jaeger:
   storage:
     type: "cassandra"
-    
+
 cassandraSchemaJob:
-  
+
 query:
   resources:
     requests:
@@ -45,7 +45,7 @@ query:
     limits:
       cpu: 200m
       memory: 200Mi
-      
+
 collector:
   replicas: 2
   resources:

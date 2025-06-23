@@ -158,7 +158,7 @@ This Helm chart includes the following components:
 ### Supported Storage Backends
 
 - **Cassandra** - Recommended for high-volume production environments
-- **OpenSearch** - Modern alternative with advanced search capabilities  
+- **OpenSearch** - Modern alternative with advanced search capabilities
 - **ElasticSearch** - Legacy support for existing deployments
 
 ## Contributing
@@ -167,4 +167,4 @@ This project is part of the Qubership platform. For contributions and developmen
 
 ## License
 
-This project is licensed under the Apache License 2.0. See the [LICENSE](https://github.com/Netcracker/qubership-jaeger/blob/main/LICENSE) file for details. 
+This project is licensed under the Apache License 2.0. See the [LICENSE](https://github.com/Netcracker/qubership-jaeger/blob/main/LICENSE) file for details.

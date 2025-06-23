@@ -12,7 +12,7 @@ Simple username/password authentication.
 
 **Key parameters:**
 - `proxy.type: basic` - Enables basic authentication
-- `proxy.basic.users` - Base64 encoded credentials
+- `proxy.basic.users` - base64 encoded credentials
 - Proxy acts as authentication gateway
 
 **Creating credentials:**
@@ -54,4 +54,4 @@ kubectl create secret generic oauth2-config \
 
 ```bash
 helm install jaeger qubership-jaeger/qubership-jaeger -f auth-values.yaml
-``` 
+```

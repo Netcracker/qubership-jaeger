@@ -18,7 +18,7 @@ Recommended for high-volume production deployments:
 
 **[Cassandra Examples](examples/cassandra.md)**
 - Simple Setup - Single-node development configuration
-- Cluster Setup - Multi-node production deployment  
+- Cluster Setup - Multi-node production deployment
 - TLS Configuration - Secure connections with certificates
 - Custom TTL - Data retention configuration
 - Security Context - Pod security settings
@@ -31,7 +31,7 @@ Powerful search capabilities and analytics:
 **[OpenSearch Examples](examples/opensearch.md)**
 - Simple Setup - Basic development configuration
 - TLS Configuration - Secure connections
-- Index Rollover - Automated index management  
+- Index Rollover - Automated index management
 - Single Node - Minimal testing setup
 - Custom Security - Pod security configurations
 
@@ -82,9 +82,9 @@ helm install jaeger qubership-jaeger/qubership-jaeger -f your-values.yaml
 Most examples support these standard parameters:
 
 - **Resources** - CPU/memory limits and requests
-- **Replicas** - Pod scaling for high availability  
+- **Replicas** - Pod scaling for high availability
 - **Storage** - Backend selection and configuration
 - **Security** - TLS, authentication, authorization
 - **Monitoring** - Metrics and observability
 
-For detailed parameter reference, see the [Installation Guide](installation.md). 
+For detailed parameter reference, see the [Installation Guide](installation.md).

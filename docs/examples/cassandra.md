@@ -103,4 +103,4 @@ Configure custom authentication methods for Cassandra.
 
 ```bash
 helm install jaeger qubership-jaeger/qubership-jaeger -f values.yaml
-``` 
+```

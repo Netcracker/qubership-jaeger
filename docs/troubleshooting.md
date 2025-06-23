@@ -305,7 +305,7 @@ During deploy, following parameters can be used to supply annotations.
 
 ```yaml
 query:
-  ...  
+  ...
   ingress:
     install: true
     host: jaeger-query.cloud.test.org

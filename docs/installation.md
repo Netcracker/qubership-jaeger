@@ -183,9 +183,9 @@ Disk space for storing Jaeger traces might be calculated in several ways:
 
 * First of all, trace might contain more than one span, it depends on how many services (APIs) call each request.
   If you are able to calculate a number of spans as:
-  
+
   ```txt
-  Number of spans per second = number traces in your system(requests) * number of spans per trace 
+  Number of spans per second = number traces in your system(requests) * number of spans per trace
   ```
 
   Please note not all requests on prod env are sent traces in Jaeger, so you only need to count the traced requests.
@@ -868,7 +868,7 @@ cassandraSchemaJob:
   extraEnv:
     - name: CASSANDRA_TIMEOUT
       value: 30s
-  
+
   resources:
     requests:
       cpu: 100m
@@ -929,7 +929,7 @@ Examples:
 
 ```yaml
 elasticsearch:
-  existingSecret: 
+  existingSecret:
   indexPrefix: custom-  # result name of indexes will be custom-jaeger-spans, custom-jaeger-.....
   extraEnv:
   - name: ES_TIMEOUT
@@ -1661,7 +1661,7 @@ The minimal template for the HA scheme is as follows:
 jaeger:
   storage:
     type: cassandra
-    
+
 cassandraSchemaJob:
   host: cassandra.cassandra.svc
   keyspace: jaeger
@@ -1688,7 +1688,7 @@ The minimal template for the Non-HA scheme is as follows:
 jaeger:
   storage:
     type: cassandra
-    
+
 cassandraSchemaJob:
   host: cassandra.cassandra.svc
   keyspace: jaeger
