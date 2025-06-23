@@ -119,17 +119,17 @@ nav:
   - Home: README.md
   - Installation: installation.md
   - Configuration:
-    - Overview: examples.md
-    - Storage:
-      - Cassandra: examples/cassandra.md
-      - OpenSearch: examples/opensearch.md
-    - Authentication: examples/auth.md
-    - Networking: examples/networking.md
-    - Cloud Providers: examples/cloud.md
-    - General Examples: examples/general.md
+      - Overview: examples.md
+      - Storage:
+          - Cassandra: examples/cassandra.md
+          - OpenSearch: examples/opensearch.md
+      - Authentication: examples/auth.md
+      - Networking: examples/networking.md
+      - Cloud Providers: examples/cloud.md
+      - General Examples: examples/general.md
   - Operations:
-    - Observability: observability.md
-    - Readiness Probe: readiness-probe.md
-    - Maintenance: maintenance.md
-    - Performance: performance.md
-    - Troubleshooting: troubleshooting.md
+      - Observability: observability.md
+      - Readiness Probe: readiness-probe.md
+      - Maintenance: maintenance.md
+      - Performance: performance.md
+      - Troubleshooting: troubleshooting.md
