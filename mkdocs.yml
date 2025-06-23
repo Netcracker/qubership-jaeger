@@ -27,7 +27,7 @@ theme:
       accent: amber
       toggle:
         icon: material/brightness-7
-        name: Switch to dark mode    
+        name: Switch to dark mode
     # Dark theme option (default)
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
@@ -114,7 +114,7 @@ markdown_extensions:
 plugins:
   - search:
       separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
-# Navigation 
+# Navigation
 nav:
   - Home: README.md
   - Installation: installation.md
