@@ -1,46 +1,56 @@
 import os
 import time
+import logging
 
 from PlatformLibrary import PlatformLibrary
 
 environ = os.environ
-namespace = environ.get("JAEGER_NAMESPACE")
-service = environ.get("JAEGER_SERVICE_NAME")
-jaeger_query = f"{service}-query"
-jaeger_collector = f"{service}-collector"
+namespace = environ.get('JAEGER_NAMESPACE')
+service = environ.get('JAEGER_SERVICE_NAME')
+
+query = f'{service}-query'
+collector = f'{service}-collector'
+
 timeout = 300
 
 
 if __name__ == '__main__':
-    print('Start Jaeger pods checker script')
-    time.sleep(5)
+    logging.basicConfig(level=logging.INFO, format='[%(asctime)s][%(levelname)s] %(message)s')
 
+    logging.info('Start Jaeger pods checker script')
+    logging.info(f'Parameters to run: namespace={namespace}, timeout={timeout}')
     try:
-        k8s_lib = PlatformLibrary("true")
+        k8s_lib = PlatformLibrary('true')
     except Exception as e:
-        print(e)
+        logging.error('Failed to initialize PlatformLibrary', e)
         exit(1)
 
-    timeout_start = time.time()
-    while time.time() < timeout_start + timeout:
+    logging.info('Check deployments readiness')
+    start_time = time.time()
+    attempts = 0
+    while time.time() < start_time + timeout:
         try:
-            jaeger_query_deployments = k8s_lib.get_deployment_entities_count_for_service(namespace, jaeger_query, 'name')
-            jaeger_query_ready_deployments = k8s_lib.get_active_deployment_entities_count_for_service(namespace, jaeger_query, 'name')
-            print(f'[Check status] Query deployments: {jaeger_query_deployments}, ready deployments: {jaeger_query_ready_deployments}')
+            query_deployments = k8s_lib.get_deployment_entities_count_for_service(namespace, query, 'name')
+            query_ready_deployments = k8s_lib.get_active_deployment_entities_count_for_service(namespace, query, 'name')
 
-            jaeger_collector_deployments = k8s_lib.get_deployment_entities_count_for_service(namespace, jaeger_collector, 'name')
-            jaeger_collector_ready_deployments = k8s_lib.get_active_deployment_entities_count_for_service(namespace, jaeger_collector, 'name')
-            print(f'[Check status] Collector deployments: {jaeger_collector_deployments}, ready deployments: {jaeger_collector_ready_deployments}')
+            collector_deployments = k8s_lib.get_deployment_entities_count_for_service(namespace, collector, 'name')
+            collector_ready_deployments = k8s_lib.get_active_deployment_entities_count_for_service(namespace, collector, 'name')
+
+            logging.info(f'{query}: total = {query_deployments}, ready = {query_ready_deployments}, '
+                         f'{collector}: total = {collector_deployments}, ready = {collector_ready_deployments}')
         except Exception as e:
-            print(e)
+            logging.error('Failed to get deployment entities count for service', e)
             continue
 
-        if jaeger_query_deployments == jaeger_query_ready_deployments and jaeger_query_deployments != 0 and jaeger_collector_deployments == jaeger_collector_ready_deployments and jaeger_collector_deployments != 0:
-            print("Jaeger query and collector deployments are ready")
-            time.sleep(10)
+        if (query_deployments == query_ready_deployments and query_deployments != 0) \
+        and (collector_deployments == collector_ready_deployments and collector_deployments != 0):
+            logging.info('Jaeger query and collector deployments are ready')
+            time.sleep(5)
             exit(0)
 
+        logging.info(f'Number of attempts = {attempts}, remaining time = {round((start_time + timeout) - time.time())} seconds')
+        attempts += 1
         time.sleep(10)
 
-    print(f'Jaeger query and collector deployments are not ready at least {timeout} seconds')
+    logging.error(f'Jaeger query and collector deployments are not ready at least {timeout} seconds')
     exit(1)
