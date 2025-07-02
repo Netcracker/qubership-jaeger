@@ -1,25 +1,14 @@
-# Based on python:3.13.2-alpine3.21
+# Based on python:3.13.3-alpine3.21
 FROM ghcr.io/netcracker/qubership-docker-integration-tests:feature-remove-openshift-lib-usage
 
 # User with UID=1000 already added in ghcr.io/netcracker/qubership-docker-integration-tests image
-ENV USER_UID=1000 \
-    ROBOT_OUTPUT=/opt/robot/output \
+ENV ROBOT_OUTPUT=/opt/robot/output \
     SERVICE_CHECKER_SCRIPT=${ROBOT_HOME}/jaeger_pods_checker.py
 
 # Copy tests source code
-COPY requirements.txt ${ROBOT_HOME}/requirements.txt
-COPY robot ${ROBOT_HOME}
+COPY robot/* ${ROBOT_HOME}/
 
-RUN \
-    # Install requirements
-    python3 -m pip install --no-cache-dir \
-        -r "${ROBOT_HOME}/requirements.txt" \
-    # Cleanup pip cache
-    && rm -rf /var/cache/apk/* \
-    # Create output directory for test results
-    && mkdir -p "${ROBOT_OUTPUT}"
+# Create output directory for test results
+RUN mkdir -p "${ROBOT_OUTPUT}"
 
-USER ${USER_UID}
-
-EXPOSE 8080
 VOLUME ["${ROBOT_OUTPUT}"]
