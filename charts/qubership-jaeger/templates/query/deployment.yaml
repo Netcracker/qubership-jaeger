@@ -147,11 +147,11 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-            - mountPath: /etc/config
-              name: {{ .Values.jaeger.serviceName }}-ui-configuration-volume
+            - name: ui-config
+              mountPath: /etc/config
               readOnly: true
-            - mountPath: /conf
-              name: {{ .Values.jaeger.serviceName }}-query-configuration-volume
+            - name: query-config
+              mountPath: /conf
               readOnly: true
             {{- include "jaeger.certificateVolumeMounts" . | nindent 12 }}
         {{- if .Values.proxy.install }}
@@ -197,9 +197,11 @@ spec:
           volumeMounts:
             - name: envoy-config
               mountPath: /envoy
+              readOnly: true
             {{- if eq .Values.proxy.type "oauth2" }}
             - name: oauth2-token
               mountPath: /envoy/oauth2
+              readOnly: true
             {{- end }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
@@ -207,12 +209,12 @@ spec:
             {{- include "proxy.containerSecurityContext" . }}
         {{- end }}
         {{- if .Values.readinessProbe.install }}
-        - name: readiness-probe
+        - name: probe
           image: {{ template "readiness-probe.image" . }}
           imagePullPolicy: {{ .Values.readinessProbe.imagePullPolicy }}
           command: [ "/app/probe" ]
           args:
-            {{- template "readinessProbe.args" . }}
+            {{- include "readinessProbe.args" . }}
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -250,11 +252,11 @@ spec:
         {{- include "query.securityContext" . }}
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: {{ .Values.jaeger.serviceName }}-ui-configuration-volume
+        - name: ui-config
           configMap:
             name: {{ .Values.jaeger.serviceName }}-ui-configuration
             defaultMode: 420
-        - name: {{ .Values.jaeger.serviceName }}-query-configuration-volume
+        - name: query-config
           configMap:
             name: {{ .Values.jaeger.serviceName }}-query-configuration
             items:

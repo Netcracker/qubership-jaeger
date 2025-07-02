@@ -33,7 +33,6 @@ spec:
   {{- end }}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         job-name: {{ .Values.jaeger.serviceName }}-cassandra-schema
         name: {{ .Values.jaeger.serviceName }}-cassandra-schema

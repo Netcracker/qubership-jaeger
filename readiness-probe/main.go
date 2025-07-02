@@ -347,7 +347,9 @@ func (s *Server) opensearchHealth() bool {
 			slog.Error(err.Error())
 			return false
 		}
-		res.Body.Close()
+		if err := res.Body.Close(); err != nil {
+			slog.Error(fmt.Sprintf("Error closing response body: %s", err.Error()))
+		}
 		retries := 0
 		for retries < s.retryCount {
 			if res.StatusCode == 200 {

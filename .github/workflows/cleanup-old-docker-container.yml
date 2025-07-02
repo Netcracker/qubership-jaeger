@@ -38,16 +38,16 @@ jobs:
         run: |
           echo "**Event**: ${{ github.event_name }}"
           echo "**Actor**: ${{ github.actor }}"
-          echo "**Threshold days**: ${{ github.event.inputs.threshold-days || 8 }}"
-          echo "**Included tags**: ${{ github.event.inputs.included-tags || 'dev*' }}"
-          echo "**Excluded tags**: ${{ github.event.inputs.excluded-tags || 'release*' }}"
+          echo "**Threshold days**: ${{ github.event.inputs.threshold-days || 7 }}"
+          echo "**Included tags**: ${{ github.event.inputs.included-tags || '*' }}"
+          echo "**Excluded tags**: ${{ github.event.inputs.excluded-tags || 'main,latest,release*,*.*' }}"
           echo "**Dry-run**: ${{ github.event.inputs.dry-run || 'false' }}"
       - name: Run Container Package Cleanup Action
         uses: Netcracker/qubership-workflow-hub/actions/container-package-cleanup@main
         with:
-          threshold-days: ${{ github.event.inputs.threshold-days || 8 }}
-          included-tags: ${{ github.event.inputs.included-tags || 'dev*' }}
-          excluded-tags: ${{ github.event.inputs.excluded-tags || 'release*' }}
+          threshold-days: ${{ github.event.inputs.threshold-days || 7 }}
+          included-tags: ${{ github.event.inputs.included-tags || '*' }}
+          excluded-tags: ${{ github.event.inputs.excluded-tags || 'main,latest,release*,*.*' }}
           dry-run: ${{ github.event.inputs.dry-run || 'false' }}
         env:
           PACKAGE_TOKEN: ${{ secrets.GH_RWD_PACKAGE_TOKEN }}

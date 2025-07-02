@@ -162,20 +162,20 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-            - mountPath: /etc/jaeger/sampling
-              name: {{ .Values.jaeger.serviceName }}-sampling-configuration-volume
+            - name: sampling-config
+              mountPath: /etc/jaeger/sampling
               readOnly: true
-            - mountPath: /conf
-              name: jaeger-collector-configuration-volume
+            - name: collector-config
+              mountPath: /conf
               readOnly: true
             {{- include "jaeger.certificateVolumeMounts" . | nindent 12 }}
         {{- if .Values.readinessProbe.install }}
-        - name: readiness-probe
+        - name: probe
           image: {{ template "readiness-probe.image" . }}
           imagePullPolicy: {{ .Values.readinessProbe.imagePullPolicy }}
           command: ["/app/probe"]
           args:
-            {{- template "readinessProbe.args" . }}
+            {{- include "readinessProbe.args" . }}
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -211,14 +211,14 @@ spec:
       schedulerName: default-scheduler
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: {{ .Values.jaeger.serviceName }}-sampling-configuration-volume
+        - name: sampling-config
           configMap:
             name: {{ .Values.jaeger.serviceName }}-sampling-configuration
             defaultMode: 420
             items:
               - key: sampling
                 path: sampling.json
-        - name: {{ .Values.jaeger.serviceName }}-collector-configuration-volume
+        - name: collector-config
           configMap:
             name: {{ .Values.jaeger.serviceName }}-collector-configuration
             items:

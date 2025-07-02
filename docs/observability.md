@@ -4,19 +4,6 @@ Jaeger itself is a distributed, microservices based system. If you run it in pro
 you will likely want to setup adequate monitoring for different components,
 e.g. to ensure that the backend is not saturated by too much tracing data.
 
-## Table of Content
-
-* [Table of Content](#table-of-content)
-* [Monitoring](#monitoring)
-  * [Integration with PlatformMonitoring](#integration-with-platformmonitoring)
-* [Logging](#logging)
-  * [Audit logs](#audit-logs)
-  * [Integration with Platform Logging](#integration-with-platform-logging)
-* [Traces](#traces)
-* [Metrics list](#metrics-list)
-  * [Collector](#collector)
-  * [Query](#query)
-
 ## Monitoring
 
 By default Jaeger microservices expose metrics in Prometheus format.
@@ -37,9 +24,6 @@ Each Jaeger component exposes the metrics scraping endpoint on the admin port:
 | `jaeger-ingester`  | 14270 |
 | `all-in-one`       | 14269 |
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Integration with PlatformMonitoring
 
@@ -62,9 +46,6 @@ jaeger:
 
 All necessary configurations will discovery by Prometheus or Grafana automatically.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Logging
 
@@ -80,9 +61,6 @@ configured to write log lines as JSON encoded strings, for example:
 
 The log level can be adjusted via `--log-level` command line switch; default level is `info`.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Audit logs
 
@@ -123,9 +101,6 @@ The `Envoy` will log all requests from UI in access logs.
 **Note:** To disable audit logs, need to set deployment
 parameter `access_logs_enabled` as false.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Integration with Platform Logging
 
@@ -150,9 +125,6 @@ pod_name: <pod>
 ## pods_name: jaeger-collector-7bb5bcd6d4-qlqhh
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Traces
 
@@ -166,9 +138,6 @@ Jaeger backend components with `JAEGER_DISABLED=true` environment variable, for 
 docker run -e JAEGER_DISABLED=true -p 16686:16686 jaegertracing/all-in-one:1.33
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Metrics list
 
