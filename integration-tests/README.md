@@ -1,14 +1,16 @@
 # Integration Tests
-* [Introduction](#introduction)
-* [Prerequisites](#prerequisites)
-* [Test cases](#test-cases)
-  * [Shared file](#shared-file)
-* [Deployment](#deployment)
-  * [Configuration](#configuration)
-    * [Jaeger Integration Tests Parameters](#jaeger-integration-tests-parameters)
-  * [Manual Deployment](#manual-deployment)
-    * [Installation](#installation)
-    * [Uninstalling](#uninstalling)
+
+* [Integration Tests](#integration-tests)
+  * [Introduction](#introduction)
+  * [Prerequisites](#prerequisites)
+  * [Test cases](#test-cases)
+    * [Shared file](#shared-file)
+  * [Deployment](#deployment)
+    * [Configuration](#configuration)
+      * [Jaeger Integration Tests Parameters](#jaeger-integration-tests-parameters)
+    * [Manual Deployment](#manual-deployment)
+      * [Installation](#installation)
+      * [Uninstalling](#uninstalling)
 
 ## Introduction
 
@@ -36,7 +38,7 @@ The chart installs Jaeger Integration Tests service and pod in Kubernetes/Opensh
 
    * Jaeger can serve spans
    This test check health status from Jaeger and send POST request with generated spans (template of the span can be found
-   [here](robot/tests/libs/resources/spans.json)).
+   [spans.json](robot/tests/libs/resources/spans.json)).
    After that will be checked that span was added to Jaeger (Will be sent GET request to Jaeger).
 
 2. [Spans generator](robot/tests/spans_generator/generate.robot)
@@ -200,4 +202,3 @@ For example, `jaeger-integration-tests`.
 For example, `jaeger`.
 
 The command uninstalls all the Kubernetes resources associated with the chart and deletes the release.
-
