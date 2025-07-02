@@ -1,6 +1,6 @@
+import logging
 import os
 import time
-import logging
 
 from PlatformLibrary import PlatformLibrary
 
@@ -12,7 +12,6 @@ query = f'{service}-query'
 collector = f'{service}-collector'
 
 timeout = 300
-
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='[%(asctime)s][%(levelname)s] %(message)s')
@@ -34,7 +33,8 @@ if __name__ == '__main__':
             query_ready_deployments = k8s_lib.get_active_deployment_entities_count_for_service(namespace, query, 'name')
 
             collector_deployments = k8s_lib.get_deployment_entities_count_for_service(namespace, collector, 'name')
-            collector_ready_deployments = k8s_lib.get_active_deployment_entities_count_for_service(namespace, collector, 'name')
+            collector_ready_deployments = k8s_lib.get_active_deployment_entities_count_for_service(namespace, collector,
+                                                                                                   'name')
 
             logging.info(f'{query}: total = {query_deployments}, ready = {query_ready_deployments}, '
                          f'{collector}: total = {collector_deployments}, ready = {collector_ready_deployments}')
@@ -43,12 +43,13 @@ if __name__ == '__main__':
             continue
 
         if (query_deployments == query_ready_deployments and query_deployments != 0) \
-        and (collector_deployments == collector_ready_deployments and collector_deployments != 0):
+                and (collector_deployments == collector_ready_deployments and collector_deployments != 0):
             logging.info('Jaeger query and collector deployments are ready')
             time.sleep(5)
             exit(0)
 
-        logging.info(f'Number of attempts = {attempts}, remaining time = {round((start_time + timeout) - time.time())} seconds')
+        logging.info(f'Number of attempts = {attempts}, '
+                     f'remaining time = {round((start_time + timeout) - time.time())} seconds')
         attempts += 1
         time.sleep(10)
 
