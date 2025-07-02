@@ -21,7 +21,7 @@ if __name__ == '__main__':
     try:
         k8s_lib = PlatformLibrary('true')
     except Exception as e:
-        logging.error('Failed to initialize PlatformLibrary', e)
+        logging.error('Failed to initialize PlatformLibrary', e.message, e.traceback)
         exit(1)
 
     logging.info('Check deployments readiness')
