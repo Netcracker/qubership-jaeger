@@ -76,62 +76,28 @@ This section provides the list of parameters required for Jaeger Integration Tes
 
 #### Jaeger Integration Tests Parameters
 
-The `integrationTests.service.name` parameter specifies the name of Jaeger Integration Tests service.
-
-The `integrationTests.serviceAccount.create` parameter specifies whether service account for Jaeger Integration Tests
-is to be deployed or not.
-
-The `integrationTests.serviceAccount.name` parameter specifies the name of the service account that is used to deploy
-Jaeger Integration Tests. If this
-parameter is empty, the service account, the required role, role binding are
-created automatically with default names (`jaeger-integration-tests`).
-
-The `integrationTests.install` parameter specifies the whether Jaeger Integration Tests Service should be
-installed or not.
-
-The `integrationTests.image` parameter specifies the Docker image of Jaeger Integration Tests Service.
-
-The `integrationTests.tags` parameter specifies the tags combined together with `AND`, `OR` and `NOT` operators
-that select test cases to run.
-You can use the "smoke", "generator" and "ha" tags to run the appropriate tests. Or a combination of both,
-for example `smokeORha` to run both smoke and ha tests
-
-The `integrationTests.linkForGenerator` parameter specifies the link to host which can get spans in Zipkin format
-
-The `integrationTests.generateCount` parameter specifies the number of spans which will be sent, 10 by default
-
-The `integrationTests.waitingTime` parameter specifies the waiting time between sending, by default 500ms.
-Time format can be found in [official robot documentation](https://robotframework.org/robotframework/latest/libraries/BuiltIn.html#Sleep)
-
-The `integrationTests.resources.requests.memory` parameter specifies the minimum amount of memory
-the container should use. The value can be specified with SI suffixes (E, P, T, G, M, K, m) or
-their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki). The default value is `256Mi.`
-
-The `integrationTests.resources.requests.cpu` parameter specifies the minimum number of CPUs the container
-should use. The default value is `50m.`
-
-The `integrationTests.resources.limits.memory` parameter specifies the maximum amount of memory the container can use.
-The value can be specified with SI suffixes (E, P, T, G, M, K, m) or
-their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki). The default value is `256Mi`.
-
-The `integrationTests.resources.limits.cpu` parameter specifies the maximum number of CPUs the container can use.
-The default value is `400m.`
-
-The `integrationTests.affinity` parameter specifies the affinity scheduling rules.
-The value should be specified in json format. The parameter can be empty.
-
-The `integrationTests.statusWriting.enabled` parameter specifies whether to write status to custom resource.
-
-The `integrationTests.statusWriting.isShortStatusMessage` parameter specifies the size of integration test status
-message.
-
-The `integrationTests.statusWriting.onlyIntegrationTests` parameter specifies to deploy only integration tests
-without any component (component was installed before).
-
-The `integrationTests.statusWriting.customResourcePath` parameter specifies path to Custom Resource
-that should be used to write status of integration-tests execution. The value is a field from k8s entity
-selfLink without `apis` prefix and `namespace` part. The path should be composed according to the following template:
-`<group>/<apiversion>/<namespace>/<plural>/<customResourceName>`
+<!-- markdownlint-disable line-length -->
+| Parameter                            | Type    | Mandatory | Default value                                                            | Description                                                                                                                                                                                                                                                                                                                                         |
+| ------------------------------------ | ------- | --------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `integrationTests.service.name`      | string  | no        | jaeger-integration-tests-runner                                          | The name of Jaeger Integration Tests service                                                                                                                                                                                                                                                                                                        |
+| `integrationTests.serviceAccount.create` | boolean | no        | true                                                                     | Specifies whether service account for Jaeger Integration Tests is to be deployed or not                                                                                                                                                                                                                                                           |
+| `integrationTests.serviceAccount.name` | string  | no        | jaeger-integration-tests                                                 | The name of the service account that is used to deploy Jaeger Integration Tests. If this parameter is empty, the service account, the required role, role binding are created automatically with default names (`jaeger-integration-tests`)                                                                                                                                                                       |
+| `integrationTests.install`           | boolean | no        | false                                                                    | Specifies whether Jaeger Integration Tests Service should be installed or not                                                                                                                                                                                                                                                                       |
+| `integrationTests.image`             | string  | no        | -                                                                        | The Docker image of Jaeger Integration Tests Service                                                                                                                                                                                                                                                                                               |
+| `integrationTests.tags`              | string  | no        | smoke                                                                    | Tags combined together with `AND`, `OR` and `NOT` operators that select test cases to run. You can use the "smoke", "generator" and "ha" tags to run the appropriate tests. Or a combination of both, for example `smokeORha` to run both smoke and ha tests                                                                                                                                                       |
+| `integrationTests.linkForGenerator`  | string  | no        | `http://jaeger-collector:9411`                                           | Link to host which can get spans in Zipkin format                                                                                                                                                                                                                                                                                                  |
+| `integrationTests.generateCount`     | integer | no        | 10                                                                       | The number of spans which will be sent, 10 by default                                                                                                                                                                                                                                                                                              |
+| `integrationTests.waitingTime`       | string  | no        | 500ms                                                                    | The waiting time between sending, by default 500ms. Time format can be found in [official robot documentation](https://robotframework.org/robotframework/latest/libraries/BuiltIn.html#Sleep)                                                                                                                                                       |
+| `integrationTests.resources.requests.memory` | string | no        | 256Mi                                                                    | The minimum amount of memory the container should use. The value can be specified with SI suffixes (E, P, T, G, M, K, m) or their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki)                                                                                                                                                               |
+| `integrationTests.resources.requests.cpu` | string | no        | 50m                                                                      | The minimum number of CPUs the container should use                                                                                                                                                                                                                                                                                                |
+| `integrationTests.resources.limits.memory` | string | no        | 256Mi                                                                    | The maximum amount of memory the container can use. The value can be specified with SI suffixes (E, P, T, G, M, K, m) or their power-of-two-equivalents (Ei, Pi, Ti, Gi, Mi, Ki)                                                                                                                                                                 |
+| `integrationTests.resources.limits.cpu` | string | no        | 400m                                                                     | The maximum number of CPUs the container can use                                                                                                                                                                                                                                                                                                   |
+| `integrationTests.affinity`          | object  | no        | -                                                                        | The affinity scheduling rules. The value should be specified in json format. The parameter can be empty                                                                                                                                                                                                                                                                                                          |
+| `integrationTests.statusWriting.enabled` | boolean | no        | false                                                                    | Specifies whether to write status to custom resource                                                                                                                                                                                                                                                                                               |
+| `integrationTests.statusWriting.isShortStatusMessage` | boolean | no        | true                                                                     | Specifies the size of integration test status message                                                                                                                                                                                                                                                                                              |
+| `integrationTests.statusWriting.onlyIntegrationTests` | boolean | no        | true                                                                     | Specifies to deploy only integration tests without any component (component was installed before)                                                                                                                                                                                                                                                  |
+| `integrationTests.statusWriting.customResourcePath` | string | no        | apps/v1/jaeger/deployments/jaeger-integration-tests-runner               | Path to Custom Resource that should be used to write status of integration-tests execution. The value is a field from k8s entity selfLink without `apis` prefix and `namespace` part. The path should be composed according to the following template: `<group>/<apiversion>/<namespace>/<plural>/<customResourceName>`                                                                                           |
+<!-- markdownlint-enable line-length -->
 
 ### Manual Deployment
 
