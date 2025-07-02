@@ -1,4 +1,5 @@
 # Based on python:3.13.3-alpine3.21
+# checkov:skip=CKV_DOCKER_3: User already set in the base image
 FROM ghcr.io/netcracker/qubership-docker-integration-tests:feature-remove-openshift-lib-usage
 
 # User with UID=1000 already added in ghcr.io/netcracker/qubership-docker-integration-tests image
