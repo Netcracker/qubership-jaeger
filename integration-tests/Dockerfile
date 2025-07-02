@@ -7,7 +7,7 @@ ENV ROBOT_OUTPUT=/opt/robot/output \
     SERVICE_CHECKER_SCRIPT=${ROBOT_HOME}/jaeger_pods_checker.py
 
 # Copy tests source code
-COPY robot/* ${ROBOT_HOME}/
+COPY robot/ ${ROBOT_HOME}/
 
 # Create output directory for test results
 RUN mkdir -p "${ROBOT_OUTPUT}"
