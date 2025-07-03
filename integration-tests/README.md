@@ -19,8 +19,8 @@ The chart installs Jaeger Integration Tests service and pod in Kubernetes/Opensh
 
 ## Prerequisites
 
-* Kubernetes 1.18+ or OpenShift 3.11+
-* `kubectl` 1.18+ or `oc` 3.11+ CLI
+* Kubernetes 1.25+ or OpenShift 3.11+
+* `kubectl` 1.25+
 * Helm 3.0+
 
 ## Test cases
@@ -131,7 +131,7 @@ integrationTests:
 To deploy the service you need to execute the following command:
 
 ```bash
-helm install ${RELEASE_NAME} ./jaeger-integration-tests -n ${NAMESPACE}
+helm install -n ${NAMESPACE} ${RELEASE_NAME} ./jaeger-integration-tests 
 ```
 
 where:
@@ -141,16 +141,10 @@ For example, `jaeger-integration-tests`.
 * `${NAMESPACE}` is the Kubernetes namespace or Openshift workspace to deploy Jaeger service integration tests.
 For example, `jaeger`.
 
-You can monitor the deployment process in the Kubernetes/Openshift dashboard or using `kubectl`/`oc` in the command line:
+You can monitor the deployment process in the Kubernetes/Openshift dashboard or using `kubectl` in the command line:
 
 ```bash
 kubectl get pods
-```
-
-OR
-
-```bash
-oc get pod
 ```
 
 #### Uninstalling
