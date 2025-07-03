@@ -53,5 +53,5 @@ if __name__ == '__main__':
         attempts += 1
         time.sleep(10)
 
-    logging.error(f'Jaeger query and collector deployments are not ready at least {timeout} seconds')
+    logging.error(f'Jaeger query and collector deployments are not ready for at least {timeout} seconds')
     exit(1)
