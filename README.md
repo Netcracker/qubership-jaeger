@@ -7,7 +7,7 @@ Helm charts that deploy a production-ready [Jaeger](https://www.jaegertracing.io
 ## Features / key capabilities
 
 * One-click install of the full Jaeger stack (agent, collector, query, UI)
-* Pluggable storage back-ends: Cassandra (default) or OpenSearch
+* Pluggable storage backends: Cassandra (default) or OpenSearch
 * TLS everywhere – built-in issuers & secrets for mTLS between components
 * Optional Envoy proxy with Basic or OAuth2 auth in front of the Query UI
 * Grafana dashboards, Prometheus `PodMonitor`, readiness probes
