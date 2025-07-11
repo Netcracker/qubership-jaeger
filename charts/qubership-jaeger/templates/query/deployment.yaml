@@ -65,6 +65,8 @@ spec:
               {{- toYaml .Values.query.cmdlineParams | nindent 12 }}
             {{- end }}
           env:
+            - name: OTEL_TRACES_SAMPLER
+              value: always_off
           {{- /* Section with Cassandra environment variables */}}
           {{- if eq .Values.jaeger.storage.type "cassandra" }}
             - name: CASSANDRA_USERNAME
