@@ -219,14 +219,16 @@ jobs:
         fi
 
         if [[ $(echo "$tests_status" | jq -r '.type') == "Successful" ]] && [[ $(echo "$tests_status" | jq -r '.status') == "True" ]]; then
-          echo "$tests_status" | jq .
           echo "tests_status=✅Passed" >> $GITHUB_OUTPUT
-          echo "tests_details=$tests_status" >> $GITHUB_OUTPUT
+          echo "tests_details<<EOF" >> $GITHUB_OUTPUT
+          echo "$tests_status" | jq . | tee -a $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
         else
-          echo "$tests_status" | jq .
           echo "::error::❌ Jaeger integration tests failed. Check logs and events."
           echo "tests_status=❌Failed" >> $GITHUB_OUTPUT
-          echo "tests_details=$tests_status" >> $GITHUB_OUTPUT
+          echo "tests_details<<EOF" >> $GITHUB_OUTPUT
+          echo "$tests_status" | jq . | tee -a $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           exit 1
         fi
       shell: bash
@@ -288,6 +290,7 @@ jobs:
     - name: Generate Status Summary
       if: always()
       run: |
+        # ▶️ Generate status summary
         cat <<EOF >> $GITHUB_STEP_SUMMARY
         ## Installation status
         Collector status: ${{ steps.check_installation_status.outputs.collector_status || '❓unknown' }}
@@ -300,6 +303,6 @@ jobs:
         ## Check integration tests results
         Check integration tests status: ${{ steps.check_installation_status.outputs.tests_status || '❓unknown' }}
         \`\`\`json
-        ${{ steps.check_installation_status.outputs.tests_details || ''}}
+        ${{ steps.check_installation_status.outputs.tests_details || '{}'}}
         \`\`\`
         EOF
