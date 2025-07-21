@@ -190,204 +190,48 @@ jobs:
           --set "integrationTests.image=ghcr.io/netcracker/jaeger-integration-tests:$TAG"
       shell: bash
 
-    - name: Checking jaeger status
-      id: check_jaeger
+    - name: Check installation status
+      id: check_installation_status
       run: |
-        echo "Checking status of jaeger..."
-
-        check_pod_status() {
-          local label=$1
-          local namespace=$2
-          local json
-          json=$(kubectl get pod -l "$label" -n "$namespace" -o json 2>/dev/null)
-          local phase ready scheduled
-          phase=$(echo "$json" | jq -r '.items[0].status.phase // empty')
-          ready=$(echo "$json" | jq -r '.items[0].status.conditions[]? | select(.type == "Ready") | .status // empty')
-          scheduled=$(echo "$json" | jq -r '.items[0].status.conditions[]? | select(.type == "PodScheduled") | .status // empty')
-          echo "$phase|$ready|$scheduled"
-        }
-
-        is_problem_pods() {
-          local namespace=$1
-          local problem_pods
-          problem_pods=$(kubectl get pods -n "$namespace" 2>/dev/null | grep -E "ImagePullBackOff|ErrImagePull|InvalidImageName" || true)
-          if [[ -n "$problem_pods" ]]; then
-            echo "::error::❌ Some images cannot be pulled:"
-            echo "$problem_pods"
-            {
-              echo "status=❌failed"
-              echo "details=Some images cannot be pulled. Check logs in uploaded artifacts"
-            } >> $GITHUB_OUTPUT
-            return 0
-          fi
-          return 1
-        }
-
-        attempt=1
-        max_attempts=${{ env.max_attempts }}
-        delay=${{ env.delay }}
-
-        while [[ $attempt -le $max_attempts ]]; do
-          if is_problem_pods "${{ env.namespace }}"; then
-            exit 1
-          fi
-
-          echo "Attempt $attempt/$max_attempts: Checking jaeger pods status..."
-
-          IFS="|" read -r collector_phase collector_ready collector_scheduled < <(check_pod_status "name=jaeger-collector" "${{ env.namespace }}")
-          IFS="|" read -r query_phase query_ready query_scheduled < <(check_pod_status "name=jaeger-query" "${{ env.namespace }}")
-
-          if [[ "$collector_ready" == "True" && "$query_ready" == "True" ]]; then
-            echo "✅ Jaeger collector and query are ready."
-            {
-              echo "status=✅Ready"
-              echo "details=Jaeger collector and query pods are ready."
-            } >> $GITHUB_OUTPUT
-            break
-          elif { [[ "$collector_ready" == "False" && "$collector_phase" == "Running" ]] || [[ "$query_ready" == "False" && "$query_phase" == "Running" ]]; }; then
-            echo "Jaeger is not ready yet. Retrying in $delay seconds..."
-            kubectl get pods -n ${{ env.namespace }}
-            sleep $delay
-            ((attempt++))
-          elif { [[ "$collector_phase" == "Pending" && "$collector_scheduled" == "True" ]] || [[ "$query_phase" == "Pending" && "$query_scheduled" == "True" ]]; }; then
-            echo "Jaeger status: collector: $collector_phase, query: $query_phase. Retrying in $delay seconds..."
-            kubectl get pods -n ${{ env.namespace }}
-            sleep $delay
-            ((attempt++))
-          else
-            echo "::error::❌ Jaeger pods cannot start"
-            echo -e "Events for jaeger namespace pod:\n$(kubectl get events -n ${{ env.namespace }})"
-            echo -e "Pods status in ${{ env.namespace }} namespace:\n$(kubectl get pods -n ${{ env.namespace }})"
-            {
-              echo "status=❌failed"
-              echo "details=Jaeger pods cannot start. Check logs in uploaded artifacts"
-            } >> $GITHUB_OUTPUT
-            exit 1
-          fi
-        done
-
-        if [[ "$collector_ready" != "True" || "$query_ready" != "True" ]]; then
-          echo "::error::❌ Maximum attempts reached. Jaeger is not ready."
-          {
-            echo "status=❌failed"
-            echo "details=Timeout exceeded. Jaeger pods cannot start. Check logs in uploaded artifacts"
-          } >> $GITHUB_OUTPUT
+        collector_status=$(kubectl get pods -l app.kubernetes.io/component=collector -n jaeger -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
+        query_status=$(kubectl get pods -l app.kubernetes.io/component=query -n jaeger -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
+        tests_status=$(kubectl get deploy jaeger-collector -n jaeger -o jsonpath='{.status.conditions[?(@.reason=="IntegrationTestsExecutionStatus")]}' 2>/dev/null)
+        
+        if [[ "$collector_status" == "True" ]] && [[ "$query_status" == "True" ]]; then
+          echo "Jaeger collector and query are ready."
+          echo "collector_status=✅Ready" >> $GITHUB_OUTPUT
+          echo "query_status=✅Ready" >> $GITHUB_OUTPUT
+        elif [[ "$collector_status" != "True" ]] && [[ "$query_status" != "True" ]]; then
+          echo "::error::❌ Jaeger components are not ready. Check logs and events."
+          echo "collector_status=❌Not Ready" >> $GITHUB_OUTPUT
+          echo "query_status=❌NotReady" >> $GITHUB_OUTPUT
+          exit 1
+        elif [[ "$query_status" != "True" ]]; then
+          echo "::error::❌ Jaeger collector is not ready."
+          echo "collector_status=✅Ready" >> $GITHUB_OUTPUT
+          echo "query_status=❌NotReady" >> $GITHUB_OUTPUT
+          exit 1
+        else
+          echo "::error::❌ Jaeger query is not ready."
+          echo "collector_status=✅Ready" >> $GITHUB_OUTPUT
+          echo "query_status=❌NotReady" >> $GITHUB_OUTPUT
           exit 1
         fi
-      shell: bash
 
-    - name: Check integration tests status
-      id: check_integration_tests_status
-      run: |
-        echo "Checking status of integration tests pod..."
-        attempt=1
-        max_attempts=${{ env.max_attempts }}
-        while [[ $attempt -le $max_attempts ]]; do
-          problem_pods=$(kubectl get pods -n ${{ env.namespace }} 2>/dev/null| grep -E "ImagePullBackOff|ErrImagePull|InvalidImageName" || true)
-          if [[ -n "$problem_pods" ]]; then
-            echo -e"::error::❌ Some images cannot be pulled:\n$problem_pods"
-            {
-              echo "status=❌failed"
-              echo "details=Some images cannot be pulled. Check logs in uploaded artifacts"
-            } >> $GITHUB_OUTPUT
-            exit 1
-          fi
-          echo "Attempt $attempt/$max_attempts: Checking integration-tests pod status..."
-          pod=$(kubectl get pod -l name=jaeger-integration-tests-runner -n ${{ env.namespace }} -o jsonpath='{.items[0]}')
-          phase=$(echo "$pod" | jq -r '.status.phase')
-          ready=$(echo "$pod" | jq -r '.status.conditions[] | select(.type == "Ready") | .status')
-          scheduled=$(echo "$pod" | jq -r '.status.conditions[] | select(.type == "PodScheduled") | .status')
-          if [[ "$ready" == "True" ]]; then
-            echo "✅Integration tests pod is ready."
-            echo "status=✅Ready" >> $GITHUB_OUTPUT
-            break
-          elif [[ "$ready" == "False" && "$phase" == "Running" ]]; then
-            echo "Integration tests pod is not ready yet. Retrying in ${{ env.delay }} seconds..."
-            sleep ${{ env.delay }}
-            ((attempt++))
-          elif [[ "$phase" == "Pending" && "$scheduled" == "True" ]]; then
-              echo "Integration tests pod status: $phase. Retrying in ${{ env.delay }} seconds..."
-              kubectl get pods -n ${{ env.namespace }}
-              sleep ${{ env.delay }}
-              ((attempt++))
-          else
-            kubectl get pods -n ${{ env.namespace }}
-            pod_events=$(kubectl events -n ${{ env.namespace }} --for pod/"$(echo $pod | jq -r '.metadata.name')")
-            echo "::error::❌ Integration tests pod cannot start"
-            echo -e "Events for integration tests pod:\n$pod_events"
-            echo -e "Pods status in ${{ env.namespace }} namespace:\n$(kubectl get pods -n ${{ env.namespace }})"
-            {
-              echo "status=❌failed"
-              echo "details=Integration tests pod cannot start. Check logs in uploaded artifacts"
-            } >> $GITHUB_OUTPUT
-            exit 1
-          fi
-        done
-        if [[ "$ready" != "True" ]]; then
-          echo "::error::❌ Maximum attempts reached. Integration tests pod is not ready."
-          {
-            echo "status=❌failed"
-            echo "details=Timeout exceeded. Check logs in uploaded artifacts"
-          } >> $GITHUB_OUTPUT
+        if [[ $(echo "$tests_status" | jq -r '.type') == "Successful" ]] && [[ $(echo "$tests_status" | jq -r '.status') == "True" ]]; then
+          echo "$tests_status" | jq .message
+          echo "tests_status=✅Passed" >> $GITHUB_OUTPUT
+          echo "tests_details=$(echo "$tests_status" | jq .)" >> $GITHUB_OUTPUT
+        else
+          echo "$tests_status" | jq .
+          echo "::error::❌ Jaeger integration tests failed. Check logs and events."
+          echo "tests_status=❌Failed" >> $GITHUB_OUTPUT
+          echo "tests_details=$(echo "$tests_status" | jq .)" >> $GITHUB_OUTPUT
           exit 1
         fi
-      shell: bash
 
-    - name: Check integration tests results
-      id: check_integration_tests
-      run: |
-        echo "Checking integration tests results..."
-        attempt=1
-        max_attempts=${{ env.max_attempts }}
-        while [[ $attempt -le $max_attempts ]]; do
-          echo "Attempt $attempt/$max_attempts: Checking tests results..."
-          logs=$(kubectl logs -l name=jaeger-integration-tests-runner -n ${{ env.namespace }} --tail=-1)
-          if echo "$logs" | grep -qE "Report:  /opt/robot/output/report.html" ; then
-            stats_line=$(echo "$logs" | grep -E '[0-9]+\ tests,\ [0-9]+\ passed,\ [0-9]+\ failed(,\ [0-9]+\ skipped)?' | tail -n 1)
-            read -r total passed failed skipped <<< "$(echo "$stats_line" | awk '{ gsub(",", "", $0); print $1, $3, $5, $7}')"
-            skipped="${skipped:-0}"
-            if [[ "$failed" == "0" ]]; then
-              TEST_RESULTS=$(echo "$logs" | awk -v RS='\r?\n' '/^==============================================================================$/ && !found {found=1; print; next} found && /^Output:/ {exit} found')
-        cat <<EOF >> $GITHUB_OUTPUT
-        status=✅passed
-        total=${total}
-        failed=${failed}
-        skipped=${skipped}
-        passed=${passed}
-        test_results<<END
-        $TEST_RESULTS
-        END
-        EOF
-              exit 0
-            else
-              echo "::error::❌ Smoke test has failed steps"
-              TEST_RESULTS=$(echo "$logs" | awk -v RS='\r?\n' '/^==============================================================================$/ && !found {found=1; print; next} found && /^Output:/ {exit} found')
-        cat <<EOF >> $GITHUB_OUTPUT
-        status=❌failed
-        details=Check logs in uploaded artifacts
-        test_results<<END
-        $TEST_RESULTS
-        END
-        EOF
-              exit 1
-            fi
-          else
-            echo "Smoke test is not completed yet. Checking in ${{ env.delay }} seconds..."
-            sleep ${{ env.delay }}
-            ((attempt++))
-          fi
-        done
-        echo "::error::❌ Maximum attempts reached waiting for Integration test completion"
-        cat <<EOF >> $GITHUB_OUTPUT
-        status=❌failed
-        test_results<<END
-        $logs
-        END
-        EOF
-        echo "details=Check logs in uploaded artifacts" >> $GITHUB_OUTPUT
-        exit 1
       shell: bash
-
+        
     - name: Save jaeger artifacts
       id: jaeger_artifacts
       if: always()
@@ -420,6 +264,7 @@ jobs:
       shell: bash
 
     - name: Generate artifact name
+      id: generate_artifact
       if: always()
       env:
         HEAD_REF: ${{ github.head_ref || github.ref_name }}
@@ -427,14 +272,14 @@ jobs:
         # ▶️ Generate artifact name
         release_name=$(echo "$HEAD_REF" | tr '/' '_' || echo "")
         ARTIFACT_NAME="${{ github.job }}_${{ env.namespace }}_${release_name}_artifacts_$(date -u +'%Y%m%d%H%M%S')"
-        echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_ENV
+        echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Upload artifact
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.ARTIFACT_NAME }}
+        name: ${{ steps.generate_artifact.outputs.ARTIFACT_NAME }}
         path: artifacts/
 
     - name: Cleanup
@@ -445,31 +290,17 @@ jobs:
       if: always()
       run: |
         cat <<EOF >> $GITHUB_STEP_SUMMARY
-        ## Install Jaeger
-        Check jaeger status: ${{ steps.check_jaeger.outputs.status || '❓unknown' }}
-        ${{ steps.check_jaeger.outputs.details || '' }}
+        ## Installation status
+        Collector status: ${{ steps.check_installation_status.outputs.collector_status || '❓unknown' }}
+        Query status: ${{ steps.check_installation_status.outputs.query_status || '❓unknown' }}
         Pods running in jaeger namespace:
         \`\`\`sh
         ${{ steps.jaeger_artifacts.outputs.jaeger_pods || '❓unknown' }}
         \`\`\`
 
         ## Check integration tests results
-        Check integration tests status: ${{ steps.check_integration_tests.outputs.status || '❓unknown' }}
-        ${{ steps.check_integration_tests.outputs.details || '' }}
+        Check integration tests status: ${{ steps.check_installation_status.outputs.tests_status || '❓unknown' }}
+        \`\`\`json
+        ${{ steps.check_installation_status.outputs.tests_details || '' }}
         \`\`\`
-        Total tests: ${{ steps.check_integration_tests.outputs.total || '❓unknown' }}
-        Failed tests: ${{ steps.check_integration_tests.outputs.failed || '❓unknown' }}
-        Skipped tests: ${{ steps.check_integration_tests.outputs.skipped || '❓unknown' }}
-        Passed tests: ${{ steps.check_integration_tests.outputs.passed || '❓unknown' }}
-        ${{ steps.check_integration_tests.outputs.warning || '' }}
-        \`\`\`
-
-        <details>
-        <summary><b>🔍 See full test logs</b></summary>
-
-        ### Test Summary
-        \`\`\`sh
-        ${{ steps.check_integration_tests.outputs.test_results || '❓unknown' }}
-        \`\`\`
-        </details>
         EOF
