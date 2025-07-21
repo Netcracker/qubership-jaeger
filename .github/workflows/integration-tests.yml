@@ -300,6 +300,6 @@ jobs:
         ## Check integration tests results
         Check integration tests status: ${{ steps.check_installation_status.outputs.tests_status || '❓unknown' }}
         \`\`\`json
-        echo "${{ steps.check_installation_status.outputs.tests_details }}" | jq .
+        ${{ steps.check_installation_status.outputs.tests_details || ''}}
         \`\`\`
         EOF
