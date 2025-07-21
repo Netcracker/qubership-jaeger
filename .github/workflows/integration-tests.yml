@@ -219,14 +219,14 @@ jobs:
         fi
 
         if [[ $(echo "$tests_status" | jq -r '.type') == "Successful" ]] && [[ $(echo "$tests_status" | jq -r '.status') == "True" ]]; then
-          echo "$tests_status" | jq .message
+          echo "$tests_status" | jq .
           echo "tests_status=✅Passed" >> $GITHUB_OUTPUT
-          echo "tests_details=$(echo "$tests_status" | jq .)" >> $GITHUB_OUTPUT
+          echo "tests_details=$tests_status" >> $GITHUB_OUTPUT
         else
           echo "$tests_status" | jq .
           echo "::error::❌ Jaeger integration tests failed. Check logs and events."
           echo "tests_status=❌Failed" >> $GITHUB_OUTPUT
-          echo "tests_details=$(echo "$tests_status" | jq .)" >> $GITHUB_OUTPUT
+          echo "tests_details=$tests_status" >> $GITHUB_OUTPUT
           exit 1
         fi
       shell: bash
@@ -300,6 +300,6 @@ jobs:
         ## Check integration tests results
         Check integration tests status: ${{ steps.check_installation_status.outputs.tests_status || '❓unknown' }}
         \`\`\`json
-        ${{ steps.check_installation_status.outputs.tests_details || '' }}
+        echo "${{ steps.check_installation_status.outputs.tests_details }}" | jq .
         \`\`\`
         EOF
