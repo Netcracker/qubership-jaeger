@@ -196,7 +196,7 @@ jobs:
         collector_status=$(kubectl get pods -l app.kubernetes.io/component=collector -n jaeger -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
         query_status=$(kubectl get pods -l app.kubernetes.io/component=query -n jaeger -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
         tests_status=$(kubectl get deploy jaeger-collector -n jaeger -o jsonpath='{.status.conditions[?(@.reason=="IntegrationTestsExecutionStatus")]}' 2>/dev/null)
-        
+
         if [[ "$collector_status" == "True" ]] && [[ "$query_status" == "True" ]]; then
           echo "Jaeger collector and query are ready."
           echo "collector_status=✅Ready" >> $GITHUB_OUTPUT
@@ -229,9 +229,8 @@ jobs:
           echo "tests_details=$(echo "$tests_status" | jq .)" >> $GITHUB_OUTPUT
           exit 1
         fi
-
       shell: bash
-        
+
     - name: Save jaeger artifacts
       id: jaeger_artifacts
       if: always()
