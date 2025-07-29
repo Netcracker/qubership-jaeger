@@ -2177,7 +2177,7 @@ integrationTests:
       memory: 256Mi
       cpu: 300m
   statusWriting:
-    enabled: false
+    enabled: true
     isShortStatusMessage: true
     onlyIntegrationTests: true
     customResourcePath: "apps/v1/jaeger/deployments/jaeger-integration-tests-runner"
@@ -2258,6 +2258,7 @@ statusProvisioner:
     limits:
       memory: "100Mi"
       cpu: "100m"
+  resourceToSetStatus: "jaeger-collector"
   # SecurityContext holds pod-level security attributes.
   # The parameters are required if a Pod Security Policy is enabled
   #  for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.
