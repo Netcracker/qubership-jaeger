@@ -16,8 +16,6 @@ metadata:
     {{- end }}
   {{- if .Values.collector.ingress.grpc.annotations }}
   annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: GRPC       # mandatory annotation
-    nginx.ingress.kubernetes.io/grpc-backend-for-port: grpc  # mandatory annotation
     {{- toYaml .Values.collector.ingress.grpc.annotations | nindent 4 }}
   {{- end }}
 spec:

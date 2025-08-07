@@ -1687,12 +1687,13 @@ collector:
     http:
       install: false
       hosts: []
+      annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: /$2
+        nginx.ingress.kubernetes.io/use-regex: 'true'
+      labels: ~
+
+      # Default paths for http ingress if user doesn't specify any
       defaultPaths:
-      # Format:
-      # - prefix: <endpoint>
-      #   service:
-      #     name: <service_name>
-      #     port: <port_number>
       - prefix: /
         service:
           # name: jaeger-collector
@@ -1709,21 +1710,32 @@ collector:
       - prefix: /thrift/http
         service:
           port: 14268
-    grpc:
-      install: false
-      hosts: []
-      defaultPaths:
       # Format:
       # - prefix: <endpoint>
       #   service:
       #     name: <service_name>
       #     port: <port_number>
+    grpc:
+      install: false
+      hosts: []
+      annotations:
+        nginx.ingress.kubernetes.io/backend-protocol: GRPC
+        nginx.ingress.kubernetes.io/grpc-backend-for-port: grpc
+      labels: ~
+
+      # Default paths for grpc ingress if user doesn't specify any
+      defaultPaths:
       - prefix: /otlp/grpc
         service:
           port: 4317
       - prefix: /thrift/grpc
         service:
           port: 14250
+      # Format:
+      # - prefix: <endpoint>
+      #   service:
+      #     name: <service_name>
+      #     port: <port_number>
     tls: {}
 
 hotrod:
