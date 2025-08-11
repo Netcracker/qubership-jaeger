@@ -55,7 +55,7 @@ jobs:
           password: ${{ secrets.GH_RWD_PACKAGE_TOKEN }}
 
       - name: Run Container Package Cleanup Action
-        uses: nookyo/qubership-workflow-hub/actions/container-package-cleanup@main
+        uses: Netcracker/qubership-workflow-hub/actions/container-package-cleanup@main
         with:
           threshold-days: ${{ github.event.inputs.threshold-days || 7 }}
           included-tags: ${{ github.event.inputs.included-tags || '*' }}
