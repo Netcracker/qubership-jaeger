@@ -23,7 +23,7 @@ on:
       excluded-tags:
         description: "Tags to exclude from deletion"
         required: false
-        default: "main,latest,release*,*.*,semver"
+        default: "main,latest,release*,semver"
       dry-run:
         description: "Enable dry-run mode"
         required: false
@@ -44,7 +44,7 @@ jobs:
           echo "**Actor**: ${{ github.actor }}"
           echo "**Threshold days**: ${{ github.event.inputs.threshold-days || 7 }}"
           echo "**Included tags**: ${{ github.event.inputs.included-tags || '*' }}"
-          echo "**Excluded tags**: ${{ github.event.inputs.excluded-tags || 'main,latest,release*,*.*' }}"
+          echo "**Excluded tags**: ${{ github.event.inputs.excluded-tags || 'main,latest,release*,semver' }}"
           echo "**Dry-run**: ${{ github.event.inputs.dry-run || 'false' }}"
 
       - name: Log in to GHCR
@@ -59,7 +59,7 @@ jobs:
         with:
           threshold-days: ${{ github.event.inputs.threshold-days || 7 }}
           included-tags: ${{ github.event.inputs.included-tags || '*' }}
-          excluded-tags: ${{ github.event.inputs.excluded-tags || 'main,latest,release*,*.*' }}
+          excluded-tags: ${{ github.event.inputs.excluded-tags || 'main,latest,release*,semver' }}
           dry-run: ${{ github.event.inputs.dry-run }}
           package-type: container
         env:
