@@ -58,6 +58,10 @@ The chart installs Jaeger Integration Tests service and pod in Kubernetes/Opensh
    * Test Hardcoded Images
    This test compare images in pods with images from MF. Included in the `smoke` tag
 
+5. [Credentials Change](robot/tests/credentials/credentials.robot)
+   * Check Credentials Change and Jaeger Auth
+   This test change login-password in secret and checks that the changes have been applied and the Jager is working with the new secret
+
 ### Shared file
 
 The `shared.robot` [file](robot/tests/shared/shared.robot)
