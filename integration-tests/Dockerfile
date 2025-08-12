@@ -1,5 +1,5 @@
 # Based on python:3.10.14-alpine3.20
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:main
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.3.1
 
 # User with UID=1000 already added in ghcr.io/netcracker/qubership-docker-integration-tests image
 ENV USER_UID=1000 \
