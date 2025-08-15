@@ -143,7 +143,7 @@ Image can be found from:
   {{- if .Values.collector.image -}}
     {{- printf "%s" .Values.collector.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger:2.7.0" -}}
+    {{- print "jaegertracing/jaeger:2.9.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -156,7 +156,7 @@ Image can be found from:
   {{- if .Values.query.image -}}
     {{- printf "%s" .Values.query.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger:2.7.0" -}}
+    {{- print "jaegertracing/jaeger:2.9.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -182,7 +182,7 @@ Image can be found from:
   {{- if .Values.cassandraSchemaJob.image -}}
     {{- printf "%s" .Values.cassandraSchemaJob.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-cassandra-schema:1.70.0" -}}
+    {{- print "jaegertracing/jaeger-cassandra-schema:1.72.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -195,7 +195,7 @@ Image can be found from:
   {{- if .Values.hotrod.image -}}
     {{- printf "%s" .Values.hotrod.image -}}
   {{- else -}}
-    {{- print "jaegertracing/example-hotrod:1.70.0" -}}
+    {{- print "jaegertracing/example-hotrod:1.72.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -208,7 +208,7 @@ Image can be found from:
   {{- if .Values.elasticsearch.indexCleaner.image -}}
     {{- printf "%s" .Values.elasticsearch.indexCleaner.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-es-index-cleaner:1.70.0" -}}
+    {{- print "jaegertracing/jaeger-es-index-cleaner:1.72.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -221,7 +221,7 @@ Image can be found from:
   {{- if .Values.elasticsearch.rollover.image -}}
     {{- printf "%s" .Values.elasticsearch.rollover.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-es-rollover:1.70.0" -}}
+    {{- print "jaegertracing/jaeger-es-rollover:1.72.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -1324,13 +1324,13 @@ Generate list of images for tests
 */}}
 {{- define "jaeger.monitoredImages" -}}
     {{- if .Values.collector.install -}}
-      {{- printf "deployment %s-collector %s %s, " .Values.jaeger.serviceName .Values.collector.name "jaegertracing/jaeger:2.5.0" -}}
+      {{- printf "deployment %s-collector %s %s, " .Values.jaeger.serviceName .Values.collector.name "jaegertracing/jaeger:2.9.0" -}}
       {{- if .Values.readinessProbe.install }}
         {{- printf "deployment %s-collector readiness-probe %s, " .Values.jaeger.serviceName "qubership/jaeger-readiness-probe:0.22.0" -}}
       {{- end -}}
     {{- end -}}
     {{- if .Values.query.install -}}
-      {{- printf "deployment %s-query jaeger-query %s, " .Values.jaeger.serviceName "jaegertracing/jaeger:2.5.0" -}}
+      {{- printf "deployment %s-query jaeger-query %s, " .Values.jaeger.serviceName "jaegertracing/jaeger:2.9.0" -}}
       {{- if .Values.readinessProbe.install }}
         {{- printf "deployment %s-query readiness-probe %s, " .Values.jaeger.serviceName "qubership/jaeger-readiness-probe:0.22.0" -}}
       {{- end -}}
@@ -1339,7 +1339,7 @@ Generate list of images for tests
       {{- end -}}
     {{- end -}}
     {{- if .Values.hotrod.install -}}
-      {{- printf "deployment %s-hotrod %s %s, " .Values.jaeger.serviceName .Values.hotrod.name "jaegertracing/example-hotrod:1.68.0" -}}
+      {{- printf "deployment %s-hotrod %s %s, " .Values.jaeger.serviceName .Values.hotrod.name "jaegertracing/example-hotrod:1.72.0" -}}
     {{- end -}}
     {{- if .Values.integrationTests.install -}}
       {{- printf "deployment %s %s %s, " .Values.integrationTests.service.name .Values.integrationTests.service.name "qubership/integration-tests" -}}
