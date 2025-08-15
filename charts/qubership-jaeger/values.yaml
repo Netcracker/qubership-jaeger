@@ -265,9 +265,9 @@ elasticsearch:
     # A docker image to use for index cleaner cronJob.
     # Type: string
     # Mandatory: no
-    # Default: "jaegertracing/jaeger-es-index-cleaner:1.70.0"
+    # Default: "jaegertracing/jaeger-es-index-cleaner:1.72.0"
     #
-    # image: "jaegertracing/jaeger-es-index-cleaner:1.70.0"
+    # image: "jaegertracing/jaeger-es-index-cleaner:1.72.0"
 
     # A name of a microservice to deploy with.
     # This name will be used as name of the microservice cronjob and in labels.
@@ -646,9 +646,9 @@ elasticsearch:
     # A docker image to use for rollover cronJob.
     # Type: string
     # Mandatory: no
-    # Default: "jaegertracing/jaeger-es-rollover:1.70.0"
+    # Default: "jaegertracing/jaeger-es-rollover:1.72.0"
     #
-    # image: "jaegertracing/jaeger-es-rollover:1.70.0"
+    # image: "jaegertracing/jaeger-es-rollover:1.72.0"
 
     # A name of a microservice to deploy with.
     # This name will be used as name of the microservice cronjob and in labels.
@@ -849,9 +849,9 @@ cassandraSchemaJob:
   # A docker image to use for cassandraSchemaJob job.
   # Type: string
   # Mandatory: no
-  # Default: "jaegertracing/jaeger-cassandra-schema:1.70.0"
+  # Default: "jaegertracing/jaeger-cassandra-schema:1.72.0"
   #
-  # image: "jaegertracing/jaeger-cassandra-schema:1.70.0"
+  # image: "jaegertracing/jaeger-cassandra-schema:1.72.0"
 
   # A name of a microservice to deploy with.
   # This name will be used as name of the microservice job and in labels.
@@ -1180,9 +1180,9 @@ collector:
   # A docker image to use for collector deployment.
   # Type: string
   # Mandatory: no
-  # Default: "jaegertracing/jaeger:2.7.0"
+  # Default: "jaegertracing/jaeger:2.9.0"
   #
-  # image: "jaegertracing/jaeger:2.7.0"
+  # image: "jaegertracing/jaeger:2.9.0"
 
   # A name of a microservice to deploy with.
   # This name will be used as name of the microservice deployment and in labels.
@@ -1736,9 +1736,9 @@ hotrod:
   # A docker image to use for hotrod deployment.
   # Type: string
   # Mandatory: no
-  # Default: "jaegertracing/example-hotrod:1.70.0"
+  # Default: "jaegertracing/example-hotrod:1.72.0"
   #
-  # image: "jaegertracing/example-hotrod:1.70.0"
+  # image: "jaegertracing/example-hotrod:1.72.0"
 
   # A name of a microservice to deploy with.
   # This name will be used as name of the microservice deployment and in labels.
@@ -1937,9 +1937,9 @@ query:
   # A docker image to use for query deployment.
   # Type: string
   # Mandatory: no
-  # Default: "jaegertracing/jaeger:2.7.0"
+  # Default: "jaegertracing/jaeger:2.9.0"
   #
-  # image: "jaegertracing/jaeger:2.7.0"
+  # image: "jaegertracing/jaeger:2.9.0"
 
   # The imagePullPolicy for a container and the tag of the image affect when the kubelet
   # attempts to pull (download) the specified image.
