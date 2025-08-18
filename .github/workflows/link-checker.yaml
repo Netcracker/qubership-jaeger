@@ -27,6 +27,6 @@ jobs:
             --accept 100..=103,200..=299,429
             --cookie-jar cookies.json
             --exclude-all-private
-            --insecure ./docs
+            --exclude-all-external ./docs
           format: markdown
           fail: true
