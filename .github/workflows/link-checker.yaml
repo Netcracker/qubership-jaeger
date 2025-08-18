@@ -27,5 +27,6 @@ jobs:
             --accept 100..=103,200..=299,429
             --cookie-jar cookies.json
             --exclude-all-private
+            --exclude https://kubernetes.io/docs/reference/using-api/deprecation-guide/#v1-22 ./docs
           format: markdown
           fail: true
