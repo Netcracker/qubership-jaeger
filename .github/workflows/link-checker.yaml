@@ -26,6 +26,6 @@ jobs:
             --max-retries 5
             --accept 100..=103,200..=299,429
             --cookie-jar cookies.json
-            --exclude-all-external ./docs
+            --exclude-all-private
           format: markdown
           fail: true
