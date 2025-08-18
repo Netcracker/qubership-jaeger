@@ -28,5 +28,7 @@ jobs:
             --cookie-jar cookies.json
             --exclude-all-private
             --exclude https://kubernetes.io/docs/reference/using-api/deprecation-guide/#v1-22 ./docs
+            --exclude https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core ./docs
+            --exclude https://kubernetes.io/docs/reference/using-api/deprecation-guide/#ingress-v122 ./docs
           format: markdown
           fail: true

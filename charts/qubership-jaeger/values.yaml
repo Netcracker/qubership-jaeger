@@ -1180,9 +1180,9 @@ collector:
   # A docker image to use for collector deployment.
   # Type: string
   # Mandatory: no
-  # Default: "jaegertracing/jaeger-collector:2.9.0"
+  # Default: "jaegertracing/jaeger:2.9.0"
   #
-  # image: "jaegertracing/jaeger-collector:2.9.0"
+  # image: "jaegertracing/jaeger:2.9.0"
 
   # A name of a microservice to deploy with.
   # This name will be used as name of the microservice deployment and in labels.
@@ -1937,9 +1937,9 @@ query:
   # A docker image to use for query deployment.
   # Type: string
   # Mandatory: no
-  # Default: "jaegertracing/jaeger-query:2.9.0"
+  # Default: "jaegertracing/jaeger:2.9.0"
   #
-  # image: "jaegertracing/jaeger-query:2.9.0"
+  # image: "jaegertracing/jaeger:2.9.0"
 
   # The imagePullPolicy for a container and the tag of the image affect when the kubelet
   # attempts to pull (download) the specified image.

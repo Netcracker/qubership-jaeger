@@ -143,7 +143,7 @@ Image can be found from:
   {{- if .Values.collector.image -}}
     {{- printf "%s" .Values.collector.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-collector:2.9.0" -}}
+    {{- print "jaegertracing/jaeger:2.9.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -156,7 +156,7 @@ Image can be found from:
   {{- if .Values.query.image -}}
     {{- printf "%s" .Values.query.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-query:2.9.0" -}}
+    {{- print "jaegertracing/jaeger:2.9.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -1324,13 +1324,13 @@ Generate list of images for tests
 */}}
 {{- define "jaeger.monitoredImages" -}}
     {{- if .Values.collector.install -}}
-      {{- printf "deployment %s-collector %s %s, " .Values.jaeger.serviceName .Values.collector.name "jaegertracing/jaeger-collector:2.9.0" -}}
+      {{- printf "deployment %s-collector %s %s, " .Values.jaeger.serviceName .Values.collector.name "jaegertracing/jaeger:2.9.0" -}}
       {{- if .Values.readinessProbe.install }}
         {{- printf "deployment %s-collector readiness-probe %s, " .Values.jaeger.serviceName "qubership/jaeger-readiness-probe:0.24.0" -}}
       {{- end -}}
     {{- end -}}
     {{- if .Values.query.install -}}
-      {{- printf "deployment %s-query jaeger-query %s, " .Values.jaeger.serviceName "jaegertracing/jaeger-query:2.9.0" -}}
+      {{- printf "deployment %s-query jaeger-query %s, " .Values.jaeger.serviceName "jaegertracing/jaeger:2.9.0" -}}
       {{- if .Values.readinessProbe.install }}
         {{- printf "deployment %s-query readiness-probe %s, " .Values.jaeger.serviceName "qubership/jaeger-readiness-probe:0.24.0" -}}
       {{- end -}}
