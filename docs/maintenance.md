@@ -72,7 +72,7 @@ cassandraSchemaJob:
     dependencies: 0  # in seconds
 ```
 
-To change the TTL after the keyspace has already been created, you can connect to cassandra and change it manually.
+To change the TTL after the keyspace has already been created, you can connect to Cassandra and change it manually.
 
 Example of query to change TTL for trace data:
 

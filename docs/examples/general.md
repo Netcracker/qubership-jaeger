@@ -37,17 +37,17 @@ Override default images with custom or specific versions.
 - Pinning to specific versions
 - Custom builds with patches
 
-## ElasticSearch Storage
+## Elasticsearch Storage
 
-Basic ElasticSearch configuration as storage backend.
+Basic Elasticsearch configuration as storage backend.
 
 ```yaml title="elasticsearch-example-values.yaml"
 --8<-- "examples/elasticsearch-example-values.yaml"
 ```
 
 **Key parameters:**
-- `jaeger.storage.type: elasticsearch` - Uses ElasticSearch storage
-- `elasticsearch.client.url` - ElasticSearch service endpoint
+- `jaeger.storage.type: elasticsearch` - Uses Elasticsearch storage
+- `elasticsearch.client.url` - Elasticsearch service endpoint
 - `elasticsearch.client.scheme: https` - Secure connection
 - `elasticsearch.indexCleaner.install: true` - Automated index cleanup
 
@@ -82,7 +82,7 @@ Demo application deployment for trace generation and testing.
 - `hotrod.install: true` - Deploys HotROD demo app
 - `hotrod.ingress.install: true` - Exposes demo via ingress
 - `hotrod.ingress.host` - External hostname
-- Uses ElasticSearch as storage backend
+- Uses Elasticsearch as storage backend
 
 **Purpose:**
 - Generate sample traces

@@ -81,7 +81,7 @@ spec:
                 secretKeyRef:
                   name: {{ template "cassandraSchemaJob.secretName" . }}
                   key: password
-            {{- /* Section with ElasticSearch/OpenSearch environment variables */}}
+            {{- /* Section with Elasticsearch/OpenSearch environment variables */}}
             {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
             - name: ES_USERNAME
               valueFrom:

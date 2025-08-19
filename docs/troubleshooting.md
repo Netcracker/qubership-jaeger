@@ -4,9 +4,9 @@ This section describes in detail some failover scenarios.
 
 ## Deployment Issues
 
-### Jaeger collector, query, cassandra schema job can't start/failed
+### Jaeger `collector`, `query`, `cassandra schema job` can't start/failed
 
-If the `Jaeger` cassandra schema job fails to complete, with different errors related to the Cassandra connection,
+If the `Jaeger` `cassandra schema job` fails to complete, with different errors related to the Cassandra connection,
 the issue may be related to connection issues or problems with Cassandra.
 
 **Solution:**

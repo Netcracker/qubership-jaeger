@@ -18,7 +18,7 @@ Qubership Jaeger is a comprehensive Helm chart that simplifies the deployment an
 ### Key Features
 
 - **Production-ready configuration** - Optimized settings for enterprise environments
-- **Multiple storage backends** - Support for Cassandra, OpenSearch, and ElasticSearch
+- **Multiple storage backends** - Support for Cassandra, OpenSearch, and Elasticsearch
 - **High availability** - Multi-replica deployments with load balancing
 - **Security features** - TLS encryption, authentication, and authorization options
 - **Cloud platform support** - Works on AWS, Azure, Google Cloud, and on-premises
@@ -37,7 +37,7 @@ The chart deploys the following Jaeger components:
 ### Storage Options
 
 - **Cassandra** - Recommended for high-volume production deployments
-- **OpenSearch/ElasticSearch** - Alternative storage with powerful search capabilities
+- **OpenSearch/Elasticsearch** - Alternative storage with powerful search capabilities
 - **Cloud services** - AWS OpenSearch, managed databases
 
 ## Quick Start
@@ -46,7 +46,7 @@ The chart deploys the following Jaeger components:
 
 - Kubernetes 1.21+ or OpenShift 4.10+
 - Helm 3.0+
-- Storage backend (Cassandra, OpenSearch, or ElasticSearch)
+- Storage backend (Cassandra, OpenSearch, or Elasticsearch)
 
 ### Basic Installation
 
@@ -159,7 +159,7 @@ This Helm chart includes the following components:
 
 - **Cassandra** - Recommended for high-volume production environments
 - **OpenSearch** - Modern alternative with advanced search capabilities
-- **ElasticSearch** - Legacy support for existing deployments
+- **Elasticsearch** - Legacy support for existing deployments
 
 ## Contributing
 

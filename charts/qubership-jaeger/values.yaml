@@ -223,7 +223,7 @@ elasticsearch:
       # commonName:
 
       # Allow to specify CA certificate. It use to provide list of trusted CA who issued the certificates.
-      # Mandatory field when using SSL connection to Opensearch. Ignored if the existingSecret is specified.
+      # Mandatory field when using SSL connection to OpenSearch. Ignored if the existingSecret is specified.
       # Type: multiline string
       # Default: not set
       #
@@ -233,7 +233,7 @@ elasticsearch:
       #   -----END CERTIFICATE-----
 
       # Allow to specify public key of certificate.
-      # Mandatory field when using SSL connection to Opensearch. Ignored if the existingSecret is specified.
+      # Mandatory field when using SSL connection to OpenSearch. Ignored if the existingSecret is specified.
       # Type: multiline string
       # Default: not set
       #
@@ -244,7 +244,7 @@ elasticsearch:
 
 
       # Allow to specify private part of certificate.
-      # Mandatory field when using SSL connection to Opensearch. Ignored if the existingSecret is specified.
+      # Mandatory field when using SSL connection to OpenSearch. Ignored if the existingSecret is specified.
       # Type: multiline string
       # Default: not set
       #
@@ -2486,7 +2486,12 @@ spark:
         cpu: 10m
         memory: 128Mi
 
-  truststorePassword: "passw0rd"
+  # The password for the java truststore
+  # Type: string
+  # Mandatory: no
+  # Default: Random
+  #
+  # truststorePassword: "password"
 
   # Allow defining which Nodes the Pods are scheduled on.
   # Type: map[string]

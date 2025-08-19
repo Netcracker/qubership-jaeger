@@ -60,7 +60,7 @@ Common deployment scenarios and utilities:
 **[General Examples](examples/general.md)**
 - Agent with Cassandra - Complete tracing setup
 - Custom Images - Private registry usage
-- ElasticSearch Storage - Alternative backend
+- Elasticsearch Storage - Alternative backend
 - High Availability - Production-ready HA setup
 - HotROD Demo - Sample application with traces
 - Integration Tests - Automated validation

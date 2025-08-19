@@ -392,7 +392,7 @@ Return password for cassandra database.
 {{- end -}}
 
 {{/*
-Return name of secret for OpenSearch/ElasticSearch TLS.
+Return name of secret for OpenSearch/Elasticsearch TLS.
 */}}
 {{- define "elasticsearch.tls.secretName" -}}
   {{- if .Values.elasticsearch.client.tls.existingSecret -}}
@@ -407,7 +407,7 @@ Return name of secret for OpenSearch/ElasticSearch TLS.
 {{- end -}}
 
 {{/*
-Return URL for OpenSearch/ElasticSearch.
+Return URL for OpenSearch/Elasticsearch.
 */}}
 {{- define "elasticsearch.url" -}}
   {{- if .Values.elasticsearch.client.url -}}
@@ -422,7 +422,7 @@ Return URL for OpenSearch/ElasticSearch.
 {{- end -}}
 
 {{/*
-Return username for OpenSearch/ElasticSearch.
+Return username for OpenSearch/Elasticsearch.
 */}}
 {{- define "elasticsearch.userName" -}}
   {{- if .Values.elasticsearch.client.username -}}
@@ -437,7 +437,7 @@ Return username for OpenSearch/ElasticSearch.
 {{- end -}}
 
 {{/*
-Return password for OpenSearch/ElasticSearch.
+Return password for OpenSearch/Elasticsearch.
 */}}
 {{- define "elasticsearch.password" -}}
   {{- if .Values.elasticsearch.client.password -}}
