@@ -19,6 +19,14 @@ metadata:
   name: {{ .Values.jaeger.serviceName }}-query
 spec:
   ports:
+    - name: metrics
+      port: 8888
+      protocol: TCP
+      targetPort: 8888
+    - name: healthcheck
+      port: 13133
+      targetPort: 13133
+      protocol: TCP
     {{- if .Values.proxy.install }}
     - name: http-query
       port: 16686
@@ -34,14 +42,6 @@ spec:
       protocol: TCP
       targetPort: 16686
     {{- end }}
-    - name: admin-http
-      port: 16687
-      protocol: TCP
-      targetPort: 16687
-    - name: healthcheck
-      port: 13133
-      targetPort: 13133
-      protocol: TCP
   selector:
     app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-query
     app.kubernetes.io/component: query

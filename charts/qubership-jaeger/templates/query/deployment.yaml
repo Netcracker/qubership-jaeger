@@ -56,6 +56,106 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.jaeger.serviceName }}-query
       containers:
+        - name: query
+          image: {{ template "query.image" . }}
+          imagePullPolicy: {{ .Values.query.imagePullPolicy }}
+          args:
+            - '--config=/conf/config.yaml'
+            {{- if .Values.query.cmdlineParams }}
+              {{- toYaml .Values.query.cmdlineParams | nindent 12 }}
+            {{- end }}
+          env:
+            - name: OTEL_TRACES_SAMPLER
+              value: always_off
+          {{- /* Section with Cassandra environment variables */}}
+          {{- if eq .Values.jaeger.storage.type "cassandra" }}
+            - name: CASSANDRA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "cassandraSchemaJob.secretName" . }}
+                  key: username
+            - name: CASSANDRA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "cassandraSchemaJob.secretName" . }}
+                  key: password
+          {{- /* Section with Elasticsearch/OpenSearch environment variables */}}
+          {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
+            - name: ES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.elasticsearch.existingSecret | default "jaeger-elasticsearch" }}
+                  key: username
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.elasticsearch.existingSecret | default "jaeger-elasticsearch" }}
+                  key: password
+            {{- range $key, $value := .Values.elasticsearch.env }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.readinessProbe.install }}
+          livenessProbe:
+            failureThreshold: 1
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 1
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 10 }}
+            successThreshold: 1
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 5 }}
+          {{- else }}
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /status
+              port: healthcheck
+              scheme: HTTP
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          {{- end }}
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /status
+              port: healthcheck
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
+          ports:
+            - containerPort: 8888
+              name: metrics
+              protocol: TCP
+            - containerPort: 13133
+              name: healthcheck
+              protocol: TCP
+            - containerPort: 16685
+              name: query-grpc
+              protocol: TCP
+            - containerPort: 16686
+              name: query-http
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.query.resources | nindent 12 }}
+          securityContext:
+            {{- include "query.containerSecurityContext" . }}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - name: ui-config
+              mountPath: /etc/config
+              readOnly: true
+            - name: query-config
+              mountPath: /conf
+              readOnly: true
+            {{- include "jaeger.certificateVolumeMounts" . | nindent 12 }}
         {{- if .Values.proxy.install }}
         - name: proxy
           image: {{ include "proxy.image" . }}
@@ -65,9 +165,9 @@ spec:
             - '--service-cluster envoy'
             - '--service-node envoy'
           ports:
-            - containerPort: 16688
-              protocol: TCP
             - containerPort: 9901
+              protocol: TCP
+            - containerPort: 16688
               protocol: TCP
           env:
             - name: ENVOY_UID
@@ -99,9 +199,11 @@ spec:
           volumeMounts:
             - name: envoy-config
               mountPath: /envoy
+              readOnly: true
             {{- if eq .Values.proxy.type "oauth2" }}
             - name: oauth2-token
               mountPath: /envoy/oauth2
+              readOnly: true
             {{- end }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
@@ -109,25 +211,15 @@ spec:
             {{- include "proxy.containerSecurityContext" . }}
         {{- end }}
         {{- if .Values.readinessProbe.install }}
-        - name: readiness-probe
+        - name: probe
           image: {{ template "readiness-probe.image" . }}
           imagePullPolicy: {{ .Values.readinessProbe.imagePullPolicy }}
           command: [ "/app/probe" ]
           args:
-            {{- template "readinessProbe.args" . }}
+            {{- include "readinessProbe.args" . }}
           ports:
             - containerPort: 8080
               protocol: TCP
-          readinessProbe:
-            failureThreshold: 1
-            httpGet:
-              path: /health
-              port: 8080
-              scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 600
-            successThreshold: 1
-            timeoutSeconds: 900
           livenessProbe:
             failureThreshold: 1
             httpGet:
@@ -135,168 +227,26 @@ spec:
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 5
-            periodSeconds: 5
+            periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
+          readinessProbe:
+            failureThreshold: 1
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 10 }}
+            successThreshold: 1
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 5 }}
           resources:
             {{- toYaml .Values.readinessProbe.resources | nindent 12 }}
           securityContext:
             {{- include "readinessProbe.containerSecurityContext" . }}
           volumeMounts:
-            {{- if .Values.cassandraSchemaJob.tls.enabled }}
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-            {{- end }}
-            {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-            {{- end }}
+            {{- include "jaeger.certificateVolumeMounts" . | nindent 12 }}
         {{- end }}
-        - name: jaeger-query
-          image: {{ template "query.image" . }}
-          imagePullPolicy: {{ .Values.query.imagePullPolicy }}
-          args:
-            - '--config=/conf/config.yaml'
-            {{- if .Values.query.cmdlineParams }}
-              {{- toYaml .Values.query.cmdlineParams | nindent 12 }}
-            {{- end }}
-          env:
-          {{- /* Section with Cassandra environment variables */}}
-          {{- if eq .Values.jaeger.storage.type "cassandra" }}
-            - name: CASSANDRA_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "cassandraSchemaJob.secretName" . }}
-                  key: username
-            - name: CASSANDRA_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "cassandraSchemaJob.secretName" . }}
-                  key: password
-          {{- /* Section with ElasticSearch/OpenSearch environment variables */}}
-          {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
-            - name: ES_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ if .Values.elasticsearch.existingSecret }}{{ .Values.elasticsearch.existingSecret }}{{- else }}jaeger-elasticsearch{{- end }}
-                  key: username
-            - name: ES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ if .Values.elasticsearch.existingSecret }}{{ .Values.elasticsearch.existingSecret }}{{- else }}jaeger-elasticsearch{{- end }}
-                  key: password
-            {{- range $key, $value := .Values.elasticsearch.env }}
-            - name: {{ $key | quote }}
-              value: {{ $value | quote }}
-            {{- end }}
-          {{- end }}
-          livenessProbe:
-            failureThreshold: 5
-            httpGet:
-              path: /
-              port: admin-http
-              scheme: HTTP
-            initialDelaySeconds: 15
-            periodSeconds: 15
-            successThreshold: 1
-            timeoutSeconds: 1
-          {{- if .Values.readinessProbe.install }}
-          readinessProbe:
-            failureThreshold: 1
-            httpGet:
-              path: /health
-              port: 8080
-              scheme: HTTP
-            initialDelaySeconds: 1
-            periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 10}}
-            successThreshold: 1
-            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 5 }}
-          {{- else }}
-          readinessProbe:
-            failureThreshold: 3
-            httpGet:
-              path: /
-              port: admin-http
-              scheme: HTTP
-            initialDelaySeconds: 1
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 1
-          {{- end }}
-          ports:
-            - containerPort: 16685
-              name: query-grpc
-              protocol: TCP
-            - containerPort: 16686
-              name: query-http
-              protocol: TCP
-            - containerPort: 16687
-              name: admin-http
-              protocol: TCP
-            - containerPort: 13133
-              name: healthcheck
-              protocol: TCP
-          resources:
-            {{- toYaml .Values.query.resources | nindent 12 }}
-          securityContext:
-            {{- include "query.containerSecurityContext" . }}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          volumeMounts:
-            - mountPath: /etc/config
-              name: {{ .Values.jaeger.serviceName }}-ui-configuration-volume
-              readOnly: true
-            - mountPath: /conf
-              name: {{ .Values.jaeger.serviceName }}-query-configuration-volume
-              readOnly: true
-            {{- if .Values.cassandraSchemaJob.tls.enabled }}
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-            {{- end }}
-            {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-            {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -304,11 +254,11 @@ spec:
         {{- include "query.securityContext" . }}
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: {{ .Values.jaeger.serviceName }}-ui-configuration-volume
+        - name: ui-config
           configMap:
             name: {{ .Values.jaeger.serviceName }}-ui-configuration
             defaultMode: 420
-        - name: {{ .Values.jaeger.serviceName }}-query-configuration-volume
+        - name: query-config
           configMap:
             name: {{ .Values.jaeger.serviceName }}-query-configuration
             items:
@@ -327,16 +277,7 @@ spec:
             defaultMode: 420
           {{- end }}
         {{- end }}
-        {{- if .Values.cassandraSchemaJob.tls.enabled }}
-        - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-          secret:
-            secretName: {{ template "cassandraSchemaJob.tls.secretName" . }}
-        {{- end }}
-        {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-        - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-          secret:
-            secretName: {{ template "elasticsearch.tls.secretName" . }}
-        {{- end }}
+        {{- include "jaeger.certificateVolumes" . | nindent 8 }}
       {{- if .Values.query.affinity }}
       affinity:
         {{- toYaml .Values.query.affinity | nindent 8 }}

@@ -9,8 +9,6 @@ query:
   image: jaegertracing/jaeger-query:latest
 proxy:
   image: envoyproxy/envoy:v1.25.8
-agent:
-  image: jaegertracing/jaeger-agent:latest
 cassandraSchemaJob:
   image: jaegertracing/jaeger-cassandra-schema:latest
 hotrod:

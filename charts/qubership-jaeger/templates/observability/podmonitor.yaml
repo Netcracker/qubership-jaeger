@@ -1,7 +1,7 @@
 {{- if .Values.jaeger.prometheusMonitoring }}
 ---
 apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
+kind: PodMonitor
 metadata:
   name: {{ .Values.jaeger.serviceName }}-collector
   labels:
@@ -19,14 +19,17 @@ metadata:
     {{- toYaml .Values.collector.annotations | nindent 4 }}
   {{- end }}
 spec:
-  endpoints:
+  podMetricsEndpoints:
   - interval: 30s
-    port: admin-http
+    port: metrics
     path: /metrics
     scheme: http
   jobLabel: k8s
   selector:
-    matchLabels:
-      app.kubernetes.io/component: collector
-      app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-collector
+    matchExpressions:
+      - key: app.kubernetes.io/component
+        operator: In
+        values:
+          - collector
+          - query
 {{- end }}

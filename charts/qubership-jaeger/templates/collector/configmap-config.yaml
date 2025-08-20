@@ -24,15 +24,15 @@ metadata:
 data:
   config.yaml: |
     service:
-      extensions: {{ if .Values.collector.sampling.type }}[jaeger_storage,healthcheckv2,remote_sampling]{{ else }}[jaeger_storage,healthcheckv2]{{- end }}
+      extensions: {{ if .Values.collector.sampling.type }}[jaeger_storage, healthcheckv2, remote_sampling]{{ else }}[jaeger_storage, healthcheckv2]{{- end }}
       pipelines:
         traces:
-          receivers: [otlp,jaeger,zipkin]
+          receivers: [otlp, jaeger, zipkin]
           processors: [batch]
           exporters: [jaeger_storage_exporter]
       telemetry:
         resource:
-          service.name: jaeger
+          service.name: jaeger-collector
         metrics:
           level: detailed
           readers:
@@ -42,7 +42,7 @@ data:
                     host: 0.0.0.0
                     port: 8888
         logs:
-          level: debug
+          level: info
     extensions:
       {{- if .Values.collector.sampling.type }}
       remote_sampling:
@@ -59,7 +59,7 @@ data:
       healthcheckv2:
         use_v2: true
         http:
-          endpoint: "0.0.0.0:13133"
+          endpoint: 0.0.0.0:13133
       jaeger_storage:
         backends:
           {{- if eq .Values.jaeger.storage.type "cassandra" }}
@@ -83,6 +83,9 @@ data:
                 port: {{ if .Values.cassandraSchemaJob.port}}{{.Values.cassandraSchemaJob.port}}{{- else }}{{ if .Values.INFRA_CASSANDRA_PORT }}{{ .Values.INFRA_CASSANDRA_PORT }}{{ else}}9042{{- end }}{{- end }}
                 tls:
                   {{- if .Values.cassandraSchemaJob.tls.enabled }}
+                  {{- if .Values.cassandraSchemaJob.tls.commonName }}
+                  server_name_override: {{ .Values.cassandraSchemaJob.tls.commonName }}
+                  {{- end }}
                   {{- if .Values.cassandraSchemaJob.tls.insecureSkipVerify }}
                   insecure_skip_verify: true
                   {{- end }}
@@ -97,15 +100,7 @@ data:
                     username: "${env:CASSANDRA_USERNAME}"
                     password: "${env:CASSANDRA_PASSWORD}"
                     allowed_authenticators:
-                    {{- if .Values.cassandraSchemaJob.allowedAuthenticators -}}
-                    {{- range .Values.cassandraSchemaJob.allowedAuthenticators }}
-                      - {{ . }}
-                    {{- end}}
-                    {{- else }}
-                    {{- range .Values.cassandraSchemaJob.defaultAllowedAuthenticators }}
-                      - {{ . }}
-                    {{- end }}
-                    {{- end }}
+                      {{- toYaml .Values.cassandraSchemaJob.allowedAuthenticators | nindent 22 }}
           {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
           main_elasticsearch:
             elasticsearch:
@@ -155,17 +150,16 @@ data:
                 {{- end }}
               {{- end }}
           {{- end }}
-
     receivers:
       otlp:
         protocols:
           grpc:
-            endpoint: "0.0.0.0:4317"
+            endpoint: 0.0.0.0:4317
             {{- if $otelgrpcTlsConfigEnabled }}
             tls:
-              client_ca_file: /collector-tls/ca.crt
-              cert_file: /collector-tls/tls.crt
-              key_file: /collector-tls/tls.key
+              client_ca_file: /http-tls/ca.crt
+              cert_file: /http-tls/tls.crt
+              key_file: /http-tls/tls.key
               {{- if .Values.collector.tlsConfig.otelgRPC.cipherSuites }}
               cipher_suites:
               {{- range  .Values.collector.tlsConfig.otelgRPC.cipherSuites | split "," }}
@@ -193,12 +187,12 @@ data:
             max_recv_msg_size_mib: {{ .Values.collector.otlp.grpc.maxRecvMsgSizeMib }}
             {{- end }}
           http:
-            endpoint: "0.0.0.0:4318"
+            endpoint: 0.0.0.0:4318
             {{- if $otelhttpTlsConfigEnabled }}
             tls:
-              client_ca_file: /collector-tls/ca.crt
-              cert_file: /collector-tls/tls.crt
-              key_file: /collector-tls/tls.key
+              client_ca_file: /http-tls/ca.crt
+              cert_file: /http-tls/tls.crt
+              key_file: /http-tls/tls.key
               {{- if .Values.collector.tlsConfig.otelHttp.cipherSuites }}
               cipher_suites:
               {{- range $suite := .Values.collector.tlsConfig.otelHttp.cipherSuites | split "," }}
@@ -238,12 +232,12 @@ data:
           thrift_binary:
           thrift_compact:
           thrift_http:
-            endpoint: "0.0.0.0:14268"
+            endpoint: 0.0.0.0:14268
             {{- if $jaegerhttpTlsConfigEnabled }}
             tls:
-              cert_file: /collector-tls/tls.crt
-              client_ca_file: /collector-tls/ca.crt
-              key_file: /collector-tls/tls.key
+              cert_file: /http-tls/tls.crt
+              client_ca_file: /http-tls/ca.crt
+              key_file: /http-tls/tls.key
               {{- if .Values.collector.tlsConfig.jaegerHttp.maxVersion }}
               max_version: {{ .Values.collector.tlsConfig.jaegerHttp.maxVersion | quote }}
               {{- end }}
@@ -267,12 +261,12 @@ data:
             read_timeout: {{ .Values.collector.jaeger.http.readTimeout }}
             {{- end }}
           grpc:
-            endpoint: "0.0.0.0:14250"
+            endpoint: 0.0.0.0:14250
             {{- if $jaegergrpcTlsConfigEnabled }}
             tls:
-              cert_file: /collector-tls/tls.crt
-              client_ca_file: /collector-tls/ca.crt
-              key_file: /collector-tls/tls.key
+              cert_file: /http-tls/tls.crt
+              client_ca_file: /http-tls/ca.crt
+              key_file: /http-tls/tls.key
               {{- if .Values.collector.tlsConfig.jaegergRPC.maxVersion }}
               max_version: {{ .Values.collector.tlsConfig.jaegergRPC.maxVersion | quote }}
               {{- end }}
@@ -296,6 +290,7 @@ data:
             max_recv_msg_size_mib: {{ .Values.collector.jaeger.grpc.maxRecvMsgSizeMib }}
             {{- end }}
       zipkin:
+        endpoint: "0.0.0.0:9411"
         {{- if $zipkinTlsConfigEnabled }}
         {{- if .Values.collector.zipkin.disableKeepAlives }}
         disable_keep_alives: true
@@ -310,9 +305,9 @@ data:
         {{- end }}
         {{- end }}
         tls:
-          cert_file: /collector-tls/tls.crt
-          client_ca_file: /collector-tls/ca.crt
-          key_file: /collector-tls/tls.key
+          cert_file: /http-tls/tls.crt
+          client_ca_file: /http-tls/ca.crt
+          key_file: /http-tls/tls.key
           {{- if .Values.collector.tlsConfig.zipkin.cipherSuites }}
           cipher_suites:
           {{- range $suite := .Values.collector.tlsConfig.zipkin.cipherSuites | split "," }}

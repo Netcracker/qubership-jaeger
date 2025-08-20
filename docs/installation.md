@@ -1,51 +1,8 @@
 # Installation Notes
 
 This chapter describes the procedure to deploy the Jaeger application in the Kubernetes/OpenShift project.
-The deployment includes a collector to collect the data, a query for UI purposes, and an agent in a query pod
+The deployment includes a collector to collect the data, a query for UI purposes in a query pod
 for tracing the query.
-
-## Table of Content
-
-* [Table of Content](#table-of-content)
-* [Prerequisites](#prerequisites)
-  * [Common](#common)
-  * [Storage](#storage)
-    * [Cassandra](#cassandra-storage)
-    * [OpenSearch/ElasticSearch](#opensearchelasticsearch)
-  * [Kubernetes](#kubernetes)
-  * [Azure](#azure)
-  * [AWS](#aws)
-  * [Google](#google)
-* [Best practices and recommendations](#best-practices-and-recommendations)
-  * [HWE](#hwe)
-  * [TLS](#tls)
-* [Parameters](#parameters)
-  * [Jaeger](#jaeger)
-  * [Collector](#collector)
-    * [Ingress](#ingress)
-    * [TLSConfig](#tlsconfig)
-  * [Query](#query)
-  * [Readiness probe](#readiness-probe)
-  * [Agent](#agent)
-  * [Cassandra](#cassandra)
-  * [ElasticSearch](#elasticsearch)
-    * [Index Cleaner](#index-cleaner)
-    * [Rollover](#rollover)
-    * [Lookback](#lookback)
-  * [Proxy](#proxy)
-  * [Hotrod](#hotrod)
-  * [Integration Tests](#integration-tests)
-  * [Status Provisioner](#status-provisioner)
-* [Installation](#installation)
-  * [Before you begin](#before-you-begin)
-    * [Helm](#helm)
-  * [On-prem](#on-prem)
-    * [HA scheme](#ha-scheme)
-    * [Non-HA scheme](#non-ha-scheme)
-* [Post Deploy Checks](#post-deploy-checks)
-  * [Smoke test](#smoke-test)
-* [Frequently Asked Questions](#frequently-asked-questions)
-  * [Jaeger Sampling Configuration](#jaeger-sampling-configuration)
 
 ## Prerequisites
 
@@ -92,30 +49,24 @@ cassandraSchemaJob:
 **Warning!** The `mode: prod` **can't be used** if you have **only 1** Cassandra node. Jaeger won't allow to create
 of a schema and other Jaeger pods won't start with this configuration.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
-#### OpenSearch/ElasticSearch
+#### OpenSearch/Elasticsearch
 
-**Note:** This section applies only to cases when OpenSearch/ElasticSearch is used as a store.
+**Note:** This section applies only to cases when OpenSearch/Elasticsearch is used as a store.
 
-Selecting between OpenSearch and ElasticSearch we recommended using **OpenSearch**.
+Selecting between OpenSearch and Elasticsearch we recommended using **OpenSearch**.
 
 Supported OpenSearch versions:
 
 * 2.x (recommended)
 * 1.x
 
-Supported ElasticSearch versions:
+Supported Elasticsearch versions:
 
 * 7.x
 * 6.x
 * 5.x
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Kubernetes
 
@@ -157,9 +108,6 @@ At the pod level, `runAsNonRoot: true` and `seccompProfile.type: "RuntimeDefault
 At the container level, `allowPrivilegeEscalation: false` and `capabilities.drop: - ALL` will be added automatically.
 It is recommended not to override these values because Kubernetes `restricted`` PSS expects these values.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Azure
 
@@ -175,9 +123,6 @@ to supporting Azure managed services. So we know that Jaeger doesn't support Azu
 
 There is no Azure managed OpenSearch. You can find only custom solutions in the Azure marketplace from other vendors.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### AWS
 
@@ -203,9 +148,6 @@ But Jaeger supports AWS OpenSearch as a managed service. Recommendation for AWS 
   * c5.large.search
   * c4.large.search
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Google
 
@@ -214,12 +156,9 @@ But Jaeger supports AWS OpenSearch as a managed service. Recommendation for AWS 
 | Google Cassandra       | - N/A          |
 | Google OpenSearch      | - N/A          |
 
-Google has no officially managed Cassandra, OpenSearch or ElasticSearch. You can find only custom solutions
+Google has no officially managed Cassandra, OpenSearch or Elasticsearch. You can find only custom solutions
 in the Google marketplace from other vendors.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Best practices and recommendations
 
@@ -244,9 +183,9 @@ Disk space for storing Jaeger traces might be calculated in several ways:
 
 * First of all, trace might contain more than one span, it depends on how many services (APIs) call each request.
   If you are able to calculate a number of spans as:
-  
+
   ```txt
-  Number of spans per second = number traces in your system(requests) * number of spans per trace 
+  Number of spans per second = number traces in your system(requests) * number of spans per trace
   ```
 
   Please note not all requests on prod env are sent traces in Jaeger, so you only need to count the traced requests.
@@ -277,7 +216,7 @@ You must set correct TTL values during first deploy! If you didn't do it, please
 [Maintenance: Change Cassandra TTL](maintenance.md#change-cassandra-ttl).
 
 To find the retention period see `ttl` for [Cassandra](#cassandra) and `numberOfDays` for
-[Elasticsearch\/Opensearch](#index-cleaner).
+[Elasticsearch\/OpenSearch](#index-cleaner).
 
 We have made measurements and found that each 100000 spans requires about 90 Megabytes of disk space
 or 0.9kb per span.
@@ -305,9 +244,6 @@ And disk space usage will be:
 90 720 000 * 0.0009 = 81648Mb or (~80Gb)
 80Gb + 30% = 105Gb
 ```
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### TLS
 
@@ -315,15 +251,10 @@ Support matrix Jaeger as third-party:
 
 | Connection                 | Support TLS   |
 | -------------------------- | ------------- |
-| Client to Agent            | ❌ Not Support |
 | Client to Collector        | ✅ Support     |
-| Agent to Collector         | ✅ Support     |
 | Collector/Query to Storage | ✅ Support     |
 | Browser to UI              | ❌ Not Support |
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Parameters
 
@@ -343,7 +274,7 @@ jaeger:
 <!-- markdownlint-disable line-length -->
 | Parameter                       | Type    | Mandatory | Default value | Description                                                                            |
 | ------------------------------- | ------- | --------- | ------------- | -------------------------------------------------------------------------------------- |
-| `storage.type`                  | string  | yes       | cassandra     | Type of storage, available values: `cassandra` and `elasticsearch`                     |
+| `storage.type`                  | string  | yes       | `cassandra`   | Type of storage, available values: `cassandra` and `elasticsearch`                     |
 | `serviceName`                   | string  | no        | jaeger        | Jaeger base deployment or service name                                                 |
 | `prometheusMonitoring`          | boolean | no        | true          | Install ServiceMonitors that allow Monitoring collect metrics from Jaeger's components |
 | `prometheusMonitoringDashboard` | boolean | no        | true          | Install the GrafanaDashboard that visualize metrics collect by Monitoring              |
@@ -364,9 +295,6 @@ jaeger:
   prometheusMonitoringDashboard: true
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Collector
 
@@ -397,7 +325,7 @@ collector:
 | `samplingConfig`           | boolean                                                                                                                       | no        | false                                                                   | Enabling/disabling `SAMPLING_STRATEGIES_FILE`                                                                                         |
 | `nodeSelector`             | map                                                                                                                           | no        | {}                                                                      | Defining which Nodes the Pods are scheduled on                                                                                        |
 | `tolerations`              | [core/v1.Toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core)                 | no        | {}                                                                      | Allows the pods to schedule onto nodes with matching taints                                                                           |
-| `resources`                | object                                                                                                                        | no        | {requests: {cpu: 100m, memory: 100Mi}, limits: {cpu: 1, memory: 200Mi}} | Describes computing resource requests and limits for single Pods                                                                      |
+| `resources`                | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 100Mi}, limits: {cpu: 1, memory: 200Mi}}` | Describes computing resource requests and limits for single Pods                                                                      |
 | `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                      | Describes pod-level security attributes                                                                                               |
 | `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                      | Holds container-level security attributes                                                                                             |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                     | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                 |
@@ -467,9 +395,6 @@ collector:
     example.label/key: example-label-value
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### Ingress
 
@@ -500,13 +425,13 @@ collector:
 | `http.hosts[].paths[].prefix`       | string  | no        | `-`           | Endpoint path that will listen and handle by Ingress controller (for example: `/`, `/zipkin`)                                                                                                                                                                                                         |
 | `http.hosts[].paths[].service.name` | string  | no        | `-`           | Service name to which will route requests from declared in this section endpoint, by default will use `{{ .jaeger.serviceName }}-collector` (usually will be `jaeger-collector`)                                                                                                                      |
 | `http.hosts[].paths[].service.port` | integer | no        | `-`           | Service port to which will route requests from declared in this section endpoint                                                                                                                                                                                                                      |
-| `grpc.install`                      | boolean | no        | `false`           | Install the GRPC ingress |
-| `grpc.annotations`                  | map     | no        | `-`           | Annotations for GRPC collector Ingress                                                                                                                                                                                                                                                                     |
-| `grpc.labels`                       | map     | no        | `-`           | Labels for GRPC collector Ingress                                                                                                                                                                                                                                                                          |
-| `grpc.host`                         | string  | no        | `-`           | DNS name of GRPC Ingress host that should be created. If specified, ingress rules cannot be customized. Rules are auto-populated to cover all supported protocols.                                                                                                                                                                                                                                                       |
+| `grpc.install`                      | boolean | no        | `false`       | Install the gRPC ingress |
+| `grpc.annotations`                  | map     | no        | `-`           | Annotations for gRPC collector Ingress                                                                                                                                                                                                                                                                     |
+| `grpc.labels`                       | map     | no        | `-`           | Labels for gRPC collector Ingress                                                                                                                                                                                                                                                                          |
+| `grpc.host`                         | string  | no        | `-`           | DNS name of gRPC Ingress host that should be created. If specified, ingress rules cannot be customized. Rules are auto-populated to cover all supported protocols.                                                                                                                                                                                                                                                       |
 | `grpc.hosts`                        | array   | no        | `-`           | List of hosts                                                                                                                                                                                                                                                                                         |
-| `grpc.hosts[].host`                 | string  | no        | `-`           | DNS name of GRPC Ingress host that should be created                                                                                                                                                                                                                                                       |
-| `grpc.hosts[].paths`                | array   | no        | `-`           | List of paths and endpoints in GRPC Ingress                                                                                                                                                                                                                                                                |
+| `grpc.hosts[].host`                 | string  | no        | `-`           | DNS name of gRPC Ingress host that should be created                                                                                                                                                                                                                                                       |
+| `grpc.hosts[].paths`                | array   | no        | `-`           | List of paths and endpoints in gRPC Ingress                                                                                                                                                                                                                                                                |
 | `grpc.hosts[].paths[].prefix`       | string  | no        | `-`           | Endpoint path that will listen and handle by Ingress controller (for example: `/`, `/zipkin`)                                                                                                                                                                                                         |
 | `grpc.hosts[].paths[].service.name` | string  | no        | `-`           | Service name to which will route requests from declared in this section endpoint, by default will use `{{ .jaeger.serviceName }}-collector` (usually will be `jaeger-collector`)                                                                                                                      |
 | `grpc.hosts[].paths[].service.port` | integer | no        | `-`           | Service port to which will route requests from declared in this section endpoint                                                                                                                                                                                                                      |
@@ -578,9 +503,6 @@ collector:
                 port: 14268
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### TLSConfig
 
@@ -612,7 +534,7 @@ collector:
 | `otelHttp.maxVersion`                | string  | no        | `-`                           | Maximum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3).                                                                                                                                                                                                                                                                                                                                                                                       |
 | `otelHttp.minVersion`                | string  | no        | `-`                           | Minimum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3).                                                                                                                                                                                                                                                                                                                                                                                       |
 | `otelHttp.certificateReloadInterval` | string  | no        | `0s`                          | The duration after which the certificate will be reloaded (0s means will not be reloaded).                                                                                                                                                                                                                                                                                                                                                                 |
-| `otelgRPC.enabled`                   | boolean | no        | `false`                       | Specifies whether TLS must be enabled for OTEL GRPC endpoint.                                                                                                                                                                                                                                                                                                                                                                                              |
+| `otelgRPC.enabled`                   | boolean | no        | `false`                       | Specifies whether TLS must be enabled for OTEL gRPC endpoint.                                                                                                                                                                                                                                                                                                                                                                                              |
 | `otelgRPC.cipherSuites`              | string  | no        | `-`                           | Comma-separated list of cipher suites for the server.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `otelgRPC.maxVersion`                | string  | no        | `-`                           | Maximum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3).                                                                                                                                                                                                                                                                                                                                                                                       |
 | `otelgRPC.minVersion`                | string  | no        | `-`                           | Minimum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3).                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -621,7 +543,7 @@ collector:
 | `jaegerHttp.cipherSuites`            | string  | no        | `-`                           | Comma-separated list of cipher suites for the server.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `jaegerHttp.maxVersion`              | string  | no        | `-`                           | Maximum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3).                                                                                                                                                                                                                                                                                                                                                                                       |
 | `jaegerHttp.minVersion`              | string  | no        | `-`                           | Minimum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3).                                                                                                                                                                                                                                                                                                                                                                                       |
-| `jaegergRPC.enabled`                 | boolean | no        | `false`                       | Specifies whether TLS must be enabled for Jaeger/Thrift GRPC endpoint.                                                                                                                                                                                                                                                                                                                                                                                     |
+| `jaegergRPC.enabled`                 | boolean | no        | `false`                       | Specifies whether TLS must be enabled for Jaeger/Thrift gRPC endpoint.                                                                                                                                                                                                                                                                                                                                                                                     |
 | `jaegergRPC.cipherSuites`            | string  | no        | `-`                           | Comma-separated list of cipher suites for the server.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `jaegergRPC.maxVersion`              | string  | no        | `-`                           | Maximum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3).                                                                                                                                                                                                                                                                                                                                                                                       |
 | `jaegergRPC.minVersion`              | string  | no        | `-`                           | Minimum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3).                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -683,9 +605,6 @@ collector:
       minVersion: 1.2
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Query
 
@@ -714,7 +633,7 @@ query:
 | `ingress.host`             | string                                                                                                                        | no        | -                                                                          | FQDN of the ingress host                                                                                                            |
 | `route.install`            | boolean                                                                                                                       | no        | false                                                                      | Enabling/disabling creating query route                                                                                             |
 | `route.host`               | string                                                                                                                        | no        | -                                                                          | FQDN of the route host                                                                                                              |
-| `resources`                | object                                                                                                                        | no        | {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 200m, memory: 256Mi}} | Describes computing resource requests and limits for single Pods                                                                    |
+| `resources`                | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 200m, memory: 256Mi}}` | Describes computing resource requests and limits for single Pods                                                                    |
 | `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                         | Describes pod-level security attributes                                                                                             |
 | `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                         | Holds container-level security attributes                                                                                           |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                        | PriorityClassName assigned to the Pods to prevent them from evicting                                                                |
@@ -779,9 +698,6 @@ query:
     example.label/key: example-label-value
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Readiness probe
 
@@ -799,8 +715,8 @@ readinessProbe:
 | ----------------- | ------ | --------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `image`           | string | no        | -                                                                          | Docker image to use for a readiness-probe container                                                                                                           |
 | `imagePullPolicy` | string | no        | IfNotPresent                                                               | `imagePullPolicy` for a container and the tag of the image affects when the kubelet attempts to pull (download) the specified image                           |
-| `args`            | object | yes       | []                                                                         | Cmd line opts to be configured. More [here](readiness-probe.md) |
-| `resources`       | object | no        | {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 200m, memory: 256Mi}} | Describes computing resource requests and limits for single Pods                                                                                              |
+| `args`            | object | yes       | []                                                                         | Cmd line opts to be configured. More [in readiness-probe](readiness-probe.md) |
+| `resources`       | object | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 200m, memory: 256Mi}}` | Describes computing resource requests and limits for single Pods                                                                                              |
 <!-- markdownlint-enable line-length -->
 
 **Note:** It's just an example of a parameter's format, not recommended parameters.
@@ -836,130 +752,6 @@ readinessProbe:
       memory: 50Mi
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
-
-### Agent
-
-**Note:** `jaeger-agent` is **deprecated**. The OpenTelemetry data can be sent directly to the Jaeger backend,
-or the OpenTelemetry Collector can be used as an agent.
-
-`jaeger-agent` is a network daemon that listens for spans sent over UDP, which are batched and sent to the collector.
-It is designed to be deployed to all hosts as an infrastructure component.
-The agent abstracts the routing and discovery of the collectors away from the client.
-
-`jaeger-agent` is **not a required** component. For example, when your applications are instrumented with OpenTelemetry,
-the SDKs can be configured to forward the trace data directly to the `jaeger-collector`.
-
-All parameters in the table below should be specified under the key:
-
-```yaml
-agent:
-  install: true
-  ...
-```
-
-<!-- markdownlint-disable line-length -->
-| Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                            | Description                                                                                                                         |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `install`                  | boolean                                                                                                                       | no        | false                                                                    | Enabling/disabling deploy agent daemon-set                                                                                          |
-| `image`                    | string                                                                                                                        | no        | -                                                                        | The docker image to use for an agent container                                                                                      |
-| `name`                     | string                                                                                                                        | no        | agent                                                                    | The name of a microservice to deploy with                                                                                           |
-| `imagePullPolicy`          | string                                                                                                                        | no        | IfNotPresent                                                             | `imagePullPolicy` for a container and the tag of the image affects when the kubelet attempts to pull (download) the specified image |
-| `imagePullSecrets`         | object                                                                                                                        | no        | []                                                                       | Keys to access the private registry                                                                                                 |
-| `labels`                   | map                                                                                                                           | no        | {}                                                                       | Map of string keys and values that can be used to organize and categorize (scope and select) objects                                |
-| `annotations`              | map                                                                                                                           | no        | {}                                                                       | Is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata  |
-| `useHostNetwork`           | boolean                                                                                                                       | no        | false                                                                    | Enabling using the host network                                                                                                     |
-| `useHostPort`              | boolean                                                                                                                       | no        | false                                                                    | Enabling using a host port                                                                                                          |
-| `service.zipkinThriftPort` | integer                                                                                                                       | no        | 5775                                                                     | Port to accept `zipkin.thrift` over compact thrift protocol                                                                         |
-| `service.compactPort`      | integer                                                                                                                       | no        | 6831                                                                     | Port to accept `jaeger.thrift` over compact thrift protocol                                                                         |
-| `service.binaryPort`       | integer                                                                                                                       | no        | 6832                                                                     | Port to accept `jaeger.thrift` over binary thrift protocol                                                                          |
-| `service.samplingPort`     | integer                                                                                                                       | no        | 5778                                                                     | Port for HTTP serves configs, and sampling strategies                                                                               |
-| `cmdlineParams`            | object                                                                                                                        | no        | []                                                                       | Agent-related cmd line opts to be configured on the concerned components                                                            |
-| `extraEnv`                 | object                                                                                                                        | no        | []                                                                       | Agent-related extra env vars to be configured on the concerned components                                                           |
-| `extraConfigmapMounts`     | object                                                                                                                        | no        | []                                                                       | Extra configMap mounts for the agent                                                                                                |
-| `extraSecretMounts`        | object                                                                                                                        | no        | []                                                                       | Extra secret mounts for the agent                                                                                                   |
-| `nodeSelector`             | map                                                                                                                           | no        | {}                                                                       | Defining which Nodes the Pods are scheduled on                                                                                      |
-| `tolerations`              | [core/v1.Toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core)                 | no        | {}                                                                       | The pods to schedule onto nodes with matching taints                                                                                |
-| `resources`                | object                                                                                                                        | no        | {requests: {cpu: 50m, memory: 50Mi}, limits: {cpu: 100m, memory: 100Mi}} | Compute resource requests and limits for single Pods                                                                                |
-| `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                       | Holds pod-level security attributes                                                                                                 |
-| `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                       | Holds container-level security attributes                                                                                           |
-| `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                      | PriorityClassName assigned to the Pods to prevent them from evicting.                                                               |
-<!-- markdownlint-enable line-length -->
-
-Examples:
-
-**Note:** It's just an example of a parameter's format, not recommended parameters.
-
-```yaml
-agent:
-  install: true
-  name: agent
-
-  image: jaegertracing/jaeger-agent:1.62.0
-  imagePullPolicy: IfNotPresent
-  imagePullSecrets:
-  - name: jaeger-pull-secret
-
-  labels:
-    example.label/key: example-label-value
-  annotations:
-    example.annotation/key: example-annotation-value
-
-  useHostNetwork: false
-  useHostPort: false
-
-  service:
-    zipkinThriftPort: 5775
-    compactPort: 6831
-    binaryPort: 6832
-    samplingPort: 5778
-
-  cmdlineParams:
-    - '--processor.jaeger-compact.server-queue-size=1000'
-  extraEnv:
-    - name: LOG_LEVEL
-      value: info
-  extraConfigmapMounts:
-    - name: extra-config-file-name  # name of mount in pod
-      configMap: extra-configmap-name  # name of ConfigMap in the Kubernetes
-  extraSecretMounts:
-    - name: extra-config-file-name  # name of mount in pod
-      secretMap: extra-secret-name  # name of Secret in the Kubernetes
-
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
-  securityContext:
-    runAsUser: 2000
-    fsGroup: 2000
-    runAsNonRoot: true
-    seccompProfile:
-      type: RuntimeDefault
-  containerSecurityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-        - ALL
-
-  nodeSelector:
-    node-role.kubernetes.io/worker: worker
-  tolerations:
-    - key: key1
-      operator: Equal
-      value: value1
-      effect: NoSchedule
-  priorityClassName: priority-class
-```
-
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Cassandra
 
@@ -980,7 +772,7 @@ cassandraSchemaJob:
 <!-- markdownlint-disable line-length -->
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                                                                                             | Description                                                                                                                                                                                                                                                                                                                                           |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `image`                    | string                                                                                                                        | no        | -                                                                                                                                         | The docker image to use for a `cassandraSchemaJob` container                                                                                                                                                                                                                                                                                          |
+| `image`                    | string                                                                                                                        | no        | -                                                                                                                                         | The Docker image to use for a `cassandraSchemaJob` container                                                                                                                                                                                                                                                                                          |
 | `name`                     | string                                                                                                                        | no        | cassandra-schema-job                                                                                                                      | The name of a microservice to deploy with                                                                                                                                                                                                                                                                                                             |
 | `imagePullPolicy`          | string                                                                                                                        | no        | IfNotPresent                                                                                                                              | `imagePullPolicy` for a container and the tag of the image affects when the `kubelet` attempts to pull (download) the specified image                                                                                                                                                                                                                 |
 | `imagePullSecrets`         | object                                                                                                                        | no        | []                                                                                                                                        | Keys to access the private registry                                                                                                                                                                                                                                                                                                                   |
@@ -1008,8 +800,8 @@ cassandraSchemaJob:
 | `ttl.trace`                | integer                                                                                                                       | no        | -                                                                                                                                         | Time to live for traces (in seconds) data                                                                                                                                                                                                                                                                                                             |
 | `ttl.dependencies`         | integer                                                                                                                       | no        | -                                                                                                                                         | Time to live for dependencies (in seconds)data                                                                                                                                                                                                                                                                                                        |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                                                                                       | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                                                                                                                                                                                                                                 |
-| `labels`                   | map                                                                                                                           | no        | {}                                                                                                                                        | Labels for cassandra schema job.                                                                                                                                                                |
-| `annotations`              | map                                                                                                                           | no        | {}                                                                                                                                        | Annotations for cassandra schema job.                                                                                                                                                           |
+| `labels`                   | map                                                                                                                           | no        | {}                                                                                                                                        | Labels for Cassandra schema job.                                                                                                                                                                |
+| `annotations`              | map                                                                                                                           | no        | {}                                                                                                                                        | Annotations for Cassandra schema job.                                                                                                                                                           |
 <!-- markdownlint-enable line-length -->
 <!-- markdownlint-enable no-inline-html -->
 
@@ -1076,7 +868,7 @@ cassandraSchemaJob:
   extraEnv:
     - name: CASSANDRA_TIMEOUT
       value: 30s
-  
+
   resources:
     requests:
       cpu: 100m
@@ -1102,11 +894,8 @@ cassandraSchemaJob:
     example.label/key: example-label-value
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
-### ElasticSearch
+### Elasticsearch
 
 All parameters in the table below should be specified under the key:
 
@@ -1118,20 +907,20 @@ elasticsearch:
 <!-- markdownlint-disable line-length -->
 | Parameter                       | Type    | Mandatory | Default value | Description                                                                                                                                                                                     |
 | ------------------------------- | ------- | --------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `existingSecret`                | string  | no        | -             | Name of the existing secret with ElasticSearch username and password                                                                                                                            |
-| `indexPrefix`                   | string  | no        | -             | Index prefix for ElasticSearch                                                                                                                                                                  |
+| `existingSecret`                | string  | no        | -             | Name of the existing secret with Elasticsearch username and password                                                                                                                            |
+| `indexPrefix`                   | string  | no        | -             | Index prefix for Elasticsearch                                                                                                                                                                  |
 | `extraEnv`                      | object  | no        | []            | Elasticsearch-related extra env vars to be configured on the concerned components                                                                                                               |
 | `client.url`                    | string  | no        | -             | The URL with the port used to connect to Elasticsearch                                                                                                                                          |
 | `client.username`               | string  | no        | -             | Username for Elasticsearch with access to HTTP API                                                                                                                                              |
 | `client.password`               | string  | no        | -             | Password for Elasticsearch with access to HTTP API                                                                                                                                              |
 | `client.scheme`                 | string  | no        | http          | The scheme for Elasticsearch with access to HTTP API                                                                                                                                            |
-| `client.tls.enabled`            | false   | no        | -             | Enabling or disabling TLS connection to OpenSearch/ElasticSearch.                                                                                                                               |
+| `client.tls.enabled`            | false   | no        | -             | Enabling or disabling TLS connection to OpenSearch/Elasticsearch.                                                                                                                               |
 | `client.tls.existingSecret`     | string  | no        | -             | The name of the existing secret with SSL certificates. If specified, all subsequent parameters in tls section are ignored.                                                                      |
 | `client.tls.commonName`         | string  | on        | -             | The common name - server name protected by the SSL certificate. Ignored if the `existingSecret` is specified.                                                                                   |
 | `client.tls.ca`                 | string  | no        | -             | CA certificate. It use to provide a list of trusted CA who issued the certificates. The mandatory field when using an SSL connection to Cassandra. Ignored if the `existingSecret`is specified. |
 | `client.ts.cert`                | string  | no        | -             | The private part of the certificate. The mandatory field when using an SSL connection to Cassandra. Ignored if the `existingSecret` is specified.                                               |
 | `client.tls.key`                | string  | no        | -             | Specifying the public key of the certificate. The mandatory field when using an SSL connection to Cassandra. Ignored if the `existingSecret` is specified.                                      |
-| `client.tls.insecureSkipVerify` | boolean | no        | -             | Disabling certificate validation check for OpenSearch/ElasticSearch TLS connection                                                                                                              |
+| `client.tls.insecureSkipVerify` | boolean | no        | -             | Disabling certificate validation check for OpenSearch/Elasticsearch TLS connection                                                                                                              |
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -1140,7 +929,7 @@ Examples:
 
 ```yaml
 elasticsearch:
-  existingSecret: 
+  existingSecret:
   indexPrefix: custom-  # result name of indexes will be custom-jaeger-spans, custom-jaeger-.....
   extraEnv:
   - name: ES_TIMEOUT
@@ -1178,9 +967,6 @@ elasticsearch:
       insecureSkipVerify: true
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### Index Cleaner
 
@@ -1196,7 +982,7 @@ elasticsearch:
 | Parameter                    | Type                                                                                                                          | Mandatory | Default value                                                              | Description                                                                                                                             |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                    | boolean                                                                                                                       | no        | false                                                                      | Enabling or disabling creating indexCleaner CronJob                                                                                     |
-| `image`                      | string                                                                                                                        | no        | -                                                                          | The docker image to use for an `indexCleaner` container                                                                                 |
+| `image`                      | string                                                                                                                        | no        | -                                                                          | The Docker image to use for an `indexCleaner` container                                                                                 |
 | `name`                       | string                                                                                                                        | no        | index-cleaner                                                              | The name of a microservice to deploy with                                                                                               |
 | `imagePullPolicy`            | string                                                                                                                        | no        | IfNotPresent                                                               | The `imagePullPolicy` for a container and the tag of the image affects when the kubelet attempts to pull (download) the specified image |
 | `imagePullSecrets`           | object                                                                                                                        | no        | []                                                                         | Keys to access the private registry                                                                                                     |
@@ -1213,7 +999,7 @@ elasticsearch:
 | `extraSecretMounts`          | object                                                                                                                        | no        | []                                                                         | Extra secret mounts for indexCleaner                                                                                                    |
 | `nodeSelector`               | map                                                                                                                           | no        | {}                                                                         | Defining which Nodes the Pods are scheduled on                                                                                          |
 | `tolerations`                | [core/v1.Toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core)                 | no        | {}                                                                         | The pods to schedule onto nodes with matching taints                                                                                    |
-| `resources`                  | object                                                                                                                        | no        | {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 100m, memory: 128Mi}} | Computing resource requests and limits for single Pods                                                                                  |
+| `resources`                  | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 100m, memory: 128Mi}}` | Computing resource requests and limits for single Pods                                                                                  |
 | `securityContext`            | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                         | Holds pod-level security attributes                                                                                                     |
 | `containerSecurityContext`   | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                         | Holds container-level security attributes                                                                                               |
 | `priorityClassName`          | string                                                                                                                        | no        | `-`                                                                        | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                   |
@@ -1286,9 +1072,6 @@ elasticsearch:
     priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### Rollover
 
@@ -1413,13 +1196,10 @@ elasticsearch:
     priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### Lookback
 
-It's a part of [ElasticSearch Rollover](#rollover) to remove old indices from read aliases.
+It's a part of [Elasticsearch Rollover](#rollover) to remove old indices from read aliases.
 It means that old data will not be available for search.
 This imitates the behavior of `--es.max-span-age` flag used in the default index-per-day deployment.
 This step could be optional and old indices could be simply removed by index cleaner in the next step.
@@ -1454,7 +1234,7 @@ elasticsearch:
 | `extraEnv`                   | object                                                                                                                        | no        | []                                                                         | Extra env vars to be configured on the concerned components                                                                             |
 | `extraConfigmapMounts`       | object                                                                                                                        | no        | []                                                                         | Extra configMap mounts for lookback                                                                                                     |
 | `extraSecretMounts`          | object                                                                                                                        | no        | {}                                                                         | Extra secret mounts for lookback                                                                                                        |
-| `resources`                  | object                                                                                                                        | no        | {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 100m, memory: 128Mi}} | Computing resource requests and limits for single Pods                                                                                  |
+| `resources`                  | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 100m, memory: 128Mi}}` | Computing resource requests and limits for single Pods                                                                                  |
 | `securityContext`            | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                         | Holds pod-level security attributes                                                                                                     |
 | `containerSecurityContext`   | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                         | Holds container-level security attributes                                                                                               |
 | `priorityClassName`          | string                                                                                                                        | no        | `-`                                                                        | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                   |
@@ -1525,9 +1305,6 @@ elasticsearch:
     priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Proxy
 
@@ -1553,7 +1330,7 @@ proxy:
 | `oauth2.clientToken`           | string                                                                                                                        | no        | -                                                                         | The `client_secret` used to retrieve the access token                                                             |
 | `oauth2.idpAddress`            | string                                                                                                                        | no        | -                                                                         | The address for this socket                                                                                       |
 | `oauth2.idpPort`               | string                                                                                                                        | no        | 80                                                                        | The listeners will bind to the port                                                                               |
-| `resources`                    | object                                                                                                                        | no        | {requests: {cpu: 50m, memory: 100Mi}, limits: {cpu: 100m, memory: 200Mi}} | Describes computing resource requests and limits for single Pods                                                  |
+| `resources`                    | object                                                                                                                        | no        | `{requests: {cpu: 50m, memory: 100Mi}, limits: {cpu: 100m, memory: 200Mi}}` | Describes computing resource requests and limits for single Pods                                                  |
 | `securityContext`              | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                        | Describes pod-level security attributes                                                                           |
 | `containerSecurityContext`     | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                        | Holds container-level security attributes                                                                         |
 <!-- markdownlint-enable line-length -->
@@ -1600,9 +1377,6 @@ proxy:
         - ALL
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Hotrod
 
@@ -1620,7 +1394,7 @@ hotrod:
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                              | Description                                                                                                                             |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                  | boolean                                                                                                                       | no        | false                                                                      | Enabling or disabling creating hotrod deployment                                                                                        |
-| `image`                    | string                                                                                                                        | no        | -                                                                          | The docker image to use for a hotrod container                                                                                          |
+| `image`                    | string                                                                                                                        | no        | -                                                                          | The Docker image to use for a hotrod container                                                                                          |
 | `name`                     | string                                                                                                                        | no        | hotrod                                                                     | The name of a microservice to deploy with                                                                                               |
 | `imagePullPolicy`          | string                                                                                                                        | no        | IfNotPresent                                                               | The `imagePullPolicy` for a container and the tag of the image affects when the kubelet attempts to pull (download) the specified image |
 | `imagePullSecrets`         | object                                                                                                                        | no        | []                                                                         | Keys to access the private registry                                                                                                     |
@@ -1628,8 +1402,6 @@ hotrod:
 | `annotations`              | map                                                                                                                           | no        | {}                                                                         | An unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata         |
 | `otelExporter.host`        | integer                                                                                                                       | no        | -                                                                          | The host used to connect to Open Telemetry Exporter                                                                                     |
 | `otelExporter.port`        | integer                                                                                                                       | no        | 14268                                                                      | The port used to connect to Open Telemetry Exporter                                                                                     |
-| `agent.host`               | integer                                                                                                                       | no        | -                                                                          | The host used to connect to the Jaeger agent. **DEPRECATED** since `1.42.x`, use parameters from the section `hotrtod.otelExporter`     |
-| `agent.port`               | integer                                                                                                                       | no        | 6831                                                                       | The port used to connect to the Jaeger agent. **DEPRECATED** since `1.42.x`, use parameters from the section `hotrtod.otelExporter`     |
 | `nodeSelector`             | map                                                                                                                           | no        | {}                                                                         | Defining which Nodes the Pods are scheduled on                                                                                          |
 | `tolerations`              | [core/v1.Toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core)                 | no        | {}                                                                         | The pods to schedule onto nodes with matching taints                                                                                    |
 | `ingress.install`          | boolean                                                                                                                       | no        | false                                                                      | Enabling or disabling creating a `hotrod` ingress                                                                                       |
@@ -1638,7 +1410,7 @@ hotrod:
 | `route.install`            | boolean                                                                                                                       | no        | false                                                                      | Enabling or disabling creating a `hotrod` route                                                                                         |
 | `route.host`               | string                                                                                                                        | no        | 0                                                                          | The FQDN of the route host                                                                                                              |
 | `service.port`             | integer                                                                                                                       | no        | 80                                                                         | The port for hotrod service                                                                                                             |
-| `resources`                | object                                                                                                                        | no        | {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 100m, memory: 128Mi}} | Computing resource requests and limits for single Pods                                                                                  |
+| `resources`                | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 100m, memory: 128Mi}}` | Computing resource requests and limits for single Pods                                                                                  |
 | `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                         | Holds pod-level security attributes                                                                                                     |
 | `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                         | Holds container-level security attributes                                                                                               |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                        | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                   |
@@ -1666,10 +1438,6 @@ hotrod:
   otelExporter:
     host: jaeger-collector
     port: 14268
-  
-  agent:
-    host: jaeger-agent
-    port: 6831
 
   # Use in Kubernetes
   ingress:
@@ -1709,9 +1477,6 @@ hotrod:
   priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Integration Tests
 
@@ -1729,7 +1494,7 @@ integrationTests:
 | Parameter                            | Type                                                                                                                          | Mandatory | Default value                                                            | Description                                                                                                                                                                                                                                                                                                                                         |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `install`                            | boolean                                                                                                                       | no        | false                                                                    | Enabling or disabling creating integration tests deployment                                                                                                                                                                                                                                                                                         |
-| `image`                              | string                                                                                                                        | no        | -                                                                        | The docker image to use for integration tests container                                                                                                                                                                                                                                                                                             |
+| `image`                              | string                                                                                                                        | no        | -                                                                        | The Docker image to use for integration tests container                                                                                                                                                                                                                                                                                             |
 | `tags`                               | string                                                                                                                        | no        | smoke                                                                    | Tags combined together with AND, OR and NOT operators that select test cases to run. You can use the "smoke", "generator" and "ha" tags to run the appropriate tests. Or a combination of both, for example smokeORha to run both smoke and ha tests with                                                                                           |
 | `linkForGenerator`                   | string                                                                                                                        | no        | `http://jaeger-collector:9411`                                           | Link to host which can get spans in Zipkin format registry                                                                                                                                                                                                                                                                                          |
 | `generateCount`                      | integer                                                                                                                       | no        | 10                                                                       | The number of spans which will be sent, 10 by default                                                                                                                                                                                                                                                                                               |
@@ -1737,7 +1502,7 @@ integrationTests:
 | `service.name`                       | string                                                                                                                        | no        | jaeger-integration-tests-runner                                          | The name of the service used to run integration tests.                                                                                                                                                                                                                                                                                              |
 | `serviceAccount.create`              | boolean                                                                                                                       | no        | true                                                                     | Specifies whether service account should be created or not.                                                                                                                                                                                                                                                                                         |
 | `serviceAccount.name`                | string                                                                                                                        | no        | jaeger-integration-tests                                                 | The name of the service account used to run integration tests.                                                                                                                                                                                                                                                                                      |
-| `resources`                          | object                                                                                                                        | no        | {requests: {cpu: 50m, memory: 64Mi}, limits: {cpu: 300m, memory: 256Mi}} | Computing resource requests and limits for single Pods                                                                                                                                                                                                                                                                                              |
+| `resources`                          | object                                                                                                                        | no        | `{requests: {cpu: 50m, memory: 64Mi}, limits: {cpu: 300m, memory: 256Mi}}` | Computing resource requests and limits for single Pods                                                                                                                                                                                                                                                                                              |
 | `statusWriting.enabled`              | boolean                                                                                                                       | no        | false                                                                    | Parameter to specify whether the status of integration tests results must be written to a custom resource                                                                                                                                                                                                                                           |
 | `statusWriting.isShortStatusMessage` | boolean                                                                                                                       | no        | true                                                                     | If it is set to `true`, the `message` field in the status condition by default contains first line from `result.txt` file.                                                                                                                                                                                                                          |
 | `statusWriting.onlyIntegrationTests` | boolean                                                                                                                       | no        | true                                                                     | By default, if all tests are passed BDI set `Ready` value to `type` condition field. There is an ability to deploy only integration tests without any component (component was installed before). In this case you should set ONLY_INTEGRATION_TESTS environment variable as true and BDI will set `Successful` as value of `type` condition field. |
@@ -1790,9 +1555,6 @@ integrationTests:
   priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Status Provisioner
 
@@ -1810,11 +1572,11 @@ statusProvisioner:
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                            | Description                                                                                                                  |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
 | `install`                  | boolean                                                                                                                       | no        | true                                                                     | Status provisioner is always expected to be enabled                                                                          |
-| `image`                    | string                                                                                                                        | no        | -                                                                        | The docker image to use for deployment status provisioner container                                                          |
-| `lifetimeAfterCompletion`  | integer                                                                                                                       | no        | 300                                                                      | Time until which the staus provisioner job remains active                                                                    |
+| `image`                    | string                                                                                                                        | no        | -                                                                        | The Docker image to use for deployment status provisioner container                                                          |
+| `lifetimeAfterCompletion`  | integer                                                                                                                       | no        | 300                                                                      | Time until which the status provisioner job remains active                                                                    |
 | `podReadinessTimeout`      | integer                                                                                                                       | no        | 300                                                                      | Timeout in seconds that the Deployment Status Provisioner waits for each of the monitored resources to be ready or completed |
 | `integrationTestsTimeout`  | integer                                                                                                                       | no        | 300                                                                      | Timeout in seconds that the Deployment Status Provisioner waits for successful or failed status condition                    |
-| `resources`                | object                                                                                                                        | no        | {requests: {cpu: 50m, memory: 50Mi}, limits: {cpu: 100m, memory: 100Mi}} | Computing resource requests and limits for single Pods                                                                       |
+| `resources`                | object                                                                                                                        | no        | `{requests: {cpu: 50m, memory: 50Mi}, limits: {cpu: 100m, memory: 100Mi}}` | Computing resource requests and limits for single Pods                                                                       |
 | `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                       | Describes pod-level security attributes                                                                                      |
 | `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                       | Holds container-level security attributes                                                                                    |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                      | PriorityClassName assigned to the Pods to prevent them from evicting.                                                        |
@@ -1852,9 +1614,6 @@ statusProvisioner:
   priorityClassName: priority-class
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Installation
 
@@ -1878,8 +1637,6 @@ query:
   image: jaegertracing/jaeger-query:1.62.0
 proxy:
   image: envoyproxy/envoy:v1.25.8
-agent:
-  image: jaegertracing/jaeger-agent:1.62.0
 cassandraSchemaJob:
   image: jaegertracing/jaeger-cassandra-schema:1.62.0
 hotrod:
@@ -1891,9 +1648,6 @@ elasticsearch:
     image: jaegertracing/jaeger-es-rollover:1.62.0
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### On-prem
 
@@ -1907,7 +1661,7 @@ The minimal template for the HA scheme is as follows:
 jaeger:
   storage:
     type: cassandra
-    
+
 cassandraSchemaJob:
   host: cassandra.cassandra.svc
   keyspace: jaeger
@@ -1925,9 +1679,6 @@ collector:
   replicas: 2
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### Non-HA scheme
 
@@ -1937,7 +1688,7 @@ The minimal template for the Non-HA scheme is as follows:
 jaeger:
   storage:
     type: cassandra
-    
+
 cassandraSchemaJob:
   host: cassandra.cassandra.svc
   keyspace: jaeger
@@ -1959,21 +1710,12 @@ collector:
   install: true
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Post Deploy Checks
 
 There are some options to check after deploy that Jaeger deployed and working correctly.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Smoke test
 
@@ -2012,16 +1754,13 @@ This job is created by Helm pre-hook and should be removed after successful comp
 
 Or you can use the Kubernetes Dashboard to see pods and their statuses in the UI.
 
-Thirdly, if you want to use `qubership-diagnostic-agent` to send traces from microservices to Jaeger you need to check
-that it was deployed in the namespace with an application.
-
 You can use the command:
 
 ```bash
-kubectl get pods -n <namespace> --selector=app.kubernetes.io/name=qubership-diagnostic-agent
+kubectl get pods -n <namespace> --selector=app.kubernetes.io/name=qubership-diag-proxy
 ```
 
-**Note:** Please pay attention that `qubership-diagnostic-agent` deployment and pod should be not in the namespace
+**Note:** Please pay attention that `qubership-diag-proxy` deployment and pod should be not in the namespace
 with Jaeger. It should deploy in the namespace with an application.
 
 If it is presented, you need to check that in environment variables it contains the variable:
@@ -2041,10 +1780,10 @@ For example:
 To print a list of environment variables you can use the command:
 
 ```bash
-kubectl get pods -n <namespace> --selector=app.kubernetes.io/name=qubership-diagnostic-agent -o yaml
+kubectl get pods -n <namespace> --selector=app.kubernetes.io/name=qubership-diag-proxy -o yaml
 ```
 
-Or you can use the Kubernetes Dashboard to check `qubership-diagnostic-agent` and its settings.
+Or you can use the Kubernetes Dashboard to check `qubership-diag-proxy` and its settings.
 
 Fourth, you can check that Jaeger has collected the traces using the following command:
 
@@ -2081,9 +1820,6 @@ To find it in UI you need:
 * Click "Find Traces"
 * Check that traces collected and available
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Frequently Asked Questions
 
@@ -2098,6 +1834,3 @@ so you have to edit it again.
 **Note**: The application uses collector sampling configuration only if it is configured to use a remote sampler.
 In other cases, the configuration is done on the application side.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->

@@ -35,10 +35,6 @@ query:
     install: true
     host: query.<cloud_dns_name>
 
-# By default the agent wont' deploy, so need explicitly specify that agent should be deploy.
-agent:
-  install: true
-
 # This section is optional and allow to deploy a test service to generate some traces
 # Useful if you want to verify how Jaeger receive, store and show traces
 hotrod:

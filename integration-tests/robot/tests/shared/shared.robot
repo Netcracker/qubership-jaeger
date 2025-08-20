@@ -25,12 +25,12 @@ Preparation
     Set Global Variable  ${headers}
     Create Session    jaeger-query-session    http://${JAEGER_SERVICE_NAME}-query.${JAEGER_NAMESPACE}:16686
     Create Session    jaeger-collector-session    http://${JAEGER_SERVICE_NAME}-collector.${JAEGER_NAMESPACE}:9411
-    Create Session    healthcheck    http://${JAEGER_SERVICE_NAME}-collector.${JAEGER_NAMESPACE}:14269
+    Create Session    healthcheck    http://${JAEGER_SERVICE_NAME}-collector.${JAEGER_NAMESPACE}:13133
     Create Session    for-generator    ${LINK_FOR_GENERATOR}
 
 Convert Json ${json} To Type
     ${json_dictionary} =  Evaluate  json.loads('''${json}''')  json
-    [Return]  ${json_dictionary}
+    RETURN  ${json_dictionary}
 
 Check Inactive Deployments
     ${count_inactive_collectors} =  Get Inactive Deployment Entities Count For Service  ${JAEGER_NAMESPACE}  ${JAEGER_SERVICE_NAME}-collector
@@ -43,13 +43,13 @@ Check Deployment State
     ${deployments_in_namespace} =  Get Active Deployment Entities For Service  ${JAEGER_NAMESPACE}  ${name}  label=app.kubernetes.io/name
     ${list_len}=  Get Length  ${deployments_in_namespace}
     ${flag} =  Run Keyword And Return Status  Should Be True  ${list_len} != 0
-    [Return]  ${flag}
+    RETURN  ${flag}
 
 Check Jaeger Alive
-    ${resp} =  GET On Session  healthcheck  /  timeout=10
+    ${resp} =  GET On Session  healthcheck  /status  timeout=10
     Should Be Equal As Integers  ${resp.status_code}   200
     ${resp_json} =  Convert Json ${resp.content} To Type
-    Dictionary Should Contain Value  ${resp_json}  Server available
+    Dictionary Should Contain Value  ${resp_json}  StatusOK
 
 Post Random Spans
     [Arguments]  ${trace}

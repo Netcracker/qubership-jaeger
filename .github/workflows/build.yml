@@ -2,17 +2,18 @@
 name: Build Artifacts
 
 on:
-  push:
-    branches:
-    - '**'
-    paths-ignore:
-    - '.github/**'
-    - 'docs/**'
-    - 'CODE-OF-CONDUCT.md'
-    - 'CONTRIBUTING.md'
-    - 'LICENSE'
-    - 'README.md'
-    - 'SECURITY.md'
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #   - '**'
+  #   paths-ignore:
+  #   - '.github/**'
+  #   - 'docs/**'
+  #   - 'CODE-OF-CONDUCT.md'
+  #   - 'CONTRIBUTING.md'
+  #   - 'LICENSE'
+  #   - 'README.md'
+  #   - 'SECURITY.md'
 
 concurrency:
   group: ${{ format('test-build-{0}', github.ref) }}

@@ -2,25 +2,11 @@
 
 This section describes in detail some failover scenarios.
 
-## Table of Content
-
-* [Table of Content](#table-of-content)
-* [Deployment Issues](#deployment-issues)
-  * [Jaeger collector, query, cassandra schema job can't start/failed](#jaeger-collector-query-cassandra-schema-job-cant-startfailed)
-  * [no matches for kind "Ingress" in version "networking.k8s.io/v1beta1"](#no-matches-for-kind-ingress-in-version-networkingk8siov1beta1)
-  * [Labels and Annotations validation error](#labels-and-annotations-validation-error)
-* [Runtime Issues](#runtime-issues)
-  * [Jaeger lost connection to Cassandra after Cassandra's restart](#jaeger-lost-connection-to-cassandra-after-cassandras-restart)
-    * [gocql: no host available in the pool](#gocql-no-host-available-in-the-pool)
-    * [connection: no route to host](#connection-no-route-to-host)
-  * [Error reading `<name>` from storage: table `<name>` does not exist](#error-reading-name-from-storage-table-name-does-not-exist)
-  * [Ingress fails with 502 Bad Gateway error](#ingress-fails-with-502-bad-gateway-error)
-
 ## Deployment Issues
 
-### Jaeger collector, query, cassandra schema job can't start/failed
+### Jaeger `collector`, `query`, `cassandra schema job` can't start/failed
 
-If the `Jaeger` cassandra schema job fails to complete, with different errors related to the Cassandra connection,
+If the `Jaeger` `cassandra schema job` fails to complete, with different errors related to the Cassandra connection,
 the issue may be related to connection issues or problems with Cassandra.
 
 **Solution:**
@@ -36,9 +22,6 @@ Check the following:
 
 View the errors from the Cassandra logs if they exist.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### no matches for kind "Ingress" in version "networking.k8s.io/v1beta1"
 
@@ -88,9 +71,6 @@ If services support migration to new Kubernetes the correct way to upgrade it is
 1. Before upgrading Kubernetes, need to upgrade the Service to the new version which can work in the new Kubernetes
 2. Only after it upgrades Kubernetes to the new version
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Labels and Annotations validation error
 
@@ -113,9 +93,6 @@ annotations:
 
 This solution is proposed in [document](https://github.com/helm/helm/pull/7649)
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ## Runtime Issues
 
@@ -185,9 +162,6 @@ query:
       value: 2m
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 #### connection: no route to host
 
@@ -271,9 +245,6 @@ cassandraSchemaJob:
   host: cassandra-lb.<namespace>.svc
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Error reading `<name>` from storage: table `<name>` does not exist
 
@@ -314,9 +285,6 @@ just remove or disable two nodes in the cluster. It may lead to data loss (and t
 In this case, you have to use Cassandra `nodetool` to remove some nodes from the Cassandra cluster and re-balance
 data on nodes.
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->
 
 ### Ingress fails with 502 Bad Gateway error
 
@@ -337,7 +305,7 @@ During deploy, following parameters can be used to supply annotations.
 
 ```yaml
 query:
-  ...  
+  ...
   ingress:
     install: true
     host: jaeger-query.cloud.test.org
@@ -345,6 +313,3 @@ query:
     nginx.ingress.kubernetes.io/proxy-buffer-size: 256k
 ```
 
-<!-- #GFCFilterMarkerStart# -->
-[Back to TOC](#table-of-content)
-<!-- #GFCFilterMarkerEnd# -->

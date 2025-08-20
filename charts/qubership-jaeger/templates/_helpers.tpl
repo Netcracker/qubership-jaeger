@@ -143,7 +143,7 @@ Image can be found from:
   {{- if .Values.collector.image -}}
     {{- printf "%s" .Values.collector.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger:2.2.0" -}}
+    {{- print "jaegertracing/jaeger:2.9.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -156,7 +156,7 @@ Image can be found from:
   {{- if .Values.query.image -}}
     {{- printf "%s" .Values.query.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger:2.2.0" -}}
+    {{- print "jaegertracing/jaeger:2.9.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -169,20 +169,7 @@ Image can be found from:
   {{- if .Values.proxy.image -}}
     {{- printf "%s" .Values.proxy.image -}}
   {{- else -}}
-    {{- print "envoyproxy/envoy:v1.30.7" -}}
-  {{- end -}}
-{{- end -}}
-
-{{/*
-Find a jaeger-agent image in various places.
-Image can be found from:
-* from default values .Values.agent.image
-*/}}
-{{- define "agent.image" -}}
-  {{- if .Values.agent.image -}}
-    {{- printf "%s" .Values.agent.image -}}
-  {{- else -}}
-    {{- print "jaegertracing/jaeger-agent:1.62.0" -}}
+    {{- print "envoyproxy/envoy:v1.32.6" -}}
   {{- end -}}
 {{- end -}}
 
@@ -195,7 +182,7 @@ Image can be found from:
   {{- if .Values.cassandraSchemaJob.image -}}
     {{- printf "%s" .Values.cassandraSchemaJob.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-cassandra-schema:1.62.0" -}}
+    {{- print "jaegertracing/jaeger-cassandra-schema:1.72.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -208,7 +195,7 @@ Image can be found from:
   {{- if .Values.hotrod.image -}}
     {{- printf "%s" .Values.hotrod.image -}}
   {{- else -}}
-    {{- print "jaegertracing/example-hotrod:1.62.0" -}}
+    {{- print "jaegertracing/example-hotrod:1.72.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -221,7 +208,7 @@ Image can be found from:
   {{- if .Values.elasticsearch.indexCleaner.image -}}
     {{- printf "%s" .Values.elasticsearch.indexCleaner.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-es-index-cleaner:1.62.0" -}}
+    {{- print "jaegertracing/jaeger-es-index-cleaner:1.72.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -234,7 +221,7 @@ Image can be found from:
   {{- if .Values.elasticsearch.rollover.image -}}
     {{- printf "%s" .Values.elasticsearch.rollover.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-es-rollover:1.62.0" -}}
+    {{- print "jaegertracing/jaeger-es-rollover:1.72.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -405,7 +392,7 @@ Return password for cassandra database.
 {{- end -}}
 
 {{/*
-Return name of secret for OpenSearch/ElasticSearch TLS.
+Return name of secret for OpenSearch/Elasticsearch TLS.
 */}}
 {{- define "elasticsearch.tls.secretName" -}}
   {{- if .Values.elasticsearch.client.tls.existingSecret -}}
@@ -420,7 +407,7 @@ Return name of secret for OpenSearch/ElasticSearch TLS.
 {{- end -}}
 
 {{/*
-Return URL for OpenSearch/ElasticSearch.
+Return URL for OpenSearch/Elasticsearch.
 */}}
 {{- define "elasticsearch.url" -}}
   {{- if .Values.elasticsearch.client.url -}}
@@ -435,7 +422,7 @@ Return URL for OpenSearch/ElasticSearch.
 {{- end -}}
 
 {{/*
-Return username for OpenSearch/ElasticSearch.
+Return username for OpenSearch/Elasticsearch.
 */}}
 {{- define "elasticsearch.userName" -}}
   {{- if .Values.elasticsearch.client.username -}}
@@ -450,7 +437,7 @@ Return username for OpenSearch/ElasticSearch.
 {{- end -}}
 
 {{/*
-Return password for OpenSearch/ElasticSearch.
+Return password for OpenSearch/Elasticsearch.
 */}}
 {{- define "elasticsearch.password" -}}
   {{- if .Values.elasticsearch.client.password -}}
@@ -460,28 +447,6 @@ Return password for OpenSearch/ElasticSearch.
       {{- printf "%s" .Values.INFRA_OPENSEARCH_PASSWORD -}}
     {{- else -}}
       {{- print "" -}}
-    {{- end -}}
-  {{- end -}}
-{{- end -}}
-
-{{/*
-Return securityContext section for Agent Container
-*/}}
-{{- define "agent.containerSecurityContext" -}}
-  {{- if ge .Capabilities.KubeVersion.Minor "25" -}}
-    {{- if .Values.agent.containerSecurityContext -}}
-      {{- toYaml .Values.agent.containerSecurityContext | nindent 10 }}
-    {{- else }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-    {{- end -}}
-  {{- else }}
-    {{- if .Values.agent.containerSecurityContext -}}
-      {{- toYaml .Values.agent.containerSecurityContext | nindent 10 }}
-    {{- else }}
-          {}
     {{- end -}}
   {{- end -}}
 {{- end -}}
@@ -749,42 +714,6 @@ Return securityContext section for ReadinessProbe Container
 {{- end -}}
 
 {{/******************************************************************************************************************/}}
-
-{{/*
-Return securityContext section for agent pod
-*/}}
-{{- define "agent.securityContext" -}}
-  {{- if .Values.agent.securityContext }}
-    {{- toYaml .Values.agent.securityContext | nindent 8 }}
-    {{- if not (.Capabilities.APIVersions.Has "apps.openshift.io/v1") }}
-      {{- if not .Values.agent.securityContext.runAsUser }}
-        runAsUser: 2000
-      {{- end }}
-      {{- if not .Values.agent.securityContext.fsGroup }}
-        fsGroup: 2000
-      {{- end }}
-    {{- end }}
-    {{- if (eq (.Values.agent.securityContext.runAsNonRoot | toString) "false") }}
-        runAsNonRoot: false
-    {{- else }}
-        runAsNonRoot: true
-    {{- end }}
-    {{- if and (ge .Capabilities.KubeVersion.Minor "25") (not .Values.agent.securityContext.seccompProfile) }}
-        seccompProfile:
-          type: "RuntimeDefault"
-    {{- end }}
-  {{- else }}
-    {{- if not (.Capabilities.APIVersions.Has "apps.openshift.io/v1") }}
-        runAsUser: 2000
-        fsGroup: 2000
-    {{- end }}
-        runAsNonRoot: true
-    {{- if ge .Capabilities.KubeVersion.Minor "25" }}
-        seccompProfile:
-          type: "RuntimeDefault"
-    {{- end }}
-  {{- end }}
-{{- end -}}
 
 {{/*
 Return securityContext section for cassandraSchemaJob pod
@@ -1158,9 +1087,6 @@ Calculates resources that should be monitored during deployment by Deployment St
     {{- if .Values.query.install }}
         {{- printf "Deployment %s-query, " .Values.jaeger.serviceName -}}
     {{- end }}
-    {{- if .Values.agent.install }}
-        {{- printf "DaemonSet %s-agent, " .Values.jaeger.serviceName -}}
-    {{- end }}
     {{- if .Values.hotrod.install }}
         {{- printf "Deployment %s-hotrod, " .Values.jaeger.serviceName -}}
     {{- end }}
@@ -1175,48 +1101,52 @@ Calculates resources that should be monitored during deployment by Deployment St
 Prepare args for readiness-probe container.
 */}}
 {{- define "readinessProbe.args" -}}
-    {{- if .Values.readinessProbe.args }}
-        {{- range .Values.readinessProbe.args }}
-                - {{ . | quote }}
-        {{- end }}
-    {{- else }}
-                - "-namespace={{ .Values.NAMESPACE | default .Release.Namespace }}"
-        {{- if eq .Values.jaeger.storage.type "cassandra" }}
-                - "-storage=cassandra"
-                - "-authSecretName=jaeger-cassandra"
-                - "-datacenter={{ include "cassandraSchemaJob.datacenter" . }}"
-            {{- if .Values.cassandraSchemaJob.keyspace }}
-                - "-keyspace={{ .Values.cassandraSchemaJob.keyspace }}"
-            {{- end }}
-                - "-host={{ include "cassandraSchemaJob.host" . }}"
-                - "-port={{ include "cassandraSchemaJob.port" . }}"
-            {{- if .Values.cassandraSchemaJob.tls.enabled }}
-                - "-tlsEnabled=true"
-                {{- if .Values.cassandraSchemaJob.tls.insecureSkipVerify }}
-                - "-insecureSkipVerify=true"
-                {{- else }}
-                - "-caPath=/cassandra-tls/ca-cert.pem"
-                - "-crtPath=/cassandra-tls/client-cert.pem"
-                - "-keyPath=/cassandra-tls/client-key.pem"
-                {{- end }}
-            {{- end }}
+  {{- if .Values.readinessProbe.args }}
+    {{- range .Values.readinessProbe.args }}
+            - {{ . | quote }}
+      {{- end }}
+  {{- else }}
+            - "-namespace={{ .Values.NAMESPACE | default .Release.Namespace }}"
+    {{- if eq .Values.jaeger.storage.type "cassandra" }}
+            - "-storage=cassandra"
+            - "-authSecretName=jaeger-cassandra"
+            - "-datacenter={{ include "cassandraSchemaJob.datacenter" . }}"
+      {{- if .Values.cassandraSchemaJob.keyspace }}
+            - "-keyspace={{ .Values.cassandraSchemaJob.keyspace }}"
+      {{- end }}
+            - "-host={{ include "cassandraSchemaJob.host" . }}"
+            - "-port={{ include "cassandraSchemaJob.port" . }}"
+      {{- if .Values.cassandraSchemaJob.tls.enabled }}
+            - "-tlsEnabled=true"
+        {{- if .Values.cassandraSchemaJob.tls.insecureSkipVerify }}
+            - "-insecureSkipVerify=true"
         {{- else }}
-                - "-storage=opensearch"
-                - "-host={{ include "elasticsearch.url" . }}"
-                - "-authSecretName=jaeger-elasticsearch"
-            {{- if .Values.elasticsearch.client.tls.enabled }}
-                - "-tlsEnabled=true"
-                {{- if .Values.elasticsearch.client.tls.insecureSkipVerify }}
-                - "-insecureSkipVerify=true"
-                {{- else }}
-                - "-caPath=/es-tls/ca-cert.pem"
-                - "-crtPath=/es-tls/client-cert.pem"
-                - "-keyPath=/es-tls/client-key.pem"
-                {{- end }}
-            {{- end }}
+            - "-caPath=/cassandra-tls/ca-cert.pem"
+            - "-crtPath=/cassandra-tls/client-cert.pem"
+            - "-keyPath=/cassandra-tls/client-key.pem"
         {{- end }}
+      {{- end }}
+    {{- else }}
+            - "-storage=opensearch"
+            - "-host={{ include "elasticsearch.url" . }}"
+            - "-authSecretName=jaeger-elasticsearch"
+      {{- if .Values.elasticsearch.client.tls.enabled }}
+            - "-tlsEnabled=true"
+        {{- if .Values.elasticsearch.client.tls.insecureSkipVerify }}
+            - "-insecureSkipVerify=true"
+        {{- else }}
+            - "-caPath=/es-tls/ca-cert.pem"
+            - "-crtPath=/es-tls/client-cert.pem"
+            - "-keyPath=/es-tls/client-key.pem"
+        {{- end }}
+      {{- end }}
     {{- end }}
+  {{- end }}
 {{- end -}}
+
+{{/*
+Generate list of args for collector
+*/}}
 {{- define "collector.args" -}}
     {{- if .Values.collector.args }}
         {{- range .Values.collector.args }}
@@ -1226,29 +1156,192 @@ Prepare args for readiness-probe container.
             - "--config=/conf/config.yaml"
     {{- end }}
 {{- end -}}
+
+{{/*
+Generate certificate volumes for TLS configuration
+*/}}
+{{- define "jaeger.certificateVolumes" -}}
+{{- if .Values.cassandraSchemaJob.tls.enabled }}
+- name: "cassandra-tls-assets"
+  projected:
+    sources:
+    - secret:
+        name: {{ template "cassandraSchemaJob.tls.secretName" . }}
+        items:
+        - key: ca-cert.pem
+          path: ca-cert.pem
+        - key: client-cert.pem
+          path: client-cert.pem
+        - key: client-key.pem
+          path: client-key.pem
+{{- end }}
+{{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
+- name: "es-tls-assets"
+  projected:
+    sources:
+    - secret:
+        name: {{ template "elasticsearch.tls.secretName" . }}
+        items:
+        - key: ca-cert.pem
+          path: ca-cert.pem
+        - key: client-cert.pem
+          path: client-cert.pem
+        - key: client-key.pem
+          path: client-key.pem
+{{- end }}
+{{- if and .Values.remotegRPC.tls.enabled (not .Values.remotegRPC.tls.insecureSkipVerify) }}
+- name: "grpc-tls-assets"
+  projected:
+    sources:
+    - secret:
+        name: {{ if .Values.remotegRPC.existingSecret }}{{ .Values.remotegRPC.existingSecret }}{{ else }}{{ default "jaeger-remotegrpc-tls-assets" .Values.collector.tlsConfig.newSecretName }}{{- end -}}
+        items:
+        - key: ca-cert.pem
+          path: ca-cert.pem
+        - key: client-cert.pem
+          path: client-cert.pem
+        - key: client-key.pem
+          path: client-key.pem
+{{- end }}
+{{- if or .Values.collector.tlsConfig.otelHttp.enabled
+        .Values.collector.tlsConfig.otelgRPC.enabled
+        .Values.collector.tlsConfig.jaegerHttp.enabled
+        .Values.collector.tlsConfig.jaegergRPC.enabled
+        .Values.collector.tlsConfig.zipkin.enabled }}
+- name: "http-tls-secret"
+  projected:
+    sources:
+    - secret:
+        name: {{ if .Values.collector.tlsConfig.existingSecret }}{{ .Values.collector.tlsConfig.existingSecret }}{{ else }}{{ default "jaeger-collector-tls-secret" .Values.collector.tlsConfig.newSecretName }}{{ end }}
+        items:
+        - key: ca.crt
+          path: ca.crt
+        - key: tls.crt
+          path: tls.crt
+        - key: tls.key
+          path: tls.key
+{{- end }}
+{{- end -}}
+
+{{/*
+Generate certificate volume mounts for TLS configuration
+*/}}
+{{- define "jaeger.certificateVolumeMounts" -}}
+{{- if .Values.cassandraSchemaJob.tls.enabled }}
+- name: "cassandra-tls-assets"
+  mountPath: "/cassandra-tls"
+  readOnly: true
+{{- end }}
+{{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
+- name: "es-tls-assets"
+  mountPath: "/es-tls"
+  readOnly: true
+{{- end }}
+{{- if and .Values.remotegRPC.tls.enabled (not .Values.remotegRPC.tls.insecureSkipVerify) }}
+- name: "grpc-tls-assets"
+  mountPath: "/grpc-tls"
+  readOnly: true
+{{- end }}
+{{- if or .Values.collector.tlsConfig.otelHttp.enabled
+        .Values.collector.tlsConfig.otelgRPC.enabled
+        .Values.collector.tlsConfig.jaegerHttp.enabled
+        .Values.collector.tlsConfig.jaegergRPC.enabled
+        .Values.collector.tlsConfig.zipkin.enabled }}
+- name: "http-tls-secret"
+  mountPath: "/http-tls"
+  readOnly: true
+{{- end }}
+{{- end -}}
+
+{{/*
+Generate certificate volumes for OpenSearch jobs TLS configuration
+*/}}
+{{- define "jaeger.opensearchCertificateVolumes" -}}
+{{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
+- name: "es-tls-assets"
+  projected:
+    sources:
+    - secret:
+        name: {{ template "elasticsearch.tls.secretName" . }}
+        items:
+        - key: ca-cert.pem
+          path: ca-cert.pem
+        - key: client-cert.pem
+          path: client-cert.pem
+        - key: client-key.pem
+          path: client-key.pem
+{{- end }}
+{{- end -}}
+
+{{/*
+Generate certificate volume mounts for OpenSearch jobs TLS configuration
+*/}}
+{{- define "jaeger.opensearchCertificateVolumeMounts" -}}
+{{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
+- name: "es-tls-assets"
+  mountPath: "/es-tls"
+  readOnly: true
+{{- end }}
+{{- end -}}
+
+{{/*
+Generate certificate volumes for Cassandra schema job TLS configuration
+*/}}
+{{- define "jaeger.cassandraCertificateVolumes" -}}
+{{- if .Values.cassandraSchemaJob.tls.enabled }}
+- name: "cassandra-tls-assets"
+  projected:
+    sources:
+    - secret:
+        name: {{ template "cassandraSchemaJob.tls.secretName" . }}
+        items:
+        - key: ca-cert.pem
+          path: ca-cert.pem
+        - key: client-cert.pem
+          path: client-cert.pem
+        - key: client-key.pem
+          path: client-key.pem
+        - key: cqlshrc
+          path: cqlshrc
+{{- end }}
+{{- end -}}
+
+{{/*
+Generate certificate volume mounts for Cassandra schema job TLS configuration
+*/}}
+{{- define "jaeger.cassandraCertificateVolumeMounts" -}}
+{{- if .Values.cassandraSchemaJob.tls.enabled }}
+- name: "cassandra-tls-assets"
+  mountPath: "/cassandra-tls"
+  readOnly: true
+{{- end }}
+{{- end -}}
+
+{{/******************************************************************************************************************/}}
+
+{{/*
+Generate list of images for tests
+*/}}
 {{- define "jaeger.monitoredImages" -}}
-    {{- if .Values.agent.install -}}
-      {{- printf "daemonset %s-agent %s %s, " .Values.jaeger.serviceName .Values.agent.name "jaegertracing/jaeger-agent:1.62.0" -}}
-    {{- end -}}
     {{- if .Values.collector.install -}}
-      {{- printf "deployment %s-collector %s %s, " .Values.jaeger.serviceName .Values.collector.name "jaegertracing/jaeger-collector:1.62.0" -}}
+      {{- printf "deployment %s-collector %s %s, " .Values.jaeger.serviceName .Values.collector.name "jaegertracing/jaeger:2.9.0" -}}
       {{- if .Values.readinessProbe.install }}
-        {{- printf "deployment %s-collector readiness-probe %s, " .Values.jaeger.serviceName "qubership/jaeger-readiness-probe:1.62.0" -}}
+        {{- printf "deployment %s-collector readiness-probe %s, " .Values.jaeger.serviceName "qubership/jaeger-readiness-probe:0.24.0" -}}
       {{- end -}}
     {{- end -}}
-    {{- if .Values.hotrod.install -}}
-      {{- printf "deployment %s-hotrod %s %s, " .Values.jaeger.serviceName .Values.hotrod.name "jaegertracing/example-hotrod:1.62.0" -}}
-    {{- end -}}
-    {{- if .Values.integrationTests.install -}}
-      {{- printf "deployment %s %s %s, " .Values.integrationTests.service.name .Values.integrationTests.service.name "qubership/integration-tests" -}}
-    {{- end -}}
     {{- if .Values.query.install -}}
-      {{- printf "deployment %s-query jaeger-query %s, " .Values.jaeger.serviceName "jaegertracing/jaeger-query:1.62.0" -}}
+      {{- printf "deployment %s-query jaeger-query %s, " .Values.jaeger.serviceName "jaegertracing/jaeger:2.9.0" -}}
       {{- if .Values.readinessProbe.install }}
-        {{- printf "deployment %s-query readiness-probe %s, " .Values.jaeger.serviceName "qubership/jaeger-readiness-probe:1.62.0" -}}
+        {{- printf "deployment %s-query readiness-probe %s, " .Values.jaeger.serviceName "qubership/jaeger-readiness-probe:0.24.0" -}}
       {{- end -}}
       {{- if .Values.proxy.install }}
         {{- printf "deployment %s-query proxy %s, " .Values.jaeger.serviceName "envoyproxy/envoy:v1.30.7" -}}
       {{- end -}}
+    {{- end -}}
+    {{- if .Values.hotrod.install -}}
+      {{- printf "deployment %s-hotrod %s %s, " .Values.jaeger.serviceName .Values.hotrod.name "jaegertracing/example-hotrod:1.72.0" -}}
+    {{- end -}}
+    {{- if .Values.integrationTests.install -}}
+      {{- printf "deployment %s %s %s, " .Values.integrationTests.service.name .Values.integrationTests.service.name "qubership/integration-tests" -}}
     {{- end -}}
 {{- end -}}

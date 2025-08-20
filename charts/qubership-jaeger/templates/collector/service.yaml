@@ -19,12 +19,6 @@ metadata:
   {{- end }}
 spec:
   ports:
-    {{- if .Values.collector.zipkinPort }}
-    - name: http-zipkin
-      port: {{ .Values.collector.zipkinPort }}
-      protocol: TCP
-      targetPort: zipkin
-    {{- end }}
     - name: otlp-grpc
       port: 4317
       protocol: TCP
@@ -33,26 +27,34 @@ spec:
       port: 4318
       protocol: TCP
       targetPort: 4318
-    - name: grpc
-      port: 14250
+    - name: sampling-http
+      port: 5778
       protocol: TCP
-      targetPort: 14250
-    - name: c-tchan-trft
-      port: 14267
+      targetPort: 5778
+    - name: sampling-grpc
+      port: 5779
       protocol: TCP
-      targetPort: 14267
-    - name: http-c-binary-trft
-      port: 14268
+      targetPort: 5779
+    - name: metrics
+      port: 8888
       protocol: TCP
-      targetPort: 14268
-    - name: admin-http
-      port: 14269
+      targetPort: 8888
+    - name: zipkin
+      port: {{ .Values.collector.zipkinPort }}
       protocol: TCP
-      targetPort: 14269
+      targetPort: 9411
     - name: healthcheck
       port: 13133
       targetPort: 13133
       protocol: TCP
+    - name: thrift-grpc
+      port: 14250
+      protocol: TCP
+      targetPort: 14250
+    - name: thrift-http
+      port: 14268
+      protocol: TCP
+      targetPort: 14268
   selector:
     app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-collector
     app.kubernetes.io/component: collector
