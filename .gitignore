@@ -2,3 +2,7 @@
 *.tar.gz
 .vscode
 **/last
+
+# Ignore Python cache
+__pycache__/
+*.pyc
