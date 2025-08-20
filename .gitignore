@@ -3,5 +3,9 @@
 .vscode
 **/last
 
+# Ignore Python cache
+__pycache__/
+*.pyc
+
 # MkDocs build output
 site/
