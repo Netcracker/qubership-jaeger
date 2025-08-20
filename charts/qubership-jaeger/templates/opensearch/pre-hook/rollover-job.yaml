@@ -35,7 +35,6 @@ spec:
         app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-rollover-init-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
         app.kubernetes.io/component: jaeger
         {{- include "jaeger.commonLabels" . | nindent 8 }}
-        app.kubernetes.io/managed-by: Helm
         {{- if .Values.elasticsearch.rollover.labels }}
           {{- toYaml .Values.elasticsearch.rollover.labels | nindent 8 }}
         {{- end }}
@@ -102,20 +101,7 @@ spec:
           securityContext:
             {{- include "elasticsearch.rolloverjob.containerSecurityContext" . }}
           volumeMounts:
-          {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-            - name: {{ .Values.jaeger.serviceName }}-es-pre-hook-tls-assets
-              mountPath: "/es-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-es-pre-hook-tls-assets
-              mountPath: "/es-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-es-pre-hook-tls-assets
-              mountPath: "/es-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-          {{- end }}
+          {{- include "jaeger.opensearchCertificateVolumeMounts" (merge (dict "prehook" true) .) | nindent 10 }}
           {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
@@ -129,11 +115,7 @@ spec:
               readOnly: {{ .readOnly }}
           {{- end }}
       volumes:
-      {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-        - name: {{ .Values.jaeger.serviceName }}-es-pre-hook-tls-assets
-          secret:
-            secretName: {{ template "elasticsearch.tls.secretName" (merge (dict "prehook" true) .) }}
-      {{- end }}
+      {{- include "jaeger.opensearchCertificateVolumes" (merge (dict "prehook" true) .) | nindent 6 }}
       {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
         - name: {{ .name }}
           configMap:

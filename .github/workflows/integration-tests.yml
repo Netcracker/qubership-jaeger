@@ -46,6 +46,13 @@ jobs:
         kind create cluster
       shell: bash
 
+    - name: Set up Kubectl
+      run: |
+        curl -sLo ./kubectl "https://dl.k8s.io/release/$(curl -LS https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/
+      shell: bash
+
     - name: Install Helm
       run: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
@@ -130,6 +137,7 @@ jobs:
       shell: bash
 
     - name: Check k8ssandra cluster status
+      id: check_k8ssandra_status
       run: |
         attempt=1
         max_attempts=${{ env.max_attempts }}
@@ -177,24 +185,87 @@ jobs:
           --create-namespace --set jaeger.prometheusMonitoringDashboard=false --set jaeger.prometheusMonitoring=false \
           --set "cassandraSchemaJob.host=$CASSANDRA_SVC" --set "cassandraSchemaJob.username=$CASSANDRA_USER" \
           --set "cassandraSchemaJob.password=$CASSANDRA_PASSWORD" --set cassandraSchemaJob.datacenter=dc1 \
-          --set "readinessProbe.image=ghcr.io/netcracker/jaeger-readiness-probe:$TAG"
+          --set "readinessProbe.image=ghcr.io/netcracker/jaeger-readiness-probe:$TAG" \
+          --set "integrationTests.install=true" \
+          --set "integrationTests.image=ghcr.io/netcracker/jaeger-integration-tests:$TAG"
       shell: bash
 
-    - name: Save artifacts
+    - name: Check installation status
+      id: check_installation_status
+      run: |
+        collector_status=$(kubectl get pods -l app.kubernetes.io/component=collector -n jaeger -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
+        query_status=$(kubectl get pods -l app.kubernetes.io/component=query -n jaeger -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
+        tests_status=$(kubectl get deploy jaeger-collector -n jaeger -o jsonpath='{.status.conditions[?(@.reason=="IntegrationTestsExecutionStatus")]}' 2>/dev/null)
+
+        if [[ "$collector_status" == "True" ]] && [[ "$query_status" == "True" ]]; then
+          echo "Jaeger collector and query are ready."
+          echo "collector_status=✅Ready" >> $GITHUB_OUTPUT
+          echo "query_status=✅Ready" >> $GITHUB_OUTPUT
+        elif [[ "$collector_status" != "True" ]] && [[ "$query_status" != "True" ]]; then
+          echo "::error::❌ Jaeger components are not ready. Check logs and events."
+          echo "collector_status=❌Not Ready" >> $GITHUB_OUTPUT
+          echo "query_status=❌NotReady" >> $GITHUB_OUTPUT
+          exit 1
+        elif [[ "$query_status" != "True" ]]; then
+          echo "::error::❌ Jaeger collector is not ready."
+          echo "collector_status=✅Ready" >> $GITHUB_OUTPUT
+          echo "query_status=❌NotReady" >> $GITHUB_OUTPUT
+          exit 1
+        else
+          echo "::error::❌ Jaeger query is not ready."
+          echo "collector_status=✅Ready" >> $GITHUB_OUTPUT
+          echo "query_status=❌NotReady" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+
+        if [[ $(echo "$tests_status" | jq -r '.type') == "Successful" ]] && [[ $(echo "$tests_status" | jq -r '.status') == "True" ]]; then
+          echo "tests_status=✅Passed" >> $GITHUB_OUTPUT
+          echo "tests_details<<EOF" >> $GITHUB_OUTPUT
+          echo "$tests_status" | jq . | tee -a $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        else
+          echo "::error::❌ Jaeger integration tests failed. Check logs and events."
+          echo "tests_status=❌Failed" >> $GITHUB_OUTPUT
+          echo "tests_details<<EOF" >> $GITHUB_OUTPUT
+          echo "$tests_status" | jq . | tee -a $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+      shell: bash
+
+    - name: Save jaeger artifacts
+      id: jaeger_artifacts
       if: always()
       run: |
-        mkdir artifacts
-        kubectl get pods -n ${{ env.namespace }} > artifacts/pods.txt
-        kubectl get events -n ${{ env.namespace }} --sort-by=.metadata.creationTimestamp > artifacts/events.txt
-        kubectl get pods -n ${{ env.namespace }} -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[*].name}{"\n"}{end}' | while read -r pod containers; do
+        mkdir -p "artifacts/${{ env.namespace }}"
+        pods=$(kubectl get pods -n ${{ env.namespace }} -o wide)
+        echo "$pods" > artifacts/${{ env.namespace }}/pods.txt
+        PODS_TABLE=$(kubectl get pods -n ${{ env.namespace }} -o wide)
+        cat <<EOF >> $GITHUB_OUTPUT
+        jaeger_pods<<END
+        $PODS_TABLE
+        END
+        EOF
+        kubectl get events -n "${{ env.namespace }}" --sort-by=.metadata.creationTimestamp > artifacts/${{ env.namespace }}/events.txt
+        kubectl get pods -n "${{ env.namespace }}" -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[*].name}{"\n"}{end}' | while read -r pod containers; do
           for container in $containers; do
-            echo "Fetching logs for pod: $pod, container: $container"
-            kubectl logs -n ${{ env.namespace }} $pod -c $container > "artifacts/$pod-$container.log"
+            echo "Fetching logs in ${{ env.namespace }} namespace for pod: $pod, container: $container"
+            if logs=$(kubectl logs -n "${{ env.namespace }}" "$pod" -c "$container" 2>&1); then
+              echo "$logs" > "artifacts/${{ env.namespace }}/$pod-$container.log"
+            else
+              echo "Could not fetch logs for $pod/$container: $logs" >&2
+            fi
+            if logs=$(kubectl logs -n "${{ env.namespace }}" "$pod" -c "$container" --previous 2>&1); then
+              echo "$logs" > "artifacts/${{ env.namespace }}/$pod-$container-previous.log"
+            else
+              :
+            fi
           done
         done
       shell: bash
 
     - name: Generate artifact name
+      id: generate_artifact
       if: always()
       env:
         HEAD_REF: ${{ github.head_ref || github.ref_name }}
@@ -202,16 +273,36 @@ jobs:
         # ▶️ Generate artifact name
         release_name=$(echo "$HEAD_REF" | tr '/' '_' || echo "")
         ARTIFACT_NAME="${{ github.job }}_${{ env.namespace }}_${release_name}_artifacts_$(date -u +'%Y%m%d%H%M%S')"
-        echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_ENV
+        echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Upload artifact
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.ARTIFACT_NAME }}
+        name: ${{ steps.generate_artifact.outputs.ARTIFACT_NAME }}
         path: artifacts/
 
     - name: Cleanup
       run: |
         kind delete cluster
+
+    - name: Generate Status Summary
+      if: always()
+      run: |
+        # ▶️ Generate status summary
+        cat <<EOF >> $GITHUB_STEP_SUMMARY
+        ## Installation status
+        Collector status: ${{ steps.check_installation_status.outputs.collector_status || '❓unknown' }}
+        Query status: ${{ steps.check_installation_status.outputs.query_status || '❓unknown' }}
+        Pods running in jaeger namespace:
+        \`\`\`sh
+        ${{ steps.jaeger_artifacts.outputs.jaeger_pods || '❓unknown' }}
+        \`\`\`
+
+        ## Check integration tests results
+        Check integration tests status: ${{ steps.check_installation_status.outputs.tests_status || '❓unknown' }}
+        \`\`\`json
+        ${{ steps.check_installation_status.outputs.tests_details || '{}'}}
+        \`\`\`
+        EOF

@@ -4,6 +4,10 @@ updates:
   directory: "/"
   schedule:
     interval: "monthly"
+  commit-message:
+    prefix: chore
+    prefix-development: chore
+    include: scope
 # Go mod bot configurations
 - package-ecosystem: "gomod"
   directory: "/readiness-probe"
@@ -16,7 +20,28 @@ updates:
     go.opentelemetry.io:
       patterns:
       - "go.opentelemetry.io/*"
-  open-pull-requests-limit: 20
+  open-pull-requests-limit: 10
+  commit-message:
+    prefix: chore
+    prefix-development: chore
+    include: scope
+# Go mod bot configurations
+- package-ecosystem: "pip"
+  directory: "/integration-tests"
+  schedule:
+    interval: "monthly"
+  groups:
+    boto3:
+      patterns:
+      - "boto*"
+    robotframework:
+      patterns:
+      - "robotframework*"
+  open-pull-requests-limit: 10
+  commit-message:
+    prefix: chore
+    prefix-development: chore
+    include: scope
 # Docker bot configurations
 - package-ecosystem: "docker"
   directories:
@@ -24,3 +49,7 @@ updates:
   - "/integration-tests"
   schedule:
     interval: "monthly"
+  commit-message:
+    prefix: chore
+    prefix-development: chore
+    include: scope

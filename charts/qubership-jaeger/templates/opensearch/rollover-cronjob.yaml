@@ -81,12 +81,12 @@ spec:
               - name: ES_USERNAME
                 valueFrom:
                   secretKeyRef:
-                    name: {{ if .Values.elasticsearch.existingSecret }}{{ .Values.elasticsearch.existingSecret }}{{- else }}jaeger-elasticsearch{{- end }}
+                    name: {{ .Values.elasticsearch.existingSecret | default "jaeger-elasticsearch" }}
                     key: username
               - name: ES_PASSWORD
                 valueFrom:
                   secretKeyRef:
-                    name: {{ if .Values.elasticsearch.existingSecret }}{{ .Values.elasticsearch.existingSecret }}{{- else }}jaeger-elasticsearch{{- end }}
+                    name: {{ .Values.elasticsearch.existingSecret | default "jaeger-elasticsearch" }}
                     key: password
               {{- if .Values.elasticsearch.client.tls.enabled }}
               - name: ES_TLS_ENABLED
@@ -111,20 +111,7 @@ spec:
             securityContext:
               {{- include "elasticsearch.rollovercronjob.containerSecurityContext" . }}
             volumeMounts:
-            {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-              - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-                mountPath: "/es-tls/ca-cert.pem"
-                subPath: "ca-cert.pem"
-                readOnly: true
-              - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-                mountPath: "/es-tls/client-cert.pem"
-                subPath: "client-cert.pem"
-                readOnly: true
-              - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-                mountPath: "/es-tls/client-key.pem"
-                subPath: "client-key.pem"
-                readOnly: true
-            {{- end }}
+            {{- include "jaeger.opensearchCertificateVolumeMounts" . | nindent 12 }}
             {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
               - name: {{ .name }}
                 mountPath: {{ .mountPath }}
@@ -138,11 +125,7 @@ spec:
                 readOnly: {{ .readOnly }}
             {{- end }}
           volumes:
-          {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              secret:
-                secretName: {{ template "elasticsearch.tls.secretName" . }}
-          {{- end }}
+          {{- include "jaeger.opensearchCertificateVolumes" . | nindent 10 }}
           {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
             - name: {{ .name }}
               configMap:

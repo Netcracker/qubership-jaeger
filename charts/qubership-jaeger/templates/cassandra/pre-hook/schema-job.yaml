@@ -1,4 +1,5 @@
 {{- if eq .Values.jaeger.storage.type "cassandra" }}
+{{- if .Values.cassandraSchemaJob.enablePreHook -}}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -32,7 +33,6 @@ spec:
   {{- end }}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         job-name: {{ .Values.jaeger.serviceName }}-cassandra-schema
         name: {{ .Values.jaeger.serviceName }}-cassandra-schema
@@ -40,7 +40,6 @@ spec:
         app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-cassandra-schema-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
         app.kubernetes.io/component: jaeger
         {{- include "jaeger.commonLabels" . | nindent 8 }}
-        app.kubernetes.io/managed-by: Helm
         {{- if .Values.cassandraSchemaJob.labels }}
           {{- toYaml .Values.cassandraSchemaJob.labels | nindent 8 }}
         {{- end }}
@@ -107,22 +106,7 @@ spec:
         terminationMessagePolicy: File
         {{- if .Values.cassandraSchemaJob.tls.enabled }}
         volumeMounts:
-          - name: {{ template "cassandraSchemaJob.tls.secretName" (merge (dict "prehook" true) .) }}
-            mountPath: "/cassandra-tls/ca-cert.pem"
-            subPath: "ca-cert.pem"
-            readOnly: true
-          - name: {{ template "cassandraSchemaJob.tls.secretName" (merge (dict "prehook" true) .) }}
-            mountPath: "/cassandra-tls/client-cert.pem"
-            subPath: "client-cert.pem"
-            readOnly: true
-          - name: {{ template "cassandraSchemaJob.tls.secretName" (merge (dict "prehook" true) .) }}
-            mountPath: "/cassandra-tls/client-key.pem"
-            subPath: "client-key.pem"
-            readOnly: true
-          - name: {{ template "cassandraSchemaJob.tls.secretName" (merge (dict "prehook" true) .) }}
-            mountPath: "/cassandra-tls/cqlshrc"
-            subPath: "cqlshrc"
-            readOnly: true
+          {{- include "jaeger.cassandraCertificateVolumeMounts" (merge (dict "prehook" true) .) | nindent 10 }}
         {{- end }}
       securityContext:
         {{- include "cassandraSchemaJob.securityContext" . }}
@@ -140,12 +124,11 @@ spec:
       {{- end }}
       {{- if .Values.cassandraSchemaJob.tls.enabled }}
       volumes:
-        - name: {{ template "cassandraSchemaJob.tls.secretName" (merge (dict "prehook" true) .) }}
-          secret:
-            secretName: {{ template "cassandraSchemaJob.tls.secretName" (merge (dict "prehook" true) .) }}
+        {{- include "jaeger.cassandraCertificateVolumes" (merge (dict "prehook" true) .) | nindent 8 }}
       {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: OnFailure
       schedulerName: default-scheduler
       terminationGracePeriodSeconds: 30
+{{- end }}
 {{- end }}

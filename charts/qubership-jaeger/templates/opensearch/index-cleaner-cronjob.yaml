@@ -40,7 +40,6 @@ spec:
             app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-index-cleaner-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
             app.kubernetes.io/component: jaeger
             {{- include "jaeger.commonLabels" . | nindent 12 }}
-            app.kubernetes.io/managed-by: Helm
             {{- if .Values.elasticsearch.indexCleaner.labels }}
               {{- toYaml .Values.elasticsearch.indexCleaner.labels | nindent 12 }}
             {{- end }}
@@ -98,20 +97,7 @@ spec:
             securityContext:
               {{- include "elasticsearch.indexCleaner.containerSecurityContext" . }}
             volumeMounts:
-            {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-              - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-                mountPath: "/es-tls/ca-cert.pem"
-                subPath: "ca-cert.pem"
-                readOnly: true
-              - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-                mountPath: "/es-tls/client-cert.pem"
-                subPath: "client-cert.pem"
-                readOnly: true
-              - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-                mountPath: "/es-tls/client-key.pem"
-                subPath: "client-key.pem"
-                readOnly: true
-            {{- end }}
+            {{- include "jaeger.opensearchCertificateVolumeMounts" . | nindent 12 }}
             {{- range .Values.elasticsearch.indexCleaner.extraConfigmapMounts }}
               - name: {{ .name }}
                 mountPath: {{ .mountPath }}
@@ -138,11 +124,7 @@ spec:
             {{- toYaml .Values.elasticsearch.indexCleaner.tolerations | nindent 12 }}
           {{- end }}
           volumes:
-          {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              secret:
-                secretName: {{ template "elasticsearch.tls.secretName" . }}
-          {{- end }}
+          {{- include "jaeger.opensearchCertificateVolumes" . | nindent 10 }}
           {{- range .Values.elasticsearch.indexCleaner.extraConfigmapMounts }}
             - name: {{ .name }}
               configMap:
