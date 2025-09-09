@@ -1345,3 +1345,15 @@ Generate list of images for tests
       {{- printf "deployment %s %s %s, " .Values.integrationTests.service.name .Values.integrationTests.service.name "qubership/integration-tests" -}}
     {{- end -}}
 {{- end -}}
+
+{{/*
+Generate custom resource path for integration tests
+This path built as "apps/v1/<namespace_name>/deployments/<deployment_name>"
+*/}}
+{{- define "integrationTests.customResourcePath" -}}
+  {{- if .Values.integrationTests.statusWriting.customResourcePath -}}
+    {{- .Values.integrationTests.statusWriting.customResourcePath -}}
+  {{- else -}}
+    {{- printf "apps/v1/%s/deployments/%s" .Release.Namespace .Values.integrationTests.service.name -}}
+  {{- end -}}
+{{- end -}}

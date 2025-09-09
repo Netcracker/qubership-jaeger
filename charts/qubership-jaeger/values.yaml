@@ -2176,13 +2176,13 @@ integrationTests:
     limits:
       memory: 256Mi
       cpu: 300m
+  service:
+    name: jaeger-integration-tests-runner
   statusWriting:
     enabled: true
     isShortStatusMessage: true
     onlyIntegrationTests: true
-    customResourcePath: "apps/v1/jaeger/deployments/jaeger-integration-tests-runner"
-  service:
-    name: jaeger-integration-tests-runner
+    # customResourcePath: "apps/v1/<namespace_name>/deployments/<deployment_name>"
   serviceAccount:
     create: true
     name: "jaeger-integration-tests"
