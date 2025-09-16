@@ -82,18 +82,6 @@ spec:
             {{- if not .Values.cassandraSchemaJob.enablePreHook }}
             - name: CASSANDRA_LOCAL_DC
               value: {{ include "cassandraSchemaJob.datacenter" . }}
-            - name: CASSANDRA_MODE
-              value: {{ .Values.cassandraSchemaJob.mode }}
-            {{- if .Values.cassandraSchemaJob.ttl }}
-            {{- if .Values.cassandraSchemaJob.ttl.trace }}
-            - name: CASSANDRA_TRACE_TTL
-              value: {{ .Values.cassandraSchemaJob.ttl.trace | int | quote }}
-            {{- end }}
-            {{- if .Values.cassandraSchemaJob.ttl.dependencies }}
-            - name: CASSANDRA_DEPENDENCIES_TTL
-              value: {{ .Values.cassandraSchemaJob.ttl.dependencies | int | quote }}
-            {{- end }}
-            {{- end }}
             {{- end }}
           {{- /* Section with Elasticsearch/OpenSearch environment variables */}}
           {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}

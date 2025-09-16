@@ -68,6 +68,15 @@ data:
               schema:
                 create: {{ .Values.cassandraSchemaJob.createKeyspace | default "true" }}
                 keyspace: {{ .Values.cassandraSchemaJob.keyspace | quote }}
+                mode: {{ .Values.cassandraSchemaJob.mode }}
+                {{- if .Values.cassandraSchemaJob.ttl }}
+                {{- if hasKey .Values.cassandraSchemaJob.ttl "trace" }}
+                trace_ttl: {{ .Values.cassandraSchemaJob.ttl.trace | int | quote }}
+                {{- end }}
+                {{- if hasKey .Values.cassandraSchemaJob.ttl "dependencies" }}
+                dependencies_ttl: {{ .Values.cassandraSchemaJob.ttl.dependencies | int | quote }}
+                {{- end }}
+                {{- end }}
               connection:
                 local_dc: {{ include "cassandraSchemaJob.datacenter" . }}
                 servers:
