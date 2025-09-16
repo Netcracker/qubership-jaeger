@@ -81,7 +81,7 @@ spec:
                 secretKeyRef:
                   name: {{ template "cassandraSchemaJob.secretName" . }}
                   key: password
-            {{- if not .Values.cassandraSchemaJob.enablePreHook -}}
+            {{- if not .Values.cassandraSchemaJob.enablePreHook }}
             - name: CASSANDRA_LOCAL_DC
               value: {{ include "cassandraSchemaJob.datacenter" . }}
             - name: CASSANDRA_MODE
