@@ -849,9 +849,9 @@ cassandraSchemaJob:
   # A docker image to use for cassandraSchemaJob job.
   # Type: string
   # Mandatory: no
-  # Default: "jaegertracing/jaeger-cassandra-schema:1.72.0"
+  # Default: "jaegertracing/jaeger-cassandra-schema:2.10.0"
   #
-  # image: "jaegertracing/jaeger-cassandra-schema:1.72.0"
+  # image: "jaegertracing/jaeger-cassandra-schema:2.10.0"
 
   # A name of a microservice to deploy with.
   # This name will be used as name of the microservice job and in labels.

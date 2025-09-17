@@ -84,17 +84,17 @@ data:
               schema:
                 create: {{ .Values.cassandraSchemaJob.createKeyspace | default "true" }}
                 keyspace: {{ .Values.cassandraSchemaJob.keyspace | quote }}
-                mode: {{ .Values.cassandraSchemaJob.mode }}
+                datacenter: {{ include "cassandraSchemaJob.datacenter" . }}
                 {{- if .Values.cassandraSchemaJob.ttl }}
                 {{- if hasKey .Values.cassandraSchemaJob.ttl "trace" }}
-                trace_ttl: {{ .Values.cassandraSchemaJob.ttl.trace | int | quote }}
+                trace_ttl: {{ .Values.cassandraSchemaJob.ttl.trace | quote }}
                 {{- end }}
                 {{- if hasKey .Values.cassandraSchemaJob.ttl "dependencies" }}
-                dependencies_ttl: {{ .Values.cassandraSchemaJob.ttl.dependencies | int | quote }}
+                dependencies_ttl: {{ .Values.cassandraSchemaJob.ttl.dependencies | quote }}
                 {{- end }}
                 {{- end }}
               connection:
-                datacenter: {{ include "cassandraSchemaJob.datacenter" . }}
+                local_dc: {{ include "cassandraSchemaJob.datacenter" . }}
                 servers:
                   {{- if .Values.cassandraSchemaJob.host }}
                   - {{ .Values.cassandraSchemaJob.host -}}
