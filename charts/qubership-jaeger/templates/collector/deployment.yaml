@@ -81,10 +81,6 @@ spec:
                 secretKeyRef:
                   name: {{ template "cassandraSchemaJob.secretName" . }}
                   key: password
-            {{- if not .Values.cassandraSchemaJob.enablePreHook }}
-            - name: CASSANDRA_LOCAL_DC
-              value: {{ include "cassandraSchemaJob.datacenter" . }}
-            {{- end }}
             {{- /* Section with Elasticsearch/OpenSearch environment variables */}}
             {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
             - name: ES_USERNAME

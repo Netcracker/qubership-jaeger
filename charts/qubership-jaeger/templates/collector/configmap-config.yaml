@@ -78,7 +78,7 @@ data:
                 {{- end }}
                 {{- end }}
               connection:
-                local_dc: {{ include "cassandraSchemaJob.datacenter" . }}
+                datacenter: {{ include "cassandraSchemaJob.datacenter" . }}
                 servers:
                   {{- if .Values.cassandraSchemaJob.host }}
                   - {{ .Values.cassandraSchemaJob.host -}}
