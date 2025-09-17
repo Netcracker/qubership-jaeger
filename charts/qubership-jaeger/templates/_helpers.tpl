@@ -182,7 +182,7 @@ Image can be found from:
   {{- if .Values.cassandraSchemaJob.image -}}
     {{- printf "%s" .Values.cassandraSchemaJob.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-cassandra-schema:2.10.0" -}}
+    {{- print "jaegertracing/jaeger-cassandra-schema:1.73.0" -}}
   {{- end -}}
 {{- end -}}
 

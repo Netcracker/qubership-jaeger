@@ -813,7 +813,7 @@ Examples:
 cassandraSchemaJob:
   name: cassandra-schema-job
 
-  image: jaegertracing/jaeger-cassandra-schema:2.10.0
+  image: jaegertracing/jaeger-cassandra-schema:1.73.0
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
     - name: jaeger-pull-secret
@@ -1638,7 +1638,7 @@ query:
 proxy:
   image: envoyproxy/envoy:v1.25.8
 cassandraSchemaJob:
-  image: jaegertracing/jaeger-cassandra-schema:2.10.0
+  image: jaegertracing/jaeger-cassandra-schema:1.73.0
 hotrod:
   image: jaegertracing/example-hotrod:1.62.0
 elasticsearch:
