@@ -84,10 +84,8 @@ data:
               schema:
                 create: {{ .Values.cassandraSchemaJob.createKeyspace | default "true" }}
                 keyspace: {{ .Values.cassandraSchemaJob.keyspace | quote }}
-                datacenter: {{ include "cassandraSchemaJob.datacenter" . }}
-                {{- if eq .Values.cassandraSchemaJob.mode "test" }}
-                replication: "{'class': 'SimpleStrategy', 'replication_factor': '1'}"
-                {{- end }}
+                datacenter: {{ include "cassandraSchemaJob.datacenter" . | quote }}
+                {{- if not .Values.cassandraSchemaJob.enablePreHook }}
                 {{- if .Values.cassandraSchemaJob.ttl }}
                 {{- if hasKey .Values.cassandraSchemaJob.ttl "trace" }}
                 trace_ttl: {{ .Values.cassandraSchemaJob.ttl.trace | quote }}
@@ -96,8 +94,9 @@ data:
                 dependencies_ttl: {{ .Values.cassandraSchemaJob.ttl.dependencies | quote }}
                 {{- end }}
                 {{- end }}
+                {{- end }}
               connection:
-                local_dc: {{ include "cassandraSchemaJob.datacenter" . }}
+                local_dc: {{ include "cassandraSchemaJob.datacenter" . | quote }}
                 servers:
                   {{- if .Values.cassandraSchemaJob.host }}
                   - {{ .Values.cassandraSchemaJob.host -}}
