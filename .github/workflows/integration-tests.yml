@@ -184,7 +184,7 @@ jobs:
         helm upgrade --install qubership-jaeger ./qubership-jaeger/charts/qubership-jaeger --namespace ${{ env.namespace }} \
           --create-namespace --set jaeger.prometheusMonitoringDashboard=false --set jaeger.prometheusMonitoring=false \
           --set "cassandraSchemaJob.host=$CASSANDRA_SVC" --set "cassandraSchemaJob.username=$CASSANDRA_USER" \
-          --set "cassandraSchemaJob.password=$CASSANDRA_PASSWORD" \
+          --set "cassandraSchemaJob.password=$CASSANDRA_PASSWORD" --set cassandraSchemaJob.datacenter=dc11\
           --set "readinessProbe.image=ghcr.io/netcracker/jaeger-readiness-probe:$TAG" \
           --set "integrationTests.install=true" \
           --set "integrationTests.image=ghcr.io/netcracker/jaeger-integration-tests:$TAG"
