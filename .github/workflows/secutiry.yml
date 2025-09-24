@@ -1,0 +1,262 @@
+name: On-demand Security Scan (Grype + Trivy + Snyk)
+run-name: "Security Scan [${{ github.event.inputs.target }}, Scope: ${{ github.event.inputs.filter_strict == 'true' && 'High + Critical' || 'All' }}] by @${{ github.actor }} #${{ github.run_number }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Scan part"
+        required: true
+        default: "docker"
+        type: choice
+        options: [docker, source]
+      image:
+        description: "Docker image (for docker). By default ghcr.io/<owner>/<repo>:latest"
+        required: false
+        default: ""
+      filter_strict:
+        description: "Scope SARIF to only HIGH+CRITICAL"
+        required: false
+        default: true
+        type: boolean
+      trivy-scan:
+        description: "Trivy scan"
+        required: false
+        default: true
+        type: boolean
+      grype-scan:
+        description: "Grype scan"
+        required: false
+        default: true
+        type: boolean
+      # snyk-scan:
+      #   description: "Snyk scan"
+      #   required: false
+      #   default: true
+      #   type: boolean
+      continue-on-error:
+        description: "Continue on error"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  security-events: write
+  packages: read
+
+env:
+  GRYPE_SEVERITY: "critical"
+  TRIVY_SEVERITY: "Critical,high"
+  SNYK_SEVERITY: "high"
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.vars.outputs.image }}
+    steps:
+      - name: Define variables
+        id: vars
+        run: |
+          if [ -n "${{ github.event.inputs.image }}" ]; then
+            echo "image=${{ github.event.inputs.image }}" >> $GITHUB_OUTPUT
+          else
+            echo "image=ghcr.io/${{ github.repository }}:latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Scan plan
+        run: |
+          echo "Mode: ${{ github.event.inputs.target }}"
+          echo "Image (if docker): ${{ steps.vars.outputs.image }}"
+          echo "Filter strict: ${{ github.event.inputs.filter_strict }}"
+          if [ "${{ github.event.inputs.target }}" = "docker" ]; then
+            echo "   - Docker scan: enabled"
+          else
+            echo "   - Docker scan: skipped"
+          fi
+          if [ "${{ github.event.inputs.target }}" = "source" ]; then
+            echo "   - Source scan: enabled"
+          else
+            echo "   - Source scan: skipped"
+          fi
+
+  grype-scan:
+    if: ${{ github.event.inputs['grype-scan'] == 'true' }}
+    runs-on: ubuntu-latest
+    needs: [init]
+    steps:
+      - name: Login to GHCR (docker target)
+        if: ${{ github.event.inputs.target == 'docker' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout repository (source target)
+        if: ${{ github.event.inputs.target == 'source' }}
+        uses: actions/checkout@v4
+
+      # Grype Docker
+      - name: "Grype scan (Docker: High+Critical)"
+        if: ${{ github.event.inputs.target == 'docker' }}
+        id: grype-docker
+        uses: anchore/scan-action@v7
+        with:
+          image: "${{ needs.init.outputs.image }}"
+          output-file: grype.sarif
+          fail-build: false
+          severity-cutoff: critical
+        continue-on-error: ${{ github.event.inputs['continue-on-error'] == 'true' }}
+
+      # Grype Source
+      - name: "Grype scan (Source: High+Critical)"
+        if: ${{ github.event.inputs.target == 'source' }}
+        id: grype-source
+        uses: anchore/scan-action@v7
+        with:
+          path: .
+          output-file: grype.sarif
+          fail-build: false
+          severity-cutoff: critical
+        continue-on-error: ${{ github.event.inputs['continue-on-error'] == 'true' }}
+
+      - name: Filter Grype SARIF
+        if: ${{ github.event.inputs.filter_strict == 'true' }}
+        run: |
+          SARIF_FILE=grype.sarif
+          jq '.runs[].results |= map(select((.help.text // "") | test("Severity:\\s*(high|critical)(\\b|[^a-zA-Z])"; "i")))' "$SARIF_FILE" > "${SARIF_FILE%.sarif}.filtered.sarif"
+          mv "${SARIF_FILE%.sarif}.filtered.sarif" "$SARIF_FILE"
+
+      - name: Upload Grype SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: grype.sarif
+
+      - name: Upload all scan artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: grype.sarif
+          path: grype.sarif
+
+
+  trivy-scan:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs['trivy-scan'] == 'true' }}
+    needs: [init]
+    steps:
+      - name: Login to GHCR (docker target)
+        if: ${{ github.event.inputs.target == 'docker' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout repository (source target)
+        if: ${{ github.event.inputs.target == 'source' }}
+        uses: actions/checkout@v4
+
+      # Trivy Docker
+      - name: "Trivy scan (Docker: ${{ env.TRIVY_SEVERITY }})"
+        if: ${{ github.event.inputs.target == 'docker' }}
+        id: trivy-docker
+        uses: aquasecurity/trivy-action@0.33.0
+        with:
+          image-ref: "${{ needs.init.outputs.image }}"
+          severity: ${{ env.TRIVY_SEVERITY }}
+          output: trivy.sarif
+          format: "sarif"
+        continue-on-error: ${{ github.event.inputs['continue-on-error'] == 'true' }}
+
+      # Trivy Source
+      - name: "Trivy scan (Source: ${{ env.TRIVY_SEVERITY }})"
+        if: ${{ github.event.inputs.target == 'source' }}
+        id: trivy-source
+        uses: aquasecurity/trivy-action@0.33.0
+        with:
+          scan-type: "fs"
+          severity: ${{ env.TRIVY_SEVERITY }}
+          output: trivy.sarif
+          format: "sarif"
+        continue-on-error: ${{ github.event.inputs['continue-on-error'] == 'true' }}
+
+      - name: Filter SARIF (High+Critical only)
+        if: ${{ github.event.inputs.filter_strict == 'true' }}
+        run: |
+              SARIF_FILE=trivy.sarif
+              jq '.runs[].results |= map(select(((.properties.tags[]? | ascii_upcase) == "HIGH") or ((.properties.tags[]? | ascii_upcase) == "CRITICAL") or ((.help.text // "") | test("Severity: (high|critical)"; "i")) or ((.message.text // "") 
+              | test("Severity: (high|critical)"; "i"))))' "$SARIF_FILE" > "${SARIF_FILE%.sarif}.filtered.sarif" && mv "${SARIF_FILE%.sarif}.filtered.sarif" "$SARIF_FILE"
+
+
+
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy.sarif
+
+      - name: Upload all scan artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy.sarif
+          path: trivy.sarif
+
+  # snyk-scan:
+  #   runs-on: ubuntu-latest
+  #   if: ${{ github.event.inputs['snyk-scan'] == 'true' }}
+  #   needs: [init]
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Login to GHCR (docker target)
+  #       if: ${{ github.event.inputs.target == 'docker' }}
+  #       uses: docker/login-action@v3
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GITHUB_TOKEN }}
+
+  #     # Docker scan
+  #     - name: "Snyk scan (Docker)"
+  #       if: ${{ github.event.inputs.target == 'docker' }}
+  #       uses: snyk/actions/docker@master
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #       with:
+  #         args: ${{ needs.init.outputs.image }} --file=Dockerfile --severity-threshold=${{ env.SNYK_SEVERITY }} --sarif-file-output=/github/workspace/snyk.sarif
+  #       continue-on-error: ${{ github.event.inputs['continue-on-error'] == 'true' }}
+
+  #     # Source scan
+  #     - name: "Snyk scan (Source)"
+  #       if: ${{ github.event.inputs.target == 'source' }}
+  #       uses: snyk/actions/node@master
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #       with:
+  #         args: --all-projects --severity-threshold=${{ env.SNYK_SEVERITY }} --sarif-file-output=/github/workspace/snyk.sarif
+  #       continue-on-error: ${{ github.event.inputs['continue-on-error'] == 'true' }}
+
+  #     # Split SARIF into multiple files (one run per file)
+  #     - name: Split SARIF into runs with unique IDs
+  #       run: |
+  #         mkdir -p sarif-splits
+  #         count=$(jq '.runs | length' snyk.sarif)
+  #         for i in $(seq 0 $((count - 1))); do
+  #           jq --argjson idx $i --arg id "snyk-$i" \
+  #             '{ version: "2.1.0", runs: [ .runs[$idx] + { automationDetails: { id: $id } } ] }' \
+  #             snyk.sarif > sarif-splits/snyk-$i.sarif
+  #           echo "Created sarif-splits/snyk-$i.sarif with automationDetails.id=snyk-$i"
+  #         done
+
+  #     - name: Upload raw Snyk SARIF
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: raw-snyk-sarif
+  #         path: snyk.sarif
+
+  #     - name: Upload Snyk SARIFs
+  #       uses: github/codeql-action/upload-sarif@v3
+  #       with:
+  #         sarif_file: sarif-splits
