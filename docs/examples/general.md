@@ -13,7 +13,7 @@ Jaeger agent deployment with Cassandra storage backend.
 **Key parameters:**
 - `jaeger.storage.type: cassandra` - Uses Cassandra as storage backend
 - `cassandraSchemaJob.mode: prod` - Production replication strategy
-- `ttl.trace: 1209600` - Traces retained for 2 weeks
+- `ttl.trace: 1209600s` - Traces retained for 2 weeks
 - `ttl.dependencies: 0` - Dependencies stored forever
 - `hotrod.install: true` - Deploys demo application for testing
 

@@ -1357,3 +1357,17 @@ This path built as "apps/v1/<namespace_name>/deployments/<deployment_name>"
     {{- printf "apps/v1/%s/deployments/%s" .Release.Namespace .Values.integrationTests.service.name -}}
   {{- end -}}
 {{- end -}}
+
+{{/*
+Validate duration of cassandraSchemaJob.ttl parameters (trace and dependencies)
+*/}}
+{{- define "cassandraSchemaJob.validateTTLDuration" -}}
+  {{- $val := . | quote }}
+  {{- if regexMatch "^(\\d+(s|m|h|d))+$" $val }}
+    {{- $val }}
+  {{- else if regexMatch "^\\d+$" $val }}
+    {{- printf "%ss" $val }}
+  {{- else }}
+    {{- fail (printf "Invalid duration format: %s. Must be combination of digits + units (s,m,h,d)." $val) }}
+  {{- end }}
+{{- end }}

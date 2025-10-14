@@ -1108,12 +1108,12 @@ cassandraSchemaJob:
   #  annotation-key: annotation-value
 
   ttl: {}
-    # Time to live for trace data, in seconds
-    # default: 172800 (2 days)
+    # Time to live for trace data, in seconds, minutes, hours, days
+    # default: 172800s (2 days)
     #
-    # trace: 172800
+    # trace: 172800s
 
-    # Time to live for dependencies data, in seconds
+    # Time to live for dependencies data, in seconds, minutes, hours, days
     # default: 0, no TTL
     #
     # dependencies: 0

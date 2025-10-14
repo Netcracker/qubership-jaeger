@@ -72,10 +72,10 @@ data:
                 {{- if not .Values.cassandraSchemaJob.enablePreHook }}
                 {{- if .Values.cassandraSchemaJob.ttl }}
                 {{- if hasKey .Values.cassandraSchemaJob.ttl "trace" }}
-                trace_ttl: {{ .Values.cassandraSchemaJob.ttl.trace | quote }}
+                trace_ttl: {{ include "cassandraSchemaJob.validateTTLDuration" .Values.cassandraSchemaJob.ttl.trace | quote }}
                 {{- end }}
                 {{- if hasKey .Values.cassandraSchemaJob.ttl "dependencies" }}
-                dependencies_ttl: {{ .Values.cassandraSchemaJob.ttl.dependencies | quote }}
+                dependencies_ttl: {{ include "cassandraSchemaJob.validateTTLDuration" .Values.cassandraSchemaJob.ttl.dependencies | quote }}
                 {{- end }}
                 {{- end }}
                 {{- end }}
