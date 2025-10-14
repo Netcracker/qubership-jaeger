@@ -1362,12 +1362,12 @@ This path built as "apps/v1/<namespace_name>/deployments/<deployment_name>"
 Validate duration of cassandraSchemaJob.ttl parameters (trace and dependencies)
 */}}
 {{- define "cassandraSchemaJob.validateTTLDuration" -}}
-  {{- $val := . | quote }}
-  {{- if regexMatch "^(\\d+(s|m|h|d))+$" $val }}
+  {{- $val := printf "%v" . }}
+  {{- if regexMatch "0|^((\\d+d)?(\\d+h)?(\\d+m)?(\\d+s)?)$" $val }}
     {{- $val }}
   {{- else if regexMatch "^\\d+$" $val }}
     {{- printf "%ss" $val }}
   {{- else }}
-    {{- fail (printf "Invalid duration format: %s. Must be combination of digits + units (s,m,h,d)." $val) }}
+    {{- fail (printf "Invalid duration format: %s. Must be a sequence of digits + units (d,h,m,s)." $val) }}
   {{- end }}
 {{- end }}
