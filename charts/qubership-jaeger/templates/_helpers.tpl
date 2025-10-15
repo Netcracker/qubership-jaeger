@@ -1363,11 +1363,11 @@ Validate duration of cassandraSchemaJob.ttl parameters (trace and dependencies)
 */}}
 {{- define "cassandraSchemaJob.validateTTLDuration" -}}
   {{- $val := printf "%v" . }}
-  {{- if regexMatch "0|^((\\d+d)?(\\d+h)?(\\d+m)?(\\d+s)?)$" $val }}
+  {{- if regexMatch "^0$|^((\\d+h)?(\\d+m)?(\\d+s)?)$" $val }}
     {{- $val }}
   {{- else if regexMatch "^\\d+$" $val }}
     {{- printf "%ss" $val }}
   {{- else }}
-    {{- fail (printf "Invalid duration format: %s. Must be a sequence of digits + units (d,h,m,s)." $val) }}
+    {{- fail (printf "Invalid duration format: %s. Must be a sequence of digits + units (h,m,s)." $val) }}
   {{- end }}
 {{- end }}
