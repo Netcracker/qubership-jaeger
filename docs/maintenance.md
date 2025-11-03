@@ -68,8 +68,8 @@ can be changed on first installation using the parameters:
 ```yaml
 cassandraSchemaJob:
   ttl:
-    trace: 172800    # in seconds
-    dependencies: 0  # in seconds
+    trace: 172800s
+    dependencies: 0
 ```
 
 To change the TTL after the keyspace has already been created, you can connect to Cassandra and change it manually.

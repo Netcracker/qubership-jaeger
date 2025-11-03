@@ -22,7 +22,7 @@ cassandraSchemaJob:
   # By default all traces store only 2 days, and all dependencies stored forever
   ttl:
     # two weeks in seconds
-    trace: 1209600
+    trace: 1209600s
     # let's store dependencies forever
     dependencies: 0
 

@@ -72,10 +72,10 @@ data:
                 {{- if not .Values.cassandraSchemaJob.enablePreHook }}
                 {{- if .Values.cassandraSchemaJob.ttl }}
                 {{- if hasKey .Values.cassandraSchemaJob.ttl "trace" }}
-                trace_ttl: {{ .Values.cassandraSchemaJob.ttl.trace | quote }}
+                trace_ttl: {{ include "cassandraSchemaJob.validateTTLDuration" .Values.cassandraSchemaJob.ttl.trace | quote }}
                 {{- end }}
                 {{- if hasKey .Values.cassandraSchemaJob.ttl "dependencies" }}
-                dependencies_ttl: {{ .Values.cassandraSchemaJob.ttl.dependencies | quote }}
+                dependencies_ttl: {{ include "cassandraSchemaJob.validateTTLDuration" .Values.cassandraSchemaJob.ttl.dependencies | quote }}
                 {{- end }}
                 {{- end }}
                 {{- end }}
@@ -84,12 +84,10 @@ data:
                 servers:
                   {{- if .Values.cassandraSchemaJob.host }}
                   - {{ .Values.cassandraSchemaJob.host -}}
-                  {{- else }}
-                  {{- if .Values.INFRA_CASSANDRA_HOST -}}
+                  {{- else if .Values.INFRA_CASSANDRA_HOST }}
                   - {{ .Values.INFRA_CASSANDRA_HOST -}}
-                  {{- else -}}
+                  {{- else }}
                   - cassandra.cassandra.svc
-                  {{- end -}}
                   {{- end }}
                 port: {{ if .Values.cassandraSchemaJob.port}}{{.Values.cassandraSchemaJob.port}}{{- else }}{{ if .Values.INFRA_CASSANDRA_PORT }}{{ .Values.INFRA_CASSANDRA_PORT }}{{ else}}9042{{- end }}{{- end }}
                 tls:
