@@ -762,6 +762,8 @@ readinessProbe:
 You must set correct TTL values during first deploy! If you didn't do it, please read the
 [Maintenance: Change Cassandra TTL](maintenance.md#change-cassandra-ttl).
 
+**Warning!** Since Jaeger release `2.x`, `cassandraSchemaJob.ttl` parameters (`trace` and `dependencies`) must be set with a suitable unit (`s` - seconds, `m` - minutes, `h` - hours).
+
 ```yaml
 cassandraSchemaJob:
   name: cassandra-schema-job
@@ -797,8 +799,8 @@ cassandraSchemaJob:
 | `tls.key`                  | string                                                                                                                        | no        | -                                                                                                                                         | The public key of the certificate. The mandatory field when using an SSL connection to Cassandra. Ignored if the `existingSecret` is specified.                                                                                                                                                                                                       |
 | `tls.cert`                 | string                                                                                                                        | no        | -                                                                                                                                         | The private part of the certificate. The mandatory field when using an SSL connection to Cassandra. Ignored if the `existingSecret` is specified.                                                                                                                                                                                                     |
 | `tls.cqlshrc`              | string                                                                                                                        | no        | [ssl]<br/>certfile = /cassandra-tls/ca-cert.pem<br/>usercert = /cassandra-tls/client-cert.pem<br/>userkey = /cassandra-tls/client-key.pem | An overriding path to certificates which will use `cqlsh` to connect to Cassandra. Ignored if the `existingSecret` is specified                                                                                                                                                                                                                       |
-| `ttl.trace`                | integer                                                                                                                       | no        | -                                                                                                                                         | Time to live for traces (in seconds) data                                                                                                                                                                                                                                                                                                             |
-| `ttl.dependencies`         | integer                                                                                                                       | no        | -                                                                                                                                         | Time to live for dependencies (in seconds)data                                                                                                                                                                                                                                                                                                        |
+| `ttl.trace`                | integer                                                                                                                       | no        | -                                                                                                                                         | Time to live for traces (in seconds, minutes, hours) data                                                                                                                                                                                                                                                                                                             |
+| `ttl.dependencies`         | integer                                                                                                                       | no        | -                                                                                                                                         | Time to live for dependencies (in seconds, minutes, hours) data                                                                                                                                                                                                                                                                                                        |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                                                                                       | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                                                                                                                                                                                                                                 |
 | `labels`                   | map                                                                                                                           | no        | {}                                                                                                                                        | Labels for Cassandra schema job.                                                                                                                                                                |
 | `annotations`              | map                                                                                                                           | no        | {}                                                                                                                                        | Annotations for Cassandra schema job.                                                                                                                                                           |
@@ -813,7 +815,7 @@ Examples:
 cassandraSchemaJob:
   name: cassandra-schema-job
 
-  image: jaegertracing/jaeger-cassandra-schema:1.62.0
+  image: jaegertracing/jaeger-cassandra-schema:1.73.0
   imagePullPolicy: IfNotPresent
   imagePullSecrets:
     - name: jaeger-pull-secret
@@ -861,8 +863,8 @@ cassandraSchemaJob:
       userkey = /cassandra-tls/client-key.pem
 
   ttl:
-    trace: 172800    # in seconds
-    dependencies: 0  # in seconds
+    trace: 172800s
+    dependencies: 0
 
   existingSecret:
   extraEnv:
@@ -1638,7 +1640,7 @@ query:
 proxy:
   image: envoyproxy/envoy:v1.25.8
 cassandraSchemaJob:
-  image: jaegertracing/jaeger-cassandra-schema:1.62.0
+  image: jaegertracing/jaeger-cassandra-schema:1.73.0
 hotrod:
   image: jaegertracing/example-hotrod:1.62.0
 elasticsearch:

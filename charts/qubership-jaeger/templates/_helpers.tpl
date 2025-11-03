@@ -143,7 +143,7 @@ Image can be found from:
   {{- if .Values.collector.image -}}
     {{- printf "%s" .Values.collector.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger:2.9.0" -}}
+    {{- print "jaegertracing/jaeger:2.10.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -156,7 +156,7 @@ Image can be found from:
   {{- if .Values.query.image -}}
     {{- printf "%s" .Values.query.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger:2.9.0" -}}
+    {{- print "jaegertracing/jaeger:2.10.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -169,7 +169,7 @@ Image can be found from:
   {{- if .Values.proxy.image -}}
     {{- printf "%s" .Values.proxy.image -}}
   {{- else -}}
-    {{- print "envoyproxy/envoy:v1.32.6" -}}
+    {{- print "envoyproxy/envoy:v1.35.2" -}}
   {{- end -}}
 {{- end -}}
 
@@ -182,7 +182,7 @@ Image can be found from:
   {{- if .Values.cassandraSchemaJob.image -}}
     {{- printf "%s" .Values.cassandraSchemaJob.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-cassandra-schema:1.72.0" -}}
+    {{- print "jaegertracing/jaeger-cassandra-schema:1.73.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -195,7 +195,7 @@ Image can be found from:
   {{- if .Values.hotrod.image -}}
     {{- printf "%s" .Values.hotrod.image -}}
   {{- else -}}
-    {{- print "jaegertracing/example-hotrod:1.72.0" -}}
+    {{- print "jaegertracing/example-hotrod:1.73.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -208,7 +208,7 @@ Image can be found from:
   {{- if .Values.elasticsearch.indexCleaner.image -}}
     {{- printf "%s" .Values.elasticsearch.indexCleaner.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-es-index-cleaner:1.72.0" -}}
+    {{- print "jaegertracing/jaeger-es-index-cleaner:1.73.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -221,7 +221,7 @@ Image can be found from:
   {{- if .Values.elasticsearch.rollover.image -}}
     {{- printf "%s" .Values.elasticsearch.rollover.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-es-rollover:1.72.0" -}}
+    {{- print "jaegertracing/jaeger-es-rollover:1.73.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -1345,3 +1345,29 @@ Generate list of images for tests
       {{- printf "deployment %s %s %s, " .Values.integrationTests.service.name .Values.integrationTests.service.name "qubership/integration-tests" -}}
     {{- end -}}
 {{- end -}}
+
+{{/*
+Generate custom resource path for integration tests
+This path built as "apps/v1/<namespace_name>/deployments/<deployment_name>"
+*/}}
+{{- define "integrationTests.customResourcePath" -}}
+  {{- if .Values.integrationTests.statusWriting.customResourcePath -}}
+    {{- .Values.integrationTests.statusWriting.customResourcePath -}}
+  {{- else -}}
+    {{- printf "apps/v1/%s/deployments/%s" .Release.Namespace .Values.integrationTests.service.name -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Validate duration of cassandraSchemaJob.ttl parameters (trace and dependencies)
+*/}}
+{{- define "cassandraSchemaJob.validateTTLDuration" -}}
+  {{- $val := printf "%v" . }}
+  {{- if regexMatch "^0$|^((\\d+h)?(\\d+m)?(\\d+s)?)$" $val }}
+    {{- $val }}
+  {{- else if regexMatch "^\\d+$" $val }}
+    {{- printf "%ss" $val }}
+  {{- else }}
+    {{- fail (printf "Invalid duration format: %s. Must be a sequence of digits + units (h,m,s)." $val) }}
+  {{- end }}
+{{- end }}

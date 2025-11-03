@@ -71,7 +71,7 @@ spec:
             - name: IS_SHORT_STATUS_MESSAGE
               value: {{ .Values.integrationTests.statusWriting.isShortStatusMessage | quote }}
             - name: STATUS_CUSTOM_RESOURCE_PATH
-              value: {{ toYaml .Values.integrationTests.statusWriting.customResourcePath }}
+              value: {{ include "integrationTests.customResourcePath" . }}
           resources: {{ toYaml .Values.integrationTests.resources | nindent 12 }}
           securityContext:
             {{- include "integrationTests.containerSecurityContext" . }}
