@@ -10,5 +10,6 @@ jobs:
     with:
       actor: ${{ github.actor }}
       sonar-project-key: ${{ vars.SONAR_PROJECT_KEY }}
+      go-module-dir: ./readiness-probe
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
