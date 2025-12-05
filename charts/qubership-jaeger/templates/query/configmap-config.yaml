@@ -18,6 +18,9 @@ metadata:
   {{- end }}
 data:
   config.yaml: |
+    {{- if .Values.customConfig }}
+    {{- toYaml .Values.customConfig | nindent 2 }}
+    {{- else }}
     service:
       extensions: [jaeger_storage, jaeger_query, healthcheckv2]
       pipelines:
@@ -37,7 +40,7 @@ data:
                     host: 0.0.0.0
                     port: 8888
         logs:
-          level: info
+          level: {{ .Values.query.config.service.telemetry.logs.level }}
     extensions:
       healthcheckv2:
         use_v2: true
@@ -185,4 +188,5 @@ data:
       batch:
     exporters:
       debug:
+    {{- end }}
 {{- end }}
