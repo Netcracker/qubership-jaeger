@@ -23,6 +23,9 @@ metadata:
   {{- end }}
 data:
   config.yaml: |
+    {{- if .Values.collector.customConfig }}
+      {{- toYaml .Values.collector.customConfig | nindent 4 }}
+    {{- else }}
     service:
       extensions: {{ if .Values.collector.sampling.type }}[jaeger_storage, healthcheckv2, remote_sampling]{{ else }}[jaeger_storage, healthcheckv2]{{- end }}
       pipelines:
@@ -42,7 +45,7 @@ data:
                     host: 0.0.0.0
                     port: 8888
         logs:
-          level: info
+          level: {{ .Values.collector.config.service.telemetry.logs.level }}
     extensions:
       {{- if .Values.collector.sampling.type }}
       remote_sampling:
@@ -335,4 +338,16 @@ data:
     exporters:
       jaeger_storage_exporter:
         trace_storage: {{ if eq .Values.jaeger.storage.type "cassandra" }}main_cassandra{{ else if eq .Values.jaeger.storage.type "elasticsearch" }}main_elasticsearch{{ else if eq .Values.jaeger.storage.type "remotegRPC" }}remote_grpc{{- end }}
+        # Explicitly enable retries
+        retry_on_failure:
+          enabled: {{ .Values.collector.config.exporters.jaeger_storage_exporter.retry_on_failure.enabled }}
+          initial_interval: {{ .Values.collector.config.exporters.jaeger_storage_exporter.retry_on_failure.initial_interval }}
+          max_interval: {{ .Values.collector.config.exporters.jaeger_storage_exporter.retry_on_failure.max_interval }}
+          max_elapsed_time: {{ .Values.collector.config.exporters.jaeger_storage_exporter.retry_on_failure.max_elapsed_time }}
+        # Change the number of consumers and queue size from defaults
+        queue:
+          enabled: {{ .Values.collector.config.exporters.jaeger_storage_exporter.queue.enabled }}
+          num_consumers: {{ .Values.collector.config.exporters.jaeger_storage_exporter.queue.num_consumers }}
+          queue_size: {{ .Values.collector.config.exporters.jaeger_storage_exporter.queue.queue_size }}
+    {{- end }}
 {{- end }}

@@ -1726,6 +1726,37 @@ collector:
           port: 14250
     tls: {}
 
+
+  # Jaeger collector config, contains only several options to configure, other part of parameters take from
+  # cassandraSchemaJob and elasticsearch sections
+  config:
+    service:
+      telemetry:
+        logs:
+          level: info
+    exporters:
+      jaeger_storage_exporter:
+        # Retry configuration to save data in database
+        retry_on_failure:
+          enabled: true
+          initial_interval: 10s
+          max_interval: 1m
+          max_elapsed_time: 5m
+        # Queue and batch configuration
+        queue:
+          enabled: true
+          num_consumers: 100
+          queue_size: 1000
+
+  # Custom config for the collector
+  # Allows to override the default config and specify a full custom config for the collector
+  #
+  # customConfig:
+  #   service:
+  #     telemetry:
+  #       logs:
+  #         level: info
+
 hotrod:
   # Allow disabling create hotrod deployment.
   # Type: boolean
@@ -2161,6 +2192,23 @@ query:
   #
   annotations: {}
   #  annotation-key: annotation-value
+
+  # Jaeger query config, contains only several options to configure, other part of parameters take from
+  # cassandraSchemaJob and elasticsearch sections
+  config:
+    service:
+      telemetry:
+        logs:
+          level: info
+
+  # Custom config for the query
+  # Allows to override the default config and specify a full custom config for the query
+  #
+  # customConfig:
+  #   service:
+  #     telemetry:
+  #       logs:
+  #         level: info
 
 integrationTests:
   install: false
