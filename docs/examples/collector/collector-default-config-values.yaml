@@ -1,0 +1,44 @@
+# Default values for jaeger.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+jaeger:
+  storage:
+    type: cassandra
+
+# Parameters from cassandraSchemaJob will be inside inside the ConfigMap for the collector
+cassandraSchemaJob:
+  host: cassandra.cassandra.svc
+  keyspace: jaeger
+  password: admin
+  username: admin
+  datacenter: dc1
+
+  # This parameter responsible for with either with SimpleStrategy (without replication)
+  # or with NetworkReplicationStrategy (with replication):
+  # * prod - will use NetworkReplicationStrategy
+  # * test - will use SimpleStrategy
+  mode: prod
+
+collector:
+  install: true
+
+  # Part of parameters that doesn't existed in cassandraSchemaJob
+  config:
+    service:
+      telemetry:
+        logs:
+          level: debug
+    exporters:
+      jaeger_storage_exporter:
+        # Retry configuration to save data in database
+        retry_on_failure:
+          enabled: true
+          initial_interval: 10s
+          max_interval: 1m
+          max_elapsed_time: 5m
+        # Queue and batch configuration
+        queue:
+          enabled: true
+          num_consumers: 100
+          queue_size: 1000
