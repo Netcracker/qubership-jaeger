@@ -340,14 +340,14 @@ data:
         trace_storage: {{ if eq .Values.jaeger.storage.type "cassandra" }}main_cassandra{{ else if eq .Values.jaeger.storage.type "elasticsearch" }}main_elasticsearch{{ else if eq .Values.jaeger.storage.type "remotegRPC" }}remote_grpc{{- end }}
         # Explicitly enable retries
         retry_on_failure:
-          enabled: {{ .Values.collector.exporters.jaeger_storage_exporter.retry_on_failure.enabled }}
-          initial_interval: {{ .Values.collector.exporters.jaeger_storage_exporter.retry_on_failure.initial_interval }}
-          max_interval: {{ .Values.collector.exporters.jaeger_storage_exporter.retry_on_failure.max_interval }}
-          max_elapsed_time: {{ .Values.collector.exporters.jaeger_storage_exporter.retry_on_failure.max_elapsed_time }}
+          enabled: {{ .Values.collector.config.exporters.jaeger_storage_exporter.retry_on_failure.enabled }}
+          initial_interval: {{ .Values.collector.config.exporters.jaeger_storage_exporter.retry_on_failure.initial_interval }}
+          max_interval: {{ .Values.collector.config.exporters.jaeger_storage_exporter.retry_on_failure.max_interval }}
+          max_elapsed_time: {{ .Values.collector.config.exporters.jaeger_storage_exporter.retry_on_failure.max_elapsed_time }}
         # Change the number of consumers and queue size from defaults
         queue:
-          enabled: {{ .Values.collector.exporters.jaeger_storage_exporter.queue.enabled }}
-          num_consumers: {{ .Values.collector.exporters.jaeger_storage_exporter.queue.num_consumers }}
-          queue_size: {{ .Values.collector.exporters.jaeger_storage_exporter.queue.queue_size }}
+          enabled: {{ .Values.collector.config.exporters.jaeger_storage_exporter.queue.enabled }}
+          num_consumers: {{ .Values.collector.config.exporters.jaeger_storage_exporter.queue.num_consumers }}
+          queue_size: {{ .Values.collector.config.exporters.jaeger_storage_exporter.queue.queue_size }}
     {{- end }}
 {{- end }}
