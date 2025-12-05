@@ -23,8 +23,8 @@ metadata:
   {{- end }}
 data:
   config.yaml: |
-    {{- if .Values.customConfig }}
-      {{- toYaml .Values.customConfig | nindent 4 }}
+    {{- if .Values.collector.customConfig }}
+      {{- toYaml .Values.collector.customConfig | nindent 4 }}
     {{- else }}
     service:
       extensions: {{ if .Values.collector.sampling.type }}[jaeger_storage, healthcheckv2, remote_sampling]{{ else }}[jaeger_storage, healthcheckv2]{{- end }}
