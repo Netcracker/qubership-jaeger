@@ -19,7 +19,7 @@ metadata:
 data:
   config.yaml: |
     {{- if .Values.customConfig }}
-    {{- toYaml .Values.customConfig | nindent 2 }}
+      {{- toYaml .Values.customConfig | nindent 4 }}
     {{- else }}
     service:
       extensions: [jaeger_storage, jaeger_query, healthcheckv2]

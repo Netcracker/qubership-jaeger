@@ -62,10 +62,10 @@ query:
     receivers:
       jaeger:
         protocols:
-          thrift_binary:
-          thrift_compact:
-          thrift_http:
+          thrift_binary: ~
+          thrift_compact: ~
+          thrift_http: ~
     processors:
-      batch:
+      batch: ~
     exporters:
-      debug:
+      debug: ~

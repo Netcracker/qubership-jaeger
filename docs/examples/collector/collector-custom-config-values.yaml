@@ -67,8 +67,8 @@ collector:
             endpoint: 0.0.0.0:4318
       jaeger:
         protocols:
-          thrift_binary:
-          thrift_compact:
+          thrift_binary: ~
+          thrift_compact: ~
           thrift_http:
             endpoint: 0.0.0.0:14268
           grpc:
@@ -76,7 +76,7 @@ collector:
       zipkin:
         endpoint: "0.0.0.0:9411"
     processors:
-      batch:
+      batch: ~
     exporters:
       jaeger_storage_exporter:
         trace_storage: main_cassandra
