@@ -58,7 +58,7 @@ func main() {
 	host := "0.0.0.0:" + strconv.Itoa(s.servicePort)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", s.readinessProbe)
-	mux.HandleFunc("/", s.livenessProbe)
+	mux.HandleFunc("/livez", s.livenessProbe)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
@@ -69,21 +69,21 @@ func main() {
 	}
 
 	go func() {
-		slog.Info("Readiness probe process is starting")
-		for {
-			isHealth = s.isHealth()
-			slog.Info("Sleep for 10 sec and try again")
-			time.Sleep(10 * time.Second)
-		}
-	}()
-
-	go func() {
 		slog.Info(fmt.Sprintf("The service is listening on 0.0.0.0:%d", s.servicePort))
 		if err := server.ListenAndServe(); err != nil {
 			if err != http.ErrServerClosed {
 				slog.Error(err.Error())
 				os.Exit(1)
 			}
+		}
+	}()
+
+	go func() {
+		slog.Info("Readiness probe process is starting")
+		for {
+			isHealth = s.isHealth()
+			slog.Info("Sleep for 10 sec and try again")
+			time.Sleep(10 * time.Second)
 		}
 	}()
 
@@ -159,13 +159,13 @@ func initServer() *Server {
 	if *storage == "opensearch" {
 		opensearchClient = createHttpClient(user, pass, *tlsEnabled, *ca, *crt, *key, *insecureSkipVerify, time.Duration(*timeout))
 	} else {
-		cassandraClient = createCassandraClient(*host, *port, user, pass, *tlsEnabled, *ca, *crt, *key, *insecureSkipVerify, time.Duration(*timeout), *datacenter, *keyspace)
+		cassandraClient = createCassandraClient(*host, *port, user, pass, *tlsEnabled, *ca, *crt, *key, *insecureSkipVerify, time.Duration(*timeout), *errors, *datacenter, *keyspace)
 	}
 	return &Server{
 		endpoint:        endpoint,
 		tlsEnabled:      *tlsEnabled,
-		retryCount:      *errors,
-		errorsCount:     *retries,
+		retryCount:      *retries,
+		errorsCount:     *errors,
 		storage:         *storage,
 		servicePort:     *servicePort,
 		shutdownTimeout: time.Duration(*shutdownTimeout),
@@ -201,7 +201,7 @@ func readFromSecret(secret *v1.Secret, key string) string {
 	return value
 }
 
-func createCassandraClient(host string, port int, user string, password string, tlsEnabled bool, ca string, crt string, key string, verification bool, timeout time.Duration, datacenter string, keyspace string) *gocql.Session {
+func createCassandraClient(host string, port int, user string, password string, tlsEnabled bool, ca string, crt string, key string, verification bool, timeout time.Duration, errorsCount int, datacenter string, keyspace string) *gocql.Session {
 	cluster := gocql.NewCluster(host)
 	cluster.Port = port
 	cluster.Keyspace = keyspace
@@ -229,7 +229,7 @@ func createCassandraClient(host string, port int, user string, password string, 
 	cluster.ProtoVersion = 4
 	cluster.Consistency = gocql.Quorum
 	cluster.DisableInitialHostLookup = true
-	session, err := cluster.CreateSession()
+	session, err := createSessionWithRetry(cluster, errorsCount, time.Second)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Can't create session: %s", err.Error()))
 	}
@@ -377,4 +377,16 @@ func (s *Server) opensearchHealth() bool {
 		}
 	}
 	return false
+}
+
+func createSessionWithRetry(cluster *gocql.ClusterConfig, maxRetries int, retryDelay time.Duration) (*gocql.Session, error) {
+	for i := 1; i <= maxRetries; i++ {
+		session, err := cluster.CreateSession()
+		if err == nil {
+			return session, nil
+		}
+		slog.Error("Failed to create Cassandra session", "attempt", i, "err", err)
+		time.Sleep(retryDelay)
+	}
+	return nil, fmt.Errorf("Failed to create Cassandra session after %d attempts", maxRetries)
 }
