@@ -232,6 +232,7 @@ func createCassandraClient(host string, port int, user string, password string, 
 	session, err := createSessionWithRetry(cluster, errorsCount, time.Second)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Can't create session: %s", err.Error()))
+		os.Exit(1)
 	}
 	return session
 }

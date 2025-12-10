@@ -223,10 +223,10 @@ spec:
           livenessProbe:
             failureThreshold: 3
             httpGet:
-              path: /livez
+              path: /health
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
