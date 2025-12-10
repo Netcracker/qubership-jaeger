@@ -388,5 +388,5 @@ func createSessionWithRetry(cluster *gocql.ClusterConfig, maxRetries int, retryD
 		slog.Error("Failed to create Cassandra session", "attempt", i, "err", err)
 		time.Sleep(retryDelay)
 	}
-	return nil, fmt.Errorf("Failed to create Cassandra session after %d attempts", maxRetries)
+	return nil, fmt.Errorf("failed to create Cassandra session after %d attempts", maxRetries)
 }
