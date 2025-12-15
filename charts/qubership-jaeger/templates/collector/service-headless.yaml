@@ -11,6 +11,7 @@ metadata:
     app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-collector-headless
     app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-collector-headless-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
     app.kubernetes.io/component: collector
+    app.kubernetes.io/managed-by: Helm    
     {{- include "jaeger.commonLabels" . | nindent 4 }}
     {{- if .Values.collector.labels }}
       {{- toYaml .Values.collector.labels | nindent 4 }}

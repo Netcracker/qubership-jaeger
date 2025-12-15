@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-query
     app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-query-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
     app.kubernetes.io/component: query
+    app.kubernetes.io/managed-by: Helm    
     {{- include "jaeger.commonLabels" . | nindent 4 }}
     {{- if .Values.query.labels }}
       {{- toYaml .Values.query.labels | nindent 4 }}
