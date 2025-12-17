@@ -52,6 +52,7 @@ Create common labels for each resource which is creating by this chart.
 app: jaeger
 app.kubernetes.io/part-of: jaeger
 app.kubernetes.io/version: {{ .Chart.AppVersion }}
+app.kubernetes.io/managed-by: Helm
 {{- end -}}
 
 {{/*
