@@ -144,7 +144,7 @@ Image can be found from:
   {{- if .Values.collector.image -}}
     {{- printf "%s" .Values.collector.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger:2.11.0" -}}
+    {{- print "jaegertracing/jaeger:2.13.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -157,7 +157,7 @@ Image can be found from:
   {{- if .Values.query.image -}}
     {{- printf "%s" .Values.query.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger:2.11.0" -}}
+    {{- print "jaegertracing/jaeger:2.13.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -183,7 +183,7 @@ Image can be found from:
   {{- if .Values.cassandraSchemaJob.image -}}
     {{- printf "%s" .Values.cassandraSchemaJob.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-cassandra-schema:1.74.0" -}}
+    {{- print "jaegertracing/jaeger-cassandra-schema:1.76.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -196,7 +196,7 @@ Image can be found from:
   {{- if .Values.hotrod.image -}}
     {{- printf "%s" .Values.hotrod.image -}}
   {{- else -}}
-    {{- print "jaegertracing/example-hotrod:1.74.0" -}}
+    {{- print "jaegertracing/example-hotrod:1.76.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -209,7 +209,7 @@ Image can be found from:
   {{- if .Values.elasticsearch.indexCleaner.image -}}
     {{- printf "%s" .Values.elasticsearch.indexCleaner.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-es-index-cleaner:1.74.0" -}}
+    {{- print "jaegertracing/jaeger-es-index-cleaner:1.76.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -222,7 +222,7 @@ Image can be found from:
   {{- if .Values.elasticsearch.rollover.image -}}
     {{- printf "%s" .Values.elasticsearch.rollover.image -}}
   {{- else -}}
-    {{- print "jaegertracing/jaeger-es-rollover:1.74.0" -}}
+    {{- print "jaegertracing/jaeger-es-rollover:1.76.0" -}}
   {{- end -}}
 {{- end -}}
 
