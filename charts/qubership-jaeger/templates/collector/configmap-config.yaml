@@ -31,7 +31,7 @@ data:
       pipelines:
         traces:
           receivers: [otlp, jaeger, zipkin]
-          processors: [batch]
+          processors: {{ if .Values.collector.config.processors.memory_limiter.enabled }}[memory_limiter, batch]{{ else }}[batch]{{- end }}
           exporters: [jaeger_storage_exporter]
       telemetry:
         resource:
@@ -334,6 +334,12 @@ data:
           {{- end }}
         {{- end }}
     processors:
+      {{- if .Values.collector.config.processors.memory_limiter.enabled }}
+      memory_limiter:
+        check_interval: {{ .Values.collector.config.processors.memory_limiter.check_interval | default "1s" }}
+        limit_mib: {{ .Values.collector.config.processors.memory_limiter.limit_mib | default 4000 }}
+        spike_limit_mib: {{ .Values.collector.config.processors.memory_limiter.spike_limit_mib | default 800 }}
+      {{- end }}
       batch:
     exporters:
       jaeger_storage_exporter:
