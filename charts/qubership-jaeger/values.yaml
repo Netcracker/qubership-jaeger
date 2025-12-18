@@ -1734,6 +1734,30 @@ collector:
       telemetry:
         logs:
           level: info
+    processors:
+      memory_limiter:
+        # Enable memory limiter processor to prevent OOM issues
+        # Type: boolean
+        # Default: false
+        #
+        enabled: false
+        # How often to check memory usage
+        # Type: string (duration)
+        # Default: "1s"
+        #
+        check_interval: 1s
+        # Hard memory limit in MiB. When exceeded, garbage collection is triggered
+        # Should be set to approximately 75-80% of pod memory limit
+        # Type: integer
+        # Default: 4000
+        #
+        limit_mib: 4000
+        # Allowed memory spike in MiB. Soft limit = limit_mib - spike_limit_mib
+        # When soft limit is exceeded, processor starts rejecting incoming data
+        # Type: integer
+        # Default: 800
+        #
+        spike_limit_mib: 800
     exporters:
       jaeger_storage_exporter:
         # Retry configuration to save data in database
