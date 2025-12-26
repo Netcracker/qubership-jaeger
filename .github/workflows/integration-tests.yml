@@ -190,7 +190,7 @@ jobs:
           --set "cassandraSchemaJob.password=$CASSANDRA_PASSWORD" --set cassandraSchemaJob.datacenter=dc1\
           --set "readinessProbe.image=ghcr.io/netcracker/jaeger-readiness-probe:$TAG" \
           --set "integrationTests.install=true" \
-          --set "integrationTests.image=ghcr.io/netcracker/jaeger-integration-tests:$TAG"
+          --set "integrationTests.image=ghcr.io/netcracker/jaeger-integration-tests:$TAG" \
           --set "statusProvisioner.image=ghcr.io/netcracker/qubership-deployment-status-provisioner:${{ env.status_provisioner_tag }}"
       shell: bash
 
