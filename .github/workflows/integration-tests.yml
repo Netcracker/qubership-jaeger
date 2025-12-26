@@ -10,16 +10,18 @@ on:
   pull_request:
     branches:
     - main
-    paths-ignore:
-    - '.github/**'
-    - '.git*'
-    - '.*ignore'
-    - 'docs/**'
-    - 'CODE-OF-CONDUCT.md'
-    - 'CONTRIBUTING.md'
-    - 'LICENSE'
-    - 'README.md'
-    - 'SECURITY.md'
+    paths:
+    - '**'
+    - '!.github/**'
+    - '.github/workflows/integration-tests.yml'
+    - '!.git*'
+    - '!.*ignore'
+    - '!docs/**'
+    - '!CODE-OF-CONDUCT.md'
+    - '!CONTRIBUTING.md'
+    - '!LICENSE'
+    - '!README.md'
+    - '!SECURITY.md'
 
 env:
   kind_version: v0.27.0
@@ -27,6 +29,7 @@ env:
   namespace: jaeger
   max_attempts: 50
   delay: 10
+  status_provisioner_tag: 0.2.3
 
 jobs:
   Run-Integration-Tests:
@@ -188,6 +191,7 @@ jobs:
           --set "readinessProbe.image=ghcr.io/netcracker/jaeger-readiness-probe:$TAG" \
           --set "integrationTests.install=true" \
           --set "integrationTests.image=ghcr.io/netcracker/jaeger-integration-tests:$TAG"
+          --set "statusProvisioner.image=ghcr.io/netcracker/qubership-deployment-status-provisioner:${{ env.status_provisioner_tag }}"
       shell: bash
 
     - name: Check installation status
