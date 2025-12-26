@@ -1,18 +1,37 @@
 name: Build Docker with Matrix Strategy
 run-name: "Image for ${{ github.event.repository.name }}: ${{ github.run_number }} - ${{ github.actor }}"
 on:
+  push:
+    branches:
+    - '**'
+    paths:
+    - '**'
+    - '!.github/**'
+    - '.github/workflows/integration-tests.yaml'
+    - '.github/workflows/build.yaml'
+    - '!docs/**'
+    - '!CODE-OF-CONDUCT.md'
+    - '!CONTRIBUTING.md'
+    - '!LICENSE'
+    - '!README.md'
+    - '!SECURITY.md'
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
     - main
-    paths-ignore:
-    - '.github/**'
-    - 'docs/**'
-    - 'CODE-OF-CONDUCT.md'
-    - 'CONTRIBUTING.md'
-    - 'LICENSE'
-    - 'README.md'
-    - 'SECURITY.md'
+    paths:
+    - '**'
+    - '!.github/**'
+    - '.github/workflows/integration-tests.yml'
+    - '.github/workflows/docker-dev.yml'
+    - '!.git*'
+    - '!.*ignore'
+    - '!docs/**'
+    - '!CODE-OF-CONDUCT.md'
+    - '!CONTRIBUTING.md'
+    - '!LICENSE'
+    - '!README.md'
+    - '!SECURITY.md'
   workflow_dispatch:
     inputs:
       tags:
