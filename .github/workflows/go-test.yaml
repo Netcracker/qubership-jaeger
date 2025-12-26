@@ -1,5 +1,6 @@
 name: Go unit tests
 on:
+  push: {}
   pull_request:
     types: [ opened, synchronize, reopened ]
 permissions:
