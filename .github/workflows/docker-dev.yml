@@ -5,14 +5,19 @@ on:
     types: [opened, synchronize, reopened]
     branches:
     - main
-    paths-ignore:
-    - '.github/**'
-    - 'docs/**'
-    - 'CODE-OF-CONDUCT.md'
-    - 'CONTRIBUTING.md'
-    - 'LICENSE'
-    - 'README.md'
-    - 'SECURITY.md'
+    paths:
+    - '**'
+    - '!.github/**'
+    - '.github/workflows/integration-tests.yml'
+    - '.github/workflows/docker-dev.yml'
+    - '!.git*'
+    - '!.*ignore'
+    - '!docs/**'
+    - '!CODE-OF-CONDUCT.md'
+    - '!CONTRIBUTING.md'
+    - '!LICENSE'
+    - '!README.md'
+    - '!SECURITY.md'
   workflow_dispatch:
     inputs:
       tags:
