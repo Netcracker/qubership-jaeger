@@ -149,8 +149,6 @@ jobs:
     - name: Check k8ssandra cluster status
       id: check_k8ssandra_status
       run: |
-        kubectl delete pod -l app.kubernetes.io/name=k8ssandra-operator -n ${{ env.cassandra_namespace }} --force --grace-period=0 && kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=k8ssandra-operator -n ${{ env.cassandra_namespace }}
-        kubectl delete pod -l app.kubernetes.io/name=cass-operator -n ${{ env.cassandra_namespace }} --force --grace-period=0 && kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=cass-operator -n ${{ env.cassandra_namespace }}
         attempt=1
         max_attempts=${{ env.max_attempts }}
         while [[ $attempt -le $max_attempts ]]; do
