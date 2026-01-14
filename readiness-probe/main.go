@@ -42,9 +42,41 @@ type Server struct {
 	shutdownTimeout time.Duration
 	tlsEnabled      bool
 	opensearch      *HttpClient
-	cassandra       *gocql.Session
+	cassandra       CassandraSession
 	keyspace        string
 	testTable       string
+}
+
+// CassandraSession interface for mocking
+type CassandraSession interface {
+	Query(stmt string, values ...interface{}) Query
+	Close()
+}
+
+// Query interface for mocking
+type Query interface {
+	Exec() error
+}
+
+// Real implementations that wrap gocql types
+type realCassandraSession struct {
+	session *gocql.Session
+}
+
+func (r *realCassandraSession) Query(stmt string, values ...interface{}) Query {
+	return &realQuery{query: r.session.Query(stmt, values...)}
+}
+
+func (r *realCassandraSession) Close() {
+	r.session.Close()
+}
+
+type realQuery struct {
+	query *gocql.Query
+}
+
+func (r *realQuery) Exec() error {
+	return r.query.Exec()
 }
 
 const (
@@ -148,6 +180,10 @@ func initServer() *Server {
 		}
 	}
 	secret := readSecret(*namespace, *authSecretName)
+	if secret == nil {
+		slog.Error("Failed to read secret")
+		os.Exit(1)
+	}
 	user = readFromSecret(secret, v1.BasicAuthUsernameKey)
 	pass = readFromSecret(secret, v1.BasicAuthPasswordKey)
 	endpoint := *host
@@ -155,11 +191,12 @@ func initServer() *Server {
 		endpoint += ":" + strconv.Itoa(*port)
 	}
 	var opensearchClient *HttpClient
-	var cassandraClient *gocql.Session
+	var cassandraSession CassandraSession
 	if *storage == "opensearch" {
 		opensearchClient = createHttpClient(user, pass, *tlsEnabled, *ca, *crt, *key, *insecureSkipVerify, time.Duration(*timeout))
 	} else {
-		cassandraClient = createCassandraClient(*host, *port, user, pass, *tlsEnabled, *ca, *crt, *key, *insecureSkipVerify, time.Duration(*timeout), *errors, *datacenter, *keyspace)
+		cassandraClient := createCassandraClient(*host, *port, user, pass, *tlsEnabled, *ca, *crt, *key, *insecureSkipVerify, time.Duration(*timeout), *errors, *datacenter, *keyspace)
+		cassandraSession = &realCassandraSession{session: cassandraClient}
 	}
 	return &Server{
 		endpoint:        endpoint,
@@ -170,7 +207,7 @@ func initServer() *Server {
 		servicePort:     *servicePort,
 		shutdownTimeout: time.Duration(*shutdownTimeout),
 		opensearch:      opensearchClient,
-		cassandra:       cassandraClient,
+		cassandra:       cassandraSession,
 		testTable:       *testtable,
 		keyspace:        *keyspace,
 	}
@@ -180,14 +217,17 @@ func readSecret(namespace string, secretName string) *v1.Secret {
 	config, err := ctrl.GetConfig()
 	if err != nil {
 		slog.Error(err.Error())
+		return nil
 	}
 	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		slog.Error(err.Error())
+		return nil
 	}
 	secret, err := k8sClient.CoreV1().Secrets(namespace).Get(context.TODO(), secretName, metaV1.GetOptions{})
 	if err != nil {
 		slog.Error(err.Error())
+		return nil
 	}
 	return secret
 }
@@ -351,6 +391,17 @@ func (s *Server) opensearchHealth() bool {
 		if err := res.Body.Close(); err != nil {
 			slog.Error(fmt.Sprintf("Error closing response body: %s", err.Error()))
 		}
+		// Immediate success check
+		if res.StatusCode == 200 {
+			return true
+		}
+		// If no retries are configured, treat non-200 as failure to avoid infinite loops
+		if s.retryCount == 0 {
+			slog.Info(fmt.Sprintf("Get response code: %d", res.StatusCode))
+			slog.Error("Can't get response from opensearch for a long time")
+			return false
+		}
+
 		retries := 0
 		for retries < s.retryCount {
 			if res.StatusCode == 200 {
@@ -358,24 +409,23 @@ func (s *Server) opensearchHealth() bool {
 			} else {
 				slog.Info(fmt.Sprintf("Get response code: %d", res.StatusCode))
 				if res.StatusCode == http.StatusTooManyRequests {
-					if retries < s.retryCount {
-						slog.Info("Sleep for 60 sec and try again")
-						time.Sleep(60 * time.Second)
-					} else {
-						slog.Error("Can't get response from opensearch for a long time")
-						return false
-					}
+					slog.Info("Sleep for 60 sec and try again")
+					time.Sleep(60 * time.Second)
 				} else {
 					slog.Info(fmt.Sprintf("Remaining attempts: %d", s.retryCount-retries))
 				}
 				retries += 1
-				res, err = s.opensearch.client.Do(req)
-				if err != nil {
-					slog.Error(err.Error())
-					return false
+				if retries < s.retryCount {
+					res, err = s.opensearch.client.Do(req)
+					if err != nil {
+						slog.Error(err.Error())
+						return false
+					}
 				}
 			}
 		}
+		// If we exhausted retries without success, increment error count
+		errors += 1
 	}
 	return false
 }
