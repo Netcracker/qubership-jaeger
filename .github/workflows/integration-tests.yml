@@ -126,8 +126,6 @@ jobs:
         metadata:
           name: cassandra
         spec:
-          stargate:
-            enabled: false
           cassandra:
             serverVersion: "4.0.4"
             datacenters:
