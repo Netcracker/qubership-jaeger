@@ -11,10 +11,6 @@ metadata:
     app.kubernetes.io/instance: {{ cat .Values.integrationTests.serviceAccount.name "-service-operator-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
     app.kubernetes.io/part-of: jaeger
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
-  annotations:
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
-    "helm.sh/hook-weight": "-5"
 rules:
   - apiGroups:
       - ""

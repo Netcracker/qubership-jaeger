@@ -240,6 +240,25 @@ Image can be found from:
 {{- end -}}
 
 {{/*
+Determine if memory limiter should be enabled.
+Enables memory limiter if:
+1. Explicitly enabled in collector.config.processors.memory_limiter.enabled, OR
+2. Integration tests are installed AND tags contain "memory_limiter"
+*/}}
+{{- define "collector.memoryLimiterEnabled" -}}
+  {{- $explicitlyEnabled := .Values.collector.config.processors.memory_limiter.enabled -}}
+  {{- $integrationTestsWithMemoryLimiter := false -}}
+  {{- if and .Values.integrationTests.install .Values.integrationTests.tags -}}
+    {{- $integrationTestsWithMemoryLimiter = (regexMatch ".*memory_limiter.*" .Values.integrationTests.tags) -}}
+  {{- end -}}
+  {{- if or $explicitlyEnabled $integrationTestsWithMemoryLimiter -}}
+true
+  {{- else -}}
+false
+  {{- end -}}
+{{- end -}}
+
+{{/*
 Find a Deployment Status Provisioner image in various places.
 */}}
 {{- define "deployment-status-provisioner.image" -}}

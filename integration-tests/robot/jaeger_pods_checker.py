@@ -39,7 +39,7 @@ if __name__ == '__main__':
             logging.info(f'{query}: total = {query_deployments}, ready = {query_ready_deployments}, '
                          f'{collector}: total = {collector_deployments}, ready = {collector_ready_deployments}')
         except Exception as e:
-            logging.error('Failed to get deployment entities count for service', e.message, e.traceback)
+            logging.error(f'Failed to get deployment entities count for service: {e}')
             continue
 
         if (query_deployments == query_ready_deployments and query_deployments != 0) \
