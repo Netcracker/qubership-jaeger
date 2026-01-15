@@ -127,7 +127,7 @@ jobs:
           name: cassandra
         spec:
           cassandra:
-            serverVersion: "4.0.1"
+            serverVersion: "4.0.4"
             datacenters:
               - metadata:
                   name: dc1

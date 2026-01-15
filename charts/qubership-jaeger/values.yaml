@@ -2317,6 +2317,21 @@ integrationTests:
   # Type: string
   # priorityClassName: "priorityClassName"
 
+  # TTL (Time To Live) in seconds after job completion
+  # Kubernetes will keep the Job and its Pods for this many seconds after completion
+  # This allows time to copy test results (output.xml, report.html, log.html) from the pod
+  # Uses Kubernetes built-in ttlSecondsAfterFinished feature for Jobs
+  # Type: integer (number of seconds, e.g., 120 for 2 minutes, 300 for 5 minutes)
+  # Default: unset (Job is deleted immediately after completion)
+  #
+  # ttlSecondsAfterFinished: 300
+
+  # Number of retries before marking the job as failed
+  # Type: integer
+  # Default: 0 (no retries)
+  #
+  # backoffLimit: 0
+
 statusProvisioner:
   install: true
   # image: ghcr.io/netcracker/qubership-deployment-status-provisioner:main
