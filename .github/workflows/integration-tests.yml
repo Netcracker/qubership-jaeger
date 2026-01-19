@@ -79,7 +79,7 @@ jobs:
       run: |
         helm repo add k8ssandra https://helm.k8ssandra.io/stable --force-update
         helm upgrade --install k8ssandra-operator k8ssandra/k8ssandra-operator \
-          --namespace ${{ env.cassandra_namespace }} --create-namespace
+          --namespace ${{ env.cassandra_namespace }} --create-namespace --version 1.30.0
       shell: bash
 
     - name: Check k8ssandra-operator pod status
