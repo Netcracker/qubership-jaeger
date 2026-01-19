@@ -27,6 +27,7 @@ Preparation
     Create Session    jaeger-collector-session    http://${JAEGER_SERVICE_NAME}-collector.${JAEGER_NAMESPACE}:9411
     Create Session    healthcheck    http://${JAEGER_SERVICE_NAME}-collector.${JAEGER_NAMESPACE}:13133
     Create Session    for-generator    ${LINK_FOR_GENERATOR}
+    Create Session    metrics-session    http://${JAEGER_SERVICE_NAME}-collector.${JAEGER_NAMESPACE}:8888
 
 Convert Json ${json} To Type
     ${json_dictionary} =  Evaluate  json.loads('''${json}''')  json

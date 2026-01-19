@@ -1734,6 +1734,30 @@ collector:
       telemetry:
         logs:
           level: info
+    processors:
+      memory_limiter:
+        # Enable memory limiter processor to prevent OOM issues
+        # Type: boolean
+        # Default: false
+        #
+        enabled: false
+        # How often to check memory usage
+        # Type: string (duration)
+        # Default: "1s"
+        #
+        check_interval: 1s
+        # Hard memory limit in MiB. When exceeded, garbage collection is triggered
+        # Should be set to approximately 75-80% of pod memory limit
+        # Type: integer
+        # Default: 4000
+        #
+        limit_mib: 4000
+        # Allowed memory spike in MiB. Soft limit = limit_mib - spike_limit_mib
+        # When soft limit is exceeded, processor starts rejecting incoming data
+        # Type: integer
+        # Default: 800
+        #
+        spike_limit_mib: 800
     exporters:
       jaeger_storage_exporter:
         # Retry configuration to save data in database
@@ -2292,6 +2316,21 @@ integrationTests:
   # PriorityClassName assigned to the Pods to prevent them from evicting.
   # Type: string
   # priorityClassName: "priorityClassName"
+
+  # TTL (Time To Live) in seconds after job completion
+  # Kubernetes will keep the Job and its Pods for this many seconds after completion
+  # This allows time to copy test results (output.xml, report.html, log.html) from the pod
+  # Uses Kubernetes built-in ttlSecondsAfterFinished feature for Jobs
+  # Type: integer (number of seconds, e.g., 120 for 2 minutes, 300 for 5 minutes)
+  # Default: unset (Job is deleted immediately after completion)
+  #
+  # ttlSecondsAfterFinished: 300
+
+  # Number of retries before marking the job as failed
+  # Type: integer
+  # Default: 0 (no retries)
+  #
+  # backoffLimit: 0
 
 statusProvisioner:
   install: true

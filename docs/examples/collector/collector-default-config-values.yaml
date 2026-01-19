@@ -29,6 +29,13 @@ collector:
       telemetry:
         logs:
           level: debug
+    processors:
+      memory_limiter:
+        # Enable memory limiter to prevent OOM issues
+        enabled: false
+        check_interval: 1s
+        limit_mib: 4000
+        spike_limit_mib: 800
     exporters:
       jaeger_storage_exporter:
         # Retry configuration to save data in database

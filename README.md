@@ -12,6 +12,7 @@ Helm charts that deploy a production-ready [Jaeger](https://www.jaegertracing.io
 * Optional Envoy proxy with Basic or OAuth2 auth in front of the Query UI
 * Grafana dashboards, Prometheus `PodMonitor`, readiness probes
 * Robot-Framework integration tests & Hotrod demo application
+* **Memory limiter processor** – Prevents OOM kills by managing memory usage and applying backpressure
 
 ## Requirements
 
@@ -60,6 +61,17 @@ jaeger:
     type: opensearch
 EOF
 ```
+
+```bash
+# Enable memory limiter to prevent OOM issues
+helm upgrade --install jaeger qubership-jaeger/qubership-jaeger \
+  -n jaeger --reuse-values \
+  --set collector.config.processors.memory_limiter.enabled=true \
+  --set collector.config.processors.memory_limiter.limit_mib=2048 \
+  --set collector.config.processors.memory_limiter.spike_limit_mib=256
+```
+
+**Note:** The memory limiter should be configured with `limit_mib` set to approximately 75-80% of the pod's memory limit to provide a safety margin.
 
 ## API Reference / Documentation
 
