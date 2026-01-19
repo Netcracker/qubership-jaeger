@@ -151,32 +151,40 @@ jobs:
       run: |
         attempt=1
         max_attempts=${{ env.max_attempts }}
-        echo "Delaying for ${{ env.delay }} seconds before checking cassandra cluster..."
-        sleep ${{ env.delay }}
         while [[ $attempt -le $max_attempts ]]; do
           echo "Attempt $attempt/$max_attempts: Checking k8ssandra cluster status..."
-          phase=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "NotFound")
-          ready=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "NotFound")
-          scheduled=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.conditions[?(@.type=="PodScheduled")].status}' 2>/dev/null || echo "SchedulingError")
-          if [[ "$ready" == "True" ]]; then
-            echo "k8ssandra cluster is ready."
-            break
-          elif [[ "$ready" == "False" && "$phase" == "Running" ]]; then
-            echo "k8ssandra cluster is not ready yet."
+          pod_count=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} --no-headers 2>/dev/null | wc -l)
+          if [[ $pod_count -eq 0 ]]; then
+            echo "Cassandra pod not found yet. Retrying in ${{ env.delay }} seconds..."
             sleep ${{ env.delay }}
             ((attempt++))
-          elif [[ "$phase" == "Pending" && "$scheduled" == "True" ]]; then
+            continue
+          fi
+          phase=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.phase}' 2>/dev/null)
+          ready=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "False")
+          if [[ "$phase" == "Failed" ]]; then
+            echo "Cassandra pod status: $phase"
+            cassandra_pod=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0].metadata.name}' --no-headers)
+            kubectl get events -n ${{ env.cassandra_namespace }} --for pod/"$cassandra_pod"
+            exit 1
+          elif [[ "$ready" == "True" ]]; then
+            echo "k8ssandra cluster is ready."
+            break
+          elif [[ "$phase" == "Running" && "$ready" == "False" ]]; then
+            echo "k8ssandra cluster is running but not ready yet."
+            sleep ${{ env.delay }}
+            ((attempt++))
+          elif [[ "$phase" == "Pending" ]]; then
             echo "k8ssandra cluster status: $phase. Retrying in ${{ env.delay }} seconds..."
             sleep ${{ env.delay }}
             ((attempt++))
           else
-            echo "k8ssandra cluster status: $phase"
-            cassandra_pod=$(kubectl get pod -l app.kubernetes.io/name=cassandra -n ${{ env.cassandra_namespace }} -o jsonpath='{.items[0]}' -o custom-columns=":metadata.name" --no-headers)
-            kubectl events -n ${{ env.cassandra_namespace }} --for pod/"$cassandra_pod"
-            exit 1
+            echo "k8ssandra cluster status: $phase. Retrying in ${{ env.delay }} seconds..."
+            sleep ${{ env.delay }}
+            ((attempt++))
           fi
         done
-        if [[ "$ready" != "True" && "$phase" != "Running" ]]; then
+        if [[ "$ready" != "True" ]]; then
           echo "ERROR: Maximum attempts reached. k8ssandra cluster is not ready."
           kubectl get pods -n ${{ env.cassandra_namespace }}
           echo -e "\n======================================================================"
