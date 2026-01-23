@@ -68,6 +68,8 @@ spec:
           {{- if and .Values.integrationTests.install .Values.integrationTests.statusWriting.enabled }}
           - name: INTEGRATION_TESTS_RESOURCE
             value: {{ printf "apps v1 deployments %s" .Values.integrationTests.service.name }}
+          - name: INTEGRATION_TESTS_TIMEOUT
+            value: {{ .Values.statusProvisioner.integrationTestsTimeout | default 600 | quote }}
           - name: ONLY_INTEGRATION_TESTS
             value: {{ .Values.integrationTests.statusWriting.onlyIntegrationTests | quote }}
           - name: IS_SHORT_STATUS_MESSAGE

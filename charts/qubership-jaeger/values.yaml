@@ -1748,16 +1748,19 @@ collector:
         check_interval: 1s
         # Hard memory limit in MiB. When exceeded, garbage collection is triggered
         # Should be set to approximately 75-80% of pod memory limit
+        # Default collector memory limit is 200Mi, so default is 150Mi (75% of 200Mi)
         # Type: integer
-        # Default: 4000
+        # Default: 150
         #
-        limit_mib: 4000
+        limit_mib: 150
         # Allowed memory spike in MiB. Soft limit = limit_mib - spike_limit_mib
         # When soft limit is exceeded, processor starts rejecting incoming data
+        # Should be set to approximately 15-20% of pod memory limit
+        # Default collector memory limit is 200Mi, so default is 30Mi (15% of 200Mi)
         # Type: integer
-        # Default: 800
+        # Default: 30
         #
-        spike_limit_mib: 800
+        spike_limit_mib: 30
     exporters:
       jaeger_storage_exporter:
         # Retry configuration to save data in database
@@ -2237,7 +2240,7 @@ query:
 integrationTests:
   install: false
   # image: "ghcr.io/netcracker/jaeger-integration-tests:main"
-  tags: "smoke"
+  tags: "smokeORmemory_limiter"
   linkForGenerator: "http://jaeger-collector:9411"
   generateCount: 10
   waitingTime: 500ms

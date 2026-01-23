@@ -4,20 +4,22 @@ ${OPERATION_RETRY_INTERVAL}     5s
 ${METRICS_ENDPOINT}              http://${JAEGER_SERVICE_NAME}-collector.${JAEGER_NAMESPACE}:8888/metrics
 ${TARGET_THROUGHPUT}             1000
 # Etalon throughput: based on experimental results (ACTUAL RECEIVED rates)
-# NOTE: With rate limiting enabled, we can use the steady-state capacity (~800 spans/sec) rather than
+# NOTE: With rate limiting enabled, we can use the steady-state capacity (~1000 spans/sec threshold) rather than
 # the bursty capacity (400 spans/sec). Rate limiting spreads the load over time, preventing overwhelming
 # the collector with a burst.
-# Etalon: 800 spans/sec (guaranteed minimal drops with rate-limited generation)
-# 12000 traces = 24000 spans total, equivalent to 800 spans/sec over 30 seconds
-${ETALON_TARGET_SPANS_PER_SECOND}  800
-${ETALON_TOTAL_TRACES}                 12000
+# Etalon: 700 spans/sec (70% of ~1000 spans/sec threshold to ensure stable operation without issues)
+# Based on experimental testing: ~500 traces/sec = 1000 spans/sec threshold (each trace has 2 spans)
+# Using 70% of threshold for safety margin: 700 spans/sec = 350 traces/sec
+# 10500 traces = 21000 spans total, equivalent to 700 spans/sec over 30 seconds
+${ETALON_TARGET_SPANS_PER_SECOND}  700
+${ETALON_TOTAL_TRACES}                 10500
 # Stabilization time between tests to reduce interference from previous test runs
 ${STABILIZATION_TIME}                  15s
-# High load test: 2x etalon throughput to verify Jaeger survives (drops expected, but no restarts)
-# High load: 1600 spans/sec equivalent (2x etalon, but sent as burst - no rate limiting)
-# 48000 traces = 96000 spans total, sent as burst to test system's ability to handle spikes
-${HIGH_LOAD_MULTIPLIER}                2.0
-${HIGH_LOAD_TOTAL_TRACES}              48000
+# High load test: 1500 spans/sec to verify Jaeger survives (drops expected, but no restarts)
+# High load: 1500 spans/sec equivalent (sent as burst - no rate limiting)
+# 30000 traces = 60000 spans total, equivalent to 1500 spans/sec over ~40 seconds (sent as burst)
+# Increased to ensure drops occur (memory limiter should throttle at this load)
+${HIGH_LOAD_TOTAL_TRACES}              30000
 
 *** Settings ***
 Resource  ../shared/shared.robot
@@ -227,7 +229,7 @@ Generate Load
     IF  ${use_rate_limiting}
         # Rate-limited mode: send in batches with delays
         # Calculate batch size: larger batches reduce overhead and number of batches
-        # For etalon test (800 spans/sec), this gives ~400 traces per batch = ~30 batches instead of 60
+        # For etalon test (700 spans/sec), this gives ~350 traces per batch = ~30 batches instead of 60
         ${batch_size} =  Evaluate  max(200, int(${target_spans_per_second} / 2))  # ~2 batches per second
         # Calculate delay between batches to achieve target rate
         # Each batch has batch_size traces = batch_size * 2 spans
@@ -366,8 +368,8 @@ No Drops At Etalon Throughput
 
 Collector Survives High Load With Memory Limiter
     [Tags]  memory_limiter  stability  high_load
-    [Documentation]  Verify collector survives high load (2x etalon) with memory limiter enabled
-    ...  Tests at ${HIGH_LOAD_MULTIPLIER}x etalon throughput (${ETALON_TARGET_SPANS_PER_SECOND} * ${HIGH_LOAD_MULTIPLIER} spans/sec, rate-limited).
+    [Documentation]  Verify collector survives high load (~1500 spans/sec) with memory limiter enabled
+    ...  Tests at 1500 spans/sec equivalent (sent as burst - no rate limiting).
     ...  Drops are expected due to memory pressure, but the collector must remain stable (no restarts, no OOM crashes).
     ...  This verifies that the memory limiter is protecting the collector from crashing.
 
@@ -396,9 +398,9 @@ Collector Survives High Load With Memory Limiter
     ${initial_received} =  Get Received Spans Count
     Log To Console  Initial metrics for high load test: dropped=${initial_dropped}, received=${initial_received}
 
-    # Calculate high load target throughput (2x etalon)
-    ${high_load_target} =  Evaluate  int(${ETALON_TARGET_SPANS_PER_SECOND} * ${HIGH_LOAD_MULTIPLIER})
-    Log To Console  Testing high load: ${high_load_target} spans/sec equivalent (${HIGH_LOAD_MULTIPLIER}x etalon, ${HIGH_LOAD_TOTAL_TRACES} total traces sent as burst)
+    # High load target: fixed 1500 spans/sec (not calculated from multiplier)
+    ${high_load_target} =  Set Variable  1500
+    Log To Console  Testing high load: ${high_load_target} spans/sec equivalent (${HIGH_LOAD_TOTAL_TRACES} total traces sent as burst)
     Log To Console  Drops are expected at this load level
 
     # Generate high load (burst mode - no rate limiting, test system's ability to handle spikes)

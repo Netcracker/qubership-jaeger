@@ -86,7 +86,7 @@ Check Query Pod
 
 Check Collector Pods
     ${pods_running} =  Check Deployment State  ${JAEGER_SERVICE_NAME}-collector
-    Should Be True  ${pods_running} == True
+    Should Be True  ${pods_running} == True  Collector pods are not running or deployment is not ready. Check if pods crashed or restarted.
 
 Get List Pod Names For Deployment Entity
     [Arguments]  ${component}

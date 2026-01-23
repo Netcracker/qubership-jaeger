@@ -337,8 +337,8 @@ data:
       {{- if eq (include "collector.memoryLimiterEnabled" .) "true" }}
       memory_limiter:
         check_interval: {{ .Values.collector.config.processors.memory_limiter.check_interval | default "1s" }}
-        limit_mib: {{ .Values.collector.config.processors.memory_limiter.limit_mib | default 4000 }}
-        spike_limit_mib: {{ .Values.collector.config.processors.memory_limiter.spike_limit_mib | default 800 }}
+        limit_mib: {{ .Values.collector.config.processors.memory_limiter.limit_mib | default 150 }}
+        spike_limit_mib: {{ .Values.collector.config.processors.memory_limiter.spike_limit_mib | default 30 }}
       {{- end }}
       batch:
     exporters:
