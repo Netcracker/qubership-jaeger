@@ -42,7 +42,7 @@ Generate Load At Rate
     ${total_spans} =  Evaluate  ${total_traces} * 2  # Each trace has 2 spans
     ${spans_per_second} =  Evaluate  ${traces_per_second} * 2  # Each trace has 2 spans
     ${collector_endpoint} =  Set Variable  ${JAEGER_SERVICE_NAME}-collector.${JAEGER_NAMESPACE}:4317
-    
+
     # Rate-limited mode: send in batches with delays to achieve target rate
     # Calculate batch size: larger batches reduce overhead, but smaller batches give smoother rate
     # Use ~2 batches per second for smoother rate control
@@ -54,10 +54,10 @@ Generate Load At Rate
     ${batch_delay} =  Evaluate  (${batch_size} * 2.0) / ${spans_per_second}
     ${num_batches} =  Evaluate  int((${total_traces} + ${batch_size} - 1) / ${batch_size})  # Ceiling division
     ${batch_delay_formatted} =  Evaluate  '{:.3f}'.format(${batch_delay})
-    
+
     Log To Console  Generating ${total_traces} traces (${total_spans} spans total, target: ${traces_per_second} traces/sec = ${spans_per_second} spans/sec for ${duration}) with rate limiting
     Log To Console  Rate limiting: batch_size=${batch_size}, batches=${num_batches}, delay=${batch_delay_formatted}s between batches
-    
+
     # Send in batches with delays
     ${remaining_traces} =  Set Variable  ${total_traces}
     FOR  ${batch_num}  IN RANGE  1  ${num_batches} + 1
@@ -91,7 +91,7 @@ Test Throughput For Drops
 
     # Calculate spans/sec (each trace has 2 spans)
     ${spans_per_second} =  Evaluate  ${traces_per_second} * 2
-    
+
     # Generate load (traces_per_second traces/sec = spans_per_second spans/sec since each trace = 2 spans)
     Generate Load At Rate  ${traces_per_second}  ${LOAD_TEST_DURATION}
 

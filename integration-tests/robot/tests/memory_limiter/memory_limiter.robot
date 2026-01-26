@@ -15,11 +15,11 @@ ${ETALON_TARGET_SPANS_PER_SECOND}  700
 ${ETALON_TOTAL_TRACES}                 10500
 # Stabilization time between tests to reduce interference from previous test runs
 ${STABILIZATION_TIME}                  15s
-# High load test: 1500 spans/sec to verify Jaeger survives (drops expected, but no restarts)
-# High load: 1500 spans/sec equivalent (sent as burst - no rate limiting)
-# 30000 traces = 60000 spans total, equivalent to 1500 spans/sec over ~40 seconds (sent as burst)
-# Increased to ensure drops occur (memory limiter should throttle at this load)
-${HIGH_LOAD_TOTAL_TRACES}              30000
+# High load test: 2300 spans/sec to verify Jaeger survives (drops expected, but no restarts)
+# High load: 2300 spans/sec with rate limiting (sustained load to trigger memory limiter)
+# 20000 traces = 40000 spans total, equivalent to 2300 spans/sec over ~17 seconds (with rate limiting)
+# Set to 2300 spans/sec to apply sustained pressure and trigger drops
+${HIGH_LOAD_TOTAL_TRACES}              20000
 
 *** Settings ***
 Resource  ../shared/shared.robot
@@ -79,6 +79,112 @@ Get Sent Spans Count
 Get Received Spans Count
     ${value} =  Get Metrics Value  otelcol_receiver_accepted_spans_total
     RETURN  ${value}
+
+Get Collector Pod Restart Counts
+    [Arguments]  ${pods_str}
+    [Documentation]  Get restart counts for collector pods
+    ...  Returns a string representation: "pod1:count1,pod2:count2" for easy comparison
+    IF  '${pods_str}' == '${EMPTY}'
+        RETURN  ${EMPTY}
+    END
+    ${pod_list} =  Evaluate  '${pods_str}'.split(',') if '${pods_str}' else []
+    ${restart_info} =  Create List
+    FOR  ${pod_name}  IN  @{pod_list}
+        ${restart_count} =  Get Pod Container Restart Count  ${pod_name}  collector
+        Append To List  ${restart_info}  ${pod_name}:${restart_count}
+    END
+    ${result} =  Evaluate  ','.join(sorted($restart_info)) if $restart_info else ''
+    RETURN  ${result}
+
+Get Pod Container Restart Count
+    [Arguments]  ${pod_name}  ${container_name}
+    [Documentation]  Get restart count for a specific container in a pod using Kubernetes API
+    ${restart_count} =  Evaluate  __import__('sys').path.insert(0, '${CURDIR}/../libs') or __import__('pod_helper', fromlist=['get_pod_container_restart_count']).get_pod_container_restart_count('${pod_name}', '${container_name}', '${JAEGER_NAMESPACE}')
+    RETURN  ${restart_count}
+
+Get Pod Container Termination Details
+    [Arguments]  ${pod_name}  ${container_name}
+    [Documentation]  Get termination details (reason, exit code, message) for a container's last termination
+    ...  Returns a dictionary with 'reason', 'exitCode', 'message', 'finishedAt', or None if no termination
+    ${termination_info} =  Evaluate  __import__('sys').path.insert(0, '${CURDIR}/../libs') or __import__('pod_helper', fromlist=['get_pod_container_termination_details']).get_pod_container_termination_details('${pod_name}', '${container_name}', '${JAEGER_NAMESPACE}')
+    RETURN  ${termination_info}
+
+Get Pod Events
+    [Arguments]  ${pod_name}  ${limit}=20
+    [Documentation]  Get recent events for a pod using Kubernetes API
+    ${events_list} =  Evaluate  __import__('sys').path.insert(0, '${CURDIR}/../libs') or __import__('pod_helper', fromlist=['get_pod_events']).get_pod_events('${pod_name}', '${JAEGER_NAMESPACE}', ${limit})
+    ${events_str} =  Evaluate  '\\n'.join($events_list) if $events_list else ''
+    RETURN  ${events_str}
+
+Check And Display Restart Details
+    [Arguments]  ${pods_before_str}  ${restarts_before}  ${pods_after_str}  ${restarts_after}
+    [Documentation]  Compare restart counts and display detailed restart information if restarts occurred
+    ...  Returns: tuple (had_restarts, restart_reason) where had_restarts is boolean and restart_reason is string
+    Log To Console  Checking for container restarts...
+    ${pods_before_list} =  Evaluate  '${pods_before_str}'.split(',') if '${pods_before_str}' else []
+    ${pods_after_list} =  Evaluate  '${pods_after_str}'.split(',') if '${pods_after_str}' else []
+    # Parse restart counts from string format "pod1:count1,pod2:count2"
+    ${restarts_before_dict} =  Evaluate  {item.split(':')[0]: int(item.split(':')[1]) for item in '${restarts_before}'.split(',') if ':' in item} if '${restarts_before}' else {}
+    ${restarts_after_dict} =  Evaluate  {item.split(':')[0]: int(item.split(':')[1]) for item in '${restarts_after}'.split(',') if ':' in item} if '${restarts_after}' else {}
+    ${had_restarts} =  Set Variable  ${False}
+    ${restart_reason} =  Set Variable  ${EMPTY}
+    # Check each pod that existed before
+    FOR  ${pod_name}  IN  @{pods_before_list}
+        ${restart_before} =  Evaluate  $restarts_before_dict.get('${pod_name}', 0) if $restarts_before_dict else 0
+        ${restart_after} =  Evaluate  $restarts_after_dict.get('${pod_name}', 0) if $restarts_after_dict else 0
+        ${restart_delta} =  Evaluate  ${restart_after} - ${restart_before}
+        IF  ${restart_delta} > 0
+            ${had_restarts} =  Set Variable  ${True}
+            Log To Console  ⚠️  Container restarted: ${pod_name} (restart count increased from ${restart_before} to ${restart_after})
+            # Get termination details
+            ${termination_info} =  Get Pod Container Termination Details  ${pod_name}  collector
+            ${has_termination} =  Evaluate  $termination_info is not None and isinstance($termination_info, dict) and len($termination_info) > 0
+            IF  ${has_termination}
+                ${reason} =  Evaluate  $termination_info.get('reason', 'Unknown') if $termination_info else 'Unknown'
+                ${exit_code} =  Evaluate  $termination_info.get('exitCode', 'N/A') if $termination_info else 'N/A'
+                ${message} =  Evaluate  $termination_info.get('message', 'N/A') if $termination_info else 'N/A'
+                ${finished_at} =  Evaluate  $termination_info.get('finishedAt', 'N/A') if $termination_info else 'N/A'
+                Log To Console  └─ Termination reason: ${reason}
+                Log To Console  └─ Exit code: ${exit_code}
+                Log To Console  └─ Finished at: ${finished_at}
+                ${has_message} =  Evaluate  '${message}' != 'N/A' and '${message}' != '' and '${message}' != 'None'
+                IF  ${has_message}
+                    Log To Console  └─ Message: ${message}
+                END
+                # Store the reason for the first restart (most important)
+                IF  '${restart_reason}' == '${EMPTY}'
+                    ${restart_reason} =  Set Variable  ${reason}
+                END
+            ELSE
+                Log To Console  └─ No termination details available (container may have been restarted by Kubernetes or details not yet available)
+                IF  '${restart_reason}' == '${EMPTY}'
+                    ${restart_reason} =  Set Variable  Unknown
+                END
+            END
+            # Get recent events
+            ${events} =  Get Pod Events  ${pod_name}  10
+            ${has_events} =  Evaluate  '${events}' != '' and '${events}' != '${EMPTY}' and '${events}' != 'None'
+            IF  ${has_events}
+                Log To Console  └─ Recent pod events:
+                ${event_lines} =  Evaluate  '${events}'.split('\\n') if '${events}' else []
+                FOR  ${line}  IN  @{event_lines}
+                    ${line_stripped} =  Evaluate  '${line}'.strip()
+                    ${is_non_empty} =  Evaluate  '${line_stripped}' != ''
+                    IF  ${is_non_empty}
+                        Log To Console  └─   ${line_stripped}
+                    END
+                END
+            END
+        END
+    END
+    # Check if any new pods appeared (shouldn't happen, but log if it does)
+    FOR  ${pod_name}  IN  @{pods_after_list}
+        ${was_before} =  Evaluate  '${pod_name}' in '${pods_before_str}'
+        IF  not ${was_before}
+            Log To Console  ⚠️  New pod appeared: ${pod_name} (was not present before test)
+        END
+    END
+    RETURN  ${had_restarts}  ${restart_reason}
 
 Wait For Metrics Available
     Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
@@ -394,17 +500,19 @@ Collector Survives High Load With Memory Limiter
         END
     END
     ${pods_before_str} =  Evaluate  ','.join(sorted('${pods_before_str}'.split(','))) if '${pods_before_str}' else ''
+    # Store restart counts before load test
+    ${restarts_before} =  Get Collector Pod Restart Counts  ${pods_before_str}
     ${initial_dropped} =  Get Dropped Spans Count
     ${initial_received} =  Get Received Spans Count
     Log To Console  Initial metrics for high load test: dropped=${initial_dropped}, received=${initial_received}
 
-    # High load target: fixed 1500 spans/sec (not calculated from multiplier)
-    ${high_load_target} =  Set Variable  1500
-    Log To Console  Testing high load: ${high_load_target} spans/sec equivalent (${HIGH_LOAD_TOTAL_TRACES} total traces sent as burst)
+    # High load target: fixed 2300 spans/sec with rate limiting (sustained load)
+    ${high_load_target} =  Set Variable  2300
+    Log To Console  Testing high load: ${high_load_target} spans/sec with rate limiting (${HIGH_LOAD_TOTAL_TRACES} total traces)
     Log To Console  Drops are expected at this load level
 
-    # Generate high load (burst mode - no rate limiting, test system's ability to handle spikes)
-    ${actual_generation_rate} =  Generate Load  ${HIGH_LOAD_TOTAL_TRACES}
+    # Generate high load with rate limiting (sustained load to trigger memory limiter throttling)
+    ${actual_generation_rate} =  Generate Load  ${HIGH_LOAD_TOTAL_TRACES}  ${high_load_target}
     # Compare actual generation rate with high load target
     ${rate_diff} =  Evaluate  ${actual_generation_rate} - ${high_load_target}
     ${rate_diff_percent} =  Evaluate  (${rate_diff} / ${high_load_target} * 100) if ${high_load_target} > 0 else 0
@@ -416,8 +524,18 @@ Collector Survives High Load With Memory Limiter
     Sleep  10s
 
     # Verify collector pods are still running (no restarts, no crashes)
-    Check Collector Pods
-    Get List Pod Names For Deployment Entity  collector
+    # Use Run Keyword And Return Status to check pods, but continue even if it fails to gather diagnostics
+    ${pods_check_passed} =  Run Keyword And Return Status  Check Collector Pods
+    IF  not ${pods_check_passed}
+        Log To Console  WARNING: Collector pods check failed - attempting to gather diagnostic information...
+        # Try to get pod list anyway to see what's available
+        ${got_pods} =  Run Keyword And Return Status  Get List Pod Names For Deployment Entity  collector
+        IF  not ${got_pods}
+            Log To Console  ERROR: Could not retrieve pod list - collector deployment may have failed completely
+        END
+    ELSE
+        Get List Pod Names For Deployment Entity  collector
+    END
     ${pods_after_count} =  Get Length  @{list_pods}
     # Build comma-separated string from list for comparison
     ${pods_after_str} =  Set Variable  ${EMPTY}
@@ -430,11 +548,32 @@ Collector Survives High Load With Memory Limiter
     END
     ${pods_after_str} =  Evaluate  ','.join(sorted('${pods_after_str}'.split(','))) if '${pods_after_str}' else ''
 
-    # Verify pod names haven't changed (no restarts)
-    Should Be Equal  ${pods_before_str}  ${pods_after_str}
-    ...  FAIL: Collector pods restarted or crashed during high load test. Memory limiter may not be working correctly.
+    # Verify pod names haven't changed (no restarts) - but only if we successfully got pod list
+    IF  '${pods_after_str}' != '${EMPTY}'
+        Should Be Equal  ${pods_before_str}  ${pods_after_str}
+        ...  FAIL: Collector pods restarted or crashed during high load test. Pod names changed from '${pods_before_str}' to '${pods_after_str}'. Memory limiter may not be working correctly.
+    ELSE
+        Log To Console  ERROR: Could not retrieve pod list after high load - collector may have crashed
+        Fail  Collector pods are not available after high load test. The collector deployment may have failed completely. Check pod status and logs.
+    END
 
-    # Get final metrics
+    # Get final metrics - use Run Keyword And Return Status in case collector crashed
+    ${got_metrics} =  Run Keyword And Return Status  Get Dropped Spans Count
+    IF  not ${got_metrics}
+        Log To Console  ERROR: Could not retrieve metrics after high load - collector may have crashed
+        # Try to check for restarts to provide diagnostic information
+        ${restarts_after} =  Get Collector Pod Restart Counts  ${pods_after_str}
+        ${had_restarts}  ${restart_reason} =  Check And Display Restart Details  ${pods_before_str}  ${restarts_before}  ${pods_after_str}  ${restarts_after}
+        IF  ${had_restarts}
+            ${error_msg} =  Set Variable  FAIL: Collector container restarted and became unavailable during high load test (reason: ${restart_reason}). Memory limiter failed to protect the collector.
+            IF  '${restart_reason}' == 'OOMKilled'
+                ${error_msg} =  Set Variable  FAIL: Collector container was OOMKilled and became unavailable during high load test. Memory limiter failed to protect the collector from memory exhaustion.
+            END
+            Fail  ${error_msg}
+        ELSE
+            Fail  Collector became unavailable after high load test and metrics are not accessible. This may indicate the collector crashed. Check pod logs and events for details. No container restarts were detected, but the collector is not responding.
+        END
+    END
     ${final_dropped} =  Get Dropped Spans Count
     ${final_received} =  Get Received Spans Count
     ${dropped_delta} =  Evaluate  ${final_dropped} - ${initial_dropped}
@@ -448,9 +587,18 @@ Collector Survives High Load With Memory Limiter
     # At high load, drops are expected - verify they occurred (memory limiter is working)
     # Handle case where metrics might have reset (negative deltas) - skip drop check in that case
     ${metrics_valid} =  Evaluate  ${dropped_delta} >= 0 and ${received_delta} >= 0
+    ${had_restarts} =  Set Variable  ${False}
+    ${restart_reason} =  Set Variable  ${EMPTY}
     IF  not ${metrics_valid}
-        Log To Console  WARNING: Metrics deltas are negative (dropped_delta=${dropped_delta}, received_delta=${received_delta}). This may indicate metrics reset. Skipping drop verification.
+        Log To Console  WARNING: Metrics deltas are negative (dropped_delta=${dropped_delta}, received_delta=${received_delta}). This may indicate metrics reset.
+        # Check for container restarts and display restart reasons
+        ${restarts_after} =  Get Collector Pod Restart Counts  ${pods_after_str}
+        ${had_restarts}  ${restart_reason} =  Check And Display Restart Details  ${pods_before_str}  ${restarts_before}  ${pods_after_str}  ${restarts_after}
+        Log To Console  Skipping drop verification due to metrics reset.
     ELSE
+        # Also check for restarts even when metrics are valid (restart might not cause metrics reset)
+        ${restarts_after} =  Get Collector Pod Restart Counts  ${pods_after_str}
+        ${had_restarts}  ${restart_reason} =  Check And Display Restart Details  ${pods_before_str}  ${restarts_before}  ${pods_after_str}  ${restarts_after}
         ${has_drops} =  Evaluate  ${dropped_delta} > 0
         IF  not ${has_drops}
             Log To Console  WARNING: No drops occurred at high load (${high_load_target} equivalent spans/sec). This might indicate memory limiter is not configured correctly or load was not high enough, but pod stability was verified.
@@ -459,11 +607,32 @@ Collector Survives High Load With Memory Limiter
         END
     END
 
-    Log To Console  ✓ Collector survived high load (${high_load_target} equivalent spans/sec)
-    Log To Console  ✓ Memory limiter protected collector: ${dropped_delta} spans dropped, but no crashes/restarts
+    # Fail the test if container restarts occurred (especially OOMKilled)
+    IF  ${had_restarts}
+        ${error_msg} =  Set Variable  FAIL: Collector container restarted during high load test (reason: ${restart_reason}). Memory limiter should prevent crashes/restarts. This indicates the memory limiter configuration may be insufficient or the load is too high.
+        IF  '${restart_reason}' == 'OOMKilled'
+            ${error_msg} =  Set Variable  FAIL: Collector container was OOMKilled during high load test. Memory limiter failed to protect the collector from memory exhaustion. This indicates the memory limiter limit may be too high or the load exceeds the system's capacity.
+        END
+        Fail  ${error_msg}
+    END
 
-    # Wait for exporter queue to drain after high load (allows next test to start with clean state)
-    # Use 2 minutes to allow queue to drain (typically takes 1-2 minutes based on monitoring)
-    Wait For Collector To Stabilize  2
+    # Only proceed with post-test verification if collector is still running
+    IF  ${pods_check_passed} and not ${had_restarts}
+        Log To Console  ✓ Collector survived high load (${high_load_target} equivalent spans/sec)
+        Log To Console  ✓ Memory limiter protected collector: ${dropped_delta} spans dropped, but no crashes/restarts
+
+        # Wait for exporter queue to drain after high load (allows next test to start with clean state)
+        # Use 2 minutes to allow queue to drain (typically takes 1-2 minutes based on monitoring)
+        # Use Run Keyword And Return Status in case collector crashes during drain
+        ${stabilize_passed} =  Run Keyword And Return Status  Wait For Collector To Stabilize  2
+        IF  not ${stabilize_passed}
+            Log To Console  WARNING: Collector became unavailable during queue drain - may have crashed after high load test
+            Fail  Collector became unavailable after high load test. This may indicate the collector crashed or restarted after the test completed.
+        END
+    ELSE
+        IF  not ${pods_check_passed}
+            Fail  Collector pods are not running after high load test. The collector may have crashed or been OOMKilled. Check pod logs and events for details.
+        END
+    END
 
 
