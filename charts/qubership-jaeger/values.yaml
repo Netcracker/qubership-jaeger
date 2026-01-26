@@ -2241,6 +2241,7 @@ integrationTests:
   install: false
   # image: "ghcr.io/netcracker/jaeger-integration-tests:main"
   tags: "smokeORmemory_limiter"
+  hookDeletePolicy: "before-hook-creation,hook-succeeded,hook-failed"
   linkForGenerator: "http://jaeger-collector:9411"
   generateCount: 10
   waitingTime: 500ms
