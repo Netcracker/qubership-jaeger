@@ -129,6 +129,41 @@ jobs:
       version: ${{ github.event.inputs.version }}
       publish: false
 
+  fix-changelog:
+    permissions:
+      contents: write
+    needs: [github-release]
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.inputs.version, '0.')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Fix changelog compare URL
+        env:
+          CURRENT: v${{ github.event.inputs.version }}
+        run: |
+          set -e
+          body="$(gh release view "$CURRENT" --json body -q .body 2>/dev/null)" || true
+          if [ -z "$body" ]; then
+            echo "::warning::Draft release $CURRENT not found or empty (e.g. release-drafter failed). Skipping changelog fix."
+            exit 0
+          fi
+          TAGS="$(git tag -l 'v0.*' | grep -v "^${CURRENT}$" || true)"
+          PREVIOUS="$( (echo "$TAGS"; echo "$CURRENT") | sort -V | grep -B1 "^${CURRENT}$" | head -1 || true)"
+          if [ -z "$PREVIOUS" ] || [ "$PREVIOUS" = "$CURRENT" ]; then
+            echo "::notice::No previous v0.x tag found, skipping changelog fix"
+            exit 0
+          fi
+          echo "Previous tag: $PREVIOUS"
+          fixed="$(printf '%s' "$body" | perl -pe "s|(compare/)(.*?)(\\.\\.\\.)|\1${PREVIOUS}\3|")"
+          printf '%s' "$fixed" > /tmp/release-notes.md
+          gh release edit "$CURRENT" --notes-file /tmp/release-notes.md
+          echo "Updated draft release changelog: compare/$PREVIOUS...$CURRENT"
+
   upload-assets:
     needs: [github-release]
     permissions:
