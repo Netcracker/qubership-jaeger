@@ -144,12 +144,28 @@ jobs:
 
       - name: Fix changelog compare URL
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
           CURRENT: v${{ github.event.inputs.version }}
         run: |
           set -e
-          body="$(gh release view "$CURRENT" --json body -q .body 2>/dev/null)" || true
-          if [ -z "$body" ]; then
-            echo "::warning::Draft release $CURRENT not found or empty (e.g. release-drafter failed). Skipping changelog fix."
+          # Use API for both fetch and update; gh release view/edit can skip drafts
+          fetch_release() { gh api "repos/${REPO}/releases/tags/${1}" 2>/dev/null || true; }
+          valid_release() { [ -n "$1" ] && [ "$(echo "$1" | jq -r '.id // "null"')" != "null" ]; }
+          json=""; release_id=""; body=""
+          for attempt in 1 2 3; do
+            json="$(fetch_release "$CURRENT")"
+            if valid_release "$json"; then break; fi
+            alt_tag="${{ github.event.inputs.version }}"
+            echo "Trying tag without v: $alt_tag"
+            json="$(fetch_release "$alt_tag")"
+            if valid_release "$json"; then CURRENT="$alt_tag"; break; fi
+            [ "$attempt" -lt 3 ] && echo "Draft not visible yet, retry $attempt/3 in 10s..." && sleep 10
+          done
+          release_id="$(echo "$json" | jq -r '.id')"
+          body="$(echo "$json" | jq -r '.body // empty')"
+          if [ -z "$body" ] || [ "$release_id" = "null" ]; then
+            echo "::warning::Draft release for v${{ github.event.inputs.version }} (tried with and without 'v') not found or empty after retries. Skipping changelog fix."
             exit 0
           fi
           TAGS="$(git tag -l 'v0.*' | grep -v "^${CURRENT}$" || true)"
@@ -161,7 +177,7 @@ jobs:
           echo "Previous tag: $PREVIOUS"
           fixed="$(printf '%s' "$body" | perl -pe "s|(compare/)(.*?)(\\.\\.\\.)|\1${PREVIOUS}\3|")"
           printf '%s' "$fixed" > /tmp/release-notes.md
-          gh release edit "$CURRENT" --notes-file /tmp/release-notes.md
+          jq -n --rawfile b /tmp/release-notes.md '{body: $b}' | gh api -X PATCH "repos/${REPO}/releases/${release_id}" --input -
           echo "Updated draft release changelog: compare/$PREVIOUS...$CURRENT"
 
   upload-assets:

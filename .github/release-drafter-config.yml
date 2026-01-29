@@ -1,6 +1,12 @@
 name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
-
+# Only consider v0.* tags for "previous release" / $PREVIOUS_TAG (avoids picking 1.x)
+tag-prefix: 'v0.'
+# Consider only releases whose target branch matches current ref (pgjdbc-style; helps if 1.x vs 0.x on different branches)
+filter-by-commitish: true
+# Limit GraphQL history fetch; many commits between releases → 502/timeouts (release-drafter#1018, #1419)
+history-limit: 100
+pull-request-limit: 5
 
 categories:
   - title: '💥 Breaking Changes'
