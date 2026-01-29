@@ -32,15 +32,15 @@ change-template: "- (#$NUMBER) $TITLE by @$AUTHOR"
 
 no-changes-template: 'No significant changes'
 
+# Full Changelog link injected via workflow footer (correct previous v0.x tag).
+# Explicit empty footer suppresses RD's default "Full Changelog" (uses $PREVIOUS_TAG).
+footer: ''
+
 template: |
   ## 🚀 Release
 
   ### What's Changed
   $CHANGES
-
-  ---
-
-  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
 
 version-resolver:
   major:
