@@ -31,7 +31,7 @@ data:
       pipelines:
         traces:
           receivers: [otlp, jaeger, zipkin]
-          processors: [batch]
+          processors: [transform, batch]
           exporters: [jaeger_storage_exporter]
       telemetry:
         resource:
@@ -335,6 +335,15 @@ data:
         {{- end }}
     processors:
       batch:
+      transform:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              - limit(span.attributes, 56, ["name", "kind", "operation.name", "error", "component"])
+              - limit(resource.attributes, 32, ["service.name", "service.namespace", "service.version", "host.name"])
+              - truncate_all(span.attributes, 1024)
+              - truncate_all(resource.attributes, 256)
     exporters:
       jaeger_storage_exporter:
         trace_storage: {{ if eq .Values.jaeger.storage.type "cassandra" }}main_cassandra{{ else if eq .Values.jaeger.storage.type "elasticsearch" }}main_elasticsearch{{ else if eq .Values.jaeger.storage.type "remotegRPC" }}remote_grpc{{- end }}
