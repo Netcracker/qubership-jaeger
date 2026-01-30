@@ -1947,6 +1947,45 @@ collector:
         # Default: 30
         #
         spike_limit_mib: 30
+      transform:
+        # Enable transform processor to limit attribute count and attribute value size.
+        # Requires a Jaeger image that includes the OpenTelemetry transform processor.
+        # Type: boolean
+        # Default: false
+        #
+        enabled: false
+        span:
+          # Maximum number of span attributes to keep.
+          # Type: integer
+          # Default: 56
+          #
+          limit: 56
+          # Span attributes that are preserved first when the limit is applied.
+          # Type: list[string]
+          # Default: ["name", "kind", "operation.name", "error", "component"]
+          #
+          priorityAttributes: [name, kind, operation.name, error, component]
+          # Maximum span attribute value length.
+          # Type: integer
+          # Default: 1024
+          #
+          maxAttributeValueLength: 1024
+        resource:
+          # Maximum number of resource attributes to keep.
+          # Type: integer
+          # Default: 32
+          #
+          limit: 32
+          # Resource attributes that are preserved first when the limit is applied.
+          # Type: list[string]
+          # Default: ["service.name", "service.namespace", "service.version", "host.name"]
+          #
+          priorityAttributes: [service.name, service.namespace, service.version, host.name]
+          # Maximum resource attribute value length.
+          # Type: integer
+          # Default: 256
+          #
+          maxAttributeValueLength: 256
     exporters:
       jaeger_storage_exporter:
         # Retry configuration to save data in database
