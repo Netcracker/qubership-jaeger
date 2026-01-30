@@ -3,27 +3,21 @@
 from typing import Dict, List, Optional
 
 try:
-    from kubernetes import client, config
+    from kubernetes import client
 
     KUBERNETES_AVAILABLE = True
 except ImportError:
     KUBERNETES_AVAILABLE = False
 
+from PlatformLibrary import get_kubernetes_api_client
+
 
 def _get_k8s_client():
-    """Initialize and return Kubernetes API client."""
+    """Initialize and return Kubernetes API client (CoreV1Api) via platform get_kubernetes_api_client."""
     if not KUBERNETES_AVAILABLE:
         return None
-    try:
-        # Try to load in-cluster config first (for pods running in Kubernetes)
-        config.load_incluster_config()
-    except config.ConfigException:
-        try:
-            # Fall back to kubeconfig file (for local development)
-            config.load_kube_config()
-        except config.ConfigException:
-            return None
-    return client.CoreV1Api()
+    api_client = get_kubernetes_api_client()
+    return client.CoreV1Api(api_client)
 
 
 def get_pod_container_restart_count(pod_name: str, container_name: str, namespace: str) -> int:

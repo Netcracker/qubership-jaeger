@@ -206,7 +206,6 @@ jobs:
           --set "readinessProbe.image=ghcr.io/netcracker/jaeger-readiness-probe:$TAG" \
           --set "integrationTests.install=true" \
           --set "integrationTests.hookDeletePolicy=before-hook-creation" \
-          --set "statusProvisioner.integrationTestsTimeout=1200" \
           --set "integrationTests.image=ghcr.io/netcracker/jaeger-integration-tests:$TAG"
       shell: bash
 

@@ -239,9 +239,10 @@ Wait For Collector To Stabilize
 
     # Extended monitoring period if requested (for after high load tests to wait for exporter queue to drain)
     IF  ${monitoring_duration_minutes} > 0
-        Log To Console  Waiting ${monitoring_duration_minutes} minutes for exporter queue to drain after high load...
+        Log To Console  Waiting up to ${monitoring_duration_minutes} minutes for exporter queue to drain (will exit early if stable)...
         ${monitoring_interval} =  Evaluate  5  # Check every 5 seconds
         ${monitoring_checks} =  Evaluate  int((${monitoring_duration_minutes} * 60) / ${monitoring_interval})
+        ${stability_max_delta} =  Evaluate  100  # Same threshold as final stability check
 
         ${prev_received} =  Set Variable  ${baseline_received}
         ${prev_sent} =  Set Variable  ${baseline_sent}
@@ -252,7 +253,21 @@ Wait For Collector To Stabilize
             ${curr_received} =  Get Received Spans Count
             ${curr_sent} =  Get Sent Spans Count
             ${curr_dropped} =  Get Dropped Spans Count
-            ${sent_delta} =  Evaluate  ${curr_sent} - ${prev_sent}
+            ${received_delta} =  Evaluate  abs(${curr_received} - ${prev_received})
+            ${sent_delta} =  Evaluate  abs(${curr_sent} - ${prev_sent})
+            ${dropped_delta} =  Evaluate  abs(${curr_dropped} - ${prev_dropped})
+
+            # Exit early if metrics are stable (same criterion as final stability check)
+            ${is_stable} =  Evaluate  ${received_delta} <= ${stability_max_delta} and ${sent_delta} <= ${stability_max_delta} and ${dropped_delta} <= ${stability_max_delta}
+            IF  ${is_stable}
+                ${elapsed_minutes} =  Evaluate  (${check_num} * ${monitoring_interval}) / 60.0
+                ${elapsed_minutes_formatted} =  Evaluate  '{:.1f}'.format(${elapsed_minutes})
+                Log To Console  Collector stabilized early after ${elapsed_minutes_formatted}min (received_delta=${received_delta}, sent_delta=${sent_delta}, dropped_delta=${dropped_delta})
+                ${baseline_received} =  Set Variable  ${curr_received}
+                ${baseline_sent} =  Set Variable  ${curr_sent}
+                ${baseline_dropped} =  Set Variable  ${curr_dropped}
+                Exit For Loop
+            END
 
             # Log every minute or if there's activity
             ${should_log} =  Evaluate  (${check_num} % 12 == 0) or (abs(${sent_delta}) > 0)

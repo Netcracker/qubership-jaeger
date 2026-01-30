@@ -2326,7 +2326,7 @@ statusProvisioner:
   # image: ghcr.io/netcracker/qubership-deployment-status-provisioner:main
   lifetimeAfterCompletion: 300
   podReadinessTimeout: 300
-  integrationTestsTimeout: 300
+  integrationTestsTimeout: 900
   resources:
     requests:
       memory: "50Mi"
