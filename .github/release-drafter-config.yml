@@ -1,6 +1,7 @@
 name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
-
+# Only consider v0.* tags for "previous" → correct $PREVIOUS_TAG and smaller compare range (avoids 502). We use inline RD with version without "v" to avoid v26.1.0.
+tag-prefix: 'v0.'
 
 categories:
   - title: '💥 Breaking Changes'
