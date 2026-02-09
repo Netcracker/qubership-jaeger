@@ -41,7 +41,7 @@ env:
 jobs:
   Run-Integration-Tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
     - name: Checkout code
       uses: actions/checkout@v6.0.0
@@ -200,11 +200,12 @@ jobs:
         CASSANDRA_PASSWORD=$(kubectl get secret -n ${{ env.cassandra_namespace }} cassandra-superuser -o json | jq -r '.data.password' | base64 -d)
         CASSANDRA_SVC="cassandra-dc1-service.${{ env.cassandra_namespace }}"
         helm upgrade --install qubership-jaeger ./qubership-jaeger/charts/qubership-jaeger --namespace ${{ env.namespace }} \
-          --create-namespace --set jaeger.prometheusMonitoringDashboard=false --set jaeger.prometheusMonitoring=false \
+          --timeout 15m --create-namespace --set jaeger.prometheusMonitoringDashboard=false --set jaeger.prometheusMonitoring=false \
           --set "cassandraSchemaJob.host=$CASSANDRA_SVC" --set "cassandraSchemaJob.username=$CASSANDRA_USER" \
           --set "cassandraSchemaJob.password=$CASSANDRA_PASSWORD" --set cassandraSchemaJob.datacenter=dc1\
           --set "readinessProbe.image=ghcr.io/netcracker/jaeger-readiness-probe:$TAG" \
           --set "integrationTests.install=true" \
+          --set "integrationTests.hookDeletePolicy=before-hook-creation" \
           --set "integrationTests.image=ghcr.io/netcracker/jaeger-integration-tests:$TAG"
       shell: bash
 
@@ -225,7 +226,7 @@ jobs:
           echo "query_status=❌NotReady" >> $GITHUB_OUTPUT
           exit 1
         elif [[ "$query_status" != "True" ]]; then
-          echo "::error::❌ Jaeger collector is not ready."
+          echo "::error::❌ Jaeger query is not ready."
           echo "collector_status=✅Ready" >> $GITHUB_OUTPUT
           echo "query_status=❌NotReady" >> $GITHUB_OUTPUT
           exit 1
