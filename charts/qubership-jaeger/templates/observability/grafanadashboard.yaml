@@ -5,12 +5,8 @@ kind: GrafanaDashboard
 metadata:
   name: {{ .Values.jaeger.serviceName }}-overview
   labels:
-    name: {{ .Values.jaeger.serviceName }}-overview
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-overview
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-overview-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: monitoring    # Keep for monitoring contract
-    app.kubernetes.io/part-of: jaeger
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- $name := printf "%s-overview" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "monitoring") | nindent 4 }}
 spec:
   json: >
     {{ .Files.Get "monitoring/dashboard-for-grafana.json" | nindent 4 }}

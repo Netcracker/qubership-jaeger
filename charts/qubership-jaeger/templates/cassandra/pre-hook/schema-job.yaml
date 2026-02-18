@@ -7,11 +7,8 @@ metadata:
   name: {{ .Values.jaeger.serviceName }}-cassandra-schema
   labels:
     job-name: {{ .Values.jaeger.serviceName }}-cassandra-schema
-    name: {{ .Values.jaeger.serviceName }}-cassandra-schema
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-cassandra-schema
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-cassandra-schema-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-cassandra-schema" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 4 }}
     {{- if .Values.cassandraSchemaJob.labels }}
       {{- toYaml .Values.cassandraSchemaJob.labels | nindent 4 }}
     {{- end }}
@@ -35,11 +32,8 @@ spec:
     metadata:
       labels:
         job-name: {{ .Values.jaeger.serviceName }}-cassandra-schema
-        name: {{ .Values.jaeger.serviceName }}-cassandra-schema
-        app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-cassandra-schema
-        app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-cassandra-schema-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-        app.kubernetes.io/component: jaeger
-        {{- include "jaeger.commonLabels" . | nindent 8 }}
+        {{- $name := printf "%s-cassandra-schema" .Values.jaeger.serviceName -}}
+        {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 8 }}
         {{- if .Values.cassandraSchemaJob.labels }}
           {{- toYaml .Values.cassandraSchemaJob.labels | nindent 8 }}
         {{- end }}

@@ -4,10 +4,8 @@ kind: CronJob
 metadata:
   name: {{ .Values.jaeger.serviceName }}-spark-dependencies
   labels:
-    name: {{ .Values.jaeger.serviceName }}-spark-dependencies
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-spark-dependencies
-    app.kubernetes.io/component: spark-dependencies
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-spark-dependencies" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "spark-dependencies") | nindent 4 }}
     {{- if .Values.spark.labels }}
       {{- toYaml .Values.spark.labels | nindent 4 }}
     {{- end }}
@@ -31,10 +29,8 @@ spec:
       template:
         metadata:
           labels:
-            name: {{ .Values.jaeger.serviceName }}-spark-dependencies
-            app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-spark-dependencies
-            app.kubernetes.io/component: spark-dependencies
-            {{- include "jaeger.commonLabels" . | nindent 12 }}
+            {{- $name := printf "%s-spark-dependencies" .Values.jaeger.serviceName -}}
+            {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "spark-dependencies") | nindent 12 }}
             {{- if .Values.spark.labels }}
               {{- toYaml .Values.spark.labels | nindent 12 }}
             {{- end }}

@@ -5,12 +5,8 @@ kind: Role
 metadata:
   name: jaeger-collector
   labels:
-    name: jaeger-collector
-    app.kubernetes.io/name: jaeger-collector
-    app.kubernetes.io/component: jaeger-collector
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-collector-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/part-of: jaeger
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- $name := printf "%s-collector" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "collector") | nindent 4 }}
     {{- if .Values.collector.labels }}
       {{- toYaml .Values.collector.labels | nindent 4 }}
     {{- end }}

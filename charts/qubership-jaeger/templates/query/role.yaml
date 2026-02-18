@@ -5,12 +5,8 @@ kind: Role
 metadata:
   name: jaeger-query
   labels:
-    name: jaeger-query
-    app.kubernetes.io/name: jaeger-query
-    app.kubernetes.io/component: jaeger-query
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-query-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/part-of: jaeger
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- $name := printf "%s-query" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "query") | nindent 4 }}
     {{- if .Values.query.labels }}
       {{- toYaml .Values.query.labels | nindent 4 }}
     {{- end }}

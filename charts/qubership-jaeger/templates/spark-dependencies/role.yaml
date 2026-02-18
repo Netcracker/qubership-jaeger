@@ -5,12 +5,8 @@ kind: Role
 metadata:
   name: spark-dependencies-role
   labels:
-    name: spark-dependencies-role
-    app.kubernetes.io/name: spark-dependencies-role
-    app.kubernetes.io/instance: {{ cat "jaeger-spark-dependencies-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger-spark-dependencies
-    app.kubernetes.io/part-of: jaeger
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- $name := "spark-dependencies-role" -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger-spark-dependencies") | nindent 4 }}
 rules:
   - apiGroups:
       - apps

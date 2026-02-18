@@ -5,12 +5,8 @@ kind: Role
 metadata:
   name: {{ .Values.integrationTests.serviceAccount.name }}-service-operator
   labels:
-    name: {{ .Values.integrationTests.serviceAccount.name }}-service-operator
-    app.kubernetes.io/name: {{ .Values.integrationTests.serviceAccount.name }}-service-operator
-    app.kubernetes.io/component: jaeger-integration-tests
-    app.kubernetes.io/instance: {{ cat .Values.integrationTests.serviceAccount.name "-service-operator-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/part-of: jaeger
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- $name := printf "%s-service-operator" .Values.integrationTests.serviceAccount.name -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger-integration-tests") | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed

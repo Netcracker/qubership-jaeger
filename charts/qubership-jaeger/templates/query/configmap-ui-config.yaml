@@ -5,11 +5,8 @@ kind: ConfigMap
 metadata:
   name: {{ .Values.jaeger.serviceName }}-ui-configuration
   labels:
-    name: {{ .Values.jaeger.serviceName }}-ui-configuration
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-ui-configuration
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-ui-configuration-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: query
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-ui-configuration" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "query") | nindent 4 }}
     {{- if .Values.query.labels }}
       {{- toYaml .Values.query.labels | nindent 4 }}
     {{- end }}

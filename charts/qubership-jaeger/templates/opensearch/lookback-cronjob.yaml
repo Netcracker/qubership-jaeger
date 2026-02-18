@@ -5,11 +5,8 @@ kind: CronJob
 metadata:
   name: {{ .Values.jaeger.serviceName }}-lookback
   labels:
-    name: {{ .Values.jaeger.serviceName }}-lookback
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-lookback
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-lookback-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-lookback" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 4 }}
     {{- if .Values.elasticsearch.lookback.labels }}
       {{- toYaml .Values.elasticsearch.lookback.labels | nindent 4 }}
     {{- end }}
@@ -35,11 +32,8 @@ spec:
             {{- toYaml .Values.elasticsearch.lookback.annotations | nindent 12 }}
           {{- end }}
           labels:
-            name: {{ .Values.jaeger.serviceName }}-lookback
-            app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-lookback
-            app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-lookback-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-            app.kubernetes.io/component: jaeger
-            {{- include "jaeger.commonLabels" . | nindent 12 }}
+            {{- $name := printf "%s-lookback" .Values.jaeger.serviceName -}}
+            {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 12 }}
             {{- if .Values.elasticsearch.lookback.labels }}
               {{- toYaml .Values.elasticsearch.lookback.labels | nindent 12 }}
             {{- end }}

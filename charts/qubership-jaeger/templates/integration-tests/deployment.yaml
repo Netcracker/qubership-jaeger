@@ -5,12 +5,12 @@ apiVersion: apps/v1
 metadata:
   name: {{ .Values.integrationTests.service.name }}
   labels:
-    name: {{ .Values.integrationTests.service.name }}
-    app.kubernetes.io/name: {{ .Values.integrationTests.service.name }}
-    app.kubernetes.io/instance: {{ cat .Values.integrationTests.service.name "-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger-integration-tests
-    app.kubernetes.io/part-of: jaeger
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- $name := .Values.integrationTests.service.name -}}
+    {{- $instance := printf "%s-%s" .Values.integrationTests.service.name .Release.Namespace | trunc 63 | trimSuffix "-" -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger-integration-tests") | nindent 4 }}
+    app.kubernetes.io/instance: {{ $instance }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/technology: python
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": {{ .Values.integrationTests.hookDeletePolicy | default "before-hook-creation,hook-succeeded,hook-failed" }}
@@ -25,13 +25,12 @@ spec:
   template:
     metadata:
       labels:
-        name: {{ .Values.integrationTests.service.name }}
-        app.kubernetes.io/name: {{ .Values.integrationTests.service.name }}
-        app.kubernetes.io/instance: {{ cat .Values.integrationTests.service.name "-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-        app.kubernetes.io/component: jaeger-integration-tests
-        app.kubernetes.io/part-of: jaeger
-        app.kubernetes.io/version: {{ .Chart.AppVersion }}
-        app.kubernetes.io/managed-by: Helm
+        {{- $name := .Values.integrationTests.service.name -}}
+        {{- $instance := printf "%s-%s" .Values.integrationTests.service.name .Release.Namespace | trunc 63 | trimSuffix "-" -}}
+        {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger-integration-tests") | nindent 8 }}
+        app.kubernetes.io/instance: {{ $instance }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+        app.kubernetes.io/technology: python
     spec:
       securityContext:
         {{- include "integrationTests.securityContext" . }}

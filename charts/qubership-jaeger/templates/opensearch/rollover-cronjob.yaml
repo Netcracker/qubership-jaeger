@@ -5,11 +5,8 @@ kind: CronJob
 metadata:
   name: {{ .Values.jaeger.serviceName }}-rollover
   labels:
-    name: {{ .Values.jaeger.serviceName }}-rollover
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-rollover
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-rollover-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-rollover" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 4 }}
     {{- if .Values.elasticsearch.rollover.labels }}
       {{- toYaml .Values.elasticsearch.rollover.labels | nindent 4 }}
     {{- end }}
@@ -35,12 +32,8 @@ spec:
             {{- toYaml .Values.elasticsearch.rollover.annotations | nindent 12 }}
           {{- end }}
           labels:
-            name: {{ .Values.jaeger.serviceName }}-rollover
-            app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-rollover
-            app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-rollover-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-            app.kubernetes.io/component: jaeger
-            {{- include "jaeger.commonLabels" . | nindent 12 }}
-            app.kubernetes.io/managed-by: Helm
+            {{- $name := printf "%s-rollover" .Values.jaeger.serviceName -}}
+            {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 12 }}
             {{- if .Values.elasticsearch.rollover.labels }}
               {{- toYaml .Values.elasticsearch.rollover.labels | nindent 12 }}
             {{- end }}
