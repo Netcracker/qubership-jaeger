@@ -12,7 +12,7 @@ When you are using Jaeger under high load, you must consider the following:
   ability to receive spans, as long as Cassandra can receive them.
 * **Network connection and client configuration** - Client configuration can increase the amount of spans Jaeger
   is able to receive and process. For more information, refer to
-  [https://www.jaegertracing.io/docs/1.20/performance-tuning/#modify-the-batched-spans-flush-interval](https://www.jaegertracing.io/docs/1.20/performance-tuning/#modify-the-batched-spans-flush-interval).
+  [https://www.jaegertracing.io/docs/latest/performance-tuning/#modify-the-batched-spans-flush-interval](https://www.jaegertracing.io/docs/latest/performance-tuning/#modify-the-batched-spans-flush-interval).
 * **Collector inner configuration** - Some parameters can be configured within the Jaeger collector itself
   (currently not possible with Jaeger Helm charts). For example, it is possible to configure collector
   queue size or use Kafka in the deployment schema. By the default values that are used in this deployment,
