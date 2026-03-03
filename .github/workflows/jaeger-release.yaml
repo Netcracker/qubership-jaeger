@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Check if tag exists
         id: check_tag
-        uses: netcracker/qubership-workflow-hub/actions/tag-action@9538833017019ab6bbc2138d3034778dfe3a5d1f # v2.0.6
+        uses: netcracker/qubership-workflow-hub/actions/tag-action@6b356d28e46b2d4683cccb1d91f92643d7f0c513 # v2.0.11
         with:
           ref: ${{ github.ref }}
           check-tag: 'true'
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Change Chart Version Action
-      uses: netcracker/qubership-workflow-hub/actions/chart-version@9538833017019ab6bbc2138d3034778dfe3a5d1f # v2.0.6
+      uses: netcracker/qubership-workflow-hub/actions/chart-version@6b356d28e46b2d4683cccb1d91f92643d7f0c513 # v2.0.11
       with:
         new-chart-version: ${{ github.event.inputs.version }}
         chart-yaml-path: ${{ github.event.inputs.path-to-chart }}
@@ -92,7 +92,7 @@ jobs:
         git push origin HEAD:"${{ github.ref_name }}"
 
     - name: "Create release tag"
-      uses: netcracker/qubership-workflow-hub/actions/tag-action@9538833017019ab6bbc2138d3034778dfe3a5d1f # v2.0.6
+      uses: netcracker/qubership-workflow-hub/actions/tag-action@6b356d28e46b2d4683cccb1d91f92643d7f0c513 # v2.0.11
       with:
         ref: ${{ github.ref }}
         check-tag: 'false'
@@ -112,7 +112,7 @@ jobs:
     steps:
     - name: "Docker Build"
       id: docker_build
-      uses: netcracker/qubership-workflow-hub/actions/docker-action@9538833017019ab6bbc2138d3034778dfe3a5d1f # v2.0.6
+      uses: netcracker/qubership-workflow-hub/actions/docker-action@6b356d28e46b2d4683cccb1d91f92643d7f0c513 # v2.0.11
       with:
         ref: v${{ inputs.version }}
         download-artifact: false
@@ -162,7 +162,7 @@ jobs:
         tar -cf dist/docs.tar -C . docs
 
     - name: Upload assets to release
-      uses: netcracker/qubership-workflow-hub/actions/assets-action@9538833017019ab6bbc2138d3034778dfe3a5d1f # v2.0.6
+      uses: netcracker/qubership-workflow-hub/actions/assets-action@6b356d28e46b2d4683cccb1d91f92643d7f0c513 # v2.0.11
       with:
         tag: v${{ github.event.inputs.version }}
         item-path: ./dist
