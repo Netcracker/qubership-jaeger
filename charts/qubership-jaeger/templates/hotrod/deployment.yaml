@@ -5,11 +5,12 @@ kind: Deployment
 metadata:
   name: {{ .Values.jaeger.serviceName }}-hotrod
   labels:
-    name: {{ .Values.jaeger.serviceName }}-hotrod
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-hotrod
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-hotrod-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: hotrod
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-hotrod" .Values.jaeger.serviceName -}}
+    {{- $instance := printf "%s-hotrod-%s" .Values.jaeger.serviceName .Release.Namespace | trunc 63 | trimSuffix "-" -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "hotrod") | nindent 4 }}
+    app.kubernetes.io/instance: {{ $instance }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/technology: go
     {{- if .Values.hotrod.labels }}
       {{- toYaml .Values.hotrod.labels | nindent 4 }}
     {{- end }}
@@ -22,12 +23,12 @@ spec:
   template:
     metadata:
       labels:
-        name: {{ .Values.jaeger.serviceName }}-hotrod
-        app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-hotrod
-        app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-hotrod-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-        app.kubernetes.io/component: hotrod
-        {{- include "jaeger.commonLabels" . | nindent 8 }}
-        app.kubernetes.io/managed-by: Helm
+        {{- $name := printf "%s-hotrod" .Values.jaeger.serviceName -}}
+        {{- $instance := printf "%s-hotrod-%s" .Values.jaeger.serviceName .Release.Namespace | trunc 63 | trimSuffix "-" -}}
+        {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "hotrod") | nindent 8 }}
+        app.kubernetes.io/instance: {{ $instance }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+        app.kubernetes.io/technology: go
         {{- if .Values.hotrod.labels }}
           {{- toYaml .Values.hotrod.labels | nindent 8 }}
         {{- end }}

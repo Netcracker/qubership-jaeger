@@ -5,11 +5,8 @@ kind: Job
 metadata:
   name: {{ .Values.jaeger.serviceName }}-rollover-init
   labels:
-    name: {{ .Values.jaeger.serviceName }}-rollover-init
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-rollover-init
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-rollover-init-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-rollover-init" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 4 }}
     {{- if .Values.elasticsearch.rollover.labels }}
       {{- toYaml .Values.elasticsearch.rollover.labels | nindent 4 }}
     {{- end }}
@@ -30,11 +27,8 @@ spec:
         {{- toYaml .Values.elasticsearch.rollover.annotations | nindent 8 }}
       {{- end }}
       labels:
-        name: {{ .Values.jaeger.serviceName }}-rollover-init
-        app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-rollover-init
-        app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-rollover-init-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-        app.kubernetes.io/component: jaeger
-        {{- include "jaeger.commonLabels" . | nindent 8 }}
+        {{- $name := printf "%s-rollover-init" .Values.jaeger.serviceName -}}
+        {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 8 }}
         {{- if .Values.elasticsearch.rollover.labels }}
           {{- toYaml .Values.elasticsearch.rollover.labels | nindent 8 }}
         {{- end }}

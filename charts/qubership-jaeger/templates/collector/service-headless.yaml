@@ -7,11 +7,8 @@ metadata:
   annotations:
     service.beta.openshift.io/serving-cert-secret-name: {{ .Values.jaeger.serviceName }}-collector-headless-tls
   labels:
-    name: {{ .Values.jaeger.serviceName }}-collector-headless
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-collector-headless
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-collector-headless-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: collector
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-collector-headless" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "collector") | nindent 4 }}
     {{- if .Values.collector.labels }}
       {{- toYaml .Values.collector.labels | nindent 4 }}
     {{- end }}

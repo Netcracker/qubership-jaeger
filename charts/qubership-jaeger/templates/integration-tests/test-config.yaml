@@ -5,7 +5,8 @@ kind: ConfigMap
 metadata:
   name: tests-config
   labels:
-    app: jaeger-tests
+    {{- $name := "tests-config" -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger-integration-tests") | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed

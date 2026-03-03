@@ -46,13 +46,19 @@ Set default value for query route host if not specify in Values.
 {{- end -}}
 
 {{/*
-Create common labels for each resource which is creating by this chart.
+Resource labels: name, app.kubernetes.io/name, component, part-of, managed-by.
+Instance, version, technology are set inline in chart templates, not here.
+Usage: {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" $component) | nindent 4 }}
+       Add instance, version, technology inline in the template as needed.
 */}}
-{{- define "jaeger.commonLabels" -}}
+{{- define "jaeger.resourceLabels" -}}
+{{- $ctx := .ctx -}}
+name: {{ .name }}
+app.kubernetes.io/name: {{ .name }}
+app.kubernetes.io/component: {{ .component }}
 app: jaeger
 app.kubernetes.io/part-of: jaeger
-app.kubernetes.io/version: {{ .Chart.AppVersion }}
-app.kubernetes.io/managed-by: Helm
+app.kubernetes.io/managed-by: {{ $ctx.Release.Service }}
 {{- end -}}
 
 {{/*

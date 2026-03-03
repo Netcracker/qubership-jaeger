@@ -5,12 +5,8 @@ kind: Role
 metadata:
   name: tracing-tests-write-status
   labels:
-    name: tracing-tests-write-status
-    app.kubernetes.io/name: tracing-tests-write-status
-    app.kubernetes.io/instance: {{ cat "tracing-tests-write-status-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger-integration-tests
-    app.kubernetes.io/part-of: jaeger
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- $name := "tracing-tests-write-status" -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger-integration-tests") | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed

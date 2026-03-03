@@ -5,12 +5,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: spark-dependencies-rolebinding
   labels:
-    name: spark-dependencies-rolebinding
-    app.kubernetes.io/name: spark-dependencies-rolebinding
-    app.kubernetes.io/instance: {{ cat "jaeger-spark-dependencies-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger-spark-dependencies
-    app.kubernetes.io/part-of: jaeger
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- $name := "spark-dependencies-rolebinding" -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "jaeger-spark-dependencies") | nindent 4 }}
 subjects:
   - kind: ServiceAccount
     name: spark-dependencies-sa

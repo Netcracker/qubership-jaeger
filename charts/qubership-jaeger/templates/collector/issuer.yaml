@@ -10,11 +10,8 @@ kind: Issuer
 metadata:
   name: jaeger-collector-tls-issuer
   labels:
-    name: jaeger-collector-tls-issuer
-    app.kubernetes.io/name: jaeger-collector-tls-issuer
-    app.kubernetes.io/instance: {{ cat "jaeger-collector-tls-issuer-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: collector
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- $name := "jaeger-collector-tls-issuer" -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "collector") | nindent 4 }}
     {{- if .Values.collector.labels }}
       {{- toYaml .Values.collector.labels | nindent 4 }}
     {{- end }}

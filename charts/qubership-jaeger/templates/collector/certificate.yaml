@@ -10,10 +10,8 @@ kind: Certificate
 metadata:
   name: jaeger-collector-tls-certificate
   labels:
-    name: jaeger-collector-tls-certificate
-    app.kubernetes.io/name: jaeger-collector-tls-certificate
-    app.kubernetes.io/instance: {{ cat "jaeger-collector-tls-certificate-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: collector
+    {{- $name := "jaeger-collector-tls-certificate" -}}
+    {{- include "jaeger.resourceLabels" (dict "ctx" . "name" $name "component" "collector") | nindent 4 }}
     {{- if .Values.collector.labels }}
       {{- toYaml .Values.collector.labels | nindent 4 }}
     {{- end }}
