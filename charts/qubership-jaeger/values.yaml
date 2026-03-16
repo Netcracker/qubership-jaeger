@@ -2250,7 +2250,7 @@ integrationTests:
       memory: 64Mi
       cpu: 50m
     limits:
-      memory: 256Mi
+      memory: 512Mi
       cpu: 300m
   service:
     name: jaeger-integration-tests-runner
