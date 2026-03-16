@@ -135,7 +135,7 @@ jobs:
           ref: ${{ github.ref_name }}
 
       - name: Run Release Drafter
-        uses: netcracker/release-drafter@267d2e0268deae5d44f3ba5029dd4d6e85f9d52d # v6.1.1 upstream
+        uses: netcracker/release-drafter@86f4276a3894b5af70480e826c32fe3648ac6a70 # v1.0.0
         with:
           config-name: release-drafter-config.yml
           publish: 'false'
