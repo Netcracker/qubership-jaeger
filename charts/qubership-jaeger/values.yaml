@@ -1625,7 +1625,7 @@ collector:
   resources:
     limits:
       cpu: 1
-      memory: 200Mi
+      memory: 512Mi
     requests:
       cpu: 100m
       memory: 100Mi
@@ -2250,7 +2250,7 @@ integrationTests:
       memory: 64Mi
       cpu: 50m
     limits:
-      memory: 512Mi
+      memory: 256Mi
       cpu: 300m
   service:
     name: jaeger-integration-tests-runner
