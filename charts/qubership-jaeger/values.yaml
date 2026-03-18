@@ -912,7 +912,7 @@ cassandraSchemaJob:
   ttlSecondsAfterFinished: 0
 
   # List of allowed authenticators for gocql driver
-  # Full list of supported authenticators cna be found in the gocql source code:
+  # Full list of supported authenticators can be found in the gocql source code:
   # https://github.com/apache/cassandra-gocql-driver/blob/34fdeebefcbf183ed7f916f931aa0586fdaa1b40/conn.go#L27
   # Type: array[string]
   # Default: []
@@ -1230,7 +1230,7 @@ collector:
       maxRecvMsgSizeMib: ""
 
     http:
-      # IdleTimeout is the maximum amount of time to wait for the next request when keep-alives are enabled.
+      # IdleTimeout is the maximum amount of time to wait for the next request when keep-alive are enabled.
       # If zero, the value of ReadTimeout is used. If negative, or if zero and ReadTimeout is zero or negative, there is no timeout.
       # Default: 0s
       #
@@ -1292,7 +1292,7 @@ collector:
       maxRecvMsgSizeMib: ""
 
     http:
-      # IdleTimeout is the maximum amount of time to wait for the next request when keep-alives are enabled.
+      # IdleTimeout is the maximum amount of time to wait for the next request when keep-alive are enabled.
       # If zero, the value of ReadTimeout is used. If negative, or if zero and ReadTimeout is zero or negative, there is no timeout.
       # Default: 0s
       #
@@ -1625,13 +1625,13 @@ collector:
   resources:
     limits:
       cpu: 1
-      memory: 200Mi
+      memory: 512Mi
     requests:
       cpu: 100m
       memory: 100Mi
 
   sampling:
-    # Remote sampling type can be either "file" or "adapative".
+    # Remote sampling type can be either "file" or "adaptive".
     # If type is "file", sampling configuration is loaded from file /etc/jaeger/sampling/sampling.json
     # Type: string
     # Default: ""
