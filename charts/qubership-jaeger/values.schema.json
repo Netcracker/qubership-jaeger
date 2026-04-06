@@ -3408,7 +3408,7 @@
             },
             "existingSecret": {
               "default": "",
-              "description": "The name of the existing secret with certificates requied for TLS connection.",
+              "description": "The name of the existing secret with certificates requried for TLS connection.",
               "title": "existingSecret",
               "type": "string"
             },
