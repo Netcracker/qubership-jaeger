@@ -39,9 +39,9 @@ proxy:
   # A docker image to use for envoy container.
   # Type: string
   # Mandatory: no
-  # Default: "envoyproxy/envoy:v1.32.6"
+  # Default: "envoyproxy/envoy:v1.35.2"
   #
-  # image: "envoyproxy/envoy:v1.32.6"
+  # image: "envoyproxy/envoy:v1.35.2"
 
   # Authentication type to be used
   # Available values - "basic" and "oauth2"
@@ -265,9 +265,9 @@ elasticsearch:
     # A docker image to use for index cleaner cronJob.
     # Type: string
     # Mandatory: no
-    # Default: "jaegertracing/jaeger-es-index-cleaner:1.72.0"
+    # Default: "jaegertracing/jaeger-es-index-cleaner:1.76.0"
     #
-    # image: "jaegertracing/jaeger-es-index-cleaner:1.72.0"
+    # image: "jaegertracing/jaeger-es-index-cleaner:1.76.0"
 
     # A name of a microservice to deploy with.
     # This name will be used as name of the microservice cronjob and in labels.
@@ -404,13 +404,13 @@ elasticsearch:
     numberOfDays: 7
 
     # indexCleaner related extra env vars to be configured on the concerned components.
-    # Type: object
+    # Type: array
     # Default: []
     #
     extraEnv: []
 
     # Specify extra configMap mounts for indexCleaner.
-    # Type: object
+    # Type: array
     # Default: []
     #
     extraConfigmapMounts: []
@@ -885,7 +885,7 @@ cassandraSchemaJob:
   #
   host: ~
 
-  # This is the host used to connect to Cassandra.
+  # This is the port used to connect to Cassandra.
   # Type: integer
   # Default: 9042
   #
@@ -1180,9 +1180,9 @@ collector:
   # A docker image to use for collector deployment.
   # Type: string
   # Mandatory: no
-  # Default: "jaegertracing/jaeger:2.9.0"
+  # Default: "jaegertracing/jaeger:2.13.0"
   #
-  # image: "jaegertracing/jaeger:2.9.0"
+  # image: "jaegertracing/jaeger:2.13.0"
 
   # A name of a microservice to deploy with.
   # This name will be used as name of the microservice deployment and in labels.
@@ -1954,11 +1954,11 @@ hotrod:
     #
     # className: ""
 
-    # Configuration for ingress TLS.
-    # Type: object
-    # Default: {}
+    # Configuration for ingress TLS. More info: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+    # Type: array
+    # Default: []
     #
-    tls: {}
+    tls: []
 
   route:
     # Allow disabling create route.
@@ -2435,7 +2435,7 @@ readinessProbe:
   # Type: integer
   # Mandatory: no
   #
-  # periodSeconds: 5
+  # timeoutSeconds: 5
 
   # The resources describe to compute resource requests and limits for single Pods.
   # Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -2492,6 +2492,12 @@ spark:
   #
   annotations: {}
   #  annotation-key: annotation-value
+
+  # A docker image to use for SparkDependencies container.
+  # Type: string
+  # Mandatory: no
+  #
+  # image: "ghcr.io/jaegertracing/spark-dependencies/spark-dependencies:latest"
 
   # The imagePullPolicy for a container and the tag of the image affect when the kubelet
   # attempts to pull (download) the specified image.
