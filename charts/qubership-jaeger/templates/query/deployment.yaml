@@ -69,30 +69,7 @@ spec:
           env:
             - name: OTEL_TRACES_SAMPLER
               value: always_off
-          {{- /* Section with Cassandra environment variables */}}
-          {{- if eq .Values.jaeger.storage.type "cassandra" }}
-            - name: CASSANDRA_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "cassandraSchemaJob.secretName" . }}
-                  key: username
-            - name: CASSANDRA_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "cassandraSchemaJob.secretName" . }}
-                  key: password
-          {{- /* Section with Elasticsearch/OpenSearch environment variables */}}
-          {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
-            - name: ES_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.elasticsearch.existingSecret | default "jaeger-elasticsearch" }}
-                  key: username
-            - name: ES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.elasticsearch.existingSecret | default "jaeger-elasticsearch" }}
-                  key: password
+          {{- if eq .Values.jaeger.storage.type "elasticsearch" }}
             {{- range $key, $value := .Values.elasticsearch.env }}
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
@@ -261,10 +238,10 @@ spec:
             name: {{ .Values.jaeger.serviceName }}-ui-configuration
             defaultMode: 420
         - name: query-config
-          configMap:
-            name: {{ .Values.jaeger.serviceName }}-query-configuration
+          secret:
+            secretName: {{ include "query.runtimeConfig.secretName" . }}
             items:
-              - key: config.yaml
+              - key: {{ include "query.runtimeConfig.key" . }}
                 path: config.yaml
             defaultMode: 420
         {{- if .Values.proxy.install }}
