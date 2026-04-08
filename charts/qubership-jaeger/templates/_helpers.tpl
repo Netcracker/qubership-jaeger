@@ -162,6 +162,34 @@ Image can be found from:
 {{- end -}}
 
 {{/*
+Return collector runtime config secret name.
+*/}}
+{{- define "collector.runtimeConfig.secretName" -}}
+  {{- printf "%s-collector-configuration" .Values.jaeger.serviceName -}}
+{{- end -}}
+
+{{/*
+Return collector runtime config key.
+*/}}
+{{- define "collector.runtimeConfig.key" -}}
+  {{- print "config.yaml" -}}
+{{- end -}}
+
+{{/*
+Return query runtime config secret name.
+*/}}
+{{- define "query.runtimeConfig.secretName" -}}
+  {{- printf "%s-query-configuration" .Values.jaeger.serviceName -}}
+{{- end -}}
+
+{{/*
+Return query runtime config key.
+*/}}
+{{- define "query.runtimeConfig.key" -}}
+  {{- print "config.yaml" -}}
+{{- end -}}
+
+{{/*
 Find a envoy image in various places.
 Image can be found from:
 * from default values .Values.proxy.image
@@ -171,19 +199,6 @@ Image can be found from:
     {{- printf "%s" .Values.proxy.image -}}
   {{- else -}}
     {{- print "envoyproxy/envoy:v1.35.2" -}}
-  {{- end -}}
-{{- end -}}
-
-{{/*
-Find a jaeger-cassandra-schema-job image in various places.
-Image can be found from:
-* from default values .Values.cassandraSchemaJob.image
-*/}}
-{{- define "cassandra-schema-job.image" -}}
-  {{- if .Values.cassandraSchemaJob.image -}}
-    {{- printf "%s" .Values.cassandraSchemaJob.image -}}
-  {{- else -}}
-    {{- print "jaegertracing/jaeger-cassandra-schema:1.76.0" -}}
   {{- end -}}
 {{- end -}}
 
@@ -300,11 +315,7 @@ Return name of secret for cassandraSchemaJob.
   {{- if .Values.cassandraSchemaJob.existingSecret -}}
     {{- printf "%s" (.Values.cassandraSchemaJob.existingSecret)  -}}
   {{- else -}}
-    {{- if .prehook -}}
-      {{- print "jaeger-cassandra-pre-hook" -}}
-    {{- else -}}
-      {{- print "jaeger-cassandra" -}}
-    {{- end -}}
+    {{- print "jaeger-cassandra" -}}
   {{- end -}}
 {{- end -}}
 
@@ -315,11 +326,7 @@ Return name of secret for cassandraSchemaJob TLS.
   {{- if .Values.cassandraSchemaJob.tls.existingSecret -}}
     {{- printf "%s" (.Values.cassandraSchemaJob.tls.existingSecret)  -}}
   {{- else -}}
-    {{- if .prehook -}}
-      {{- print "jaeger-cassandra-tls-pre-hook" -}}
-    {{- else -}}
-      {{- print "jaeger-cassandra-tls" -}}
-    {{- end -}}
+    {{- print "jaeger-cassandra-tls" -}}
   {{- end -}}
 {{- end -}}
 
@@ -374,6 +381,16 @@ Return username for cassandra database.
 {{- define "cassandraSchemaJob.userName" -}}
   {{- if .Values.cassandraSchemaJob.username -}}
     {{- printf "%s" (.Values.cassandraSchemaJob.username) -}}
+  {{- else if .Values.cassandraSchemaJob.existingSecret -}}
+    {{- $secret := lookup "v1" "Secret" (.Values.NAMESPACE | default .Release.Namespace) .Values.cassandraSchemaJob.existingSecret -}}
+    {{- if not $secret -}}
+      {{- fail (printf "cassandra existingSecret %q was not found in namespace %q" .Values.cassandraSchemaJob.existingSecret (.Values.NAMESPACE | default .Release.Namespace)) -}}
+    {{- end -}}
+    {{- $username := index $secret.data "username" -}}
+    {{- if not $username -}}
+      {{- fail (printf "cassandra existingSecret %q does not contain key %q" .Values.cassandraSchemaJob.existingSecret "username") -}}
+    {{- end -}}
+    {{- $username | b64dec -}}
   {{- else -}}
     {{- if .Values.INFRA_CASSANDRA_USERNAME -}}
       {{- printf "%s" (.Values.INFRA_CASSANDRA_USERNAME) -}}
@@ -402,6 +419,16 @@ Return password for cassandra database.
 {{- define "cassandraSchemaJob.password" -}}
   {{- if .Values.cassandraSchemaJob.password -}}
     {{- printf "%s" (.Values.cassandraSchemaJob.password) -}}
+  {{- else if .Values.cassandraSchemaJob.existingSecret -}}
+    {{- $secret := lookup "v1" "Secret" (.Values.NAMESPACE | default .Release.Namespace) .Values.cassandraSchemaJob.existingSecret -}}
+    {{- if not $secret -}}
+      {{- fail (printf "cassandra existingSecret %q was not found in namespace %q" .Values.cassandraSchemaJob.existingSecret (.Values.NAMESPACE | default .Release.Namespace)) -}}
+    {{- end -}}
+    {{- $password := index $secret.data "password" -}}
+    {{- if not $password -}}
+      {{- fail (printf "cassandra existingSecret %q does not contain key %q" .Values.cassandraSchemaJob.existingSecret "password") -}}
+    {{- end -}}
+    {{- $password | b64dec -}}
   {{- else -}}
     {{- if .Values.INFRA_CASSANDRA_PASSWORD -}}
       {{- printf "%s" (.Values.INFRA_CASSANDRA_PASSWORD) -}}
@@ -447,6 +474,16 @@ Return username for OpenSearch/Elasticsearch.
 {{- define "elasticsearch.userName" -}}
   {{- if .Values.elasticsearch.client.username -}}
     {{- printf "%s" (.Values.elasticsearch.client.username) -}}
+  {{- else if .Values.elasticsearch.existingSecret -}}
+    {{- $secret := lookup "v1" "Secret" (.Values.NAMESPACE | default .Release.Namespace) .Values.elasticsearch.existingSecret -}}
+    {{- if not $secret -}}
+      {{- fail (printf "elasticsearch existingSecret %q was not found in namespace %q" .Values.elasticsearch.existingSecret (.Values.NAMESPACE | default .Release.Namespace)) -}}
+    {{- end -}}
+    {{- $username := index $secret.data "username" -}}
+    {{- if not $username -}}
+      {{- fail (printf "elasticsearch existingSecret %q does not contain key %q" .Values.elasticsearch.existingSecret "username") -}}
+    {{- end -}}
+    {{- $username | b64dec -}}
   {{- else -}}
     {{- if .Values.INFRA_OPENSEARCH_USERNAME -}}
       {{- printf "%s" .Values.INFRA_OPENSEARCH_USERNAME -}}
@@ -462,33 +499,21 @@ Return password for OpenSearch/Elasticsearch.
 {{- define "elasticsearch.password" -}}
   {{- if .Values.elasticsearch.client.password -}}
     {{- printf "%s" (.Values.elasticsearch.client.password) -}}
+  {{- else if .Values.elasticsearch.existingSecret -}}
+    {{- $secret := lookup "v1" "Secret" (.Values.NAMESPACE | default .Release.Namespace) .Values.elasticsearch.existingSecret -}}
+    {{- if not $secret -}}
+      {{- fail (printf "elasticsearch existingSecret %q was not found in namespace %q" .Values.elasticsearch.existingSecret (.Values.NAMESPACE | default .Release.Namespace)) -}}
+    {{- end -}}
+    {{- $password := index $secret.data "password" -}}
+    {{- if not $password -}}
+      {{- fail (printf "elasticsearch existingSecret %q does not contain key %q" .Values.elasticsearch.existingSecret "password") -}}
+    {{- end -}}
+    {{- $password | b64dec -}}
   {{- else -}}
     {{- if .Values.INFRA_OPENSEARCH_PASSWORD -}}
       {{- printf "%s" .Values.INFRA_OPENSEARCH_PASSWORD -}}
     {{- else -}}
       {{- print "" -}}
-    {{- end -}}
-  {{- end -}}
-{{- end -}}
-
-{{/*
-Return securityContext section for Cassandra Schema Job Container
-*/}}
-{{- define "cassandraSchemaJob.containerSecurityContext" -}}
-  {{- if ge .Capabilities.KubeVersion.Minor "25" -}}
-    {{- if .Values.cassandraSchemaJob.containerSecurityContext -}}
-      {{- toYaml .Values.cassandraSchemaJob.containerSecurityContext | nindent 10 }}
-    {{- else }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-    {{- end -}}
-  {{- else }}
-    {{- if .Values.cassandraSchemaJob.containerSecurityContext -}}
-      {{- toYaml .Values.cassandraSchemaJob.containerSecurityContext | nindent 10 }}
-    {{- else }}
-          {}
     {{- end -}}
   {{- end -}}
 {{- end -}}
@@ -734,42 +759,6 @@ Return securityContext section for ReadinessProbe Container
 {{- end -}}
 
 {{/******************************************************************************************************************/}}
-
-{{/*
-Return securityContext section for cassandraSchemaJob pod
-*/}}
-{{- define "cassandraSchemaJob.securityContext" -}}
-  {{- if .Values.cassandraSchemaJob.securityContext }}
-    {{- toYaml .Values.cassandraSchemaJob.securityContext | nindent 8 }}
-    {{- if not (.Capabilities.APIVersions.Has "apps.openshift.io/v1") }}
-      {{- if not .Values.cassandraSchemaJob.securityContext.runAsUser }}
-        runAsUser: 2000
-      {{- end }}
-      {{- if not .Values.cassandraSchemaJob.securityContext.fsGroup }}
-        fsGroup: 2000
-      {{- end }}
-    {{- end }}
-    {{- if (eq (.Values.cassandraSchemaJob.securityContext.runAsNonRoot | toString) "false") }}
-        runAsNonRoot: false
-    {{- else }}
-        runAsNonRoot: true
-    {{- end }}
-    {{- if and (ge .Capabilities.KubeVersion.Minor "25") (not .Values.cassandraSchemaJob.securityContext.seccompProfile) }}
-        seccompProfile:
-          type: "RuntimeDefault"
-    {{- end }}
-  {{- else }}
-    {{- if not (.Capabilities.APIVersions.Has "apps.openshift.io/v1") }}
-        runAsUser: 2000
-        fsGroup: 2000
-    {{- end }}
-        runAsNonRoot: true
-    {{- if ge .Capabilities.KubeVersion.Minor "25" }}
-        seccompProfile:
-          type: "RuntimeDefault"
-    {{- end }}
-  {{- end }}
-{{- end -}}
 
 {{/*
 Return securityContext section for collector pod
@@ -1300,39 +1289,6 @@ Generate certificate volume mounts for OpenSearch jobs TLS configuration
 {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
 - name: "es-tls-assets"
   mountPath: "/es-tls"
-  readOnly: true
-{{- end }}
-{{- end -}}
-
-{{/*
-Generate certificate volumes for Cassandra schema job TLS configuration
-*/}}
-{{- define "jaeger.cassandraCertificateVolumes" -}}
-{{- if .Values.cassandraSchemaJob.tls.enabled }}
-- name: "cassandra-tls-assets"
-  projected:
-    sources:
-    - secret:
-        name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-        items:
-        - key: ca-cert.pem
-          path: ca-cert.pem
-        - key: client-cert.pem
-          path: client-cert.pem
-        - key: client-key.pem
-          path: client-key.pem
-        - key: cqlshrc
-          path: cqlshrc
-{{- end }}
-{{- end -}}
-
-{{/*
-Generate certificate volume mounts for Cassandra schema job TLS configuration
-*/}}
-{{- define "jaeger.cassandraCertificateVolumeMounts" -}}
-{{- if .Values.cassandraSchemaJob.tls.enabled }}
-- name: "cassandra-tls-assets"
-  mountPath: "/cassandra-tls"
   readOnly: true
 {{- end }}
 {{- end -}}

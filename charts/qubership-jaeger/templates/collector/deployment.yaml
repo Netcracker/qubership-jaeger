@@ -70,32 +70,6 @@ spec:
           imagePullPolicy: {{ .Values.collector.imagePullPolicy }}
           args:
             {{- template "collector.args" . }}
-          env:
-            {{- /* Section with Cassandra environment variables */}}
-            {{- if eq .Values.jaeger.storage.type "cassandra" }}
-            - name: CASSANDRA_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "cassandraSchemaJob.secretName" . }}
-                  key: username
-            - name: CASSANDRA_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "cassandraSchemaJob.secretName" . }}
-                  key: password
-            {{- /* Section with Elasticsearch/OpenSearch environment variables */}}
-            {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
-            - name: ES_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.elasticsearch.existingSecret | default "jaeger-elasticsearch" }}
-                  key: username
-            - name: ES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.elasticsearch.existingSecret | default "jaeger-elasticsearch" }}
-                  key: password
-            {{- end }}
           {{- if .Values.readinessProbe.install }}
           livenessProbe:
             failureThreshold: 3
@@ -221,10 +195,10 @@ spec:
               - key: sampling
                 path: sampling.json
         - name: collector-config
-          configMap:
-            name: {{ .Values.jaeger.serviceName }}-collector-configuration
+          secret:
+            secretName: {{ include "collector.runtimeConfig.secretName" . }}
             items:
-              - key: config.yaml
+              - key: {{ include "collector.runtimeConfig.key" . }}
                 path: config.yaml
             defaultMode: 420
         {{- include "jaeger.certificateVolumes" . | nindent 8 }}
