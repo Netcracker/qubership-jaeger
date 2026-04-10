@@ -1,6 +1,7 @@
 # Default values for jaeger.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+# yamllint disable rule:comments-indentation
 
 jaeger:
   # Name of jaeger service.
@@ -217,7 +218,7 @@ elasticsearch:
   #   configFile: /etc/jaeger/tags-as-fields.yaml
   #   include: http.status_code,error
   #
-  indices:
+  indices: {}
     # spans:
     #   dateLayout: "2006-01-02"
     #   rolloverFrequency: day
