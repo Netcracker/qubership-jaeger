@@ -115,37 +115,7 @@ data:
                       {{- toYaml .Values.cassandraSchemaJob.allowedAuthenticators | nindent 22 }}
           {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
           main_elasticsearch:
-            elasticsearch:
-              server_urls:
-                {{ if and .Values.elasticsearch.client.url .Values.elasticsearch.client.scheme }}
-                  {{- printf "- %s://%s" ( .Values.elasticsearch.client.scheme ) ( .Values.elasticsearch.client.url ) -}}
-                {{- else }}
-                  {{- if .Values.INFRA_OPENSEARCH_URL -}}
-                  {{- printf "%s" .Values.INFRA_OPENSEARCH_URL -}}
-                  {{- else -}}
-                  {{- print "" -}}
-                  {{- end -}}
-                {{- end }}
-              auth:
-                basic:
-                  username: "${env:ES_USERNAME}"
-                  password: "${env:ES_PASSWORD}"
-              {{- if .Values.elasticsearch.indexPrefix }}
-              indices:
-                index_prefix: {{ .Values.elasticsearch.indexPrefix | quote }}
-              {{- end }}
-              tls:
-                {{- if .Values.elasticsearch.client.tls.enabled }}
-                {{- if .Values.elasticsearch.client.tls.insecureSkipVerify }}
-                insecure_skip_verify: true
-                {{- else }}
-                ca_file: /es-tls/ca-cert.pem
-                cert_file: /es-tls/client-cert.pem
-                key_file: /es-tls/client-key.pem
-                {{- end}}
-                {{- else }}
-                insecure: true
-                {{- end }}
+            {{- include "elasticsearch.runtime.config" . | nindent 12 }}
           {{- else if eq .Values.jaeger.storage.type "remotegRPC" }}
           remote_grpc:
             grpc:

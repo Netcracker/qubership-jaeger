@@ -472,6 +472,186 @@ Return password for OpenSearch/Elasticsearch.
 {{- end -}}
 
 {{/*
+Render index options for Jaeger v2 Elasticsearch/OpenSearch storage.
+*/}}
+{{- define "elasticsearch.runtime.indexOptions" -}}
+{{- $index := . -}}
+{{- if hasKey $index "dateLayout" }}
+date_layout: {{ get $index "dateLayout" | quote }}
+{{- end }}
+{{- if hasKey $index "rolloverFrequency" }}
+rollover_frequency: {{ get $index "rolloverFrequency" | quote }}
+{{- end }}
+{{- if hasKey $index "shards" }}
+shards: {{ get $index "shards" }}
+{{- end }}
+{{- if hasKey $index "replicas" }}
+replicas: {{ get $index "replicas" }}
+{{- end }}
+{{- if hasKey $index "priority" }}
+priority: {{ get $index "priority" }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Render indices section for Jaeger v2 Elasticsearch/OpenSearch storage.
+*/}}
+{{- define "elasticsearch.runtime.indices" -}}
+{{- if .Values.elasticsearch.indexPrefix }}
+index_prefix: {{ .Values.elasticsearch.indexPrefix | quote }}
+{{- end }}
+{{- with .Values.elasticsearch.indices }}
+{{- with .spans }}
+{{- $spans := include "elasticsearch.runtime.indexOptions" . | trim }}
+{{- if $spans }}
+spans:
+{{ $spans | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- with .services }}
+{{- $services := include "elasticsearch.runtime.indexOptions" . | trim }}
+{{- if $services }}
+services:
+{{ $services | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- with .dependencies }}
+{{- $dependencies := include "elasticsearch.runtime.indexOptions" . | trim }}
+{{- if $dependencies }}
+dependencies:
+{{ $dependencies | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- with .sampling }}
+{{- $sampling := include "elasticsearch.runtime.indexOptions" . | trim }}
+{{- if $sampling }}
+sampling:
+{{ $sampling | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Render Jaeger v2 Elasticsearch/OpenSearch runtime storage config.
+*/}}
+{{- define "elasticsearch.runtime.config" -}}
+elasticsearch:
+  server_urls:
+    {{- $url := include "elasticsearch.url" . }}
+    {{- if $url }}
+    - {{ $url | quote }}
+    {{- end }}
+  auth:
+    basic:
+      username: "${env:ES_USERNAME}"
+      password: "${env:ES_PASSWORD}"
+  {{- if hasKey .Values.elasticsearch "remoteReadClusters" }}
+  remote_read_clusters:
+    {{- toYaml .Values.elasticsearch.remoteReadClusters | nindent 4 }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "disableHealthCheck" }}
+  disable_health_check: {{ .Values.elasticsearch.disableHealthCheck }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "sendGetBodyAs" }}
+  send_get_body_as: {{ .Values.elasticsearch.sendGetBodyAs | quote }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "queryTimeout" }}
+  query_timeout: {{ .Values.elasticsearch.queryTimeout | quote }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "httpCompression" }}
+  http_compression: {{ .Values.elasticsearch.httpCompression }}
+  {{- end }}
+  {{- if .Values.elasticsearch.customHeaders }}
+  custom_headers:
+    {{- toYaml .Values.elasticsearch.customHeaders | nindent 4 }}
+  {{- end }}
+  {{- if .Values.elasticsearch.bulkProcessing }}
+  bulk_processing:
+    {{- with .Values.elasticsearch.bulkProcessing.maxBytes }}
+    max_bytes: {{ . }}
+    {{- end }}
+    {{- with .Values.elasticsearch.bulkProcessing.maxActions }}
+    max_actions: {{ . }}
+    {{- end }}
+    {{- with .Values.elasticsearch.bulkProcessing.flushInterval }}
+    flush_interval: {{ . | quote }}
+    {{- end }}
+    {{- with .Values.elasticsearch.bulkProcessing.workers }}
+    workers: {{ . }}
+    {{- end }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "version" }}
+  version: {{ .Values.elasticsearch.version }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "logLevel" }}
+  log_level: {{ .Values.elasticsearch.logLevel | quote }}
+  {{- end }}
+  {{- $indices := include "elasticsearch.runtime.indices" . | trim }}
+  {{- if $indices }}
+  indices:
+{{ $indices | nindent 4 }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "useAliases" }}
+  use_aliases: {{ .Values.elasticsearch.useAliases }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "createMappings" }}
+  create_mappings: {{ .Values.elasticsearch.createMappings }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "useIlm" }}
+  use_ilm: {{ .Values.elasticsearch.useIlm }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "maxDocCount" }}
+  max_doc_count: {{ .Values.elasticsearch.maxDocCount }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "maxSpanAge" }}
+  max_span_age: {{ .Values.elasticsearch.maxSpanAge | quote }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "serviceCacheTtl" }}
+  service_cache_ttl: {{ .Values.elasticsearch.serviceCacheTtl | quote }}
+  {{- end }}
+  {{- if hasKey .Values.elasticsearch "adaptiveSamplingLookback" }}
+  adaptive_sampling_lookback: {{ .Values.elasticsearch.adaptiveSamplingLookback | quote }}
+  {{- end }}
+  {{- if .Values.elasticsearch.tagsAsFields }}
+  tags_as_fields:
+    {{- if hasKey .Values.elasticsearch.tagsAsFields "all" }}
+    all: {{ .Values.elasticsearch.tagsAsFields.all }}
+    {{- end }}
+    {{- if hasKey .Values.elasticsearch.tagsAsFields "dotReplacement" }}
+    dot_replacement: {{ .Values.elasticsearch.tagsAsFields.dotReplacement | quote }}
+    {{- end }}
+    {{- if hasKey .Values.elasticsearch.tagsAsFields "configFile" }}
+    config_file: {{ .Values.elasticsearch.tagsAsFields.configFile | quote }}
+    {{- end }}
+    {{- if hasKey .Values.elasticsearch.tagsAsFields "include" }}
+    include: {{ .Values.elasticsearch.tagsAsFields.include | quote }}
+    {{- end }}
+  {{- end }}
+  tls:
+    {{- if .Values.elasticsearch.client.tls.enabled }}
+    {{- if .Values.elasticsearch.client.tls.insecureSkipVerify }}
+    insecure_skip_verify: true
+    {{- else }}
+    ca_file: /es-tls/ca-cert.pem
+    cert_file: /es-tls/client-cert.pem
+    key_file: /es-tls/client-key.pem
+    {{- end }}
+    {{- else }}
+    insecure: true
+    {{- end }}
+  {{- if .Values.elasticsearch.sniffing }}
+  sniffing:
+    {{- if hasKey .Values.elasticsearch.sniffing "enabled" }}
+    enabled: {{ .Values.elasticsearch.sniffing.enabled }}
+    {{- end }}
+    {{- if hasKey .Values.elasticsearch.sniffing "useHttps" }}
+    use_https: {{ .Values.elasticsearch.sniffing.useHttps }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+
+{{/*
 Return securityContext section for Cassandra Schema Job Container
 */}}
 {{- define "cassandraSchemaJob.containerSecurityContext" -}}
