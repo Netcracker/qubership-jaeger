@@ -34,15 +34,15 @@
       "separateMajorMinor": false
     },
     {
+      "description": "All other Go dependencies",
+      "matchManagers": ["gomod"],
+      "groupName": "go-deps"
+    },
+    {
       "description": "Kubernetes-related Go modules",
       "matchManagers": ["gomod"],
       "matchPackageNames": ["k8s.io/**", "sigs.k8s.io/**"],
       "groupName": "go-k8s"
-    },
-    {
-      "description": "All other Go dependencies",
-      "matchManagers": ["gomod"],
-      "groupName": "go-deps"
     }
   ]
 }
