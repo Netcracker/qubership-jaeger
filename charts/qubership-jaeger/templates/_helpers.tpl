@@ -90,6 +90,41 @@ Support as already existing syntax with only one .host and syntax to specify lis
 {{- end -}}
 
 {{/*
+Return a stable resource name for collector HTTPRoute resources.
+*/}}
+{{- define "collector.httpRoute.resourceName" -}}
+{{- $ := index . 0 -}}
+{{- $routeType := index . 1 -}}
+{{ printf "%s-%s-collector" $.Values.jaeger.serviceName $routeType | trunc 63 | trimSuffix "-" }}
+{{- end -}}
+
+{{/*
+Render shared HTTPRoute rules.
+*/}}
+{{- define "collector.httpRoute.rules" -}}
+{{- $ := index . 0 -}}
+{{- $pathsToApply := index . 1 -}}
+{{- $defaultServiceName := printf "%s-collector" $.Values.jaeger.serviceName -}}
+{{- range $pathsToApply }}
+- matches:
+    - path:
+        type: PathPrefix
+        value: {{ .prefix | quote }}
+  {{- if .rewritePrefix }}
+  filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: {{ .rewritePrefix | quote }}
+  {{- end }}
+  backendRefs:
+    - name: {{ coalesce .service.name $defaultServiceName }}
+      port: {{ .service.port }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return list of paths and endpoints for one host
 */}}
 {{- define "collector.ingress.grpc.hostPaths" -}}

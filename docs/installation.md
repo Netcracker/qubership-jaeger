@@ -504,6 +504,89 @@ collector:
 ```
 
 
+#### Gateway API
+
+This section describes Gateway API route configuration for `jaeger-collector`.
+
+The chart can create routes for collector HTTP endpoints and collector gRPC endpoints. Collector gRPC endpoints can be
+exposed either with `HTTPRoute` or with native `GRPCRoute`, depending on the value of
+`collector.gatewayApi.grpcRoute.kind`.
+
+TLS termination is configured on the Gateway listener. To bind a route to a specific listener, use
+`parentRefs[].sectionName`. More info in [Attaching to gateways](https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways).
+
+```yaml
+collector:
+  gatewayApi:
+    httpRoute:
+      install: true
+    grpcRoute:
+      install: true
+      kind: GRPCRoute
+```
+
+<!-- markdownlint-disable line-length -->
+| Parameter                                      | Type    | Mandatory | Default value | Description                                                                                                                                       |
+| ---------------------------------------------- | ------- | --------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `httpRoute.install`                            | boolean | no        | `false`       | Install collector HTTPRoute for HTTP-based collector endpoints                                                                                    |
+| `httpRoute.labels`                             | map     | no        | `{}`          | Labels for collector HTTPRoute                                                                                                                    |
+| `httpRoute.annotations`                        | map     | no        | `{}`          | Annotations for collector HTTPRoute                                                                                                               |
+| `httpRoute.parentRefs`                         | array   | no        | `[]`          | Gateway API parent references. Usually points to a Gateway and optionally to a listener via `sectionName`                                          |
+| `httpRoute.parentRefs[].name`                  | string  | yes       | `-`           | Gateway name                                                                                                                                      |
+| `httpRoute.parentRefs[].namespace`             | string  | no        | `-`           | Gateway namespace                                                                                                                                 |
+| `httpRoute.parentRefs[].sectionName`           | string  | no        | `-`           | Gateway listener name                                                                                                                             |
+| `httpRoute.hosts`                              | array   | no        | `[]`          | List of hostnames for HTTPRoute                                                                                                                   |
+| `httpRoute.defaultPaths`                       | array   | no        | see values    | List of HTTP path rules for collector endpoints                                                                                                   |
+| `httpRoute.defaultPaths[].prefix`              | string  | yes       | `-`           | Path prefix matched by HTTPRoute, for example `/zipkin` or `/otlp/http`                                                                           |
+| `httpRoute.defaultPaths[].rewritePrefix`       | string  | no        | `-`           | Replacement prefix for Gateway API `URLRewrite` filter. For example, `/otlp/http/v1/traces` can be rewritten to `/v1/traces` with value `/`       |
+| `httpRoute.defaultPaths[].service.name`        | string  | no        | `-`           | Backend service name. By default, `{{ .Values.jaeger.serviceName }}-collector` is used                                                            |
+| `httpRoute.defaultPaths[].service.port`        | integer | yes       | `-`           | Backend service port                                                                                                                              |
+| `grpcRoute.install`                            | boolean | no        | `false`       | Install collector route for gRPC-based collector endpoints                                                                                        |
+| `grpcRoute.kind`                               | string  | no        | `HTTPRoute`   | Route kind for collector gRPC endpoints. Available values: `HTTPRoute`, `GRPCRoute`                                                               |
+| `grpcRoute.labels`                             | map     | no        | `{}`          | Labels for collector gRPC route                                                                                                                   |
+| `grpcRoute.annotations`                        | map     | no        | `{}`          | Annotations for collector gRPC route                                                                                                              |
+| `grpcRoute.parentRefs`                         | array   | no        | `[]`          | Gateway API parent references. Usually points to a Gateway and optionally to a listener via `sectionName`                                          |
+| `grpcRoute.hosts`                              | array   | no        | `[]`          | List of hostnames for collector gRPC route                                                                                                        |
+| `grpcRoute.defaultPaths`                       | array   | no        | see values    | List of path rules used only when `grpcRoute.kind` is `HTTPRoute`                                                                                 |
+| `grpcRoute.defaultPaths[].prefix`              | string  | yes       | `-`           | gRPC HTTP/2 `:path` prefix matched by HTTPRoute, for example `/opentelemetry.proto.collector.trace.v1.TraceService/Export`                       |
+| `grpcRoute.defaultPaths[].service.name`        | string  | no        | `-`           | Backend service name. By default, `{{ .Values.jaeger.serviceName }}-collector` is used                                                            |
+| `grpcRoute.defaultPaths[].service.port`        | integer | yes       | `-`           | Backend service port                                                                                                                              |
+| `grpcRoute.rules`                              | array   | no        | `[]`          | Native GRPCRoute rules used only when `grpcRoute.kind` is `GRPCRoute`. If empty, the chart creates a default rule that routes all matched gRPC requests to `{{ .Values.jaeger.serviceName }}-collector:4317` |
+<!-- markdownlint-enable line-length -->
+
+When collector gRPC endpoints are exposed through `HTTPRoute`, `defaultPaths[].prefix` must match the real gRPC
+HTTP/2 `:path`, not a friendly URL prefix. For OTLP traces this path is
+`/opentelemetry.proto.collector.trace.v1.TraceService/Export`.
+
+When collector gRPC endpoints are exposed through native `GRPCRoute`, `rules` can be omitted for the common OTLP
+collector case. The default GRPCRoute rule has no `matches`, so it accepts all gRPC methods for the route host and
+forwards them to collector port `4317`.
+
+Example:
+
+```yaml
+collector:
+  gatewayApi:
+    httpRoute:
+      install: true
+      hosts:
+        - jaeger-collector-http.test.org
+      parentRefs:
+        - name: gateway
+          namespace: istio-system
+          sectionName: default
+
+    grpcRoute:
+      install: true
+      kind: GRPCRoute
+      hosts:
+        - jaeger-collector-grpc.test.org
+      parentRefs:
+        - name: gateway
+          namespace: istio-system
+          sectionName: default
+```
+
 #### TLSConfig
 
 This section describes TLS configuration for `jaeger-collector`.
@@ -633,6 +716,11 @@ query:
 | `ingress.host`             | string                                                                                                                        | no        | -                                                                          | FQDN of the ingress host                                                                                                            |
 | `route.install`            | boolean                                                                                                                       | no        | false                                                                      | Enabling/disabling creating query route                                                                                             |
 | `route.host`               | string                                                                                                                        | no        | -                                                                          | FQDN of the route host                                                                                                              |
+| `gatewayApi.httpRoute.install` | boolean                                                                                                                   | no        | false                                                                      | Enabling/disabling creating query HTTPRoute                                                                                         |
+| `gatewayApi.httpRoute.labels` | map                                                                                                                        | no        | {}                                                                         | Labels for query HTTPRoute                                                                                                          |
+| `gatewayApi.httpRoute.annotations` | map                                                                                                                   | no        | {}                                                                         | Annotations for query HTTPRoute                                                                                                     |
+| `gatewayApi.httpRoute.parentRefs` | array                                                                                                                 | no        | []                                                                         | Gateway API parent references. Usually points to a Gateway and optionally to a listener via `sectionName`                            |
+| `gatewayApi.httpRoute.hosts` | array                                                                                                                      | no        | []                                                                         | List of hostnames for query HTTPRoute                                                                                               |
 | `resources`                | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 200m, memory: 256Mi}}` | Describes computing resource requests and limits for single Pods                                                                    |
 | `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                         | Describes pod-level security attributes                                                                                             |
 | `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                         | Holds container-level security attributes                                                                                           |
@@ -672,6 +760,15 @@ query:
   route:
     install: false
     host: query.cloud.test.org
+
+  gatewayApi:
+    httpRoute:
+      install: false
+      hosts:
+        - query.cloud.test.org
+      parentRefs:
+        - name: gateway
+          namespace: istio-system
 
   resources:
     requests:
@@ -1411,6 +1508,11 @@ hotrod:
 | `ingress.tls`              | object                                                                                                                        | no        | {}                                                                         | TLS configuration for hotrod ingress                                                                                                    |
 | `route.install`            | boolean                                                                                                                       | no        | false                                                                      | Enabling or disabling creating a `hotrod` route                                                                                         |
 | `route.host`               | string                                                                                                                        | no        | 0                                                                          | The FQDN of the route host                                                                                                              |
+| `gatewayApi.httpRoute.install` | boolean                                                                                                                   | no        | false                                                                      | Enabling or disabling creating a `hotrod` HTTPRoute                                                                                     |
+| `gatewayApi.httpRoute.labels` | map                                                                                                                        | no        | {}                                                                         | Labels for hotrod HTTPRoute                                                                                                             |
+| `gatewayApi.httpRoute.annotations` | map                                                                                                                   | no        | {}                                                                         | Annotations for hotrod HTTPRoute                                                                                                        |
+| `gatewayApi.httpRoute.parentRefs` | array                                                                                                                 | no        | []                                                                         | Gateway API parent references. Usually points to a Gateway and optionally to a listener via `sectionName`                                |
+| `gatewayApi.httpRoute.hosts` | array                                                                                                                      | no        | []                                                                         | List of hostnames for hotrod HTTPRoute                                                                                                  |
 | `service.port`             | integer                                                                                                                       | no        | 80                                                                         | The port for hotrod service                                                                                                             |
 | `resources`                | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 100m, memory: 128Mi}}` | Computing resource requests and limits for single Pods                                                                                  |
 | `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                         | Holds pod-level security attributes                                                                                                     |
@@ -1449,6 +1551,15 @@ hotrod:
   route:
     install: false
     host: hotrod.cloud.test.org
+
+  gatewayApi:
+    httpRoute:
+      install: false
+      hosts:
+        - hotrod.cloud.test.org
+      parentRefs:
+        - name: gateway
+          namespace: istio-system
 
   resources:
     limits:
@@ -1835,4 +1946,3 @@ so you have to edit it again.
 
 **Note**: The application uses collector sampling configuration only if it is configured to use a remote sampler.
 In other cases, the configuration is done on the application side.
-

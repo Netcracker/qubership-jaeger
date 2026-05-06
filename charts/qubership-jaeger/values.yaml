@@ -327,6 +327,17 @@ elasticsearch:
 
       # insecureSkipVerify: false
 
+  # Enables Jaeger Elasticsearch/OpenSearch read/write aliases by setting
+  # `use_aliases: true` in jaeger_storage Elasticsearch backend configuration.
+  # This option is required when Elasticsearch/OpenSearch rollover is used.
+  # Rollover init job must create aliases/templates before collector and query
+  # start using this option. Without aliases Jaeger writes to daily indices such
+  # as `jaeger-span-YYYY-MM-DD`.
+  # Type: boolean
+  # Default: false
+  #
+  useAliases: false
+
   indexCleaner:
     # Allow disabling create index cleaner cronJob.
     # Type: boolean
@@ -709,6 +720,12 @@ elasticsearch:
     # priorityClassName: "priorityClassName"
 
   rollover:
+    #`elasticsearch.rollover.install=true` only creates and manages rollover
+    # indices/aliases. Collector and query must also be configured with
+    # `elasticsearch.useAliases=true`; otherwise they continue writing to daily
+    # indices and may fail with `index_not_found_exception` if index auto-creation
+    # is disabled.
+
     # Allow disabling create rollover cronJob.
     # Type: boolean
     # Default: false
@@ -1798,6 +1815,85 @@ collector:
           port: 14250
     tls: {}
 
+  gatewayApi:
+    httpRoute:
+      install: false
+      labels: {}
+      annotations: {}
+      parentRefs: []
+      # Format:
+      # - name: <gateway_name>
+      #   namespace: <gateway_namespace>
+      #   sectionName: <listener_name>
+      #   kind: Gateway
+      #   group: gateway.networking.k8s.io
+      hosts: []
+      defaultPaths:
+      # Format:
+      # - prefix: <endpoint>
+      #   rewritePrefix: <replacement_prefix>
+      #   service:
+      #     name: <service_name>
+      #     port: <port_number>
+      - prefix: /
+        service:
+          # name: jaeger-collector
+          port: 13133
+      - prefix: /zipkin
+        rewritePrefix: /
+        service:
+          port: 9411
+      - prefix: /otlp/http
+        rewritePrefix: /
+        service:
+          port: 4318
+      - prefix: /thrift/tchannel
+        rewritePrefix: /
+        service:
+          port: 14250
+      - prefix: /thrift/http
+        rewritePrefix: /
+        service:
+          port: 14268
+    grpcRoute:
+      install: false
+      # Available values: HTTPRoute, GRPCRoute
+      #
+      kind: HTTPRoute
+      labels: {}
+      annotations: {}
+      parentRefs: []
+      # Format:
+      # - name: <gateway_name>
+      #   namespace: <gateway_namespace>
+      #   sectionName: <listener_name>
+      #   kind: Gateway
+      #   group: gateway.networking.k8s.io
+      hosts: []
+      defaultPaths:
+      # Format:
+      # - prefix: <grpc_method_path>
+      #   service:
+      #     name: <service_name>
+      #     port: <port_number>
+      - prefix: /opentelemetry.proto.collector.trace.v1.TraceService/Export
+        service:
+          port: 4317
+      # Rules for native GRPCRoute rendering.
+      # Use this section when kind is set to GRPCRoute.
+      # If the list is empty, the chart creates a default rule that routes all
+      # matched gRPC requests to <serviceName>-collector:4317.
+      #
+      # Format:
+      # - matches:
+      #   - method:
+      #       service: opentelemetry.proto.collector.trace.v1.TraceService
+      #       method: Export
+      #   backendRefs:
+      #   - name: jaeger-collector
+      #     port: 4317
+      rules: []
+
 
   # Jaeger collector config, contains only several options to configure, other part of parameters take from
   # cassandraSchemaJob and elasticsearch sections
@@ -2046,6 +2142,20 @@ hotrod:
     #
     host: ""
 
+  gatewayApi:
+    httpRoute:
+      install: false
+      labels: {}
+      annotations: {}
+      parentRefs: []
+      # Format:
+      # - name: <gateway_name>
+      #   namespace: <gateway_namespace>
+      #   sectionName: <listener_name> (optional)
+      #   kind: Gateway
+      #   group: gateway.networking.k8s.io
+      hosts: []
+
   # Specify port for hotrod service.
   # Type: integer
   # Default: 80
@@ -2169,6 +2279,20 @@ query:
     # Default: ""
     #
     host: ""
+
+  gatewayApi:
+    httpRoute:
+      install: false
+      labels: {}
+      annotations: {}
+      parentRefs: []
+      # Format:
+      # - name: <gateway_name>
+      #   namespace: <gateway_namespace>
+      #   sectionName: <listener_name> (optional)
+      #   kind: Gateway
+      #   group: gateway.networking.k8s.io
+      hosts: []
 
   # Query related cmd line opts to be configured on the concerned components.
   # Type: object
