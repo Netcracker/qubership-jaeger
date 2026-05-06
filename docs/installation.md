@@ -111,11 +111,11 @@ It is recommended not to override these values because Kubernetes `restricted`` 
 
 ### Azure
 
-| Azure Managed Service                                                                           | Jaeger support |
-| ----------------------------------------------------------------------------------------------- | -------------- |
+| Azure Managed Service                                                                           | Jaeger support  |
+| ----------------------------------------------------------------------------------------------- | --------------- |
 | [Azure CosmosDB (Cassandra)](https://azure.microsoft.com/en-in/products/cosmos-db)              | ❌ Not Support  |
 | [Azure Cassandra](https://azure.microsoft.com/en-in/products/managed-instance-apache-cassandra) | ❔ Not Verified |
-| Azure OpenSearch                                                                                | - N/A          |
+| Azure OpenSearch                                                                                | - N/A           |
 
 We almost didn't verify Jaeger working with Azure managed services. But we know about some GitHub issues related
 to supporting Azure managed services. So we know that Jaeger doesn't support Azure CosmosDB now. GitHub issue
@@ -128,8 +128,8 @@ There is no Azure managed OpenSearch. You can find only custom solutions in the 
 
 | AWS Managed Service       | Jaeger support |
 | ------------------------- | -------------- |
-| AWS Keyspaces (Cassandra) | ❌ Not Support  |
-| AWS OpenSearch            | ✅ Support      |
+| AWS Keyspaces (Cassandra) | ❌ Not Support |
+| AWS OpenSearch            | ✅ Support     |
 
 Jaeger doesn't support AWS Keyspaces because Keyspaces doesn't allow to creation of frozen structures and custom
 structures. GitHub issue
@@ -249,8 +249,8 @@ And disk space usage will be:
 
 Support matrix Jaeger as third-party:
 
-| Connection                 | Support TLS   |
-| -------------------------- | ------------- |
+| Connection                 | Support TLS    |
+| -------------------------- | -------------- |
 | Client to Collector        | ✅ Support     |
 | Collector/Query to Storage | ✅ Support     |
 | Browser to UI              | ❌ Not Support |
