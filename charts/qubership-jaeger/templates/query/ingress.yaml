@@ -1,4 +1,8 @@
 {{- if and .Values.query.install .Values.query.ingress.install }}
+{{- $annotations := deepCopy (.Values.query.annotations | default dict) -}}
+{{- if .Values.query.ingress.addGatewayApiAnnotation }}
+{{- $_ := set $annotations "gateway-api-converter.netcracker.com/ignore" "true" -}}
+{{- end }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -13,9 +17,9 @@ metadata:
     {{- if .Values.query.labels }}
       {{- toYaml .Values.query.labels | nindent 4 }}
     {{- end }}
-  {{- if .Values.query.annotations }}
+  {{- if $annotations }}
   annotations:
-    {{- toYaml .Values.query.annotations | nindent 4 }}
+    {{- toYaml $annotations | nindent 4 }}
     nginx.ingress.kubernetes.io/proxy-buffer-size: 256k
   {{- end }}
 spec:

@@ -1,4 +1,8 @@
 {{- if and .Values.hotrod.install .Values.hotrod.ingress.install }}
+{{- $annotations := deepCopy (.Values.hotrod.annotations | default dict) -}}
+{{- if .Values.hotrod.ingress.addGatewayApiAnnotation }}
+{{- $_ := set $annotations "gateway-api-converter.netcracker.com/ignore" "true" -}}
+{{- end }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -13,9 +17,9 @@ metadata:
     {{- if .Values.hotrod.labels }}
       {{- toYaml .Values.hotrod.labels | nindent 4 }}
     {{- end }}
-  {{- if .Values.hotrod.annotations }}
+  {{- if $annotations }}
   annotations:
-    {{- toYaml .Values.hotrod.annotations | nindent 4 }}
+    {{- toYaml $annotations | nindent 4 }}
   {{- end }}
 spec:
   {{- if .Values.hotrod.ingress.className }}
