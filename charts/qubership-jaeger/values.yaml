@@ -1,6 +1,7 @@
 # Default values for jaeger.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+# yamllint disable rule:comments-indentation
 
 jaeger:
   # Name of jaeger service.
@@ -170,10 +171,81 @@ elasticsearch:
   indexPrefix: ""
 
   # Elasticsearch related extra env vars to be configured on the concerned components.
-  # Type: object
+  # Type: array
   # Default: []
   #
   extraEnv: []
+
+  # Additional Jaeger v2 runtime storage settings for Elasticsearch/OpenSearch.
+  # These fields are optional: if omitted, Jaeger internal defaults are used.
+  #
+  # remoteReadClusters:
+  # - remote-cluster
+  #
+  # disableHealthCheck: true
+  # sendGetBodyAs: GET
+  # queryTimeout: 30s
+  # httpCompression: false
+  #
+  # version: 8
+  # logLevel: debug
+  #
+  # useAliases: true
+  # createMappings: false
+  # useIlm: true
+  #
+  # maxDocCount: 20000
+  # maxSpanAge: 72h
+  # serviceCacheTtl: 1h
+  # adaptiveSamplingLookback: 72h
+  #
+  # customHeaders:
+  #   Host: my-opensearch-domain.example.com
+  #
+  # sniffing:
+  #   enabled: true
+  #   useHttps: true
+  #
+  # bulkProcessing:
+  #   maxBytes: 5000000
+  #   maxActions: 1000
+  #   flushInterval: 200ms
+  #   workers: 1
+  #
+  # tagsAsFields:
+  #   all: true
+  #   dotReplacement: "@"
+  #   configFile: /etc/jaeger/tags-as-fields.yaml
+  #   include: http.status_code,error
+  #
+  indices: {}
+    # spans:
+    #   dateLayout: "2006-01-02"
+    #   rolloverFrequency: day
+    #   shards: 1
+    #   replicas: 0
+    #   priority: 100
+    #
+    # services:
+    #   dateLayout: "2006-01-02"
+    #   rolloverFrequency: day
+    #   shards: 1
+    #   replicas: 0
+    #   priority: 100
+    #
+    # dependencies:
+    #   dateLayout: "2006-01-02"
+    #   rolloverFrequency: day
+    #   shards: 1
+    #   replicas: 0
+    #   priority: 100
+    #
+    # sampling:
+    #   dateLayout: "2006-01-02"
+    #   rolloverFrequency: day
+    #   shards: 1
+    #   replicas: 0
+    #   priority: 100
 
   client:
     # Username for Elasticsearch with access to HTTP API.
