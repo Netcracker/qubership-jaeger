@@ -10,6 +10,8 @@ metadata:
     app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-grpc-collector
     app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-grpc-collector-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
     app.kubernetes.io/component: collector
+    deployment.netcracker.com/ingress-type: private-network
+    deployment.netcracker.com/ingress-audience-type: ops-user
     {{- include "jaeger.commonLabels" . | nindent 4 }}
     {{- if .Values.collector.ingress.grpc.labels }}
       {{- toYaml .Values.collector.ingress.grpc.labels | nindent 4 }}

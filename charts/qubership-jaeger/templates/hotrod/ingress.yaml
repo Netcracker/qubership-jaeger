@@ -9,6 +9,8 @@ metadata:
     app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-hotrod
     app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-hotrod-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
     app.kubernetes.io/component: hotrod
+    deployment.netcracker.com/ingress-type: private-network
+    deployment.netcracker.com/ingress-audience-type: ops-user
     {{- include "jaeger.commonLabels" . | nindent 4 }}
     {{- if .Values.hotrod.labels }}
       {{- toYaml .Values.hotrod.labels | nindent 4 }}
