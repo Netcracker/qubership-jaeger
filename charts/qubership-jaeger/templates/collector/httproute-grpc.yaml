@@ -1,0 +1,39 @@
+{{- $gatewayApi := .Values.collector.gatewayApi | default dict -}}
+{{- $httpRouteSpec := $gatewayApi.grpcRoute | default dict -}}
+{{- $parentRefs := $httpRouteSpec.parentRefs | default list -}}
+{{- $hostnames := $httpRouteSpec.hosts | default list -}}
+{{- $rules := $httpRouteSpec.defaultPaths | default list -}}
+{{- if and .Values.collector.install ($httpRouteSpec.install | default false) (eq ($httpRouteSpec.kind | default "HTTPRoute") "HTTPRoute") }}
+{{- $resourceName := include "collector.httpRoute.resourceName" (list $ "grpc") }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $resourceName }}
+  labels:
+    name: {{ $resourceName }}
+    app.kubernetes.io/name: {{ $resourceName }}
+    app.kubernetes.io/instance: {{ cat $.Values.jaeger.serviceName "-grpc-collector-" $.Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
+    app.kubernetes.io/component: collector
+    {{- include "jaeger.commonLabels" $ | nindent 4 }}
+    {{- if $httpRouteSpec.labels }}
+      {{- toYaml $httpRouteSpec.labels | nindent 4 }}
+    {{- end }}
+  {{- if $httpRouteSpec.annotations }}
+  annotations:
+    {{- toYaml $httpRouteSpec.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with $parentRefs }}
+  parentRefs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if $hostnames }}
+  hostnames:
+    {{- range $hostname := $hostnames }}
+    - {{ tpl $hostname $ | quote }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- include "collector.httpRoute.rules" (list $ $rules) | nindent 4 }}
+{{- end }}

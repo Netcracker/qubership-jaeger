@@ -1,24 +1,25 @@
 {{- if and .Values.collector.install .Values.collector.ingress.http.install }}
 {{- $defaultServiceName := printf "%s-collector" $.Values.jaeger.serviceName -}}
+{{- $annotations := deepCopy (.Values.collector.ingress.http.annotations | default dict) -}}
+{{- if .Values.collector.ingress.http.addGatewayApiAnnotation }}
+{{- $_ := set $annotations "gateway-api-converter.netcracker.com/ignore" "true" -}}
+{{- end }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.jaeger.serviceName }}-http-collector
   labels:
-    name: {{ .Values.jaeger.serviceName }}-http-collector
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-http-collector
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-http-collector-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: collector
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-http-collector" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "collector") | nindent 4 }}
     {{- if .Values.collector.ingress.http.labels }}
       {{- toYaml .Values.collector.ingress.http.labels | nindent 4 }}
     {{- end }}
-  {{- if .Values.collector.ingress.http.annotations }}
+  {{- if $annotations }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2   # mandatory annotation
     nginx.ingress.kubernetes.io/use-regex: 'true'     # mandatory annotation
-    {{- toYaml .Values.collector.ingress.http.annotations | nindent 4 }}
+    {{- toYaml $annotations | nindent 4 }}
   {{- end }}
 spec:
   {{- if .Values.collector.ingress.className }}

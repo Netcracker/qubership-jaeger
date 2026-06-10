@@ -58,7 +58,7 @@ jobs:
       metadata: "${{ steps.metadata.outputs.result }}"
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v6.0.2
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
     - name: Load Docker Configuration
       id: load_component
@@ -87,7 +87,7 @@ jobs:
         echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
 
     - name: Create tags for images
-      uses: netcracker/qubership-workflow-hub/actions/metadata-action@5a557213e92e3d22d0292330c4817c82af6704d2 # v2.1.2
+      uses: netcracker/qubership-workflow-hub/actions/metadata-action@6a2de8d62ac5b6998e30f923613c998c263ea9f2 # v2.2.2
       id: metadata
       with:
         short-sha: 11
@@ -109,7 +109,7 @@ jobs:
         component: ${{ fromJson(needs.prepare.outputs.components) }}
     steps:
     - name: Docker
-      uses: netcracker/qubership-workflow-hub/actions/docker-action@5a557213e92e3d22d0292330c4817c82af6704d2 # v2.1.2
+      uses: netcracker/qubership-workflow-hub/actions/docker-action@6a2de8d62ac5b6998e30f923613c998c263ea9f2 # v2.2.2
       with:
         ref: ${{ github.ref }}
         dry-run: ${{ inputs.dry-run }}

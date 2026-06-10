@@ -1,0 +1,48 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "schedule:weekly"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "prConcurrentLimit": 20,
+  "packageRules": [
+    {
+      "description": "All GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "groupName": "actions-deps"
+    },
+    {
+      "description": "Netcracker GitHub Actions and reusable workflows",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["Netcracker/**", "netcracker/**"],
+      "groupName": "netcracker-github-actions",
+      "separateMajorMinor": false
+    },
+    {
+      "description": "All 3rd party Docker images",
+      "matchManagers": ["dockerfile"],
+      "groupName": "docker-deps"
+    },
+    {
+      "description": "Netcracker Docker images",
+      "matchManagers": ["dockerfile"],
+      "matchPackageNames": ["ghcr.io/netcracker/**"],
+      "groupName": "netcracker-docker-images",
+      "separateMajorMinor": false
+    },
+    {
+      "description": "All other Go dependencies",
+      "matchManagers": ["gomod"],
+      "groupName": "go-deps"
+    },
+    {
+      "description": "Kubernetes-related Go modules",
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["k8s.io/**", "sigs.k8s.io/**"],
+      "groupName": "go-k8s"
+    }
+  ]
+}

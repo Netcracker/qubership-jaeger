@@ -1,0 +1,3928 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "cassandraSchemaJob": {
+      "properties": {
+        "allowedAuthenticators": {
+          "description": "List of allowed authenticators for gocql driver\nFull list of supported authenticators can be found in the gocql source code:\nhttps://github.com/apache/cassandra-gocql-driver/blob/34fdeebefcbf183ed7f916f931aa0586fdaa1b40/conn.go#L27\nType: array[string]\nDefault: []\n",
+          "items": {
+            "type": "string"
+          },
+          "title": "allowedAuthenticators",
+          "type": "array"
+        },
+        "annotations": {
+          "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "annotations",
+          "type": "object"
+        },
+        "containerSecurityContext": {
+          "properties": {
+            "allowPrivilegeEscalation": {
+              "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
+              "title": "allowPrivilegeEscalation",
+              "type": "boolean"
+            },
+            "capabilities": {
+              "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\n Type: object\n Mandatory: no",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "containerSecurityContext",
+          "type": "object"
+        },
+        "createKeyspace": {
+          "default": true,
+          "description": "Parameter specifies whether to create the Cassandra keyspace or not\nType: boolean\nDefault: true\n",
+          "title": "createKeyspace",
+          "type": "boolean"
+        },
+        "datacenter": {
+          "default": "",
+          "description": "Parameter specifies the Cassandra datacenter.\nType: string\nDefault: \"\"\n",
+          "title": "datacenter",
+          "type": "string"
+        },
+        "enablePreHook": {
+          "default": false,
+          "description": "Enable schema initialization before deployment using Helm pre-hook.\nSince the Jaeger v2.x collector and/or query services can initialize the schema without the Job.\nKeep for compatibility with the previous versions.\n\nType: boolean\nDefault: false\n",
+          "title": "enablePreHook",
+          "type": "boolean"
+        },
+        "existingSecret": {
+          "default": "",
+          "description": "Name of existing secret with cassandra username and password.\nType: string\nDefault: \"\"\n",
+          "title": "existingSecret",
+          "type": "string"
+        },
+        "extraEnv": {
+          "description": "Cassandra schema job related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
+          "items": {
+            "required": []
+          },
+          "title": "extraEnv",
+          "type": "array"
+        },
+        "host": {
+          "description": "This is the host used to connect to Cassandra.\nType: string\nDefault: \"cassandra.cassandra.svc\"\n",
+          "title": "host",
+          "anyOf": [{"type": "string"},{"type": "null"}]
+        },
+        "image": {
+          "description": "The image for cassandra schema job container.\nType: string\nDefault: \"jaegertracing/jaeger-cassandra-schema:1.76.0\"\n",
+          "title": "image",
+          "type": "string"
+        },
+        "imagePullPolicy": {
+          "default": "IfNotPresent",
+          "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
+          "title": "imagePullPolicy",
+          "type": "string"
+        },
+        "imagePullSecrets": {
+          "description": "A secret name with secret for pulling images from private registry.\nDefault: []\n",
+          "items": {
+            "type": "string"
+          },
+          "title": "imagePullSecrets",
+          "type": "array"
+        },
+        "keyspace": {
+          "default": "jaeger",
+          "description": "Parameter specifies the Cassandra keyspace for Jaeger.\nType: string\nDefault: \"jaeger\"\n",
+          "title": "keyspace",
+          "type": "string"
+        },
+        "labels": {
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "labels",
+          "type": "object"
+        },
+        "mode": {
+          "default": "test",
+          "description": "Parameter specifies the Cassandra mode, `prod` or `test`.\nType: string\nDefault: test\n",
+          "title": "mode",
+          "type": "string"
+        },
+        "name": {
+          "default": "cassandra-schema-job",
+          "description": "A name of a microservice to deploy with.\nThis name will be used as name of the microservice job and in labels.\n",
+          "title": "name",
+          "type": "string"
+        },
+        "password": {
+          "default": "",
+          "description": "Password for Cassandra with access to HTTP API.\nType: string\nDefault: \"\"\n",
+          "title": "password",
+          "type": "string"
+        },
+        "port": {
+          "default": 9042,
+          "description": "The port used to connect to Cassandra.\nType: integer\nDefault: 9042\n",
+          "title": "port",
+          "type": "integer"
+        },
+        "priorityClassName": {
+          "description": "PriorityClassName assigned to the Pods to prevent them from evicting.\nType: string\nDefault: \"\"\n",
+          "title": "priorityClassName",
+          "type": "string"
+        },
+        "resources": {
+          "description": "The resources describe compute resource requests and limits for single container.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\n",
+          "properties": {
+            "limits": {
+              "properties": {
+                "cpu": {
+                  "default": "500m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "256Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "properties": {
+                "cpu": {
+                  "default": "50m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "50Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [
+            "requests",
+            "limits"
+          ],
+          "title": "resources",
+          "type": "object"
+        },
+        "securityContext": {
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+          "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
+              "title": "runAsUser",
+              "type": "integer"
+            },
+            "fsGroup": {
+              "description": "A special supplemental group that applies to all containers in a pod.\n Type: integer\n Mandatory: no",
+              "title": "fsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "description": "Indicates that the container must run as a non-root user.\n If true, the Kubelet will validate the image at runtime to ensure it has a non-root user ID.\n Type: boolean\n Mandatory: no",
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "seccompProfile": {
+              "description": "The seccomp profile for the container.\n Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Mandatory: no",
+              "properties": {
+                "type": {
+                  "type":"string"
+                }
+              },
+              "title": "seccompProfile",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "tls": {
+          "properties": {
+            "ca": {
+              "description": "Allow to specify CA certificate for SSL connection to Cassandra.\nIgnored if the existingSecret is specified.\nType: string\nDefault: not set\n",
+              "title": "ca",
+              "type": "string"
+            },
+            "cert": {
+              "description": "Allow to specify client certificate for SSL connection to Cassandra.\nIgnored if the existingSecret is specified.\nType: string\nDefault: not set\n",
+              "title": "cert",
+              "type": "string"
+            },
+            "commonName": {
+              "description": "Allow to specify common name - server name protected by the SSL certificate.\nIgnored if the existingSecret is specified.\nType: string\nDefault: not set\n",
+              "title": "commonName",
+              "type": "string"
+            },
+            "cqlshrc": {
+              "description": "Allow to override path to certificates which cqlsh in cassandraSchemaJob job will use to connect to Cassandra.\nMandatory field when using SSL connection to Cassandra. Ignored if the existingSecret is specified.\nType: multiline string\nDefault: see below\n",
+              "title": "cqlshrc",
+              "type": "string"
+            },
+            "enabled": {
+              "default": false,
+              "description": "Allow disabling create tls.\nType: boolean\nDefault: false\n",
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "existingSecret": {
+              "default": "",
+              "description": "Name of existing secret with SSL certificates.\nIf specified, all subsequent parameters in tls section are ignored.\nType: string\nDefault: \"\"\n",
+              "title": "existingSecret",
+              "type": "string"
+            },
+            "key": {
+              "description": "Allow to specify private key for SSL connection to Cassandra.\nIgnored if the existingSecret is specified.\nType: string\nDefault: not set\n",
+              "title": "key",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "existingSecret",
+            "cqlshrc"
+          ],
+          "title": "tls",
+          "type": "object"
+        },
+        "ttl": {
+          "properties": {
+            "trace": {
+              "description": "Time to live for trace data, in seconds, minutes, hours\n Type: string\n Default: not set\n",
+              "title": "trace",
+              "type": "string"
+            },
+            "dependencies": {
+              "description": "Time to live for dependencies data, in seconds, minutes, hours\n Type: string\n Default: not set\n",
+              "title": "dependencies",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "title": "ttl",
+          "type": "object"
+        },
+        "ttlSecondsAfterFinished": {
+          "default": 0,
+          "description": "Allow to set time to life (TTL) for TTL controller. TTL controller cleans up the Job, it will delete the Job\ncascadingly, i.e. delete its dependent objects, such as Pods, together with the Job.\nUseful to set a value other than 0 if you want to see job logs.\nType: int\nDefault: 0\n",
+          "title": "ttlSecondsAfterFinished",
+          "type": "integer"
+        },
+        "username": {
+          "default": "",
+          "description": "Username for Cassandra with access to HTTP API.\nType: string\nDefault: \"\"\n",
+          "title": "username",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "enablePreHook",
+        "imagePullPolicy",
+        "imagePullSecrets",
+        "host",
+        "port",
+        "existingSecret",
+        "extraEnv",
+        "ttlSecondsAfterFinished",
+        "allowedAuthenticators",
+        "tls",
+        "mode",
+        "datacenter",
+        "keyspace",
+        "createKeyspace",
+        "username",
+        "password",
+        "resources",
+        "securityContext",
+        "containerSecurityContext",
+        "labels",
+        "annotations",
+        "ttl"
+      ],
+      "title": "cassandraSchemaJob",
+      "type": "object"
+    },
+    "collector": {
+      "properties": {
+        "affinity": {
+          "default": {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [{"labelSelector": {"matchExpressions": [{"key": "app.kubernetes.io/name", "operator": "In", "values": ["jaeger-collector"]}]}, "topologyKey": "kubernetes.io/hostname"}]}},
+          "description": "The pod's scheduling constraints\nMore info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core\nType: object\nMandatory: no\nDefault: see below\n",
+          "title": "affinity",
+          "type": "object"
+        },
+        "annotations": {
+          "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "annotations",
+          "type": "object"
+        },
+        "cmdlineParams": {
+          "description": "Collector related cmd line opts to be configured on the concerned components.\nType: object\nDefault: []\n",
+          "items": {
+            "required": []
+          },
+          "title": "cmdlineParams",
+          "type": "array"
+        },
+        "config": {
+          "description": "Jaeger collector config, contains only several options to configure, other part of parameters take from\ncassandraSchemaJob and elasticsearch sections",
+          "properties": {
+            "exporters": {
+              "properties": {
+                "jaeger_storage_exporter": {
+                  "properties": {
+                    "queue": {
+                      "description": "Queue and batch configuration",
+                      "properties": {
+                        "enabled": {
+                          "default": true,
+                          "title": "enabled",
+                          "type": "boolean"
+                        },
+                        "num_consumers": {
+                          "default": 100,
+                          "title": "num_consumers",
+                          "type": "integer"
+                        },
+                        "queue_size": {
+                          "default": 1000,
+                          "title": "queue_size",
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "enabled",
+                        "num_consumers",
+                        "queue_size"
+                      ],
+                      "title": "queue",
+                      "type": "object"
+                    },
+                    "retry_on_failure": {
+                      "description": "Retry configuration to save data in database",
+                      "properties": {
+                        "enabled": {
+                          "default": true,
+                          "title": "enabled",
+                          "type": "boolean"
+                        },
+                        "initial_interval": {
+                          "default": "10s",
+                          "title": "initial_interval",
+                          "type": "string"
+                        },
+                        "max_elapsed_time": {
+                          "default": "5m",
+                          "title": "max_elapsed_time",
+                          "type": "string"
+                        },
+                        "max_interval": {
+                          "default": "1m",
+                          "title": "max_interval",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "enabled",
+                        "initial_interval",
+                        "max_interval",
+                        "max_elapsed_time"
+                      ],
+                      "title": "retry_on_failure",
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "retry_on_failure",
+                    "queue"
+                  ],
+                  "title": "jaeger_storage_exporter",
+                  "type": "object"
+                }
+              },
+              "required": [
+                "jaeger_storage_exporter"
+              ],
+              "title": "exporters",
+              "type": "object"
+            },
+            "processors": {
+              "properties": {
+                "memory_limiter": {
+                  "properties": {
+                    "check_interval": {
+                      "default": "1s",
+                      "description": "How often to check memory usage\nType: string (duration)\nDefault: \"1s\"\n",
+                      "title": "check_interval",
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "default": false,
+                      "description": "Enable memory limiter processor to prevent OOM issues\nType: boolean\nDefault: false\n",
+                      "title": "enabled",
+                      "type": "boolean"
+                    },
+                    "limit_mib": {
+                      "default": 150,
+                      "description": "Hard memory limit in MiB. When exceeded, garbage collection is triggered\nShould be set to approximately 75-80% of pod memory limit\nDefault collector memory limit is 200Mi, so default is 150Mi (75% of 200Mi)\nType: integer\nDefault: 150\n",
+                      "title": "limit_mib",
+                      "type": "integer"
+                    },
+                    "spike_limit_mib": {
+                      "default": 30,
+                      "description": "Allowed memory spike in MiB. Soft limit = limit_mib - spike_limit_mib\nWhen soft limit is exceeded, processor starts rejecting incoming data\nShould be set to approximately 15-20% of pod memory limit\nDefault collector memory limit is 200Mi, so default is 30Mi (15% of 200Mi)\nType: integer\nDefault: 30\n",
+                      "title": "spike_limit_mib",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "check_interval",
+                    "limit_mib",
+                    "spike_limit_mib"
+                  ],
+                  "title": "memory_limiter",
+                  "type": "object"
+                }
+              },
+              "required": [
+                "memory_limiter"
+              ],
+              "title": "processors",
+              "type": "object"
+            },
+            "service": {
+              "properties": {
+                "telemetry": {
+                  "properties": {
+                    "logs": {
+                      "properties": {
+                        "level": {
+                          "default": "info",
+                          "title": "level",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "level"
+                      ],
+                      "title": "logs",
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "logs"
+                  ],
+                  "title": "telemetry",
+                  "type": "object"
+                }
+              },
+              "required": [
+                "telemetry"
+              ],
+              "title": "service",
+              "type": "object"
+            }
+          },
+          "required": [
+            "service",
+            "processors",
+            "exporters"
+          ],
+          "title": "config",
+          "type": "object"
+        },
+        "containerSecurityContext": {
+          "properties": {
+            "allowPrivilegeEscalation": {
+              "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
+              "title": "allowPrivilegeEscalation",
+              "type": "boolean"
+            },
+            "capabilities": {
+              "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\n Type: object\n Mandatory: no",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "containerSecurityContext",
+          "type": "object"
+        },
+        "extraEnv": {
+          "description": "Collector related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
+          "items": {
+            "required": []
+          },
+          "title": "extraEnv",
+          "type": "array"
+        },
+        "image": {
+          "description": "The image for collector container.\nType: string\nDefault: \"jaegertracing/jaeger:2.13.0\"\n",
+          "title": "image",
+          "type": "string"
+        },
+        "imagePullPolicy": {
+          "default": "IfNotPresent",
+          "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\nAvailable value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
+          "title": "imagePullPolicy",
+          "type": "string"
+        },
+        "imagePullSecrets": {
+          "description": "A secret with secret for pulling images from private registry.\nDefault: []\n",
+          "items": {
+            "required": []
+          },
+          "title": "imagePullSecrets",
+          "type": "array"
+        },
+        "ingress": {
+          "properties": {
+            "grpc": {
+              "properties": {
+                "defaultPaths": {
+                  "default": [{"prefix": "/otel/grpc","service":{"port": 4317}},{"prefix": "/thrift/grpc","service":{"port": 14250}}],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "prefix": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "object",
+                        "properties": {
+                          "port": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "title": "defaultPaths",
+                  "type": "array"
+                },
+                "hosts": {
+                  "items": {
+                    "required": []
+                  },
+                  "title": "hosts",
+                  "type": "array"
+                },
+                "install": {
+                  "default": false,
+                  "title": "install",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "install",
+                "hosts",
+                "defaultPaths"
+              ],
+              "title": "grpc",
+              "type": "object"
+            },
+            "http": {
+              "properties": {
+                "defaultPaths": {
+                  "default":[{"prefix":"/","service":{"port":13133}},{"prefix":"/zipkin","service":{"port":9411}},{"prefix":"/otlp/http","service":{"port":4318}} ,{"prefix":"/thrift/tchannel","service":{"port":14250}},{"prefix":"/thrift/http","service":{"port":14268}}],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "prefix": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "object",
+                        "properties": {
+                          "port": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "title": "defaultPaths",
+                  "type": "array"
+                },
+                "hosts": {
+                  "description": "A list of FQDN hosts to access jaeger outside the cloud.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "hosts",
+                  "type": "array"
+                },
+                "install": {
+                  "default": false,
+                  "description": "Enables creation of ingress.",
+                  "title": "install",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "install",
+                "hosts",
+                "defaultPaths"
+              ],
+              "title": "http",
+              "type": "object"
+            },
+            "tls": {
+              "required": [],
+              "title": "tls",
+              "type": "object"
+            }
+          },
+          "required": [
+            "http",
+            "grpc",
+            "tls"
+          ],
+          "title": "ingress",
+          "type": "object"
+        },
+        "install": {
+          "default": true,
+          "description": "Allow disabling create collector deployment.\nType: boolean\nDefault: true\n",
+          "title": "install",
+          "type": "boolean"
+        },
+        "jaeger": {
+          "description": "Additional settings for Jaeger (Legacy) receiver\nMandatory: no\n",
+          "properties": {
+            "grpc": {
+              "properties": {
+                "maxConnectionAge": {
+                  "default": "",
+                  "description": "The maximum amount of time a connection may exist.\nSet this value to a few seconds or minutes on highly elastic environments, so that clients discover new collector nodes frequently.\nSee https://pkg.go.dev/google.golang.org/grpc/keepalive#ServerParameters\nDefault: 0s\n",
+                  "title": "maxConnectionAge",
+                  "type": "string"
+                },
+                "maxConnectionAgeGrace": {
+                  "default": "",
+                  "description": "The additive period after MaxConnectionAge after which the connection will be forcibly closed.\nSee https://pkg.go.dev/google.golang.org/grpc/keepalive#ServerParameters\nDefault: 0s\n",
+                  "title": "maxConnectionAgeGrace",
+                  "type": "string"
+                },
+                "maxRecvMsgSizeMib": {
+                  "default": "",
+                  "description": "The maximum receivable message size for the collector's gRPC server in Mi\nDefault: 4\n",
+                  "title": "maxRecvMsgSizeMib",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "maxConnectionAge",
+                "maxConnectionAgeGrace",
+                "maxRecvMsgSizeMib"
+              ],
+              "title": "grpc",
+              "type": "object"
+            },
+            "http": {
+              "properties": {
+                "idleTimeout": {
+                  "default": "",
+                  "description": "IdleTimeout is the maximum amount of time to wait for the next request when keep-alive are enabled.\nIf zero, the value of ReadTimeout is used. If negative, or if zero and ReadTimeout is zero or negative, there is no timeout.\nDefault: 0s\n",
+                  "title": "idleTimeout",
+                  "type": "string"
+                },
+                "readHeaderTimeout": {
+                  "default": "",
+                  "description": "ReadHeaderTimeout is the amount of time allowed to read request headers. The connection's read deadline is reset\nafter reading the headers and the Handler can decide what is considered too slow for the body. If zero, the value of\nReadTimeout is used. If negative, or if zero and ReadTimeout is zero or negative, there is no timeout.\nDefault: 0s\n",
+                  "title": "readHeaderTimeout",
+                  "type": "string"
+                },
+                "readTimeout": {
+                  "default": "",
+                  "description": "ReadTimeout is the maximum duration for reading the entire request, including the body.\nA zero or negative value means there will be no timeout.\nBecause ReadTimeout does not let Handlers make per-request decisions on each request body's acceptable deadline or\nupload rate, most users will prefer to use ReadHeaderTimeout. It is valid to use them both.\nDefault: 0s\n",
+                  "title": "readTimeout",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "idleTimeout",
+                "readTimeout",
+                "readHeaderTimeout"
+              ],
+              "title": "http",
+              "type": "object"
+            }
+          },
+          "required": [
+            "grpc",
+            "http"
+          ],
+          "title": "jaeger",
+          "type": "object"
+        },
+        "labels": {
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "labels",
+          "type": "object"
+        },
+        "name": {
+          "default": "collector",
+          "description": "This name will be used as name of the microservice deployment and in labels.\n",
+          "title": "name",
+          "type": "string"
+        },
+        "nodeSelector": {
+          "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "nodeSelector",
+          "type": "object"
+        },
+        "otlp": {
+          "description": "Additional settings for OTLP receiver\nMandatory: no\n",
+          "properties": {
+            "grpc": {
+              "properties": {
+                "maxConnectionAge": {
+                  "default": "",
+                  "description": "The maximum amount of time a connection may exist. Set this value to a few seconds or minutes on highly elastic environments,\nso that clients discover new collector nodes frequently. See https://pkg.go.dev/google.golang.org/grpc/keepalive#ServerParameters\nDefault: 0s\n",
+                  "title": "maxConnectionAge",
+                  "type": "string"
+                },
+                "maxConnectionAgeGrace": {
+                  "default": "",
+                  "description": "The additive period after MaxConnectionAge after which the connection will be forcibly closed.\nSee https://pkg.go.dev/google.golang.org/grpc/keepalive#ServerParameters\nDefault: 0s\n",
+                  "title": "maxConnectionAgeGrace",
+                  "type": "string"
+                },
+                "maxRecvMsgSizeMib": {
+                  "default": "",
+                  "description": "The maximum receivable message size for the collector's gRPC server\nDefault: 4",
+                  "title": "maxRecvMsgSizeMib",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "maxConnectionAge",
+                "maxConnectionAgeGrace",
+                "maxRecvMsgSizeMib"
+              ],
+              "title": "grpc",
+              "type": "object"
+            },
+            "http": {
+              "properties": {
+                "cors": {
+                  "properties": {
+                    "allowedHeaders": {
+                      "default": "",
+                      "description": "AllowedHeaders sets what headers will be allowed in CORS requests The Accept, Accept-Language, Content-Type, and Content-Language\nheaders are implicitly allowed. If no headers are listed, X-Requested-With will also be accepted by default.\nInclude \"*\" to allow any request header.\n",
+                      "title": "allowedHeaders",
+                      "type": "string"
+                    },
+                    "allowedOrigins": {
+                      "default": "",
+                      "description": "AllowedOrigins sets the allowed values of the Origin header for HTTP/JSON requests to an OTLP receiver.\nAn origin may contain a wildcard (*) to replace 0 or more characters (e.g., \"http://*.domain.com\", or \"*\" to allow any origin).\n",
+                      "title": "allowedOrigins",
+                      "type": "string"
+                    },
+                    "maxAge": {
+                      "default": "",
+                      "description": "MaxAge sets the value of the Access-Control-Max-Age response header.\nSet it to the number of seconds that browsers should cache a CORS preflight response for.\n",
+                      "title": "maxAge",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "allowedOrigins",
+                    "allowedHeaders",
+                    "maxAge"
+                  ],
+                  "title": "cors",
+                  "type": "object"
+                },
+                "idleTimeout": {
+                  "default": "",
+                  "description": "IdleTimeout is the maximum amount of time to wait for the next request when keep-alive are enabled.\nIf zero, the value of ReadTimeout is used. If negative, or if zero and ReadTimeout is zero or negative, there is no timeout.\nDefault: 0s\n",
+                  "title": "idleTimeout",
+                  "type": "string"
+                },
+                "readHeaderTimeout": {
+                  "default": "",
+                  "description": "ReadHeaderTimeout is the amount of time allowed to read request headers. The connection's read deadline is reset\nafter reading the headers and the Handler can decide what is considered too slow for the body. If zero, the value of\nReadTimeout is used. If negative, or if zero and ReadTimeout is zero or negative, there is no timeout.\nDefault: 0s\n",
+                  "title": "readHeaderTimeout",
+                  "type": "string"
+                },
+                "readTimeout": {
+                  "default": "",
+                  "description": "ReadTimeout is the maximum duration for reading the entire request, including the body.\nA zero or negative value means there will be no timeout.\nBecause ReadTimeout does not let Handlers make per-request decisions on each request body's acceptable deadline or\nupload rate, most users will prefer to use ReadHeaderTimeout. It is valid to use them both.\nDefault: 0s\n",
+                  "title": "readTimeout",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "idleTimeout",
+                "readHeaderTimeout",
+                "readTimeout",
+                "cors"
+              ],
+              "title": "http",
+              "type": "object"
+            }
+          },
+          "required": [
+            "grpc",
+            "http"
+          ],
+          "title": "otlp",
+          "type": "object"
+        },
+        "priorityClassName": {
+          "description": "PriorityClassName assigned to the Pods to prevent them from evicting.\n Type: string\nMandatory: no\nDefault: not set",
+          "title": "priorityClassName",
+          "type": "string"
+        },
+        "replicas": {
+          "default": 1,
+          "description": "Replicas spec configuration for collector.\nType: integer\nMandatory: no\nDefault: 1\n",
+          "title": "replicas",
+          "type": "integer"
+        },
+        "resources": {
+          "description": "The resources describe compute resource requests and limits for single container.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\n",
+          "properties": {
+            "limits": {
+              "properties": {
+                "cpu": {
+                  "default": 1,
+                  "title": "cpu",
+                  "type": "integer"
+                },
+                "memory": {
+                  "default": "512Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "properties": {
+                "cpu": {
+                  "default": "100m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "100Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [
+            "limits",
+            "requests"
+          ],
+          "title": "resources",
+          "type": "object"
+        },
+        "sampling": {
+          "properties": {
+            "adaptive": {
+              "description": "Adaptive Sampling works by observing received spans and recalculating sampling probabilities\nfor each service/endpoint combination to ensure that the volume of collected traces matches target_samples_per_second.",
+              "properties": {
+                "initialSamplingProbability": {
+                  "default": "",
+                  "description": "When a new service or endpoint is detected, it is sampled with initial_sampling_probability until enough data is collected\nto calculate the rate appropriate for the traffic going through the endpoint.\nType: float\nDefault: 0.001\nMandatory: no\n",
+                  "title": "initialSamplingProbability",
+                  "type": "string"
+                },
+                "targetSamplesPerSecond": {
+                  "default": "",
+                  "description": "Defines desired rate at which data samples are collected or processed per second\nType: integer\nDefault: 1\nMandatory: no\n",
+                  "title": "targetSamplesPerSecond",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "initialSamplingProbability",
+                "targetSamplesPerSecond"
+              ],
+              "title": "adaptive",
+              "type": "object"
+            },
+            "type": {
+              "default": "",
+              "description": "Remote sampling type can be either \"file\" or \"adaptive\".\nIf type is \"file\", sampling configuration is loaded from file /etc/jaeger/sampling/sampling.json\nType: string\nDefault: \"\"\nMandatory: no\n",
+              "title": "type",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "adaptive"
+          ],
+          "title": "sampling",
+          "type": "object"
+        },
+        "samplingConfig": {
+          "default": false,
+          "description": "Enable SAMPLING_STRATEGIES_FILE\nType: boolean\nDefault: false\n",
+          "title": "samplingConfig",
+          "type": "boolean"
+        },
+        "securityContext": {
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+          "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
+              "title": "runAsUser",
+              "type": "integer"
+            },
+            "fsGroup": {
+              "description": "A special supplemental group that applies to all containers in a pod.\n Type: integer\n Mandatory: no",
+              "title": "fsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "description": "Indicates that the container must run as a non-root user.\n Type: boolean\n Mandatory: no",
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "seccompProfile": {
+              "description": "The seccomp profile for the container.\n Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Mandatory: no",
+              "title": "seccompProfile",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "tlsConfig": {
+          "description": "TLS configuration for collector.\n",
+          "properties": {
+            "createSecret":{
+              "description": "Use createSecret section to create secret with already known content of TLS certificates.\n Do not use createSecret if you use generateCerts\n Will be ignored if existingSecret is already specified.",
+              "properties": {
+                "ca": {
+                  "description": "CA certificate.",
+                  "type": "string"
+                },
+                "cert": {
+                  "description": "Server certificate.",
+                  "type": "string"
+                },
+                "key": {
+                  "description": "Server private key.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "existingSecret": {
+              "description": "TLS configuration from existing secret. If specified, all subsequent parameters in tls section are ignored.",
+              "title": "existingSecret",
+              "type": "string"
+            },
+            "generateCerts": {
+              "description": "Use generateCerts section if you want cert-manager to generate secret.\nWill be ignored if existingSecret is already specified.",
+              "properties": {
+                "clusterIssuerName": {
+                  "default": "",
+                  "description": "ClusterIssuer name to request certificates from",
+                  "title": "clusterIssuerName",
+                  "type": "string"
+                },
+                "duration": {
+                  "default": 365,
+                  "title": "Validity period of the certificate in days",
+                  "type": "integer"
+                },
+                "enabled": {
+                  "default": true,
+                  "description": "Allows to generate certificates with cert-manager",
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "renewBefore": {
+                  "default": 15,
+                  "description": "Number of days before certificate expiration when cert-manager should renew the certificate",
+                  "title": "renewBefore",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "enabled",
+                "clusterIssuerName",
+                "duration",
+                "renewBefore"
+              ],
+              "title": "generateCerts",
+              "type": "object"
+            },
+            "jaegerHttp": {
+              "description": "TLS configuration for Jaeger/Thrift HTTP endpoint.\n",
+              "properties": {
+                "cipherSuites": {
+                  "default": "",
+                  "description": "Comma-separated list of cipher suites for the server.\nValues are from tls package constants (https://golang.org/pkg/crypto/tls/#pkg-constants)\nType: string\n",
+                  "title": "cipherSuites",
+                  "type": "string"
+                },
+                "enabled": {
+                  "default": false,
+                  "description": "Allow disabling/enabling tls.\nType: boolean\nDefault: false\n",
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "maxVersion": {
+                  "default": "",
+                  "description": "Maximum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3)\nType: string\n",
+                  "title": "maxVersion",
+                  "type": "string"
+                },
+                "minVersion": {
+                  "default": "",
+                  "description": "Minimum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3)\nType: string\n",
+                  "title": "minVersion",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "enabled",
+                "cipherSuites",
+                "maxVersion",
+                "minVersion"
+              ],
+              "title": "jaegerHttp",
+              "type": "object"
+            },
+            "jaegergRPC": {
+              "description": "TLS configuration for Jaeger/Thrift gRPC endpoint.\n",
+              "properties": {
+                "cipherSuites": {
+                  "default": "",
+                  "description": "Comma-separated list of cipher suites for the server.\nValues are from tls package constants (https://golang.org/pkg/crypto/tls/#pkg-constants)\nType: string\n",
+                  "title": "cipherSuites",
+                  "type": "string"
+                },
+                "enabled": {
+                  "default": false,
+                  "description": "Allow disabling/enabling tls.\nType: boolean\nDefault: false\n",
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "maxVersion": {
+                  "default": "",
+                  "description": "Maximum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3)\nType: string\n",
+                  "title": "maxVersion",
+                  "type": "string"
+                },
+                "minVersion": {
+                  "default": "",
+                  "description": "Minimum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3)\nType: string\n",
+                  "title": "minVersion",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "enabled",
+                "cipherSuites",
+                "maxVersion",
+                "minVersion"
+              ],
+              "title": "jaegergRPC",
+              "type": "object"
+            },
+            "newSecretName": {
+              "description": "Name of the secret that will be used for both generateCerts and createSecret sections below.\n Must be specified if existingSecret is not configured.\n Type: string\n Default: jaeger-collector-tls-secret",
+              "title": "newSecretName",
+              "type": "string"
+            },
+            "otelHttp": {
+              "description": "TLS configuration for OTEL HTTP endpoint.\n",
+              "properties": {
+                "certificateReloadInterval": {
+                  "default": "",
+                  "description": "The duration after which the certificate will be reloaded (0s means will not be reloaded)\nType: string\nDefault: 0s\n",
+                  "title": "certificateReloadInterval",
+                  "type": "string"
+                },
+                "cipherSuites": {
+                  "default": "",
+                  "description": "Comma-separated list of cipher suites for the server.\nValues are from tls package constants (https://golang.org/pkg/crypto/tls/#pkg-constants)\nType: string\n",
+                  "title": "cipherSuites",
+                  "type": "string"
+                },
+                "enabled": {
+                  "default": false,
+                  "description": "Allow disabling/enabling tls.\nType: boolean\nDefault: false\n",
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "maxVersion": {
+                  "default": "",
+                  "description": "Maximum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3)\nType: string\n",
+                  "title": "maxVersion",
+                  "type": "string"
+                },
+                "minVersion": {
+                  "default": "",
+                  "description": "Minimum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3)\nType: string\n",
+                  "title": "minVersion",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "enabled",
+                "cipherSuites",
+                "maxVersion",
+                "minVersion",
+                "certificateReloadInterval"
+              ],
+              "title": "otelHttp",
+              "type": "object"
+            },
+            "otelgRPC": {
+              "description": "TLS configuration for OTEL gRPC endpoint.\n",
+              "properties": {
+                "certificateReloadInterval": {
+                  "default": "",
+                  "description": "The duration after which the certificate will be reloaded (0s means will not be reloaded)\nType: string\nDefault: 0s\n",
+                  "title": "certificateReloadInterval",
+                  "type": "string"
+                },
+                "cipherSuites": {
+                  "default": "",
+                  "description": "Comma-separated list of cipher suites for the server.\nValues are from tls package constants (https://golang.org/pkg/crypto/tls/#pkg-constants)\nType: string\n",
+                  "title": "cipherSuites",
+                  "type": "string"
+                },
+                "enabled": {
+                  "default": false,
+                  "description": "Allow disabling/enabling tls.\nType: boolean\nDefault: false\n",
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "maxVersion": {
+                  "default": "",
+                  "description": "Maximum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3)\nType: string\n",
+                  "title": "maxVersion",
+                  "type": "string"
+                },
+                "minVersion": {
+                  "default": "",
+                  "description": "Minimum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3)\nType: string\n",
+                  "title": "minVersion",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "enabled",
+                "cipherSuites",
+                "maxVersion",
+                "minVersion",
+                "certificateReloadInterval"
+              ],
+              "title": "otelgRPC",
+              "type": "object"
+            },
+            "zipkin": {
+              "description": "TLS configuration for Zipkin HTTP endpoint.\n",
+              "properties": {
+                "cipherSuites": {
+                  "default": "",
+                  "description": "Comma-separated list of cipher suites for the server.\nValues are from tls package constants (https://golang.org/pkg/crypto/tls/#pkg-constants)\nType: string\n",
+                  "title": "cipherSuites",
+                  "type": "string"
+                },
+                "enabled": {
+                  "default": false,
+                  "description": "Allow disabling/enabling tls.\nType: boolean\nDefault: false\n",
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "maxVersion": {
+                  "default": "",
+                  "description": "Maximum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3)\nType: string\n",
+                  "title": "maxVersion",
+                  "type": "string"
+                },
+                "minVersion": {
+                  "default": "",
+                  "description": "Minimum TLS version supported (Possible values: 1.0, 1.1, 1.2, 1.3)\nType: string\n",
+                  "title": "minVersion",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "enabled",
+                "cipherSuites",
+                "maxVersion",
+                "minVersion"
+              ],
+              "title": "zipkin",
+              "type": "object"
+            }
+          },
+          "required": [
+            "generateCerts",
+            "otelHttp",
+            "otelgRPC",
+            "jaegerHttp",
+            "jaegergRPC",
+            "zipkin"
+          ],
+          "title": "tlsConfig",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
+          "required": [],
+          "title": "tolerations",
+          "type": "object"
+        },
+        "zipkin": {
+          "description": "Additional settings for Zipkin receiver\nMandatory: no\n",
+          "properties": {
+            "cors": {
+              "description": "Comma-separated CORS allowed headers.\nSee https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers\nType: string\n",
+              "properties": {
+                "allowedHeaders": {
+                  "default": "",
+                  "title": "allowedHeaders",
+                  "type": "string"
+                },
+                "allowedOrigins": {
+                  "default": "",
+                  "description": "Comma-separated CORS allowed origins.\nSee https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin\nType: string\n",
+                  "title": "allowedOrigins",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "allowedHeaders",
+                "allowedOrigins"
+              ],
+              "title": "cors",
+              "type": "object"
+            },
+            "disableKeepAlives": {
+              "default": false,
+              "description": "KeepAlive configures allow Keep-Alive for Zipkin HTTP server\nType: boolean\nDefault: false\n",
+              "title": "disableKeepAlives",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "cors",
+            "disableKeepAlives"
+          ],
+          "title": "zipkin",
+          "type": "object"
+        },
+        "zipkinPort": {
+          "default": 9411,
+          "description": "Enable port of zipkin service.\nType: integer\nDefault: 9411\n",
+          "title": "zipkinPort",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "install",
+        "name",
+        "imagePullPolicy",
+        "imagePullSecrets",
+        "replicas",
+        "otlp",
+        "jaeger",
+        "zipkin",
+        "tlsConfig",
+        "cmdlineParams",
+        "extraEnv",
+        "samplingConfig",
+        "zipkinPort",
+        "securityContext",
+        "containerSecurityContext",
+        "nodeSelector",
+        "tolerations",
+        "affinity",
+        "resources",
+        "sampling",
+        "labels",
+        "annotations",
+        "ingress",
+        "config"
+      ],
+      "title": "collector",
+      "type": "object"
+    },
+    "elasticsearch": {
+      "properties": {
+        "client": {
+          "properties": {
+            "password": {
+              "default": "",
+              "description": "Password for Elasticsearch with access to HTTP API.\nType: string\nDefault: \"\"\n",
+              "title": "password",
+              "type": "string"
+            },
+            "scheme": {
+              "default": "http",
+              "description": "Scheme for elasticsearch.\nType: string\nDefault: \"http\"\n",
+              "title": "scheme",
+              "type": "string"
+            },
+            "tls": {
+              "properties": {
+                "ca": {
+                  "description": "CA certificate for Elasticsearch TLS connection.\nMandatory field when using SSL connection to OpenSearch.\nIgnored if the existingSecret is specified.\nType: string\nDefault: \"\"\n",
+                  "title": "ca",
+                  "type": "string"
+                },
+                "cert": {
+                  "description": "Client certificate for Elasticsearch TLS connection.\nMandatory field when using SSL connection to OpenSearch.\nIgnored if the existingSecret is specified.\nType: string\nDefault: \"\"\n",
+                  "title": "cert",
+                  "type": "string"
+                },
+                "commonName": {
+                  "description": "Server name  for TLS certificate. Ignored if the existingSecret is specified. \nType: string\nDefault: \"\"\n",
+                  "title": "commonName",
+                  "type": "string"
+                },
+                "enabled": {
+                  "default": false,
+                  "description": "Allow disabling create tls.\nType: boolean\nDefault: false\n",
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "existingSecret": {
+                  "default": "",
+                  "description": "Name of existing secret with SSL certificates.\nIf specified, all subsequent parameters in tls section are ignored.\nType: string\nDefault: \"\"\n",
+                  "title": "existingSecret",
+                  "type": "string"
+                },
+                "key": {
+                  "description": "Private key for Elasticsearch TLS connection.\nMandatory field when using SSL connection to OpenSearch.\nIgnored if the existingSecret is specified.\nType: string\nDefault: \"\"\n",
+                  "title": "key",
+                  "type": "string"
+              }
+            },
+              "required": ["enabled","existingSecret"],
+              "title": "tls",
+              "type": "object"
+            },
+            "url": {
+              "default": "",
+              "description": "This is the URL with port used to connect to Elasticsearch.\nType: string\nFor example: elasticsearch.elasticsearch.svc:9200\nDefault: \"\"\n",
+              "title": "url",
+              "type": "string"
+            },
+            "username": {
+              "default": "",
+              "description": "Username for Elasticsearch with access to HTTP API.\nType: string\nDefault: \"\"\n",
+              "title": "username",
+              "type": "string"
+            }
+          },
+          "required": [
+            "username",
+            "password",
+            "url",
+            "scheme",
+            "tls"
+          ],
+          "title": "client",
+          "type": "object"
+        },
+        "existingSecret": {
+          "default": "",
+          "description": "Name of existing secret with elasticsearch username and password.\nType: string\nDefault: \"\"\n",
+          "title": "existingSecret",
+          "type": "string"
+        },
+        "extraEnv": {
+          "description": "Elasticsearch related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
+          "items": {
+            "required": []
+          },
+          "title": "extraEnv",
+          "type": "array"
+        },
+        "indexCleaner": {
+          "properties": {
+            "annotations": {
+              "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "concurrencyPolicy": {
+              "default": "Forbid",
+              "description": "It specifies how to treat concurrent executions of a job that is created by this cron job.\n  * Allow: The cron job allows concurrently running jobs.\n  * Forbid: The cron job does not allow concurrent runs; if it is time for a new job run and the previous job\n            run hasn't finished yet, the cron job skips the new job run\n  * Replace: If it is time for a new job run and the previous job run hasn't finished yet, the cron job\n           replaces the currently running job run with a new job run\nType: string\nDefault: Forbid\n",
+              "title": "concurrencyPolicy",
+              "type": "string"
+            },
+            "containerSecurityContext": {
+              "properties":{
+                "allowPrivilegeEscalation": {
+                  "default": false,
+                  "description": "Controls whether a process can gain more privileges than its parent process.\nThis bool directly controls whether the 'no_new_privs' flag gets set on the container process.\nType: bool\nMandatory: no",
+                  "title": "allowPrivilegeEscalation",
+                  "type": "boolean"
+                },
+                "capabilities": {
+                  "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n",
+                  "required": [],
+                  "title": "capabilities",
+                  "type": "object"
+                }
+              },
+              "required": [],
+              "title": "containerSecurityContext",
+              "type": "object"
+            },
+            "extraConfigmapMounts": {
+              "description": "Specify extra configMap mounts for indexCleaner.\nType: array\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "extraConfigmapMounts",
+              "type": "array"
+            },
+            "extraEnv": {
+              "description": "indexCleaner related extra env vars to be configured on the concerned components.\nType: array\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "extraEnv",
+              "type": "array"
+            },
+            "extraSecretMounts": {
+              "description": "Specify extra secret mounts for indexCleaner.\nType: array\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "extraSecretMounts",
+              "type": "array"
+            },
+            "failedJobsHistoryLimit": {
+              "default": 1,
+              "description": "Parameter specify how many failed jobs should be kept.\nDefault: 1\n",
+              "title": "failedJobsHistoryLimit",
+              "type": "integer"
+            },
+            "image": {
+              "description": "The docker image to use for index cleaner job.\nDefault: jaegertracing/jaeger-es-index-cleaner:1.76.0\n",
+              "title": "image",
+              "type": "string"
+            },
+            "imagePullPolicy": {
+              "default": "IfNotPresent",
+              "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available values : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
+              "enum": ["IfNotPresent", "Always", "Never"],
+              "title": "imagePullPolicy",
+              "type": "string"
+            },
+            "imagePullSecrets": {
+              "description": "The secrets to be used for pulling the image from private docker registry.\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "imagePullSecrets",
+              "type": "array"
+            },
+            "install": {
+              "default": false,
+              "description": "Allow disabling create index cleaner cronJob.\nType: boolean\nDefault: false\n",
+              "title": "install",
+              "type": "boolean"
+            },
+            "labels": {
+              "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "name": {
+              "default": "index-cleaner",
+              "description": "This name will be used as name of the microservice cronjob and in labels.\n",
+              "title": "name",
+              "type": "string"
+            },
+            "nodeSelector": {
+              "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "numberOfDays": {
+              "default": 7,
+              "description": "Specify number of day that job will be executed.\nDefault: 7\n",
+              "title": "numberOfDays",
+              "type": "integer"
+            },
+            "priorityClassName": {
+              "description": "PriorityClassName assigned to the Pods to prevent them from evicting.",
+              "type": "string",
+              "title": "priorityClassName"
+            },
+            "resources": {
+              "description": "The compute resources to allocate to the container.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\n",
+              "properties": {
+                "limits": {
+                  "properties": {
+                    "cpu": {
+                      "default": "100m",
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cpu",
+                    "memory"
+                  ],
+                  "title": "limits",
+                  "type": "object"
+                },
+                "requests": {
+                  "properties": {
+                    "cpu": {
+                      "default": "100m",
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cpu",
+                    "memory"
+                  ],
+                  "title": "requests",
+                  "type": "object"
+                }
+              },
+              "required": [
+                "limits",
+                "requests"
+              ],
+              "title": "resources",
+              "type": "object"
+            },
+            "schedule": {
+              "default": "55 23 * * *",
+              "description": "Specify schedule time of its jobs to be created and executed.\nFor example, \"0 * * * *\" or \"\nDefault: \"55 23 * * *\"\n",
+              "title": "schedule",
+              "type": "string"
+            },
+            "securityContext": {
+              "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+              "properties": {
+                "runAsUser": {
+                  "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no\n",
+                  "title": "runAsUser",
+                  "type": "integer"
+                },
+                "fsGroup": {
+                  "description": "A special supplemental group that applies to all containers in a pod.\nType: integer\nMandatory: no",
+                  "title": "fsGroup",
+                  "type": "integer"
+                },
+                "runAsNonRoot": {
+                  "description": "Indicates that the container must run as a non-root user.\nIf true, the Kubelet will validate the image at runtime to ensure it does not run as UID 0 (root)\nType: boolean\nMandatory: no\n",
+                  "title": "runAsNonRoot",
+                  "type": "boolean"
+                },
+                "seccompProfile": {
+                  "description": "The seccomp profile for the container.\nType: object\nMandatory: no\n",
+                  "title": "seccompProfile",
+                  "type": "object"
+                }
+              },
+              "required": [],
+              "title": "securityContext",
+              "type": "object"
+            },
+            "successfulJobsHistoryLimit": {
+              "default": 1,
+              "description": "Parameter specify how many completed jobs should be kept.\nDefault: 1\n",
+              "title": "successfulJobsHistoryLimit",
+              "type": "integer"
+            },
+            "tolerations": {
+              "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
+              "required": [],
+              "title": "tolerations",
+              "type": "object"
+            },
+            "ttlSecondsAfterFinished": {
+              "default": 0,
+              "description": "Allow to set time to life (TTL) for TTL controller. TTL controller cleans up the Job, it will delete the Job\ncascadingly, i.e. delete its dependent objects, such as Pods, together with the Job.\nUseful to set a value other than 0 if you want to see job logs.\nType: int\nDefault: 0\n",
+              "title": "ttlSecondsAfterFinished",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "install",
+            "name",
+            "imagePullPolicy",
+            "imagePullSecrets",
+            "labels",
+            "annotations",
+            "concurrencyPolicy",
+            "schedule",
+            "successfulJobsHistoryLimit",
+            "failedJobsHistoryLimit",
+            "ttlSecondsAfterFinished",
+            "securityContext",
+            "containerSecurityContext",
+            "numberOfDays",
+            "extraEnv",
+            "extraConfigmapMounts",
+            "extraSecretMounts",
+            "nodeSelector",
+            "tolerations",
+            "resources"
+          ],
+          "title": "indexCleaner",
+          "type": "object"
+        },
+        "indexPrefix": {
+          "default": "",
+          "description": "Index prefix for elasticsearch.\nType: string\nDefault: \"\"\n",
+          "title": "indexPrefix",
+          "type": "string"
+        },
+        "lookback": {
+          "properties": {
+            "annotations": {
+              "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "concurrencyPolicy": {
+              "default": "Forbid",
+              "description": "It specifies how to treat concurrent executions of a job that is created by this cron job.\n  * Allow: The cron job allows concurrently running jobs.\n  * Forbid: The cron job does not allow concurrent runs; if it is time for a new job run and the previous job\n            run hasn't finished yet, the cron job skips the new job run\n  * Replace: If it is time for a new job run and the previous job run hasn't finished yet, the cron job\n           replaces the currently running job run with a new job run\nType: string\nDefault: Forbid\n",
+              "title": "concurrencyPolicy",
+              "type": "string"
+            },
+            "containerSecurityContext": {
+              "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+              "properties": {
+                "allowPrivilegeEscalation": {
+                  "default": false,
+                  "description": "Controls whether a process can gain more privileges than its parent process.\nThis bool directly controls whether the 'no_new_privs' flag gets set on the container process.\nType: bool\nMandatory: no",
+                  "title": "allowPrivilegeEscalation",
+                  "type": "boolean"
+                },
+                "capabilities": {
+                  "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n",
+                  "required": [],
+                  "title": "capabilities",
+                  "type": "object"
+                }
+              },
+              "required": [],
+              "title": "containerSecurityContext",
+              "type": "object"
+            },
+            "extraConfigmapMounts": {
+              "description": "Specify extra configMap mounts for lookback.\nType: object\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "extraConfigmapMounts",
+              "type": "array"
+            },
+            "extraEnv": {
+              "description": "lookback related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "extraEnv",
+              "type": "array"
+            },
+            "extraSecretMounts": {
+              "description": "Specify extra secret mounts for lookback.\nType: object\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "extraSecretMounts",
+              "type": "array"
+            },
+            "failedJobsHistoryLimit": {
+              "default": 1,
+              "description": "Parameter specify how many failed jobs should be kept.\nDefault: 1\n",
+              "title": "failedJobsHistoryLimit",
+              "type": "integer"
+            },
+            "imagePullPolicy": {
+              "default": "IfNotPresent",
+              "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
+              "title": "imagePullPolicy",
+              "type": "string"
+            },
+            "imagePullSecrets": {
+              "description": "A secret name with secret for pulling images from private registry.\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "imagePullSecrets",
+              "type": "array"
+            },
+            "install": {
+              "default": false,
+              "description": "Allow disabling create lookback cronJob.\nType: boolean\nDefault: false\n",
+              "title": "install",
+              "type": "boolean"
+            },
+            "labels": {
+              "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "name": {
+              "default": "lookback",
+              "description": "This name will be used as name of the microservice cronjob and in labels.\n",
+              "title": "name",
+              "type": "string"
+            },
+            "nodeSelector": {
+              "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "priorityClassName": {
+              "description": "PriorityClassName assigned to the Pods to prevent them from evicting.",
+              "type": "string",
+              "title": "priorityClassName"
+            },
+            "resources": {
+              "description": "The resources parameter describes compute resource requests and limits for single Pods.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\n",
+              "properties": {
+                "limits": {
+                  "properties": {
+                    "cpu": {
+                      "default": "100m",
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cpu",
+                    "memory"
+                  ],
+                  "title": "limits",
+                  "type": "object"
+                },
+                "requests": {
+                  "properties": {
+                    "cpu": {
+                      "default": "100m",
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cpu",
+                    "memory"
+                  ],
+                  "title": "requests",
+                  "type": "object"
+                }
+              },
+              "required": [
+                "limits",
+                "requests"
+              ],
+              "title": "resources",
+              "type": "object"
+            },
+            "schedule": {
+              "default": "5 0 * * *",
+              "description": "Specify schedule time of its jobs to be created and executed.\nFor example, \"0 * * * *\" or \"\nDefault: \"5 0 * * *\"\n",
+              "title": "schedule",
+              "type": "string"
+            },
+            "securityContext": {
+              "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+              "properties": {
+                "runAsUser": {
+                  "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no",
+                  "title": "runAsUser",
+                  "type": "integer"
+                },
+                "fsGroup": {
+                  "description": "The GID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no",
+                  "title": "fsGroup",
+                  "type": "integer"
+                },
+                "runAsNonRoot": {
+                  "description": "Indicates that the container must run as a non-root user.\nIf true, the container will be run with a UID that is not 0.\nType: boolean\nMandatory: no",
+                  "title": "runAsNonRoot",
+                  "type": "boolean"
+                },
+                "seccompProfile": {
+                  "description": "The seccomp profile for the container. Defines secure computing mode.\nIt is not possible to apply a seccomp profile to a Pod or container running with privileged: true set in the container's securityContext.\nPrivileged containers always run as Unconfined.\nType: object\nMandatory: no",
+                  "properties": {
+                    "type": {
+                      "description": "Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'",
+                      "type": "string",
+                      "enum": ["RuntimeDefault", "Unconfined", "Localhost"]
+                    }
+                  },
+                  "title": "seccompProfile",
+                  "type": "object"
+                }
+              },
+              "required": [],
+              "title": "securityContext",
+              "type": "object"
+            },
+            "successfulJobsHistoryLimit": {
+              "default": 1,
+              "description": "Parameter specify how many completed jobs should be kept.\nDefault: 1\n",
+              "title": "successfulJobsHistoryLimit",
+              "type": "integer"
+            },
+            "tolerations": {
+              "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
+              "required": [],
+              "title": "tolerations",
+              "type": "object"
+            },
+            "ttlSecondsAfterFinished": {
+              "default": 0,
+              "description": "Allow to set time to life (TTL) for TTL controller. TTL controller cleans up the Job, it will delete the Job\ncascadingly, i.e. delete its dependent objects, such as Pods, together with the Job.\nUseful to set a value other than 0 if you want to see job logs.\nType: int\nDefault: 0\n",
+              "title": "ttlSecondsAfterFinished",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "install",
+            "name",
+            "imagePullPolicy",
+            "imagePullSecrets",
+            "labels",
+            "annotations",
+            "concurrencyPolicy",
+            "schedule",
+            "successfulJobsHistoryLimit",
+            "failedJobsHistoryLimit",
+            "ttlSecondsAfterFinished",
+            "securityContext",
+            "containerSecurityContext",
+            "nodeSelector",
+            "tolerations",
+            "extraEnv",
+            "extraConfigmapMounts",
+            "extraSecretMounts",
+            "resources"
+          ],
+          "title": "lookback",
+          "type": "object"
+        },
+        "rollover": {
+          "properties": {
+            "annotations": {
+              "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "concurrencyPolicy": {
+              "default": "Forbid",
+              "description": "It specifies how to treat concurrent executions of a job that is created by this cron job.\n  * Allow: The cron job allows concurrently running jobs.\n  * Forbid: The cron job does not allow concurrent runs; if it is time for a new job run and the previous job\n            run hasn't finished yet, the cron job skips the new job run\n  * Replace: If it is time for a new job run and the previous job run hasn't finished yet, the cron job\n           replaces the currently running job run with a new job run\nType: string\nDefault: Forbid\n",
+              "title": "concurrencyPolicy",
+              "type": "string"
+            },
+            "containerSecurityContext": {
+              "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+              "properties": {
+                "allowPrivilegeEscalation": {
+                  "default": false,
+                  "description": "Controls whether a process can gain more privileges than its parent process.\nThis bool directly controls whether the 'no_new_privs' flag gets set on the container process.\nType: bool\nMandatory: no",
+                  "title": "allowPrivilegeEscalation",
+                  "type": "boolean"
+                },
+                "capabilities": {
+                  "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n",
+                  "required": [],
+                  "title": "capabilities",
+                  "type": "object"
+                }
+              },
+              "required": [],
+              "title": "containerSecurityContext",
+              "type": "object"
+            },
+            "extraConfigmapMounts": {
+              "description": "Specify extra configMap mounts for rollover.\nType: object\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "extraConfigmapMounts",
+              "type": "array"
+            },
+            "extraEnv": {
+              "description": "rollover related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "extraEnv",
+              "type": "array"
+            },
+            "extraSecretMounts": {
+              "description": "Specify extra secret mounts for rollover.\nType: object\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "extraSecretMounts",
+              "type": "array"
+            },
+            "failedJobsHistoryLimit": {
+              "default": 1,
+              "description": "Parameter specify how many failed jobs should be kept.\nDefault: 1\n",
+              "title": "failedJobsHistoryLimit",
+              "type": "integer"
+            },
+            "image": {
+              "description": "The docker image to use for rollover job.\nDefault: jaegertracing/jaeger-rollover:1.76.0\n",
+              "title": "image",
+              "type": "string"
+            },
+            "imagePullPolicy": {
+              "default": "IfNotPresent",
+              "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
+              "title": "imagePullPolicy",
+              "type": "string"
+            },
+            "imagePullSecrets": {
+              "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
+              "items": {
+                "required": []
+              },
+              "title": "imagePullSecrets",
+              "type": "array"
+            },
+            "initHook": {
+              "properties": {
+                "extraEnv": {
+                  "description": "rollover init related extra env vars to be configured on the concerned components.\nType: array\nDefault: []\n",
+                  "items": {
+                    "required": []
+                  },
+                  "title": "extraEnv",
+                  "type": "array"
+                },
+                "name": {
+                  "default": "rollover-init",
+                  "description": "A name of a microservice to deploy with.\nThis name will be used as name of the microservice init job.\n",
+                  "title": "name",
+                  "type": "string"
+                },
+                "ttlSecondsAfterFinished": {
+                  "default": 120,
+                  "description": "TTL in seconds after finished initial job.\nDefault: 120\n",
+                  "title": "ttlSecondsAfterFinished",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "name",
+                "ttlSecondsAfterFinished"
+              ],
+              "title": "initHook",
+              "type": "object"
+            },
+            "install": {
+              "default": false,
+              "description": "Allow disabling create rollover cronJob.\nType: boolean\nDefault: false\n",
+              "title": "install",
+              "type": "boolean"
+            },
+            "labels": {
+              "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "name": {
+              "default": "rollover",
+              "description": "A name of a microservice to deploy with.\nThis name will be used as name of the microservice cronjob and in labels.\n",
+              "title": "name",
+              "type": "string"
+            },
+            "nodeSelector": {
+              "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
+              "required": [],
+              "title": "nodeSelector",
+              "type": "object"
+            },
+            "priorityClassName": {
+              "description": "PriorityClassName assigned to the Pods to prevent them from evicting.",
+              "type": "string",
+              "title": "priorityClassName"
+            },
+            "resources": {
+              "description": "The resources describe compute resource requests and limits for single container.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\n",
+              "properties": {
+                "limits": {
+                  "properties": {
+                    "cpu": {
+                      "default": "100m",
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cpu",
+                    "memory"
+                  ],
+                  "title": "limits",
+                  "type": "object"
+                },
+                "requests": {
+                  "properties": {
+                    "cpu": {
+                      "default": "100m",
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cpu",
+                    "memory"
+                  ],
+                  "title": "requests",
+                  "type": "object"
+                }
+              },
+              "required": [
+                "limits",
+                "requests"
+              ],
+              "title": "resources",
+              "type": "object"
+            },
+            "schedule": {
+              "default": "10 0 * * *",
+              "description": "Specify schedule time of its jobs to be created and executed.\nFor example, \"0 * * * *\" or \"\nDefault: \"10 0 * * *\"\n",
+              "title": "schedule",
+              "type": "string"
+            },
+            "securityContext": {
+              "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+              "properties": {
+                "runAsUser": {
+                  "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no",
+                  "type": "integer",
+                  "title": "runAsUser"
+                },
+                "fsGroup": {
+                  "description": "A special supplemental group that applies to all containers in a pod.",
+                  "type": "integer",
+                  "title": "fsGroup"
+                },
+                "runAsNonRoot": {
+                  "description": "Indicates that the container must run as a non-root user.\nIf true, the Kubelet will validate the image at runtime to ensure it is not running as the root user.\nType: boolean\nMandatory: no",
+                  "type": "boolean",
+                  "title": "runAsNonRoot"
+                },
+                "seccompProfile": {
+                  "description": "The seccomp profile for the pod.\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "title": "seccompProfile"
+                }
+              },
+              "required": [],
+              "title": "securityContext",
+              "type": "object"
+            },
+            "successfulJobsHistoryLimit": {
+              "default": 1,
+              "description": "Parameter specify how many completed jobs should be kept.\nDefault: 1\n",
+              "title": "successfulJobsHistoryLimit",
+              "type": "integer"
+            },
+            "tolerations": {
+              "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
+              "required": [],
+              "title": "tolerations",
+              "type": "object"
+            },
+            "ttlSecondsAfterFinished": {
+              "default": 0,
+              "description": "Allow to set time to life (TTL) for TTL controller. TTL controller cleans up the Job, it will delete the Job\ncascadingly, i.e. delete its dependent objects, such as Pods, together with the Job.\nUseful to set a value other than 0 if you want to see job logs.\nType: int\nDefault: 0\n",
+              "title": "ttlSecondsAfterFinished",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "install",
+            "name",
+            "initHook",
+            "imagePullPolicy",
+            "imagePullSecrets",
+            "labels",
+            "annotations",
+            "concurrencyPolicy",
+            "schedule",
+            "successfulJobsHistoryLimit",
+            "failedJobsHistoryLimit",
+            "ttlSecondsAfterFinished",
+            "securityContext",
+            "containerSecurityContext",
+            "nodeSelector",
+            "tolerations",
+            "extraEnv",
+            "extraConfigmapMounts",
+            "extraSecretMounts",
+            "resources"
+          ],
+          "title": "rollover",
+          "type": "object"
+        }
+      },
+      "required": [
+        "existingSecret",
+        "indexPrefix",
+        "extraEnv",
+        "client",
+        "indexCleaner",
+        "lookback",
+        "rollover"
+      ],
+      "title": "elasticsearch",
+      "type": "object"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "hotrod": {
+      "properties": {
+        "annotations": {
+          "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "annotations",
+          "type": "object"
+        },
+        "containerSecurityContext": {
+          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+          "properties": {
+            "allowPrivilegeEscalation": {
+              "default": false,
+              "description": "Controls whether a process can gain more privileges than its parent process.\nThis bool directly controls whether the 'no_new_privs' flag gets set on the container process.\nType: bool\nMandatory: no",
+              "title": "allowPrivilegeEscalation",
+              "type": "boolean"
+            },
+            "capabilities": {
+              "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n",
+              "required": [],
+              "title": "capabilities",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "containerSecurityContext",
+          "type": "object"
+        },
+        "image": {
+          "description": "The docker image to use for hotrod deployment.\nDefault: jaegertracing/example-hotrod:1.76.0\n",
+          "title": "image",
+          "type": "string"
+        },
+        "imagePullPolicy": {
+          "default": "IfNotPresent",
+          "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
+          "title": "imagePullPolicy",
+          "type": "string"
+        },
+        "imagePullSecrets": {
+          "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
+          "items": {
+            "required": []
+          },
+          "title": "imagePullSecrets",
+          "type": "array"
+        },
+        "ingress": {
+          "properties": {
+            "className": {
+              "description": "The name of the IngressClass. To get the list of available IngressClass in the cluster, run: kubectl get ingressclass\nType: string\nMandatory: no\n",
+              "type": "string",
+              "title": "className"
+            },
+            "host": {
+              "default": "",
+              "description": "FQDN of ingress host.\nType: string\nMandatory: yes\nDefault: \"\"\n",
+              "title": "host",
+              "type": "string"
+            },
+            "install": {
+              "default": false,
+              "description": "Allow disabling create ingress.\nType: boolean\nDefault: false\n",
+              "title": "install",
+              "type": "boolean"
+            },
+            "tls": {
+              "description": "Configuration for ingress TLS. More info: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls\n Type: object\nDefault: {}\n",
+              "items": {
+                "description": "A list of FQDNs and a secret with the TLS certs to secure them. More info: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls\n Type: object\nDefault: []\n",
+                "type": "object"
+              },
+              "required": [],
+              "title": "tls",
+              "type": "array"
+            }
+          },
+          "required": [
+            "install",
+            "host",
+            "tls"
+          ],
+          "title": "ingress",
+          "type": "object"
+        },
+        "install": {
+          "default": false,
+          "description": "Allow disabling create hotrod deployment.\nType: boolean\nDefault: false\n",
+          "title": "install",
+          "type": "boolean"
+        },
+        "labels": {
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "labels",
+          "type": "object"
+        },
+        "name": {
+          "default": "hotrod",
+          "description": "A name of a microservice to deploy with.\nThis name will be used as name of the microservice deployment and in labels.\n",
+          "title": "name",
+          "type": "string"
+        },
+        "nodeSelector": {
+          "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "nodeSelector",
+          "type": "object"
+        },
+        "otelExporter": {
+          "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n\ncapabilities:\n  drop:\n    - ALL",
+          "properties": {
+            "host": {
+              "description": "The host used to connect to jaeger collector.\nType: string\nDefault: jaeger-collector\n",
+              "title": "host",
+              "type": "string"
+            },
+            "port": {
+              "default": 4318,
+              "description": "This is the port used to connect to jaeger collector.\nType: integer\nDefault: 4318\n",
+              "title": "port",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "port"
+          ],
+          "title": "otelExporter",
+          "type": "object"
+        },
+        "priorityClassName": {
+          "description": "PriorityClassName assigned to the Pods to prevent them from evicting.",
+          "type": "string",
+          "title": "priorityClassName"
+        },
+        "resources": {
+          "description": "The resources describe compute resource requests and limits for single container.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\n",
+          "properties": {
+            "limits": {
+              "properties": {
+                "cpu": {
+                  "default": "100m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "128Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "properties": {
+                "cpu": {
+                  "default": "100m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "128Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [
+            "limits",
+            "requests"
+          ],
+          "title": "resources",
+          "type": "object"
+        },
+        "route": {
+          "properties": {
+            "host": {
+              "default": "",
+              "description": "FQDN of ingress host.\nType: string\nMandatory: yes\nDefault: \"\"\n",
+              "title": "host",
+              "type": "string"
+            },
+            "install": {
+              "default": false,
+              "description": "Allow disabling create route.\nType: boolean\nDefault: false\n",
+              "title": "install",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "install",
+            "host"
+          ],
+          "title": "route",
+          "type": "object"
+        },
+        "securityContext": {
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+          "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
+              "title": "runAsUser",
+              "type": "integer"
+            },
+            "fsGroup": {
+              "description": "A special supplemental group that applies to all containers in a pod.\n Type: integer\n Mandatory: no",
+              "title": "fsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "description": "Indicates that the container must run as a non-root user.\n If true, the Kubelet will validate that the UID of the container process is not 0.\n Type: boolean\n Mandatory: no",
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "seccompProfile": {
+              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "title": "seccompProfile",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "service": {
+          "description": "Specify port for hotrod service.\nType: integer\nDefault: 80\n",
+          "properties": {
+            "port": {
+              "default": 80,
+              "title": "port",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "port"
+          ],
+          "title": "service",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
+          "required": [],
+          "title": "tolerations",
+          "type": "object"
+        }
+      },
+      "required": [
+        "install",
+        "name",
+        "imagePullPolicy",
+        "imagePullSecrets",
+        "labels",
+        "annotations",
+        "securityContext",
+        "containerSecurityContext",
+        "otelExporter",
+        "resources",
+        "nodeSelector",
+        "tolerations",
+        "ingress",
+        "route",
+        "service"
+      ],
+      "title": "hotrod",
+      "type": "object"
+    },
+    "integrationTests": {
+      "properties": {
+        "containerSecurityContext": {
+          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfileType: RuntimeDefault",
+          "properties": {
+            "allowPrivilegeEscalation": {
+              "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Type: bool\n Mandatory: no",
+              "title": "allowPrivilegeEscalation",
+              "type": "boolean"
+            },
+            "capabilities": {
+              "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n",
+              "required": [],
+              "title": "capabilities",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "containerSecurityContext",
+          "type": "object"
+        },
+        "generateCount": {
+          "default": 10,
+          "title": "generateCount",
+          "type": "integer"
+        },
+        "hookDeletePolicy": {
+          "default": "before-hook-creation,hook-succeeded,hook-failed",
+          "description": "Determines when and how hook resources (like Jobs or Pods) are deleted from the Kubernetes cluster after they run",
+          "title": "hookDeletePolicy",
+          "type": "string"
+        },
+        "install": {
+          "default": false,
+          "description": "Installs integration-tests deployment which runs integration tests",
+          "title": "install",
+          "type": "boolean"
+        },
+        "linkForGenerator": {
+          "default": "http://jaeger-collector:9411",
+          "title": "linkForGenerator",
+          "type": "string"
+        },
+        "priorityClassName": {
+          "description": "PriorityClassName assigned to the Pods to prevent them from evicting.",
+          "type": "string",
+          "title": "priorityClassName"
+        },
+        "resources": {
+          "description": "Describes compute resource requests and limits for a single container.",
+          "properties": {
+            "limits": {
+              "properties": {
+                "cpu": {
+                  "default": "300m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "256Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "memory",
+                "cpu"
+              ],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "properties": {
+                "cpu": {
+                  "default": "50m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "64Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "memory",
+                "cpu"
+              ],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [
+            "requests",
+            "limits"
+          ],
+          "title": "resources",
+          "type": "object"
+        },
+        "securityContext": {
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+          "properties": {
+            "runAsRoot": {
+              "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
+              "title": "runAsRoot",
+              "type": "integer"
+            },
+            "fsGroup": {
+              "description": "A special supplemental group that applies to all containers in a pod.",
+              "title": "fsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "description": "Indicates that the container must run as a non-root user.\n If true, the Kubelet will validate that the UID of the container process is not 0.",
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "seccompProfile": {
+              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "title": "seccompProfile",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "service": {
+          "properties": {
+            "name": {
+              "default": "jaeger-integration-tests-runner",
+              "description": "A name used for service and deployment created for integration tests.",
+              "title": "name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "title": "service",
+          "type": "object"
+        },
+        "serviceAccount": {
+          "properties": {
+            "create": {
+              "default": true,
+              "description": "Enables creation of assigned to integration-tests serviceAccount",
+              "title": "create",
+              "type": "boolean"
+            },
+            "name": {
+              "default": "jaeger-integration-tests",
+              "description": "A name used for ServiceAccount for integration tests",
+              "title": "name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "create",
+            "name"
+          ],
+          "title": "serviceAccount",
+          "type": "object"
+        },
+        "statusWriting": {
+          "properties": {
+            "customResourcePath": {
+              "description": "Defines a path where test results will be stored. The path should be in format: '<apiVersion>/{namespace_name}/{resource_type}/{deployment_name}'. Can be extracted from the selflink of the resource." ,
+              "title": "customResourcePath",
+              "type": "string"
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enables saving tests result in specified place, e.g. apps/v1/<namespace_name>/deployments/<deployment_name>",
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "isShortStatusMessage": {
+              "default": true,
+              "title": "isShortStatusMessage",
+              "type": "boolean"
+            },
+            "onlyIntegrationTests": {
+              "default": true,
+              "title": "onlyIntegrationTests",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled",
+            "isShortStatusMessage",
+            "onlyIntegrationTests"
+          ],
+          "title": "statusWriting",
+          "type": "object"
+        },
+        "tags": {
+          "default": "smokeORmemory_limiter",
+          "description": "Defines a set of test suites to run",
+          "title": "tags",
+          "type": "string"
+        },
+        "waitingTime": {
+          "default": "500ms",
+          "title": "waitingTime",
+          "type": "string"
+        }
+      },
+      "required": [
+        "install",
+        "tags",
+        "hookDeletePolicy",
+        "linkForGenerator",
+        "generateCount",
+        "waitingTime",
+        "resources",
+        "service",
+        "statusWriting",
+        "serviceAccount",
+        "securityContext",
+        "containerSecurityContext"
+      ],
+      "title": "integrationTests",
+      "type": "object"
+    },
+    "jaeger": {
+      "properties": {
+        "prometheusMonitoring": {
+          "default": true,
+          "description": "Allows creating a service monitor that sends Jaeger metrics to prometheus.\nType: boolean\nDefault: true\n",
+          "title": "prometheusMonitoring",
+          "type": "boolean"
+        },
+        "prometheusMonitoringDashboard": {
+          "default": true,
+          "description": "Allows creating a grafana dashboard for jaeger.\nType: boolean\nDefault: true\n",
+          "title": "prometheusMonitoringDashboard",
+          "type": "boolean"
+        },
+        "serviceName": {
+          "default": "jaeger",
+          "description": "Name of jaeger service.\nType: string\nDefault: jaeger\n",
+          "title": "serviceName",
+          "type": "string"
+        },
+        "storage": {
+          "description": "Specify type of storage for jaeger. E.g. 'elasticsearch', 'cassandra' or 'remotegRPC'.\nType: string\nDefault: \"cassandra\"\n",
+          "properties": {
+            "type": {
+              "default": "cassandra",
+              "title": "type",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "title": "storage",
+          "type": "object"
+        }
+      },
+      "required": [
+        "serviceName",
+        "prometheusMonitoring",
+        "prometheusMonitoringDashboard",
+        "storage"
+      ],
+      "title": "jaeger",
+      "type": "object"
+    },
+    "proxy": {
+      "properties": {
+        "access_logs_enabled": {
+          "default": true,
+          "description": "Allows enabling access logs for envoy proxy.\nType: boolean\nDefault: true\n",
+          "title": "access_logs_enabled",
+          "type": "boolean"
+        },
+        "basic": {
+          "description": "Settings for basic authentication.\n",
+          "properties": {
+            "users": {
+              "default": ["YWRtaW46YWRtaW4=", "dGVzdDp0ZXN0"],
+              "description": "List of login:password in base64.\nFor example\n  admin:admin -\u003e YWRtaW46YWRtaW4=\n  test:test -\u003e dGVzdDp0ZXN0\nDefault: no\n",
+              "items": {
+                "type": "string",
+                "required": []
+              },
+              "title": "users",
+              "type": "array"
+            }
+          },
+          "required": [
+            "users"
+          ],
+          "title": "basic",
+          "type": "object"
+        },
+        "containerSecurityContext": {
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 2000",
+          "properties": {
+            "allowPrivilegeEscalation": {
+              "description": "AllowPrivilegeEscalation controls whether a process can gain more privileges than its parent process.\nDefault: false\n",
+              "title": "allowPrivilegeEscalation",
+              "type": "boolean"
+            },
+            "capabilities": {
+              "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n\ncapabilities:\n  drop:\n    - ALL",
+              "title": "capabilities",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "containerSecurityContext",
+          "type": "object"
+        },
+        "image":{
+          "default": "envoyproxy/envoy:v1.35.2",
+          "description": "The image of envoy proxy container.\nType: string\nDefault: \"envoyproxy/envoy:v1.35.2\"\n",
+          "title": "image",
+          "type": "string"
+        },
+        "install": {
+          "default": false,
+          "description": "Allows enabling envoy proxy container.\nType: boolean\nDefault: false\n",
+          "title": "install",
+          "type": "boolean"
+        },
+        "oauth2": {
+          "description": "Settings for oauth2 authentication.\n",
+          "properties": {
+            "authorizationEndpoint": {
+              "default": "",
+              "description": "The endpoint to which the user is redirected for authorization when a request is unauthorized.\nType: string\nMandatory: yes\nDefault: no\nExample: \"http://my-keycloak.com/auth/realms/test/protocol/openid-connect/auth\"\n",
+              "title": "authorizationEndpoint",
+              "type": "string"
+            },
+            "clientId": {
+              "default": "",
+              "description": "The client_id to be used in the authorize calls. This value will be URL encoded when sent to the OAuth server.\nType: string\nMandatory: yes\nDefault: no\n",
+              "title": "clientId",
+              "type": "string"
+            },
+            "clientToken": {
+              "default": "",
+              "description": "The secret used to retrieve the access token. This value will be URL encoded when sent to the OAuth server.\nType: string\nMandatory: yes\nDefault: no\n",
+              "title": "clientToken",
+              "type": "string"
+            },
+            "idpAddress": {
+              "default": "",
+              "description": "The address for this socket. Listeners will bind to the address. An empty address is not allowed.\nSpecify 0.0.0.0 or :: to bind to any address.\nFor clusters, the cluster type determines whether the address must be an IP\nor a hostname resolved by DNS.\nType: string\nMandatory: yes\nDefault: no\nExample: \"my-keycloak.com\"\n",
+              "title": "idpAddress",
+              "type": "string"
+            },
+            "idpPort": {
+              "default": 80,
+              "description": "Listeners will bind to the port.\nMandatory: yes\nDefault: 80\n",
+              "title": "idpPort",
+              "type": "integer"
+            },
+            "tokenEndpoint": {
+              "default": "",
+              "description": "Endpoint on the authorization server to retrieve the access token from.\nType: string\nMandatory: yes\nDefault: no\nExample: \"http://my-keycloak.com/auth/realms/test/protocol/openid-connect/token\"\n",
+              "title": "tokenEndpoint",
+              "type": "string"
+            }
+          },
+          "required": [
+            "tokenEndpoint",
+            "authorizationEndpoint",
+            "clientId",
+            "clientToken",
+            "idpAddress",
+            "idpPort"
+          ],
+          "title": "oauth2",
+          "type": "object"
+        },
+        "resources": {
+          "description": "The resources describe to compute resource requests and limits for single Pods.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\nDefault:",
+          "properties": {
+            "limits": {
+              "properties": {
+                "cpu": {
+                  "default": "100m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "200Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "properties": {
+                "cpu": {
+                  "default": "50m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "100Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [
+            "limits",
+            "requests"
+          ],
+          "title": "resources",
+          "type": "object"
+        },
+        "securityContext": {
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 2000",
+          "required": [],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "type": {
+          "default": "basic",
+          "description": "Authentication type to be used\nAvailable values - \"basic\" and \"oauth2\"\nType: string\nMandatory: no\nDefault: \"basic\"\n",
+          "enum": ["basic", "oauth2"],
+          "title": "type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "install",
+        "type",
+        "access_logs_enabled",
+        "oauth2",
+        "basic",
+        "resources",
+        "containerSecurityContext"
+      ],
+      "title": "proxy",
+      "type": "object"
+    },
+    "query": {
+      "properties": {
+        "affinity": {
+          "default": {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [{"labelSelector": {"matchExpressions": [{"key": "app.kubernetes.io/name", "operator": "In", "values": ["jaeger-query"]}]}, "topologyKey": "kubernetes.io/hostname"}]}},
+          "description": "If specified, the pod's scheduling constraints\nMore info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core\nType: object\nMandatory: no\nDefault: see below\n",
+          "title": "affinity",
+          "type": "object"
+        },
+        "allowBearerTokenPropagation": {
+          "default": false,
+          "description": "Allow propagation of bearer token to be used by storage plugins\nType: boolean\nDefault: false\n",
+          "title": "allowBearerTokenPropagation",
+          "type": "boolean"
+        },
+        "annotations": {
+          "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "annotations",
+          "type": "object"
+        },
+        "cmdlineParams": {
+          "description": "Query related cmd line opts to be configured on the concerned components.\nType: object\nDefault: []\n",
+          "items": {
+            "required": []
+          },
+          "title": "cmdlineParams",
+          "type": "array"
+        },
+        "config": {
+          "default":{"service":{"telemetry":{"logs":{"level":"info"}}}},
+          "description": "Jaeger query config, contains only several options to configure, other part of parameters take from\ncassandraSchemaJob and elasticsearch sections",
+          "title": "config",
+          "type": "object"
+        },
+        "containerSecurityContext": {
+          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfileType: RuntimeDefault",
+          "properties": {
+            "allowPrivilegeEscalation": {
+              "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
+              "title": "allowPrivilegeEscalation",
+              "type": "boolean"
+            },
+            "capabilities": {
+              "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\n Type: object\n Mandatory: no",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "containerSecurityContext",
+          "type": "object"
+        },
+        "customConfig":{
+          "description": "Custom config for the query.\n Allows to override the default config and specify a full custom config for the query",
+          "type": "object",
+          "title": "customConfig"
+        },
+        "extraEnv": {
+          "description": "Query related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
+          "items": {
+            "required": []
+          },
+          "title": "extraEnv",
+          "type": "array"
+        },
+        "imagePullPolicy": {
+          "default": "IfNotPresent",
+          "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
+          "title": "imagePullPolicy",
+          "type": "string"
+        },
+        "imagePullSecrets": {
+          "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
+          "items": {
+            "required": []
+          },
+          "title": "imagePullSecrets",
+          "type": "array"
+        },
+        "ingress": {
+          "properties": {
+            "host": {
+              "default": "",
+              "description": "FQDN of ingress host.\nType: string\nMandatory: yes\nDefault: \"\"\n",
+              "title": "host",
+              "type": "string"
+            },
+            "install": {
+              "default": false,
+              "description": "Allow disabling create ingress.\nType: boolean\nDefault: false\n",
+              "title": "install",
+              "type": "boolean"
+            },
+            "tls": {
+              "description": "Configuration for ingress TLS.\nType: object\nDefault: {}\n",
+              "required": [],
+              "title": "tls",
+              "type": "object"
+            }
+          },
+          "required": [
+            "install",
+            "host",
+            "tls"
+          ],
+          "title": "ingress",
+          "type": "object"
+        },
+        "install": {
+          "default": true,
+          "description": "Allow disabling create query deployment.\nType: boolean\nDefault: true\n",
+          "title": "install",
+          "type": "boolean"
+        },
+        "labels": {
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "labels",
+          "type": "object"
+        },
+        "maxClockSkewAdjustment": {
+          "default": "",
+          "description": "The maximum delta by which span timestamps may be adjusted in the UI due to clock skew;\nset to 0s to disable clock skew adjustments.\nType: string\nDefault: 0s\n",
+          "title": "maxClockSkewAdjustment",
+          "type": "string"
+        },
+        "priorityClassName": {
+          "description": "PriorityClassName assigned to the Pods to prevent them from evicting.",
+          "type": "string",
+          "title": "priorityClassName"
+        },
+        "replicas": {
+          "default": 1,
+          "description": "Replicas spec configuration for query.\nType: integer\nMandatory: no\nDefault: 1\n",
+          "title": "replicas",
+          "type": "integer"
+        },
+        "resources": {
+          "description": "The resources describe to compute resource requests and limits for single Pods.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\n",
+          "properties": {
+            "limits": {
+              "properties": {
+                "cpu": {
+                  "default": "200m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "256Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "properties": {
+                "cpu": {
+                  "default": "100m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "128Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [
+            "requests",
+            "limits"
+          ],
+          "title": "resources",
+          "type": "object"
+        },
+        "route": {
+          "properties": {
+            "host": {
+              "default": "",
+              "description": "FQDN of ingress host.\nType: string\nMandatory: yes\nDefault: \"\"\n",
+              "title": "host",
+              "type": "string"
+            },
+            "install": {
+              "default": false,
+              "description": "Allow disabling create route.\nType: boolean\nDefault: false\n",
+              "title": "install",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "install",
+            "host"
+          ],
+          "title": "route",
+          "type": "object"
+        },
+        "securityContext": {
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+          "properties": {
+            "runAsRoot": {
+              "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
+              "title": "runAsRoot",
+              "type": "integer"
+            },
+            "fsGroup": {
+              "description": "A special supplemental group that applies to all containers in a pod.",
+              "title": "fsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "description": "Indicates that the container must run as a non-root user.\n If true, the Kubelet will validate that the UID of the container process is not 0.",
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "seccompProfile": {
+              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "title": "seccompProfile",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "ui": {
+          "properties": {
+            "assetsPath": {
+              "default": "",
+              "description": "The directory path override for the static assets for the UI\nType: string\nDefault: \"\"\n",
+              "title": "assetsPath",
+              "type": "string"
+            },
+            "config": {
+              "default": false,
+              "description": "Enable query ui config.\nType: boolean\nDefault: false\n",
+              "title": "config",
+              "type": "boolean"
+            },
+            "logStaticAssetsAccess": {
+              "default": false,
+              "description": "Log when static assets are accessed (for debugging)\nType: boolean\nDefault: false",
+              "title": "logStaticAssetsAccess",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "config",
+            "assetsPath",
+            "logStaticAssetsAccess"
+          ],
+          "title": "ui",
+          "type": "object"
+        }
+      },
+      "required": [
+        "install",
+        "imagePullPolicy",
+        "imagePullSecrets",
+        "replicas",
+        "ui",
+        "maxClockSkewAdjustment",
+        "allowBearerTokenPropagation",
+        "ingress",
+        "route",
+        "cmdlineParams",
+        "extraEnv",
+        "securityContext",
+        "containerSecurityContext",
+        "resources",
+        "affinity",
+        "labels",
+        "annotations",
+        "config"
+      ],
+      "title": "query",
+      "type": "object"
+    },
+    "readinessProbe": {
+      "properties": {
+        "args": {
+          "description": "Command line arguments for readiness probe container.",
+          "items": {
+            "type": "string",
+            "required": []
+          },
+          "title": "args",
+          "type": "array"
+        },
+        "containerSecurityContext": {
+          "properties": {
+            "allowPrivilegeEscalation": {
+              "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
+              "title": "allowPrivilegeEscalation",
+              "type": "boolean"
+            },
+            "capabilities": {
+              "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\n Type: object\n Mandatory: no",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "containerSecurityContext",
+          "type": "object"
+        },
+        "image": {
+          "description": "A docker image for readiness probe container.",
+          "type": "string",
+          "title": "image"
+        },
+        "imagePullPolicy": {
+          "default": "IfNotPresent",
+          "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
+          "title": "imagePullPolicy",
+          "type": "string"
+        },
+        "install": {
+          "description": "Enables readiness-probe container for jaeger.",
+          "default": true,
+          "title": "install",
+          "type": "boolean"
+        },
+        "periodSeconds": {
+          "description": "How often (in seconds) to perform the probe.\nDefault: 10\n",
+          "title": "periodSeconds",
+          "type": "integer"
+        },
+        "resources": {
+          "description": "The resources describe to compute resource requests and limits for single Pods.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\n",
+          "properties": {
+            "limits": {
+              "properties": {
+                "cpu": {
+                  "default": "50m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "50Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "properties": {
+                "cpu": {
+                  "default": "50m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "50Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [
+            "requests",
+            "limits"
+          ],
+          "title": "resources",
+          "type": "object"
+        },
+        "timeoutSeconds": {
+          "description": "Number of seconds after which the readiness probe times out.\nDefault: 5\n",
+          "title": "timeoutSeconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "install",
+        "imagePullPolicy",
+        "resources",
+        "containerSecurityContext"
+      ],
+      "title": "readinessProbe",
+      "type": "object"
+    },
+    "remotegRPC": {
+      "description": "Settings for remote gRPC storage",
+      "properties": {
+        "endpoint": {
+          "default": "",
+          "description": "Endpoint of remote gRPC server in format host:port",
+          "title": "endpoint",
+          "type": "string"
+        },
+        "timeout": {
+          "default": "",
+          "description": "Connection timeout",
+          "title": "timeout",
+          "type": "string"
+        },
+        "tls": {
+          "description": "TLS settings for remote gRPC server.",
+          "properties": {
+            "ca": {
+              "description": "The ca certificate for TLS connection to remote gRPC storage",
+              "title": "ca",
+              "type": "string"
+            },
+            "cert": {
+              "description": "The client certificate for TLS connection to remote gRPC storage",
+              "title": "cert",
+              "type": "string"
+            },
+            "enabled": {
+              "default": false,
+              "description": "Enables TLS for connection to remote gRPC storage.\nType: boolean\nDefault: false\n",
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "existingSecret": {
+              "default": "",
+              "description": "The name of the existing secret with certificates required for TLS connection.",
+              "title": "existingSecret",
+              "type": "string"
+            },
+            "insecureSkipVerify": {
+              "description": "Whether to skip TLS verification for connection to remote gRPC storage.\nType: boolean\n",
+              "title": "insecureSkipVerify",
+              "type": "boolean"
+            },
+            "key": {
+              "description": "The private key for TLS connection to remote gRPC storage.",
+              "title": "key",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "existingSecret"
+          ],
+          "title": "tls",
+          "type": "object"
+        }
+      },
+      "required": [
+        "endpoint",
+        "timeout",
+        "tls"
+      ],
+      "title": "remotegRPC",
+      "type": "object"
+    },
+    "spark": {
+      "properties": {
+        "activeDeadlineSeconds": {
+          "default": "",
+          "description": "The activeDeadlineSeconds applies to the duration of the job, no matter how many Pods are created.\nOnce a Job reaches activeDeadlineSeconds, all of its running Pods are terminated and the Job status will become type: Failed with reason: DeadlineExceeded.\nType: integer\n",
+          "title": "activeDeadlineSeconds",
+          "type": "string"
+        },
+        "affinity": {
+          "description": "If specified, the pod's scheduling constraints\nMore info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core\nType: object\nMandatory: no\nDefault: see below\n",
+          "required": [],
+          "title": "affinity",
+          "type": "object"
+        },
+        "annotations": {
+          "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "annotations",
+          "type": "object"
+        },
+        "concurrencyPolicy": {
+          "default": "Forbid",
+          "description": "Specifies how to treat concurrent executions of a Job that is created by this CronJob. The spec may specify only one of the following concurrency policies:\nAllow: The CronJob allows concurrently running Jobs\nForbid: The CronJob does not allow concurrent runs; if it is time for a new Job run and the previous Job run hasn't finished yet,\nthe CronJob skips the new Job run. Also note that when the previous Job run finishes, .spec.startingDeadlineSeconds is still taken into account and may result in a new Job run.\nReplace: If it is time for a new Job run and the previous Job run hasn't finished yet, the CronJob replaces the currently running Job run with a new Job run\nType: string\nDefault: Forbid\n",
+          "title": "concurrencyPolicy",
+          "type": "string"
+        },
+        "containerSecurityContext": {
+          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+          "properties": {
+            "allowPrivilegeEscalation": {
+              "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
+              "title": "allowPrivilegeEscalation",
+              "type": "boolean"
+            },
+            "capabilities": {
+              "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\n Type: object\n Mandatory: no",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "containerSecurityContext",
+          "type": "object"
+        },
+        "elasticsearch": {
+          "properties": {
+            "indexDateSeparator": {
+              "default": "",
+              "description": "Optional date separator of Jaeger indices. For example `.` will find index \"jaeger-span-2020.11.25\"\nType: string\nDefault: \"\"\n",
+              "title": "indexDateSeparator",
+              "type": "string"
+            },
+            "timeRange": {
+              "default": "",
+              "description": "How far in the past the job should look to for spans, the maximum and default is `24h`.\nAny value accepted by (https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html#date-math)\ncan be used here, but the anchor is always `now`.\nType: string\nDefault: \"24h\"\n",
+              "title": "timeRange",
+              "type": "string"
+            },
+            "useAliases": {
+              "default": "",
+              "description": "Set to true to use index alias names to read from and write to.Usually required when using rollover indices.\nType: boolean\nDefault: false\n",
+              "title": "useAliases",
+              "type": "string"
+            }
+          },
+          "required": [
+            "indexDateSeparator",
+            "timeRange",
+            "useAliases"
+          ],
+          "title": "elasticsearch",
+          "type": "object"
+        },
+        "failedJobsHistoryLimit": {
+          "default": 5,
+          "description": "This field specifies the number of failed finished jobs to keep. Setting this field to 0 will not keep any failed jobs.\nType: integer\nDefault: 5\n",
+          "title": "failedJobsHistoryLimit",
+          "type": "integer"
+        },
+        "image:": {
+          "description": "The image of spark dependencies job container.\nType: string\nDefault: \"ghcr.io/jaegertracing/spark-dependencies/spark-dependencies:latest\"\n",
+          "title": "image",
+          "type": "string"
+        },
+        "imagePullPolicy": {
+          "default": "IfNotPresent",
+          "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
+          "title": "imagePullPolicy",
+          "type": "string"
+        },
+        "imagePullSecrets": {
+          "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
+          "items": {
+            "required": []
+          },
+          "title": "imagePullSecrets",
+          "type": "array"
+        },
+        "init": {
+          "properties": {
+            "resources": {
+              "description": "The resources parameter describes compute resource requests and limits for single container.",
+              "properties": {
+                "limits": {
+                  "properties": {
+                    "cpu": {
+                      "default": "100m",
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cpu",
+                    "memory"
+                  ],
+                  "title": "limits",
+                  "type": "object"
+                },
+                "requests": {
+                  "properties": {
+                    "cpu": {
+                      "default": "10m",
+                      "title": "cpu",
+                      "type": "string"
+                    },
+                    "memory": {
+                      "default": "128Mi",
+                      "title": "memory",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cpu",
+                    "memory"
+                  ],
+                  "title": "requests",
+                  "type": "object"
+                }
+              },
+              "required": [
+                "limits",
+                "requests"
+              ],
+              "title": "resources",
+              "type": "object"
+            }
+          },
+          "required": [
+            "resources"
+          ],
+          "title": "init",
+          "type": "object"
+        },
+        "install": {
+          "default": false,
+          "description": "Allow disabling creation of SparkDependencies cron job\nType: boolean\nDefault: false\n",
+          "title": "install",
+          "type": "boolean"
+        },
+        "javaOpts": {
+          "default": "",
+          "description": "Java options to pass to spark dependencies job\nType: string\nDefault: \"\"",
+          "title": "javaOpts",
+          "type": "string"
+        },
+        "labels": {
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "labels",
+          "type": "object"
+        },
+        "nodeSelector": {
+          "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
+          "required": [],
+          "title": "nodeSelector",
+          "type": "object"
+        },
+        "priorityClassName": {
+          "description": "PriorityClassName assigned to the Pods to prevent them from evicting.",
+          "type": "string",
+          "title": "priorityClassName"
+        },
+        "resources": {
+          "description": "The resources parameter describes compute resource requests and limits for single container.",
+          "properties": {
+            "limits": {
+              "properties": {
+                "cpu": {
+                  "default": "500m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "1Gi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "properties": {
+                "cpu": {
+                  "default": "100m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "100Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [
+            "limits",
+            "requests"
+          ],
+          "title": "resources",
+          "type": "object"
+        },
+        "restartPolicy": {
+          "default": "",
+          "description": "Defines how k8s/openshift manages failures of containers.\nAlways: Automatically restarts the container after any termination.\nOnFailure: Only restarts the container if it exits with an error (non-zero exit status).\nNever: Does not automatically restart the terminated container.\nType: string\nDefault: \"\"\n",
+          "title": "restartPolicy",
+          "type": "string"
+        },
+        "securityContext": {
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+          "properties": {
+            "runAsRoot": {
+              "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
+              "title": "runAsRoot",
+              "type": "integer"
+            },
+            "fsGroup": {
+              "description": "A special supplemental group that applies to all containers in a pod.",
+              "title": "fsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "description": "Indicates that the container must run as a non-root user.\n If true, the Kubelet will validate that the UID of the container process is not 0.",
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "seccompProfile": {
+              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "title": "seccompProfile",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "successfulJobsHistoryLimit": {
+          "default": 5,
+          "description": "This field specifies the number of successful finished jobs to keep. Setting this field to 0 will not keep any successful jobs.\nType: integer\nDefault: 5\n",
+          "title": "successfulJobsHistoryLimit",
+          "type": "integer"
+        },
+        "tolerations": {
+          "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
+          "required": [],
+          "title": "tolerations",
+          "type": "object"
+        },
+        "truststorePassword": {
+          "description": "The password for the java truststore.\nType: string\nMandatory: no\nDefault: \"\"\n",
+          "title": "truststorePassword",
+          "type": "string"
+        },
+        "trustStoreSecretName": {
+          "default": "jaeger-spark-dependencies-truststore-secret",
+          "description": "The name of the secret containing the truststore password",
+          "title": "trustStoreSecretName",
+          "type": "string"
+        },
+        "ttlSecondsAfterFinished": {
+          "default": "",
+          "description": "Kubernetes TTL-after-finished controller provides a TTL (time to live) mechanism to limit the lifetime of Job objects that have finished execution.\nType: integer\n",
+          "title": "ttlSecondsAfterFinished",
+          "type": "string"
+        }
+      },
+      "required": [
+        "install",
+        "labels",
+        "annotations",
+        "imagePullPolicy",
+        "imagePullSecrets",
+        "javaOpts",
+        "trustStoreSecretName",
+        "elasticsearch",
+        "restartPolicy",
+        "resources",
+        "init",
+        "nodeSelector",
+        "tolerations",
+        "affinity",
+        "concurrencyPolicy",
+        "successfulJobsHistoryLimit",
+        "failedJobsHistoryLimit",
+        "activeDeadlineSeconds",
+        "ttlSecondsAfterFinished",
+        "securityContext",
+        "containerSecurityContext"
+      ],
+      "title": "spark",
+      "type": "object"
+    },
+    "statusProvisioner": {
+      "properties": {
+        "containerSecurityContext": {
+          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfileType: RuntimeDefault",
+          "properties": {
+            "allowPrivilegeEscalation": {
+              "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
+              "title": "allowPrivilegeEscalation",
+              "type": "boolean"
+            },
+            "capabilities": {
+              "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\n Type: object\n Mandatory: no",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "containerSecurityContext",
+          "type": "object"
+        },
+        "image": {
+          "description": "Docker image used for deployment-status-provisioner job. Default: ghcr.io/netcracker/qubership-deployment-status-provisioner:main",
+          "title": "image",
+          "type": "string"
+        },
+        "install": {
+          "default": true,
+          "title": "install",
+          "type": "boolean"
+        },
+        "integrationTestsTimeout": {
+          "default": 900,
+          "title": "integrationTestsTimeout",
+          "type": "integer"
+        },
+        "lifetimeAfterCompletion": {
+          "default": 300,
+          "description": "image: ghcr.io/netcracker/qubership-deployment-status-provisioner:main",
+          "title": "lifetimeAfterCompletion",
+          "type": "integer"
+        },
+        "podReadinessTimeout": {
+          "default": 300,
+          "title": "podReadinessTimeout",
+          "type": "integer"
+        },
+        "resourceToSetStatus": {
+          "default": "jaeger-collector",
+          "title": "resourceToSetStatus",
+          "type": "string"
+        },
+        "resources": {
+          "description": "Describes compute resource requests and limits for a single container.",
+          "properties": {
+            "limits": {
+              "properties": {
+                "cpu": {
+                  "default": "100m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "100Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "memory",
+                "cpu"
+              ],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "properties": {
+                "cpu": {
+                  "default": "50m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "50Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "memory",
+                "cpu"
+              ],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [
+            "requests",
+            "limits"
+          ],
+          "title": "resources",
+          "type": "object"
+        },
+        "securityContext": {
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+          "properties": {
+            "runAsRoot": {
+              "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
+              "title": "runAsRoot",
+              "type": "integer"
+            },
+            "fsGroup": {
+              "description": "A special supplemental group that applies to all containers in a pod.",
+              "title": "fsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "description": "Indicates that the container must run as a non-root user.\n If true, the Kubelet will validate that the UID of the container process is not 0.",
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "seccompProfile": {
+              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "title": "seccompProfile",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "securityContext",
+          "type": "object"
+        }
+      },
+      "required": [
+        "install",
+        "lifetimeAfterCompletion",
+        "podReadinessTimeout",
+        "integrationTestsTimeout",
+        "resources",
+        "resourceToSetStatus",
+        "securityContext",
+        "containerSecurityContext"
+      ],
+      "title": "statusProvisioner",
+      "type": "object"
+    }
+  },
+  "required": [
+    "jaeger",
+    "proxy",
+    "elasticsearch",
+    "cassandraSchemaJob",
+    "remotegRPC",
+    "collector",
+    "hotrod",
+    "query",
+    "integrationTests",
+    "statusProvisioner",
+    "readinessProbe",
+    "spark"
+  ],
+  "type": "object"
+}

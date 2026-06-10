@@ -20,11 +20,34 @@ permissions:
   issues: write
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.config.outputs.skip }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Check if PR author is a restricted actor
+        id: config
+        env:
+          ACTOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          restricted=$(python3 -c "
+          import yaml, os
+          with open('.github/config/build-config.yaml') as f:
+              config = yaml.safe_load(f)
+          actors = config.get('restricted-actors', [])
+          print('true' if os.environ['ACTOR'] in actors else 'false')
+          ")
+          echo "skip=$restricted" >> "$GITHUB_OUTPUT"
+
   assign-labels:
-    if: (github.event.pull_request.merged == false) && (github.event.pull_request.user.login != 'dependabot[bot]') && (github.event.pull_request.user.login != 'github-actions[bot]')
+    needs: [prepare]
+    if: (github.event.pull_request.merged == false) && (needs.prepare.outputs.skip != 'true')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
