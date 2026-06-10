@@ -70,15 +70,15 @@ spec:
           args:
             {{- template "collector.args" . }}
           env:
-            {{- range $key, $value := .Values.elasticsearch.env }}
-            - name: {{ $key | quote }}
-              value: {{ $value | quote }}
-            {{- end }}
-            {{- with .Values.elasticsearch.extraEnv }}
-              {{- toYaml . | nindent 12 }}
-            {{- end }}
-            {{- with .Values.collector.extraEnv }}
-              {{- toYaml . | nindent 12 }}
+            { { - range $key, $value := .Values.elasticsearch.env } }
+            - name: { { $key | quote } }
+              value: { { $value | quote } }
+            { { - end } }
+            { { - with .Values.elasticsearch.extraEnv } }
+            { { - toYaml . | nindent 12 } }
+            { { - end } }
+            { { - with .Values.collector.extraEnv } }
+            {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- if .Values.readinessProbe.install }}
           livenessProbe:
