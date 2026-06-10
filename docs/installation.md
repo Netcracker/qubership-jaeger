@@ -515,7 +515,7 @@ exposed either with `HTTPRoute` or with native `GRPCRoute`, depending on the val
 `collector.gatewayApi.grpcRoute.kind`.
 
 TLS termination is configured on the Gateway listener. To bind a route to a specific listener, use
-`parentRefs[].sectionName`. More info in [Attaching to gateways](https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways).
+`parentRefs[].sectionName`. More info in [Attaching to gateways](https://gateway-api.sigs.k8s.io/reference/api-types/httproute/#attaching-to-gateways).
 
 ```yaml
 collector:
