@@ -634,8 +634,8 @@ elasticsearch:
     {{- end }}
   auth:
     basic:
-      username: "${env:ES_USERNAME}"
-      password: "${env:ES_PASSWORD}"
+      username: {{ include "elasticsearch.userName" . | quote }}
+      password: {{ include "elasticsearch.password" . | quote }}
   {{- if hasKey .Values.elasticsearch "remoteReadClusters" }}
   remote_read_clusters:
     {{- toYaml .Values.elasticsearch.remoteReadClusters | nindent 4 }}
