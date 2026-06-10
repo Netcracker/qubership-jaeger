@@ -934,6 +934,10 @@ elasticsearch:
     # priorityClassName: "priorityClassName"
 
 cassandraSchemaJob:
+  # Cassandra storage connection settings for collector, query and related secrets.
+  # Schema initialization is performed by collector/query on startup (Jaeger v2.x).
+  # Section name is kept for backward compatibility.
+
   # This is the host used to connect to Cassandra.
   # Type: string
   # Default: "cassandra.cassandra.svc"

@@ -73,12 +73,6 @@ spec:
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
             {{- end }}
-          {{- end }}
-          {{- if eq .Values.jaeger.storage.type "elasticsearch" }}
-            {{- range $key, $value := .Values.elasticsearch.env }}
-            - name: {{ $key | quote }}
-              value: {{ $value | quote }}
-            {{- end }}
             {{- with .Values.elasticsearch.extraEnv }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
