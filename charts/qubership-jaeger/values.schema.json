@@ -17,22 +17,6 @@
           "title": "annotations",
           "type": "object"
         },
-        "containerSecurityContext": {
-          "properties": {
-            "allowPrivilegeEscalation": {
-              "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
-              "title": "allowPrivilegeEscalation",
-              "type": "boolean"
-            },
-            "capabilities": {
-              "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\n Type: object\n Mandatory: no",
-              "type": "object"
-            }
-          },
-          "required": [],
-          "title": "containerSecurityContext",
-          "type": "object"
-        },
         "createKeyspace": {
           "default": true,
           "description": "Parameter specifies whether to create the Cassandra keyspace or not\nType: boolean\nDefault: true\n",
@@ -45,49 +29,23 @@
           "title": "datacenter",
           "type": "string"
         },
-        "enablePreHook": {
-          "default": false,
-          "description": "Enable schema initialization before deployment using Helm pre-hook.\nSince the Jaeger v2.x collector and/or query services can initialize the schema without the Job.\nKeep for compatibility with the previous versions.\n\nType: boolean\nDefault: false\n",
-          "title": "enablePreHook",
-          "type": "boolean"
-        },
         "existingSecret": {
           "default": "",
           "description": "Name of existing secret with cassandra username and password.\nType: string\nDefault: \"\"\n",
           "title": "existingSecret",
           "type": "string"
         },
-        "extraEnv": {
-          "description": "Cassandra schema job related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {
-            "required": []
-          },
-          "title": "extraEnv",
-          "type": "array"
-        },
         "host": {
           "description": "This is the host used to connect to Cassandra.\nType: string\nDefault: \"cassandra.cassandra.svc\"\n",
           "title": "host",
-          "anyOf": [{"type": "string"},{"type": "null"}]
-        },
-        "image": {
-          "description": "The image for cassandra schema job container.\nType: string\nDefault: \"jaegertracing/jaeger-cassandra-schema:1.76.0\"\n",
-          "title": "image",
-          "type": "string"
-        },
-        "imagePullPolicy": {
-          "default": "IfNotPresent",
-          "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
-          "title": "imagePullPolicy",
-          "type": "string"
-        },
-        "imagePullSecrets": {
-          "description": "A secret name with secret for pulling images from private registry.\nDefault: []\n",
-          "items": {
-            "type": "string"
-          },
-          "title": "imagePullSecrets",
-          "type": "array"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "keyspace": {
           "default": "jaeger",
@@ -100,18 +58,6 @@
           "required": [],
           "title": "labels",
           "type": "object"
-        },
-        "mode": {
-          "default": "test",
-          "description": "Parameter specifies the Cassandra mode, `prod` or `test`.\nType: string\nDefault: test\n",
-          "title": "mode",
-          "type": "string"
-        },
-        "name": {
-          "default": "cassandra-schema-job",
-          "description": "A name of a microservice to deploy with.\nThis name will be used as name of the microservice job and in labels.\n",
-          "title": "name",
-          "type": "string"
         },
         "password": {
           "default": "",
@@ -130,90 +76,6 @@
           "title": "priorityClassName",
           "type": "string"
         },
-        "resources": {
-          "description": "The resources describe compute resource requests and limits for single container.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\n",
-          "properties": {
-            "limits": {
-              "properties": {
-                "cpu": {
-                  "default": "500m",
-                  "title": "cpu",
-                  "type": "string"
-                },
-                "memory": {
-                  "default": "256Mi",
-                  "title": "memory",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "cpu",
-                "memory"
-              ],
-              "title": "limits",
-              "type": "object"
-            },
-            "requests": {
-              "properties": {
-                "cpu": {
-                  "default": "50m",
-                  "title": "cpu",
-                  "type": "string"
-                },
-                "memory": {
-                  "default": "50Mi",
-                  "title": "memory",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "cpu",
-                "memory"
-              ],
-              "title": "requests",
-              "type": "object"
-            }
-          },
-          "required": [
-            "requests",
-            "limits"
-          ],
-          "title": "resources",
-          "type": "object"
-        },
-        "securityContext": {
-          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
-          "properties": {
-            "runAsUser": {
-              "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
-              "title": "runAsUser",
-              "type": "integer"
-            },
-            "fsGroup": {
-              "description": "A special supplemental group that applies to all containers in a pod.\n Type: integer\n Mandatory: no",
-              "title": "fsGroup",
-              "type": "integer"
-            },
-            "runAsNonRoot": {
-              "description": "Indicates that the container must run as a non-root user.\n If true, the Kubelet will validate the image at runtime to ensure it has a non-root user ID.\n Type: boolean\n Mandatory: no",
-              "title": "runAsNonRoot",
-              "type": "boolean"
-            },
-            "seccompProfile": {
-              "description": "The seccomp profile for the container.\n Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Mandatory: no",
-              "properties": {
-                "type": {
-                  "type":"string"
-                }
-              },
-              "title": "seccompProfile",
-              "type": "object"
-            }
-          },
-          "required": [],
-          "title": "securityContext",
-          "type": "object"
-        },
         "tls": {
           "properties": {
             "ca": {
@@ -229,11 +91,6 @@
             "commonName": {
               "description": "Allow to specify common name - server name protected by the SSL certificate.\nIgnored if the existingSecret is specified.\nType: string\nDefault: not set\n",
               "title": "commonName",
-              "type": "string"
-            },
-            "cqlshrc": {
-              "description": "Allow to override path to certificates which cqlsh in cassandraSchemaJob job will use to connect to Cassandra.\nMandatory field when using SSL connection to Cassandra. Ignored if the existingSecret is specified.\nType: multiline string\nDefault: see below\n",
-              "title": "cqlshrc",
               "type": "string"
             },
             "enabled": {
@@ -256,8 +113,7 @@
           },
           "required": [
             "enabled",
-            "existingSecret",
-            "cqlshrc"
+            "existingSecret"
           ],
           "title": "tls",
           "type": "object"
@@ -279,12 +135,6 @@
           "title": "ttl",
           "type": "object"
         },
-        "ttlSecondsAfterFinished": {
-          "default": 0,
-          "description": "Allow to set time to life (TTL) for TTL controller. TTL controller cleans up the Job, it will delete the Job\ncascadingly, i.e. delete its dependent objects, such as Pods, together with the Job.\nUseful to set a value other than 0 if you want to see job logs.\nType: int\nDefault: 0\n",
-          "title": "ttlSecondsAfterFinished",
-          "type": "integer"
-        },
         "username": {
           "default": "",
           "description": "Username for Cassandra with access to HTTP API.\nType: string\nDefault: \"\"\n",
@@ -293,26 +143,15 @@
         }
       },
       "required": [
-        "name",
-        "enablePreHook",
-        "imagePullPolicy",
-        "imagePullSecrets",
-        "host",
         "port",
         "existingSecret",
-        "extraEnv",
-        "ttlSecondsAfterFinished",
         "allowedAuthenticators",
         "tls",
-        "mode",
         "datacenter",
         "keyspace",
         "createKeyspace",
         "username",
         "password",
-        "resources",
-        "securityContext",
-        "containerSecurityContext",
         "labels",
         "annotations",
         "ttl"
@@ -323,7 +162,26 @@
     "collector": {
       "properties": {
         "affinity": {
-          "default": {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [{"labelSelector": {"matchExpressions": [{"key": "app.kubernetes.io/name", "operator": "In", "values": ["jaeger-collector"]}]}, "topologyKey": "kubernetes.io/hostname"}]}},
+          "default": {
+            "podAntiAffinity": {
+              "requiredDuringSchedulingIgnoredDuringExecution": [
+                {
+                  "labelSelector": {
+                    "matchExpressions": [
+                      {
+                        "key": "app.kubernetes.io/name",
+                        "operator": "In",
+                        "values": [
+                          "jaeger-collector"
+                        ]
+                      }
+                    ]
+                  },
+                  "topologyKey": "kubernetes.io/hostname"
+                }
+              ]
+            }
+          },
           "description": "The pod's scheduling constraints\nMore info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core\nType: object\nMandatory: no\nDefault: see below\n",
           "title": "affinity",
           "type": "object"
@@ -558,7 +416,20 @@
             "grpc": {
               "properties": {
                 "defaultPaths": {
-                  "default": [{"prefix": "/otel/grpc","service":{"port": 4317}},{"prefix": "/thrift/grpc","service":{"port": 14250}}],
+                  "default": [
+                    {
+                      "prefix": "/otel/grpc",
+                      "service": {
+                        "port": 4317
+                      }
+                    },
+                    {
+                      "prefix": "/thrift/grpc",
+                      "service": {
+                        "port": 14250
+                      }
+                    }
+                  ],
                   "items": {
                     "type": "object",
                     "properties": {
@@ -605,7 +476,38 @@
             "http": {
               "properties": {
                 "defaultPaths": {
-                  "default":[{"prefix":"/","service":{"port":13133}},{"prefix":"/zipkin","service":{"port":9411}},{"prefix":"/otlp/http","service":{"port":4318}} ,{"prefix":"/thrift/tchannel","service":{"port":14250}},{"prefix":"/thrift/http","service":{"port":14268}}],
+                  "default": [
+                    {
+                      "prefix": "/",
+                      "service": {
+                        "port": 13133
+                      }
+                    },
+                    {
+                      "prefix": "/zipkin",
+                      "service": {
+                        "port": 9411
+                      }
+                    },
+                    {
+                      "prefix": "/otlp/http",
+                      "service": {
+                        "port": 4318
+                      }
+                    },
+                    {
+                      "prefix": "/thrift/tchannel",
+                      "service": {
+                        "port": 14250
+                      }
+                    },
+                    {
+                      "prefix": "/thrift/http",
+                      "service": {
+                        "port": 14268
+                      }
+                    }
+                  ],
                   "items": {
                     "type": "object",
                     "properties": {
@@ -995,7 +897,7 @@
         "tlsConfig": {
           "description": "TLS configuration for collector.\n",
           "properties": {
-            "createSecret":{
+            "createSecret": {
               "description": "Use createSecret section to create secret with already known content of TLS certificates.\n Do not use createSecret if you use generateCerts\n Will be ignored if existingSecret is already specified.",
               "properties": {
                 "ca": {
@@ -1400,9 +1302,12 @@
                   "description": "Private key for Elasticsearch TLS connection.\nMandatory field when using SSL connection to OpenSearch.\nIgnored if the existingSecret is specified.\nType: string\nDefault: \"\"\n",
                   "title": "key",
                   "type": "string"
-              }
-            },
-              "required": ["enabled","existingSecret"],
+                }
+              },
+              "required": [
+                "enabled",
+                "existingSecret"
+              ],
               "title": "tls",
               "type": "object"
             },
@@ -1458,7 +1363,7 @@
               "type": "string"
             },
             "containerSecurityContext": {
-              "properties":{
+              "properties": {
                 "allowPrivilegeEscalation": {
                   "default": false,
                   "description": "Controls whether a process can gain more privileges than its parent process.\nThis bool directly controls whether the 'no_new_privs' flag gets set on the container process.\nType: bool\nMandatory: no",
@@ -1514,7 +1419,11 @@
             "imagePullPolicy": {
               "default": "IfNotPresent",
               "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available values : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
-              "enum": ["IfNotPresent", "Always", "Never"],
+              "enum": [
+                "IfNotPresent",
+                "Always",
+                "Never"
+              ],
               "title": "imagePullPolicy",
               "type": "string"
             },
@@ -1884,7 +1793,11 @@
                     "type": {
                       "description": "Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'",
                       "type": "string",
-                      "enum": ["RuntimeDefault", "Unconfined", "Localhost"]
+                      "enum": [
+                        "RuntimeDefault",
+                        "Unconfined",
+                        "Localhost"
+                      ]
                     }
                   },
                   "title": "seccompProfile",
@@ -2678,7 +2591,7 @@
         "statusWriting": {
           "properties": {
             "customResourcePath": {
-              "description": "Defines a path where test results will be stored. The path should be in format: '<apiVersion>/{namespace_name}/{resource_type}/{deployment_name}'. Can be extracted from the selflink of the resource." ,
+              "description": "Defines a path where test results will be stored. The path should be in format: '<apiVersion>/{namespace_name}/{resource_type}/{deployment_name}'. Can be extracted from the selflink of the resource.",
               "title": "customResourcePath",
               "type": "string"
             },
@@ -2793,8 +2706,11 @@
           "description": "Settings for basic authentication.\n",
           "properties": {
             "users": {
-              "default": ["YWRtaW46YWRtaW4=", "dGVzdDp0ZXN0"],
-              "description": "List of login:password in base64.\nFor example\n  admin:admin -\u003e YWRtaW46YWRtaW4=\n  test:test -\u003e dGVzdDp0ZXN0\nDefault: no\n",
+              "default": [
+                "YWRtaW46YWRtaW4=",
+                "dGVzdDp0ZXN0"
+              ],
+              "description": "List of login:password in base64.\nFor example\n  admin:admin -> YWRtaW46YWRtaW4=\n  test:test -> dGVzdDp0ZXN0\nDefault: no\n",
               "items": {
                 "type": "string",
                 "required": []
@@ -2827,7 +2743,7 @@
           "title": "containerSecurityContext",
           "type": "object"
         },
-        "image":{
+        "image": {
           "default": "envoyproxy/envoy:v1.35.2",
           "description": "The image of envoy proxy container.\nType: string\nDefault: \"envoyproxy/envoy:v1.35.2\"\n",
           "title": "image",
@@ -2950,7 +2866,10 @@
         "type": {
           "default": "basic",
           "description": "Authentication type to be used\nAvailable values - \"basic\" and \"oauth2\"\nType: string\nMandatory: no\nDefault: \"basic\"\n",
-          "enum": ["basic", "oauth2"],
+          "enum": [
+            "basic",
+            "oauth2"
+          ],
           "title": "type",
           "type": "string"
         }
@@ -2970,7 +2889,26 @@
     "query": {
       "properties": {
         "affinity": {
-          "default": {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [{"labelSelector": {"matchExpressions": [{"key": "app.kubernetes.io/name", "operator": "In", "values": ["jaeger-query"]}]}, "topologyKey": "kubernetes.io/hostname"}]}},
+          "default": {
+            "podAntiAffinity": {
+              "requiredDuringSchedulingIgnoredDuringExecution": [
+                {
+                  "labelSelector": {
+                    "matchExpressions": [
+                      {
+                        "key": "app.kubernetes.io/name",
+                        "operator": "In",
+                        "values": [
+                          "jaeger-query"
+                        ]
+                      }
+                    ]
+                  },
+                  "topologyKey": "kubernetes.io/hostname"
+                }
+              ]
+            }
+          },
           "description": "If specified, the pod's scheduling constraints\nMore info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core\nType: object\nMandatory: no\nDefault: see below\n",
           "title": "affinity",
           "type": "object"
@@ -2996,7 +2934,15 @@
           "type": "array"
         },
         "config": {
-          "default":{"service":{"telemetry":{"logs":{"level":"info"}}}},
+          "default": {
+            "service": {
+              "telemetry": {
+                "logs": {
+                  "level": "info"
+                }
+              }
+            }
+          },
           "description": "Jaeger query config, contains only several options to configure, other part of parameters take from\ncassandraSchemaJob and elasticsearch sections",
           "title": "config",
           "type": "object"
@@ -3018,7 +2964,7 @@
           "title": "containerSecurityContext",
           "type": "object"
         },
-        "customConfig":{
+        "customConfig": {
           "description": "Custom config for the query.\n Allows to override the default config and specify a full custom config for the query",
           "type": "object",
           "title": "customConfig"
