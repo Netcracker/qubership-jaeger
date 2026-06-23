@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qubership.org/otel-tracing-core/L2-capability-result.schema.json",
+  "title": "CapabilityResult",
+  "description": "Layer 2 output: real tracing capabilities derived from discovery evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["propagation", "spanQuality", "export", "platformContract"],
+  "$defs": {
+    "verdict": { "enum": ["PASS", "PARTIAL", "FAILED", "UNKNOWN"] }
+  },
+  "properties": {
+    "propagation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["overall"],
+      "properties": {
+        "overall": { "$ref": "#/$defs/verdict" },
+        "http": { "$ref": "#/$defs/verdict" },
+        "kafka": { "$ref": "#/$defs/verdict" },
+        "async": { "$ref": "#/$defs/verdict" },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "spanQuality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lifecycle", "hierarchy", "attributes", "errors"],
+      "properties": {
+        "lifecycle": { "$ref": "#/$defs/verdict" },
+        "hierarchy": { "$ref": "#/$defs/verdict" },
+        "attributes": { "$ref": "#/$defs/verdict" },
+        "errors": { "$ref": "#/$defs/verdict" },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "export": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["overall"],
+      "properties": {
+        "overall": { "$ref": "#/$defs/verdict" },
+        "exporterExists": { "$ref": "#/$defs/verdict" },
+        "endpointSet": { "$ref": "#/$defs/verdict" },
+        "protocolValid": { "$ref": "#/$defs/verdict" },
+        "pipelineWired": { "$ref": "#/$defs/verdict" },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "platformContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Layer 2 verdicts on platform-tracing-guide compliance. Required in every capability-result.json. Internal JSON only — do not echo facet keys or PASS/PARTIAL/FAILED/UNKNOWN in user chat; summarize in plain language in the L2 brief.",
+      "required": [
+        "serviceNameNamespace",
+        "sampler",
+        "propagationStandard",
+        "endpointFilter",
+        "loggingCorrelation",
+        "exportShape"
+      ],
+      "properties": {
+        "serviceNameNamespace": { "$ref": "#/$defs/verdict" },
+        "sampler": { "$ref": "#/$defs/verdict" },
+        "propagationStandard": { "$ref": "#/$defs/verdict" },
+        "endpointFilter": { "$ref": "#/$defs/verdict" },
+        "loggingCorrelation": { "$ref": "#/$defs/verdict" },
+        "exportShape": { "$ref": "#/$defs/verdict" },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "gaps": { "type": "array", "items": { "type": "string" } }
+  }
+}

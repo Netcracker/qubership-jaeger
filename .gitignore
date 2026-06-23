@@ -9,3 +9,11 @@ __pycache__/
 
 # MkDocs build output
 site/
+
+# APM install artifacts (regenerate with apm install / apm compile)
+.agents/
+.cursor/
+apm_modules/
+
+# IDE
+.idea/

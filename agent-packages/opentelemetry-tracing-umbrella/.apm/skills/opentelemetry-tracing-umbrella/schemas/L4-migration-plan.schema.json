@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qubership.org/otel-tracing-core/L4-migration-plan.schema.json",
+  "title": "MigrationPlan",
+  "description": "Layer 4 output (with embedded Layer 5 validationPlan): a reviewable migration proposal.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["basedOnMaturityLevel", "validationPlan"],
+  "$defs": {
+    "checkStatus": { "enum": ["pass", "fail", "manual", "unknown"] },
+    "staticCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check", "status"],
+      "properties": {
+        "check": { "type": "string" },
+        "status": { "$ref": "#/$defs/checkStatus" },
+        "detail": { "type": "string" },
+        "how": { "type": "string" }
+      }
+    }
+  },
+  "properties": {
+    "basedOnMaturityLevel": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "dependencyMigration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "remove": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["coordinates"],
+            "properties": {
+              "coordinates": { "type": "string" },
+              "guardedBy": { "type": "string" }
+            }
+          }
+        },
+        "add": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["coordinates"],
+            "properties": {
+              "coordinates": { "type": "string" },
+              "version": { "type": "string" }
+            }
+          }
+        },
+        "upgrade": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["coordinates"],
+            "properties": {
+              "coordinates": { "type": "string" },
+              "toVersion": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "configMigration": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "to", "oneToOne"],
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "oneToOne": { "type": "boolean" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "codeMigration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mechanical": { "type": "array", "items": { "type": "object" } },
+        "semantic": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "asyncContextMigration": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["boundary", "fix"],
+        "properties": {
+          "boundary": { "type": "string" },
+          "file": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "fix": { "type": "string" }
+        }
+      }
+    },
+    "gaps": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Blockers, skipped documentation sync, build/registry issues, and other plan caveats."
+    },
+    "validationPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["static", "configuration", "runtime"],
+      "properties": {
+        "static": { "type": "array", "items": { "$ref": "#/$defs/staticCheck" } },
+        "configuration": { "type": "array", "items": { "$ref": "#/$defs/staticCheck" } },
+        "runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "scenario", "assertions"],
+          "properties": {
+            "status": { "$ref": "#/$defs/checkStatus" },
+            "scenario": { "type": "string" },
+            "assertions": { "type": "array", "items": { "type": "string" } },
+            "manualInstruction": { "type": "string" },
+            "buildProvenance": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "source": {
+                  "enum": ["fresh-build", "ci-image", "reused-local-image", "stock-image", "unknown"]
+                },
+                "matchesL4": { "type": "boolean" },
+                "detail": { "type": "string" },
+                "mavenCommand": { "type": "string" },
+                "imageTag": { "type": "string" },
+                "runnerJar": { "type": "string" },
+                "purgedImages": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Session-purged stale image tags before fresh build."
+                }
+              }
+            },
+            "standHealth": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "passed": { "type": "boolean" },
+                "podReady": { "type": "string" },
+                "restarts": { "type": "integer", "minimum": 0 },
+                "endpointsNonEmpty": { "type": "boolean" },
+                "observationWindowStable": { "type": "boolean" },
+                "evidence": { "type": "string" }
+              }
+            },
+            "logErrorTriage": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "verdict": {
+                  "enum": ["none", "stale-only", "benign", "blocks-e2e", "mixed", "unknown"]
+                },
+                "e2eBlocked": { "type": "boolean" },
+                "podStartTime": { "type": "string" },
+                "summary": { "type": "string" },
+                "findings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["signature", "classification", "e2eImpact"],
+                    "properties": {
+                      "signature": { "type": "string" },
+                      "classification": {
+                        "enum": ["stale", "benign", "blocks-e2e", "tracing-adjacent", "unknown"]
+                      },
+                      "e2eImpact": { "type": "string" },
+                      "evidence": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

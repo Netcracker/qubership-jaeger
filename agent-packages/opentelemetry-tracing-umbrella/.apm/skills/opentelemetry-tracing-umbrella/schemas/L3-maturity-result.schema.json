@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qubership.org/otel-tracing-core/L3-maturity-result.schema.json",
+  "title": "MaturityResult",
+  "description": "Layer 3 output: maturity level (1-5) and recommended action.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["level", "label", "recommendedAction"],
+  "properties": {
+    "level": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "label": {
+      "enum": ["No tracing", "Legacy tracing", "Incomplete OTel", "Hybrid OTel", "Working OTel"]
+    },
+    "recommendedAction": {
+      "enum": ["introduce-otel", "migrate-to-otel", "complete-otel-stack", "remove-mixed-stack", "no-migration-required"]
+    },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "rationale": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Each entry cites the discovery/capability fields and the matrix rule that produced the verdict."
+    },
+    "confidence": { "enum": ["high", "medium", "low"] }
+  }
+}
