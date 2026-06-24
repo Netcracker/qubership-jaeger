@@ -1,23 +1,24 @@
 {{- if and .Values.hotrod.install .Values.hotrod.ingress.install }}
+{{- $annotations := deepCopy (.Values.hotrod.annotations | default dict) -}}
+{{- if .Values.hotrod.ingress.addGatewayApiAnnotation }}
+{{- $_ := set $annotations "gateway-api-converter.netcracker.com/ignore" "true" -}}
+{{- end }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.jaeger.serviceName }}-hotrod
   labels:
-    name: {{ .Values.jaeger.serviceName }}-hotrod
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-hotrod
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-hotrod-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: hotrod
-    deployment.netcracker.com/ingress-type: private-network
-    deployment.netcracker.com/ingress-audience-type: ops-user
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-hotrod" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "hotrod") | nindent 4 }}
     {{- if .Values.hotrod.labels }}
       {{- toYaml .Values.hotrod.labels | nindent 4 }}
     {{- end }}
-  {{- if .Values.hotrod.annotations }}
+    deployment.netcracker.com/ingress-type: private-network
+    deployment.netcracker.com/ingress-audience-type: ops-user
+  {{- if $annotations }}
   annotations:
-    {{- toYaml .Values.hotrod.annotations | nindent 4 }}
+    {{- toYaml $annotations | nindent 4 }}
   {{- end }}
 spec:
   {{- if .Values.hotrod.ingress.className }}

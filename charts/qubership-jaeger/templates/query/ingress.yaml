@@ -1,23 +1,24 @@
 {{- if and .Values.query.install .Values.query.ingress.install }}
+{{- $annotations := deepCopy (.Values.query.annotations | default dict) -}}
+{{- if .Values.query.ingress.addGatewayApiAnnotation }}
+{{- $_ := set $annotations "gateway-api-converter.netcracker.com/ignore" "true" -}}
+{{- end }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.jaeger.serviceName }}-query
   labels:
-    name: {{ .Values.jaeger.serviceName }}-query
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-query
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-query-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: query
-    deployment.netcracker.com/ingress-type: private-network
-    deployment.netcracker.com/ingress-audience-type: ops-user
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-query" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "query") | nindent 4 }}
     {{- if .Values.query.labels }}
       {{- toYaml .Values.query.labels | nindent 4 }}
     {{- end }}
-  {{- if .Values.query.annotations }}
+    deployment.netcracker.com/ingress-type: private-network
+    deployment.netcracker.com/ingress-audience-type: ops-user
+  {{- if $annotations }}
   annotations:
-    {{- toYaml .Values.query.annotations | nindent 4 }}
+    {{- toYaml $annotations | nindent 4 }}
     nginx.ingress.kubernetes.io/proxy-buffer-size: 256k
   {{- end }}
 spec:

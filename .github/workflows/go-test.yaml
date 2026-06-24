@@ -11,7 +11,7 @@ jobs:
     outputs:
       sonar-project-key: ${{ steps.config.outputs.sonar-project-key }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Resolve sonar project key based on restricted actors
         id: config
         env:
@@ -33,7 +33,7 @@ jobs:
   test:
     needs: prepare
     name: Build and test with coverage
-    uses: Netcracker/qubership-core-infra/.github/workflows/generic-go-build.yaml@bc2a0bd082147e23b4091616c608a21cc2957728 # v2.4.1
+    uses: Netcracker/qubership-core-infra/.github/workflows/generic-go-build.yaml@afe90353c9a086f22355f99e14e24a06cfb5195b # v2.4.3
     with:
       sonar-project-key: ${{ needs.prepare.outputs.sonar-project-key }}
       go-module-dir: ./readiness-probe

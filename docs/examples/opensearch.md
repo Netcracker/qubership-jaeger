@@ -13,7 +13,8 @@ Basic configuration for development environments.
 **Key parameters:**
 - `elasticsearch.client.url` - OpenSearch endpoint
 - `indexCleaner.install: true` - Enables automatic index cleanup
-- `scheme: https` - Secure connection
+- `elasticsearch.client.scheme: https` - Secure connection
+- `elasticsearch.indices.*` - Optional Jaeger v2 runtime index settings
 
 ## OpenSearch with TLS
 
@@ -25,8 +26,8 @@ Secure connection with custom certificates.
 
 **Key parameters:**
 - `tls.enabled: true` - Enables TLS verification
-- `skipHostVerify: false` - Strict certificate validation
-- `tls.secretName` - Kubernetes secret with certificates
+- `insecureSkipVerify: false` - Strict certificate validation
+- `tls.existingSecret` - Kubernetes secret with certificates
 
 ## OpenSearch with Rollover
 
@@ -38,8 +39,8 @@ Automatic index management for large deployments.
 
 **Key parameters:**
 - `indexCleaner.numberOfDays: 7` - Retain 7 days of data
-- `rollover.conditions.maxAge: "1d"` - Daily index rotation
-- `rollover.conditions.maxSize: "10gb"` - Size-based rotation
+- `elasticsearch.useAliases: true` - Enable Jaeger runtime alias usage
+- `elasticsearch.rollover.initHook.extraEnv` - Pass init job env such as `SHARDS` and `REPLICAS`
 
 ## OpenSearch Single Node
 
@@ -50,9 +51,9 @@ Minimal setup for testing.
 ```
 
 **Key parameters:**
-- `scheme: http` - Non-secure connection for testing
-- `indexCleaner.install: false` - Disabled for testing
-- Minimal resource allocation
+- `elasticsearch.indices.*.shards: 1` - Reduce per-index shard count
+- `elasticsearch.indices.*.replicas: 0` - Disable replicas for single node
+- `elasticsearch.rollover.initHook.extraEnv` - Keep rollover init aligned with runtime settings
 
 ## OpenSearch with Insecure TLS
 
@@ -64,7 +65,7 @@ TLS with certificate verification disabled.
 
 **Key parameters:**
 - `tls.enabled: true` - Enables TLS
-- `skipHostVerify: true` - Disables certificate validation
+- `insecureSkipVerify: true` - Disables certificate validation
 - Useful for self-signed certificates
 
 ## OpenSearch with Predefined Secret
@@ -76,7 +77,7 @@ Use existing Kubernetes secret for TLS certificates.
 ```
 
 **Key parameters:**
-- `tls.secretName` - Existing Kubernetes secret
+- `tls.existingSecret` - Existing Kubernetes secret
 - Pre-configured TLS certificates
 - External certificate management
 
