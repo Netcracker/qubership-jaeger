@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Check if tag exists
         id: check_tag
-        uses: netcracker/qubership-workflow-hub/actions/tag-action@cabbb90e9471163cfac84bd50ff0296b2803b44c # v2.3.0
+        uses: netcracker/qubership-workflow-hub/actions/tag-action@8c6dbeb901920bae9f40d7d7b646d8d9127e1ce7 # v2.4.0
         with:
           ref: ${{ github.ref }}
           check-tag: 'true'
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Change Chart Version Action
-      uses: netcracker/qubership-workflow-hub/actions/chart-version@cabbb90e9471163cfac84bd50ff0296b2803b44c # v2.3.0
+      uses: netcracker/qubership-workflow-hub/actions/chart-version@8c6dbeb901920bae9f40d7d7b646d8d9127e1ce7 # v2.4.0
       with:
         new-chart-version: ${{ github.event.inputs.version }}
         chart-yaml-path: ${{ github.event.inputs.path-to-chart }}
@@ -92,7 +92,7 @@ jobs:
         git push origin HEAD:"${{ github.ref_name }}"
 
     - name: "Create release tag"
-      uses: netcracker/qubership-workflow-hub/actions/tag-action@cabbb90e9471163cfac84bd50ff0296b2803b44c # v2.3.0
+      uses: netcracker/qubership-workflow-hub/actions/tag-action@8c6dbeb901920bae9f40d7d7b646d8d9127e1ce7 # v2.4.0
       with:
         ref: ${{ github.ref }}
         check-tag: 'false'
@@ -112,7 +112,7 @@ jobs:
     steps:
     - name: "Docker Build"
       id: docker_build
-      uses: netcracker/qubership-workflow-hub/actions/docker-action@cabbb90e9471163cfac84bd50ff0296b2803b44c # v2.3.0
+      uses: netcracker/qubership-workflow-hub/actions/docker-action@8c6dbeb901920bae9f40d7d7b646d8d9127e1ce7 # v2.4.0
       with:
         ref: v${{ inputs.version }}
         download-artifact: false
@@ -135,7 +135,7 @@ jobs:
           ref: ${{ github.ref_name }}
 
       - name: Run Release Drafter
-        uses: netcracker/release-drafter@86f4276a3894b5af70480e826c32fe3648ac6a70 # v1.0.0
+        uses: netcracker/release-drafter@130c08399304912ffe90e9604e4328f2fdcd7619 # v1.0.1
         with:
           config-name: release-drafter-config.yml
           publish: 'false'
@@ -162,7 +162,7 @@ jobs:
         tar -cf dist/docs.tar -C . docs
 
     - name: Upload assets to release
-      uses: netcracker/qubership-workflow-hub/actions/assets-action@cabbb90e9471163cfac84bd50ff0296b2803b44c # v2.3.0
+      uses: netcracker/qubership-workflow-hub/actions/assets-action@8c6dbeb901920bae9f40d7d7b646d8d9127e1ce7 # v2.4.0
       with:
         tag: v${{ github.event.inputs.version }}
         item-path: ./dist
