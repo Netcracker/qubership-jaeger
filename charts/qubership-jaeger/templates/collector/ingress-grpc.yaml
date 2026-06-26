@@ -15,6 +15,8 @@ metadata:
     {{- if .Values.collector.ingress.grpc.labels }}
       {{- toYaml .Values.collector.ingress.grpc.labels | nindent 4 }}
     {{- end }}
+    deployment.netcracker.com/ingress-type: private-network
+    deployment.netcracker.com/ingress-audience-type: ops-user
   {{- if $annotations }}
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: GRPC       # mandatory annotation

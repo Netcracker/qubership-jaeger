@@ -14,6 +14,8 @@ metadata:
     {{- if .Values.query.labels }}
       {{- toYaml .Values.query.labels | nindent 4 }}
     {{- end }}
+    deployment.netcracker.com/ingress-type: private-network
+    deployment.netcracker.com/ingress-audience-type: ops-user
   {{- if $annotations }}
   annotations:
     {{- toYaml $annotations | nindent 4 }}
