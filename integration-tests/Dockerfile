@@ -1,6 +1,6 @@
 # Based on python:3.13-alpine3.22
 # checkov:skip=CKV_DOCKER_3: User already set in the base image
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.5.4@sha256:343b6be9cf2a116c42f7afa1a58670e7a2f08706527546c9c4944a7cb12be54e
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.5.5@sha256:69a2e42dbe5aed9508a5edc705f60ec0dd78c6711763d5df9720cbbe115a2048
 
 # Env ${ROBOT_HOME} is set in the base image as /opt/robot
 ENV SERVICE_CHECKER_SCRIPT=${ROBOT_HOME}/jaeger_pods_checker.py
