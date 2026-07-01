@@ -14,6 +14,9 @@ metadata:
     {{- if .Values.query.labels }}
       {{- toYaml .Values.query.labels | nindent 4 }}
     {{- end }}
+    {{- if .Values.query.ingress.labels }}
+      {{- toYaml .Values.query.ingress.labels | nindent 4 }}
+    {{- end }}
   {{- if $annotations }}
   annotations:
     {{- toYaml $annotations | nindent 4 }}
