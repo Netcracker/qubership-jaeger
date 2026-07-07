@@ -9,6 +9,8 @@
         "**/charts/*/values.yaml",
         "**/docs/examples/**",
         "**/docs/installation.md",
-        "**/docs/observability.md"
+        "**/docs/observability.md",
+        "**/charts/*/templates/**/*.tpl",
+        "**/*_test.go"
     ]
 }
