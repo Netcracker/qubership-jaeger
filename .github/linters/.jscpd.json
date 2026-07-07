@@ -4,9 +4,11 @@
         "**/.git/**",
         "**/charts/*/templates/*/*.yaml",
         "**/charts/*/templates/*/*/*.yaml",
-        "**/charts/*/monitoring/dashboard-for-grafana.json",
+        "**/charts/*/*/*.json",
         "**/charts/*/values.schema.json",
         "**/charts/*/values.yaml",
-        "**/docs/examples/**"
+        "**/docs/examples/**",
+        "**/docs/installation.md",
+        "**/docs/observability.md"
     ]
 }
