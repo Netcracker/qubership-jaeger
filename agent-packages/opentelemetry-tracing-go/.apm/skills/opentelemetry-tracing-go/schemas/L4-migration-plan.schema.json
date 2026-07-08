@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qubership.org/otel-tracing-go/L4-migration-plan.schema.json",
+  "title": "MigrationPlanRedirect",
+  "description": "Use shared schema from tracing umbrella package.",
+  "allOf": [
+    {
+      "$ref": "../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/schemas/L4-migration-plan.schema.json"
+    }
+  ]
+}

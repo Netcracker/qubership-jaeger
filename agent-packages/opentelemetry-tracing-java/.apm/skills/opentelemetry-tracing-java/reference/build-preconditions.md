@@ -50,7 +50,7 @@ instrumentation mechanism).
 
 Jaeger spans from probe traffic on a **crash-looping or not-Ready** pod are
 **smoke only**, not validation — run
-[`../recipes/stand-health-gate.md`](../recipes/stand-health-gate.md) before
+[`../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md) before
 tracing pass/fail.
 
 ## Build artifact provenance (mandatory for runtime pass)

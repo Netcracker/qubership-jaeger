@@ -17,7 +17,7 @@ Skip only when `validationPlan.runtime.status` is `manual` (no deploy).
 ## Mandatory order (L5 runtime)
 
 ```text
-deploy → stand health gate (this recipe) → log-error triage → business traffic → tracing assertions → pass/fail
+deploy → stand health gate (this recipe) → log-error triage → business traffic → tracing assertions → pass/fail → validation cleanup (on pass)
 ```
 
 **Forbidden:** querying Jaeger, posting "e2e success", or setting
@@ -41,13 +41,13 @@ tracing checks.
 
 **Pass only when all hold:**
 
-| Check | Pass | Fail (stop — fix stand first) |
-|-------|------|-------------------------------|
-| Process phase | Running / healthy | Crash loop, error exit, stuck pending beyond expected window |
-| Ready signal | Expected ready count (e.g. `1/1`) | Not ready, perpetual terminating/creating |
-| Restarts | `0`, or stable and explained after triage | Restart storm, count increasing during observation |
-| Network endpoints | Non-empty target for the client-facing service | Empty targets while claiming availability |
-| Rollout / deploy | Completed successfully | Failed / timed out |
+| Check             | Pass                                           | Fail (stop — fix stand first)                                |
+|-------------------|------------------------------------------------|--------------------------------------------------------------|
+| Process phase     | Running / healthy                              | Crash loop, error exit, stuck pending beyond expected window |
+| Ready signal      | Expected ready count (e.g. `1/1`)              | Not ready, perpetual terminating/creating                    |
+| Restarts          | `0`, or stable and explained after triage      | Restart storm, count increasing during observation           |
+| Network endpoints | Non-empty target for the client-facing service | Empty targets while claiming availability                    |
+| Rollout / deploy  | Completed successfully                         | Failed / timed out                                           |
 
 If **any** row fails, set `runtime.status` to `fail` (record evidence in plan
 root `gaps`). **Do not** query Jaeger as a substitute for a healthy workload.
@@ -72,7 +72,7 @@ Look for liveness/startup probe failures, back-off restarting, recurring
 ### 5. SUT responds through the client network path
 
 HTTP `2xx` on a **non-suppressed** business path from
-[`../models/5-validation.md`](../models/5-validation.md) — through the service
+[`../models/5-validation.md`](../models/5-validation.md) §5.3 — through the service
 name or load balancer clients use, not only in-container localhost when a front
 service exists.
 
@@ -91,7 +91,7 @@ kubectl describe pod -n <ns> -l app=<sut-label> | tail -40
 kubectl logs -n <ns> deploy/<deploy> --tail=100
 kubectl logs -n <ns> deploy/<deploy> --previous --tail=50
 # business path through Service:
-kubectl run curl-sut -n <ns> --rm -i --restart=Never --image=curlimages/curl:8.12.1 -- \
+kubectl run curl-sut -n <ns> --rm -i --restart=Never --image=curlimages/curl -- \
   curl -sf -o /dev/null -w '%{http_code}' http://<svc>:<port>/<business-path>
 ```
 
@@ -100,11 +100,11 @@ observation re-check → step 3; describe/logs → step 4; Service curl → step
 
 ## Outcomes
 
-| Outcome | Next step |
-|---------|-----------|
-| All checks pass | Run [`log-error-triage.md`](log-error-triage.md), then tracing assertions |
-| Any check fails | Fix manifest/config/secrets/probes; redeploy; **re-run this gate from step 1** |
-| Fixed during session | Re-run steps 1–3 after rollout restart before claiming pass |
+| Outcome              | Next step                                                                      |
+|----------------------|--------------------------------------------------------------------------------|
+| All checks pass      | Run [`log-error-triage.md`](log-error-triage.md), then tracing assertions      |
+| Any check fails      | Fix manifest/config/secrets/probes; redeploy; **re-run this gate from step 1** |
+| Fixed during session | Re-run steps 1–3 after rollout restart before claiming pass                    |
 
 ## User-facing brief (mandatory before tracing checks)
 

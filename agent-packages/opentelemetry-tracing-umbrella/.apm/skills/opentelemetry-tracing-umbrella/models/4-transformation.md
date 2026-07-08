@@ -12,27 +12,35 @@ re-run discovery or capability analysis.
 
 ## When to skip transformation edits
 
-| `maturity-result.level` | Typical handling |
-| --- | --- |
-| **5** — Working OTel | Emit a **plan-only** document: `basedOnMaturityLevel: 5`, embedded `validationPlan`, optional gap fixes. No dependency/config/code/async sections unless the user asked for targeted fixes. |
-| **1–4** with audit-only scope | Plan sections describe proposed changes; do **not** edit the target repo until the user opts into Phase 2. |
-| Blockers in `maturity-result.blockers` | Record in plan `gaps`; do not apply edits that depend on missing evidence or blocked builds. |
+| `maturity-result.level`                | Typical handling                                                                                                                                                                            |
+|----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **5** — Working OTel                   | Emit a **plan-only** document: `basedOnMaturityLevel: 5`, embedded `validationPlan`, optional gap fixes. No dependency/config/code/async sections unless the user asked for targeted fixes. |
+| **1–4** with audit-only scope          | Plan sections describe proposed changes; do **not** edit the target repo until the user opts into Phase 2.                                                                                  |
+| Blockers in `maturity-result.blockers` | Record in plan `gaps`; do not apply edits that depend on missing evidence or blocked builds.                                                                                                |
 
 Set `basedOnMaturityLevel` to `maturity-result.level` on every plan.
 
+## Step 0 — Confirm scope (before framework gate)
+
+When umbrella **Multi-language scope gate** applies (two or more language
+families or SUTs in scope), confirm user choice **bulk vs single target** before
+any plan row or repo edit. If scope is unset, stop at plan-only output. See
+umbrella [`SKILL.md`](../SKILL.md) § Multi-language scope gate.
+
 ## Algorithm
 
-1. Read `maturity-result` — level, blockers, and recommended work (prose from L3).
-2. Run the language **framework gate** when present (Java Step 0 / 0b) before
+1. **Confirm scope** — multi-language gate when applicable; record choice.
+2. Read `maturity-result` — level, blockers, and recommended work (prose from L3).
+3. Run the language **framework gate** when present (Java Step 0 / 0b) before
    any dependency or config row is emitted.
-3. Fill plan sections **§4.1–§4.4** from language recipes when migration work
+4. Fill plan sections **§4.1–§4.4** from language recipes when migration work
    is required (levels 1–4, or Level 5 with explicit fix scope).
-4. Build **§4.5 `validationPlan`** — static and configuration tiers by default;
+5. Build **§4.5 `validationPlan`** — static and configuration tiers by default;
    runtime tier per umbrella `models/5-validation.md` (opt-in).
-5. Record unresolved items, skipped doc sync, and build blockers in `gaps`.
-6. Validate against
+6. Record unresolved items, skipped doc sync, and build blockers in `gaps`.
+7. Validate against
    [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
-7. **Apply** (Phase 2 only) — edit the target repo, sync documentation (below),
+8. **Apply** (Phase 2 only) — edit the target repo, sync documentation (below),
    then run the language fresh-build recipe before runtime validation.
 
 ## Plan sections

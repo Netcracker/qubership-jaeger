@@ -85,6 +85,19 @@ runtime tracing checks.
 - add: OTel API/SDK via the framework path above; migrate code per
   [`code-migration.md`](code-migration.md)
 
+### Quarkus Jaeger extension (`quarkus-jaeger`)
+
+The Jaeger extension is retired (moved out of the Quarkus core platform) and
+exports to the legacy Jaeger collector (`:14268`), not OTLP `:4318`.
+
+- remove: `io.quarkus:quarkus-jaeger` (or relocated `io.quarkiverse.jaeger:*`)
+  and `quarkus-smallrye-opentracing` when present
+- add: `io.quarkus:quarkus-opentelemetry` (the standard OTLP/propagator/sampler
+  path on Quarkus 3.x)
+- migrate all `quarkus.jaeger.*` properties to `quarkus.otel.*` — see
+  [`config-migration.md`](config-migration.md); leftover `quarkus.jaeger.*`
+  keys are silently ignored after the extension swap
+
 ## Canonical platform additions
 
 Beyond the per-stack bridge/exporter above, the platform contract

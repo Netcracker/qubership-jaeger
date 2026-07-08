@@ -38,6 +38,26 @@ Each layer reads upstream artifact(s) only — not the raw repository again
 (except L1). Language packages stub or extend umbrella `models/` for local
 framework gates and execution recipes.
 
+## Multi-language scope gate (mandatory — before Phase 2 / L4)
+
+When discovery finds **two or more language families** in tracing scope (e.g.
+Java and Go services in the same repository or monorepo), or **two or more
+independent SUTs** the user did not narrow to one target:
+
+1. **Stop after the L3 brief** — do not start Phase 2 until scope is explicit.
+2. **Ask the user** which mode applies:
+   - **Bulk** — migrate/validate all discovered language targets in one session
+     (ordered plan per target).
+   - **Single** — user picks **one** language family or one named service; L4–L5
+     apply only to that choice until the user expands scope.
+3. Record the choice in chat and in `migration-plan.json` `gaps` or
+   `validationPlan.runtime.scenario` (e.g. `scope: single — Go mesh-api only`).
+4. If the user does not answer, emit a **plan-only** L4 document and keep
+   `validationPlan.runtime.status` at `manual` — **no repo edits**.
+
+This gate is cross-language; language packages reference it from Phase 2 entry
+(Java/Go: root `SKILL.md` §3.0).
+
 ## Ownership split
 
 - **Umbrella owns (shared):**
@@ -45,23 +65,27 @@ framework gates and execution recipes.
   - Layer 3 Maturity — full (decision matrix in `models/3-maturity.md`)
   - Layer 4 Transformation — **generic plan structure**, §4.1–§4.5, documentation sync on apply
   - Layer 5 Validation — **shared tiers**, `validationPlan` shape, static/configuration checks, runtime gating rules
+  - Shared L5 runtime recipes:
+    [`recipes/stand-health-gate.md`](recipes/stand-health-gate.md),
+    [`recipes/log-error-triage.md`](recipes/log-error-triage.md),
+    [`recipes/validation-cleanup.md`](recipes/validation-cleanup.md)
   - [`reference/platform-tracing-guide.md`](reference/platform-tracing-guide.md) and shared reference below
   - Shared JSON schemas (capability, maturity, migration-plan — listed below)
 - **Language package owns (local):**
   - Layer 1 Discovery and `L1-discovery-result.schema.json`
   - [`reference/detection-rules.md`](reference/detection-rules.md) (per language)
   - Layer 4 **apply** — framework gate, dependency/config/code/async recipes
-  - Layer 5 **runtime execution** — fresh build, deploy, stand health, log triage, tracing assertions
-  - `recipes/` and language/framework support notes
+  - Layer 5 **runtime execution** — fresh build, deploy, validation-stack; tracing assertions
+  - `recipes/` for L4 apply and language-specific L5 (fresh-build, validation-stack)
 
 ## Shared layer files
 
-| Layer | Umbrella model                                             | Language extension                       |
-|-------|------------------------------------------------------------|------------------------------------------|
-| L2    | [`models/2-capability.md`](models/2-capability.md)         | stub → umbrella                          |
-| L3    | [`models/3-maturity.md`](models/3-maturity.md)             | stub → umbrella (matrix in model)        |
-| L4    | [`models/4-transformation.md`](models/4-transformation.md) | Step 0 / recipes / apply                 |
-| L5    | [`models/5-validation.md`](models/5-validation.md)         | install path, fresh-build, runtime order |
+| Layer | Umbrella model                                             | Language extension                                |
+|-------|------------------------------------------------------------|---------------------------------------------------|
+| L2    | [`models/2-capability.md`](models/2-capability.md)         | stub → umbrella                                   |
+| L3    | [`models/3-maturity.md`](models/3-maturity.md)             | stub → umbrella (matrix in model)                 |
+| L4    | [`models/4-transformation.md`](models/4-transformation.md) | Step 0 / recipes / apply                          |
+| L5    | [`models/5-validation.md`](models/5-validation.md)         | install path, fresh-build; shared runtime recipes |
 
 ## Shared schemas (umbrella)
 

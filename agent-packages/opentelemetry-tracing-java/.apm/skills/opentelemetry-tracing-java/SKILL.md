@@ -106,6 +106,12 @@ When the user asked to implement (e.g. “add OTel SDK”), post the three brief
 then continue to Phase 2 in the **same session** without re-running L1–L3
 unless the repo changed.
 
+**Multi-language repository:** if discovery spans **two or more language
+families** or multiple SUTs, run the umbrella
+[Multi-language scope gate](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/SKILL.md)
+— ask the user **bulk vs single target** before any L4 edit. Do not proceed to
+Phase 2 without an explicit choice.
+
 **Phase 2 — L4 + L5 (implementation and validation)**
 
 Only after Phase 1 briefs are posted:
@@ -194,6 +200,10 @@ umbrella [`models/3-maturity.md`](../../../../opentelemetry-tracing-umbrella/.ap
 - **Target level** (L4 planned only) — where the service should land after a
   successful migration, usually “Level 5 — Working OTel: OTLP export to the
   platform collector, no legacy libraries”. Omit for audit-only runs.
+- **Migration path** (L4 planned only, mandatory) — one line:
+  **`Migration path: Level <current> → Level <target>`** (e.g.
+  `Migration path: Level 2 → Level 5`). Not shorthand “1→2” — Level 2 means
+  legacy tracing **today**.
 - One-line rationale with evidence paths (file or config cited).
 - Blockers or `gaps` that affect the transformation plan.
 
@@ -206,6 +216,7 @@ Example brief shape:
 - **Current level:** Level 2 — Legacy tracing — Spring Cloud Sleuth is on the classpath; no working OTel export.
 - **Recommended work:** Migrate to OpenTelemetry: remove Sleuth, add Micrometer OTel bridge and OTLP export per platform contract.
 - **Target level:** Level 5 — Working OTel — single OTel stack, traces reach the collector, legacy libs removed.
+- **Migration path:** Level 2 → Level 5
 - **Rationale:** `pom.xml` declares Sleuth; no working OTLP export path is configured.
 - **Blockers:** none
 ```
@@ -282,7 +293,7 @@ Rules:
 ### 3.4 Stand health gate (mandatory — first after deploy)
 
 Immediately after runtime deploy, run
-[`recipes/stand-health-gate.md`](recipes/stand-health-gate.md) **before** Jaeger
+[`recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md) **before** Jaeger
 queries or tracing pass/fail.
 
 Rules:
@@ -299,7 +310,7 @@ Rules:
 ### 3.5 Log error brief (mandatory — after stand health, before tracing pass/fail)
 
 After stand health passes, run
-[`recipes/log-error-triage.md`](recipes/log-error-triage.md) before Jaeger
+[`recipes/log-error-triage.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md) before Jaeger
 pass/fail and before setting `validationPlan.runtime.status`. Post a short
 **L5 Log errors** block (5–8 bullets): verdict, active vs stale findings, e2e
 impact, evidence.
@@ -320,6 +331,14 @@ Also record **build provenance** (fresh Maven vs reused image) per
 [`reference/build-preconditions.md`](reference/build-preconditions.md) and
 [`recipes/fresh-build-and-image.md`](recipes/fresh-build-and-image.md). Reused
 image without L4 rebuild in this session → runtime at most `fail`.
+
+### 3.6 Post-validation cleanup (mandatory after runtime `pass`)
+
+When `validationPlan.runtime.status` is `pass`, run
+[`recipes/validation-cleanup.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md): remove or
+revert ephemeral L5-only files (e2e manifests, throwaway scripts, local-only
+Dockerfiles). Do **not** delete L4 service changes. Post an **L5 Cleanup** line
+in chat. See umbrella [`models/5-validation.md`](models/5-validation.md) §5.4.
 
 ## 4. Output contract
 
@@ -367,4 +386,4 @@ unless the user explicitly asks for it.
 - Service install discovery (L5): [`reference/service-installation-discovery.md`](reference/service-installation-discovery.md)
 - Code migration policy: umbrella `models/4-transformation.md` §4.3
 - Platform export grounding: umbrella [`platform-tracing-guide.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
-- Migration recipes: [`recipes/`](recipes/) — including [`recipes/fresh-build-and-image.md`](recipes/fresh-build-and-image.md), [`recipes/validation-stack.md`](recipes/validation-stack.md), [`recipes/stand-health-gate.md`](recipes/stand-health-gate.md), [`recipes/log-error-triage.md`](recipes/log-error-triage.md)
+- Migration recipes: [`recipes/`](recipes/) — including [`recipes/fresh-build-and-image.md`](recipes/fresh-build-and-image.md), [`recipes/validation-stack.md`](recipes/validation-stack.md); shared L5 in umbrella [`recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md), [`recipes/log-error-triage.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md), [`recipes/validation-cleanup.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md)

@@ -53,8 +53,8 @@ TRACING_SAMPLER_PROBABILISTIC=1.0
 **Runtime pass requires all gates in order** (see
 [`../models/5-validation.md`](../models/5-validation.md)):
 
-1. [`stand-health-gate.md`](stand-health-gate.md) — Ready pod, stable restarts, non-empty endpoints
-2. [`log-error-triage.md`](log-error-triage.md) — classified log errors
+1. [`../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md) — Ready pod, stable restarts, non-empty endpoints
+2. [`../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md) — classified log errors
 3. Tracing assertions — `service.name`, server span, propagation, log correlation
 
 **Not sufficient for pass:** Jaeger service list or spans from probe traffic alone
@@ -105,16 +105,16 @@ exception when toggling export on a single shared image.
    commonly need minutes, not seconds, to pass readiness; an aggressive
    `livenessProbe` kills the pod mid-startup and masks the real result. Prefer a
    `startupProbe`, or generous `initialDelaySeconds`, over tight liveness.
-4. **Immediately after apply:** run [`stand-health-gate.md`](stand-health-gate.md)
+4. **Immediately after apply:** run [`../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md)
    — do not query Jaeger until the gate passes (see §Exercise and assert).
 
 ## Exercise and assert
 
 **Step 1 — stand health (mandatory):** execute
-[`stand-health-gate.md`](stand-health-gate.md). Post the **L5 Stand health** brief.
+[`../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md). Post the **L5 Stand health** brief.
 
 **Step 2 — log triage (mandatory):** execute
-[`log-error-triage.md`](log-error-triage.md). Post the **L5 Log errors** brief.
+[`../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md). Post the **L5 Log errors** brief.
 
 **Step 3 — traffic and tracing:** generate traffic against a **non-suppressed**
 business endpoint (see endpoint selection in
@@ -133,9 +133,9 @@ Tracing assertions apply **only after** steps 1–2 pass:
 
 Before claiming success, verify **in order**:
 
-1. [`stand-health-gate.md`](stand-health-gate.md) — rollout OK, Ready `1/1`, stable
+1. [`../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md) — rollout OK, Ready `1/1`, stable
    restarts, endpoints populated, ≥60s observation window
-2. [`log-error-triage.md`](log-error-triage.md) — no `blocks-e2e` findings
+2. [`../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md) — no `blocks-e2e` findings
 3. Tracing assertions — server span, propagation, log correlation
 
 If readiness fails, endpoints are empty, or restarts increase after Ready,
@@ -144,5 +144,8 @@ crash-loops) **does not** count as e2e pass.
 
 ## Teardown
 
-The stack is disposable — drop the namespace/compose project when done so repeated
-runs start clean.
+After runtime **`pass`**, run [`../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md)
+— remove ephemeral L5-only files; do not delete L4 service changes.
+
+For disposable stands (namespace/compose), tear down runtime resources when
+cleanup is done so repeated runs start clean.

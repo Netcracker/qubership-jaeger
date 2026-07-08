@@ -34,13 +34,13 @@ instance logs are candidates for **stale**.
 Assign exactly one bucket to each distinct error signature (message + logger
 class, not every duplicate line):
 
-| Bucket | Meaning | e2e impact |
-|--------|---------|------------|
-| `stale` | From a **previous** pod/container or pre-fix boot; absent in logs since current pod became Ready | Does **not** block e2e pass |
-| `benign` | Recurring but **unrelated** to tracing/L4 scope (known dev-only misconfig, optional feature, third-party noise) **and** SUT is Ready + business endpoint succeeds | Does **not** block e2e pass — cite why |
-| `blocks-e2e` | Active in current pod logs **and** indicates SUT or export path is broken (encryption, DB, readiness, OTel export, crash loop) | **Blocks** `runtime.status` `pass` |
-| `tracing-adjacent` | OTel/Jaeger/export/propagator related; may or may not block depending on span export | Block if spans missing or export fails |
-| `unknown` | Cannot classify — insufficient evidence | Treat as **blocking** until resolved |
+| Bucket             | Meaning                                                                                                                                                           | e2e impact                             |
+|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------|
+| `stale`            | From a **previous** pod/container or pre-fix boot; absent in logs since current pod became Ready                                                                  | Does **not** block e2e pass            |
+| `benign`           | Recurring but **unrelated** to tracing/L4 scope (known dev-only misconfig, optional feature, third-party noise) **and** SUT is Ready + business endpoint succeeds | Does **not** block e2e pass — cite why |
+| `blocks-e2e`       | Active in current pod logs **and** indicates SUT or export path is broken (encryption, DB, readiness, OTel export, crash loop)                                    | **Blocks** `runtime.status` `pass`     |
+| `tracing-adjacent` | OTel/Jaeger/export/propagator related; may or may not block depending on span export                                                                              | Block if spans missing or export fails |
+| `unknown`          | Cannot classify — insufficient evidence                                                                                                                           | Treat as **blocking** until resolved   |
 
 ### Heuristics
 
@@ -59,16 +59,15 @@ class, not every duplicate line):
 
 **Likely `tracing-adjacent` when:**
 
-- `PropertiesMigrationListener` reports Boot 3 tracing keys on a Boot 4 parent
-  (`management.tracing.enabled`, `management.otlp.tracing.endpoint`) — export
-  disabled until Boot 4 keys **and** `spring-boot-micrometer-tracing-opentelemetry`
-  are applied; Jaeger may show only sidecar/probe services.
+- SUT logs report deprecated or mismatched tracing configuration keys for the
+  framework in use (export disabled until L4 config is applied); Jaeger may show
+  only sidecar/probe services.
 - `Failed to export spans` or OTLP connection errors in SUT logs.
 
 **Likely `blocks-e2e` when:**
 
 - Pod not Ready (`0/1`), `CrashLoopBackOff`, or restarts increased after Ready.
-- Same error repeats **after** Ready (e.g. `PasswordEncryption does not work`,
+- Same error repeats **after** Ready (e.g. encryption misconfig,
   `Failed to export spans`, Flyway/DB connection failures).
 - Readiness/liveness probes return 503 due to the error.
 - Service endpoints empty while pod is `Running`.
@@ -109,7 +108,7 @@ Embed under `validationPlan.runtime.logErrorTriage`:
       "signature": "PasswordEncryptionHealthIndicator: Illegal base64",
       "classification": "stale",
       "e2eImpact": "none",
-      "evidence": "only in logs before rollout restart; absent after gen_dbaas_keys.py"
+      "evidence": "only in logs before rollout restart; absent after key fix"
     }
   ]
 }

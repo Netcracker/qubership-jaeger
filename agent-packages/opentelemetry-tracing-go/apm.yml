@@ -1,0 +1,8 @@
+name: opentelemetry-tracing-go
+version: 0.1.0
+description: Audits and migrates distributed tracing in Qubership Go services (Fiber with platform HTTP wrapper, stdlib net/http, Gin/Echo) to OpenTelemetry via OTLP and Jaeger. Five-layer pipeline (discovery, capability, maturity, transformation, validation). Use for legacy/hybrid/incomplete OTel, TRACING_* and OTLP work, Kafka/async context loss, and tracing tasks without naming the skill package.
+author: Qubership
+
+dependencies:
+  apm:
+    - ../opentelemetry-tracing-umbrella

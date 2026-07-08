@@ -84,6 +84,12 @@ When L4 implementation is planned, add a **target level** in the L3 brief only
 - **Target level** — where L4 should land if it succeeds. For levels 1–4, the
   target is usually **Level 5 — Working OTel** (OTLP export to the platform
   collector, platform contract met, no legacy libraries).
+- **Migration path** (mandatory in chat when L4 is planned) — one line:
+  **`Migration path: Level <current> → Level <target>`** (e.g.
+  `Migration path: Level 2 → Level 5`). This is the planned transformation arc,
+  not shorthand like “1→2” (Level 2 means **legacy tracing today**, not “step
+  two of a plan”).
 
-Skip the target level for audit-only runs (no L4). Brief template and timing:
-each language root skill (Java: `opentelemetry-tracing-java` `SKILL.md` §3.1).
+Skip the target level and migration path for audit-only runs (no L4). Brief
+template and timing: each language root skill (Java: `opentelemetry-tracing-java`
+`SKILL.md` §3.1).

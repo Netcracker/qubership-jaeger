@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qubership.org/otel-tracing-go/L1-discovery-result.schema.json",
+  "title": "DiscoveryResult",
+  "description": "Layer 1 output for Go tracing discovery.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["service", "dependencyProfile", "configuration", "instrumentation", "platformContract"],
+  "properties": {
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["framework"],
+      "properties": {
+        "name": { "type": "string" },
+        "framework": { "enum": ["cloudcore-fiber", "net-http", "gin", "echo", "pure-go", "unknown"] }
+      }
+    },
+    "dependencyProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hasOtelApi", "hasOtelSdk", "hasExporter", "hasLegacy", "artifacts"],
+      "properties": {
+        "hasOtelApi": { "type": "boolean" },
+        "hasOtelSdk": { "type": "boolean" },
+        "hasExporter": { "type": "boolean" },
+        "hasLegacy": { "type": "boolean" },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["coordinates", "bucket"],
+            "properties": {
+              "coordinates": { "type": "string", "description": "module/path" },
+              "version": { "type": "string" },
+              "scope": { "enum": ["direct", "indirect", "replaced", "unknown"] },
+              "bucket": { "enum": ["legacy", "modern"] },
+              "technology": {
+                "enum": [
+                  "zipkin",
+                  "jaeger-client",
+                  "opentracing",
+                  "cloudcore-zipkin-wrapper",
+                  "otel-api",
+                  "otel-sdk",
+                  "otel-exporter",
+                  "otel-propagator",
+                  "otel-instrumentation",
+                  "other"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "export": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "exporter": { "enum": ["otlp", "zipkin", "jaeger", "none", "unknown"] },
+            "endpoint": { "type": ["string", "null"] },
+            "protocol": { "enum": ["grpc", "http-protobuf", "http-thrift", "udp", "unknown"] },
+            "targetGuess": { "enum": ["otec", "jaeger-collector", "legacy-zipkin", "unknown"] }
+          }
+        },
+        "propagation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "formats": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] } },
+            "components": {
+              "type": "object",
+              "additionalProperties": { "enum": ["OK", "FAILED", "unknown"] }
+            }
+          }
+        },
+        "sampling": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "configured": { "type": "boolean" },
+            "type": { "enum": ["always_on", "always_off", "probabilistic", "parentbased", "ratelimiting", "const", "unknown"] },
+            "ratio": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "consistentAcrossServices": { "enum": ["yes", "no", "unknown"] }
+          }
+        }
+      }
+    },
+    "apiUsage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["family", "symbol"],
+        "properties": {
+          "family": { "enum": ["otel", "opentracing", "zipkin", "jaeger-client", "cloudcore-wrapper", "unknown"] },
+          "symbol": { "type": "string" },
+          "file": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "apiFamilies": {
+      "type": "array",
+      "items": { "enum": ["otel", "opentracing", "zipkin", "jaeger-client", "cloudcore-wrapper"] }
+    },
+    "instrumentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["auto", "manual", "mixed", "none"] },
+        "evidence": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "asyncBoundaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type"],
+        "properties": {
+          "type": { "enum": ["kafka-producer", "kafka-consumer", "goroutine", "worker-pool", "channel", "http-client", "other"] },
+          "file": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "contextWrapper": { "type": "boolean" }
+        }
+      }
+    },
+    "platformContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "serviceName": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": { "type": ["string", "null"] },
+            "includesNamespace": { "type": "boolean" },
+            "namespaceSource": { "enum": ["downward-api", "helm", "appdeployer", "sa-file", "none", "unknown"] }
+          }
+        },
+        "samplerTier": { "enum": ["ratelimiting", "probabilistic", "const", "none", "unknown"] },
+        "samplerType": { "enum": ["parentbased_traceidratio", "traceidratio", "always_on", "always_off", "ratelimiting", "const", "unknown"] },
+        "propagationStandard": { "enum": ["b3multi", "b3", "w3c", "jaeger", "none", "unknown"] },
+        "hasB3PropagatorExtension": { "type": "boolean" },
+        "endpointFilter": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "configured": { "type": "boolean" },
+            "excluded": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "logging": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "traceFieldsInPattern": { "type": "boolean" },
+            "correlationDep": { "enum": ["cloudcore", "otel-zap", "otel-logrus", "custom", "none", "unknown"] }
+          }
+        },
+        "export": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocol": { "enum": ["http/protobuf", "grpc", "http", "unknown"] },
+            "endpointPath": { "type": ["string", "null"] },
+            "tracingHost": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "gaps": { "type": "array", "items": { "type": "string" } }
+  }
+}

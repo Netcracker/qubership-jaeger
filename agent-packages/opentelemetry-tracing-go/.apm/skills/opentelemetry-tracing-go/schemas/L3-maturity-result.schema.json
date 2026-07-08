@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qubership.org/otel-tracing-go/L3-maturity-result.schema.json",
+  "title": "MaturityResultRedirect",
+  "description": "Use shared schema from tracing umbrella package.",
+  "allOf": [
+    {
+      "$ref": "../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/schemas/L3-maturity-result.schema.json"
+    }
+  ]
+}

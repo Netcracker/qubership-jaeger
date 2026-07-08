@@ -92,11 +92,12 @@ define `TRACING_HOST` / collector wiring.
 Umbrella §5.3 order — execute **in this order**:
 
 ```text
-1. Stand health gate     → ../recipes/stand-health-gate.md
-2. Log error triage      → ../recipes/log-error-triage.md
+1. Stand health gate     → ../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md
+2. Log error triage      → ../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md
 3. Business traffic      → non-suppressed endpoint (below)
 4. Tracing assertions    → Jaeger/query API + log correlation
 5. Pass/fail verdict     → only when steps 1–4 succeed
+6. Post-validation cleanup → ../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md (when status is pass)
 ```
 
 **Forbidden before step 1 passes:** querying Jaeger for pass/fail, declaring e2e
@@ -108,7 +109,7 @@ runtime tier.
 
 ### Stand health gate (step 1 — mandatory, run first)
 
-Run [`../recipes/stand-health-gate.md`](../recipes/stand-health-gate.md) immediately
+Run [`../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md) immediately
 after deploy. Post the **L5 Stand health** brief before any tracing check.
 
 | Check | Pass when |
@@ -126,7 +127,7 @@ If any check fails, set `runtime.status` to `fail`. Record evidence under
 ### Log error triage (step 2 — mandatory before tracing pass/fail)
 
 After stand health passes, run
-[`../recipes/log-error-triage.md`](../recipes/log-error-triage.md). Post the
+[`../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md). Post the
 **L5 Log errors** brief. Set `validationPlan.runtime.logErrorTriage` in the
 migration plan JSON.
 

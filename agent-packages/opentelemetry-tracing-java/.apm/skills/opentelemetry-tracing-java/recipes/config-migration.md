@@ -8,12 +8,12 @@ mapping that is **not 1:1**.
 
 ## Export endpoint
 
-| From                                                    | To                                                                 | 1:1?                                      |
-|---------------------------------------------------------|--------------------------------------------------------------------|-------------------------------------------|
+| From                                                    | To                                                                  | 1:1?                                      |
+|---------------------------------------------------------|---------------------------------------------------------------------|-------------------------------------------|
 | `management.zipkin.tracing.endpoint=http://zipkin:9411` | `OTEL_EXPORTER_OTLP_ENDPOINT=http://${TRACING_HOST}:4318/v1/traces` | no — protocol Zipkin→OTLP, port 9411→4318 |
 | `JAEGER_AGENT_HOST` + `JAEGER_AGENT_PORT`               | `OTEL_EXPORTER_OTLP_ENDPOINT=http://${TRACING_HOST}:4318/v1/traces` | no — UDP agent model removed              |
 | `JAEGER_ENDPOINT=http://jaeger:14268/api/traces`        | `OTEL_EXPORTER_OTLP_ENDPOINT=http://${TRACING_HOST}:4318/v1/traces` | no — Thrift→OTLP                          |
-| hard-coded collector URL in code                        | env/Helm-driven endpoint                                           | no — move out of code                     |
+| hard-coded collector URL in code                        | env/Helm-driven endpoint                                            | no — move out of code                     |
 
 ## Sampling
 
@@ -54,11 +54,38 @@ Framework-specific shapes are in **this recipe** (Spring Boot below) and
 Spring SpEL toggles and platform URL literals do **not** map 1:1 to Quarkus.
 Follow [`../reference/quarkus-platform-contract.md`](../reference/quarkus-platform-contract.md):
 
-| Platform / Spring idea | Quarkus target | 1:1? |
-|------------------------|----------------|------|
-| SpEL / nested `TRACING_ENABLED` → SDK off | `QUARKUS_OTEL_SDK_DISABLED=false` when enabled (Helm env or direct property) | no |
-| endpoint `http://${TRACING_HOST}:4318/v1/traces` | `quarkus.otel.exporter.otlp.endpoint=http://${TRACING_HOST}:4318` + `protocol=http/protobuf` | no — Quarkus appends `v1/traces` |
-| `tracing.sdk.disabled.${TRACING_ENABLED}` nested keys | reject; mark high risk in plan `gaps` if present | no |
+| Platform / Spring idea                                | Quarkus target                                                                               | 1:1?                             |
+|-------------------------------------------------------|----------------------------------------------------------------------------------------------|----------------------------------|
+| SpEL / nested `TRACING_ENABLED` → SDK off             | `QUARKUS_OTEL_SDK_DISABLED=false` when enabled (Helm env or direct property)                 | no                               |
+| endpoint `http://${TRACING_HOST}:4318/v1/traces`      | `quarkus.otel.exporter.otlp.endpoint=http://${TRACING_HOST}:4318` + `protocol=http/protobuf` | no — Quarkus appends `v1/traces` |
+| `tracing.sdk.disabled.${TRACING_ENABLED}` nested keys | reject; mark high risk in plan `gaps` if present                                             | no                               |
+
+#### Legacy `quarkus.jaeger.*` keys (retired extension)
+
+After swapping `quarkus-jaeger` for `quarkus-opentelemetry`
+([`dependency-migration.md`](dependency-migration.md)), remove every
+`quarkus.jaeger.*` key — they are ignored by the OTel extension, so propagation
+and sampling silently fall back to defaults unless re-declared under
+`quarkus.otel.*`:
+
+| From (`quarkus.jaeger.*`)                       | To (`quarkus.otel.*`)                                                                                   | Note                                          |
+|-------------------------------------------------|---------------------------------------------------------------------------------------------------------|-----------------------------------------------|
+| `quarkus.jaeger.endpoint` (`:14268/api/traces`) | `quarkus.otel.exporter.otlp.endpoint=http://${TRACING_HOST}:4318`                                       | legacy collector → OTLP base URL              |
+| `quarkus.jaeger.service-name`                   | `quarkus.otel.service.name` (or `quarkus.application.name`)                                             | must compose `${name}-${namespace}`           |
+| `quarkus.jaeger.sampler-type` / `sampler-param` | `quarkus.otel.traces.sampler=parentbased_traceidratio` + `sampler.arg=${TRACING_SAMPLER_PROBABILISTIC}` | map ratio semantics                           |
+| `quarkus.jaeger.propagation`                    | `quarkus.otel.propagators=b3multi`                                                                      | + `opentelemetry-extension-trace-propagators` |
+
+#### Service name (Quarkus)
+
+Without an explicit value Quarkus exports the **artifact id** as
+`service.name` — that violates the `${name}-${namespace}` contract. Set:
+
+```properties
+quarkus.application.name=${microservice.name:app}-${NAMESPACE:local}
+```
+
+using the same namespace env the deployment chart injects (Downward API or
+deployer variable).
 
 Emit Helm/K8s env for runtime validation when the image is pre-built:
 
@@ -83,12 +110,25 @@ proxy/collector and port before writing the endpoint.
 
 ### Spring Boot 3 adjustments (when parent is 3.x)
 
-Drive SDK on/off from `TRACING_ENABLED` via SpEL (not nested SmallRye-style keys):
+Drive SDK on/off from `TRACING_ENABLED` via explicit SpEL (not nested
+SmallRye-style keys). Canonical platform shape for the `otel.*` surface:
 
 ```yaml
 otel:
   sdk:
-    disabled: ${TRACING_ENABLED:false} == false
+    disabled: '#{"${TRACING_ENABLED:}".equals("true")?"false":"true"}'
+  propagators:
+    - b3multi
+  traces:
+    exporter: otlp
+    sampler: parentbased_traceidratio
+    sampler.args: ${TRACING_SAMPLER_PROBABILISTIC}
+  exporter:
+    otlp:
+      traces:
+        protocol: http/protobuf
+        endpoint: http://${TRACING_HOST}:4318/v1/traces
+  service.name: ${spring.application.name}-${NAMESPACE:local}
 ```
 
 Pair with `management.tracing.enabled`, OTLP endpoint, `B3_MULTI` propagation,
@@ -102,11 +142,15 @@ Boot 4 renamed tracing export properties. Boot 3 keys still parse in YAML but
 **fail** at startup with `PropertiesMigrationListener` ("uses an incompatible
 target type") and OTLP export stays off.
 
-| Boot 3 / legacy key | Boot 4 key |
-|---------------------|------------|
-| `management.tracing.enabled` | `management.tracing.export.enabled` |
-| `management.otlp.tracing.endpoint` | `management.opentelemetry.tracing.export.otlp.endpoint` |
-| (implicit) | `management.tracing.export.otlp.enabled: true` when export is on |
+| Boot 3 / legacy key                | Boot 4 key                                                       |
+|------------------------------------|------------------------------------------------------------------|
+| `management.tracing.enabled`       | `management.tracing.export.enabled`                              |
+| `management.otlp.tracing.endpoint` | `management.opentelemetry.tracing.export.otlp.endpoint`          |
+| (implicit)                         | `management.tracing.export.otlp.enabled: true` when export is on |
+
+**Remove** the legacy keys when adding the Boot 4 ones — do not leave both
+generations in config (the old keys either fail startup or mislead readers
+into thinking they are active).
 
 Example shape (platform contract unchanged — only key paths differ):
 

@@ -46,7 +46,9 @@ Status enum for every check and for `validationPlan.runtime.status`:
    verdict (see §5.3).
 6. **Record blockers** — build/registry issues, stand failures, skipped runtime,
    and triage blockers in plan root `gaps` (prose strings with evidence).
-7. Validate the migration plan against
+7. **Post-validation cleanup** — when `runtime.status` is `pass`, remove or
+   revert **ephemeral** artifacts created only for L5 (see §5.4).
+8. Validate the migration plan against
    [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
 
 Static and configuration tiers **never** require a fresh build or container image.
@@ -168,10 +170,45 @@ a passing runtime tier.
 Endpoint selection: exercise a **business** route not on the platform suppression
 list (probes, actuator, OpenAPI, metrics paths).
 
+## §5.4 Post-validation cleanup (mandatory after runtime `pass`)
+
+When `validationPlan.runtime.status` is **`pass`**, remove or revert files
+created **only** for L5 runtime — not L4 service changes (source, Helm of the
+SUT, dependency manifests, or documentation synced on apply).
+
+**Ephemeral** (typical — see [`recipes/validation-cleanup.md`](../recipes/validation-cleanup.md)):
+
+- throwaway e2e manifests, install scripts, or compose/k8s overlays;
+- local-only Dockerfiles or build helpers used solely for validation;
+- temporary env files or copied credentials templates for the test stand.
+
+**Retain** (do not delete as cleanup):
+
+- any file that is part of the migrated service or its install path;
+- artifacts the user asked to keep for repeat validation.
+
+**Agent rules:**
+
+1. During runtime, track ephemeral paths in chat or plan `gaps` as they are
+   created.
+2. After runtime `pass`, delete or revert ephemeral files; do **not** stage
+   them for commit.
+3. Post a short **L5 Cleanup** line in chat: files removed/reverted, or
+   `none — no ephemeral artifacts`.
+4. If cleanup is skipped (user asked to retain), record reason in `gaps`.
+
+Language execution (shared recipes in this package):
+
+- [`recipes/stand-health-gate.md`](../recipes/stand-health-gate.md)
+- [`recipes/log-error-triage.md`](../recipes/log-error-triage.md)
+- [`recipes/validation-cleanup.md`](../recipes/validation-cleanup.md)
+
+Language packages supply fresh-build and validation-stack recipes only.
+
 ## User-facing summary (optional)
 
 After updating `validationPlan`, a short **L5 Validation** brief in chat helps
 reviewers (prose, not raw JSON): static/config pass or fail highlights, runtime
 status, environment name, stand health verdict, log triage summary, and whether
-tracing assertions succeeded. Language skills define brief templates (Java:
-fresh-build, stand-health, and log-error recipes).
+tracing assertions succeeded. Brief templates live in the shared recipes above;
+language skills add fresh-build briefs.

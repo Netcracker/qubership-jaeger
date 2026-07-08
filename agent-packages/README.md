@@ -18,7 +18,7 @@ fixing broken distributed traces across the platform.
 | Language        | Frameworks / stacks                   | APM package                    | Status  |
 |-----------------|---------------------------------------|--------------------------------|---------|
 | Java            | Spring Boot, Quarkus, Pure (OTel SDK) | `opentelemetry-tracing-java`   | done    |
-| Go              | stdlib, Fiber, platform libs          | `opentelemetry-tracing-go`     | planned |
+| Go              | stdlib, Fiber, platform libs          | `opentelemetry-tracing-go`     | done    |
 | Python          | TBD (FastAPI, Django, etc.)           | `opentelemetry-tracing-python` | planned |
 | JS / TypeScript | Node, Nest, etc.                      | `opentelemetry-tracing-js`     | planned |
 
@@ -35,7 +35,7 @@ agent-packages/
 ├── README.md                          # this file
 ├── opentelemetry-tracing-umbrella/    # shared cross-language core
 ├── opentelemetry-tracing-java/        # Java (Spring Boot, Quarkus, Pure)
-├── opentelemetry-tracing-go/          # planned
+├── opentelemetry-tracing-go/          # Go (stdlib, platform libs)
 ├── opentelemetry-tracing-python/      # planned
 └── opentelemetry-tracing-js/          # planned
 ```
@@ -55,8 +55,11 @@ apm compile -t <target>
 
 Use the compile target your APM setup expects (for example `cursor`, `claude`, or another supported runtime).
 
-Root `apm.yml` depends on `./agent-packages/opentelemetry-tracing-java`.
+Root `apm.yml` depends on `./agent-packages/opentelemetry-tracing-java` when present at repo root.
 That package transitively pulls `../opentelemetry-tracing-umbrella` (declared in the Java package `apm.yml`).
+
+To install the Go skill only, run `apm install -t <target>` from
+`agent-packages/opentelemetry-tracing-go/` (also pulls umbrella transitively).
 
 Generated files depend on `<target>`. Examples:
 
@@ -68,12 +71,3 @@ Generated files depend on `<target>`. Examples:
 You may also see `apm.lock.yaml` and `apm_modules/` (local resolution cache); both are gitignored at the repo root.
 
 Restart or reload your agent session (IDE restart, new chat, or rules refresh — per your runtime) so instructions and skills are picked up.
-
-## Sources
-
-| Topic                     | Repository                           |
-|---------------------------|--------------------------------------|
-| Jaeger Helm, ports        | `qubership-jaeger` (this repo)       |
-| OTeC ingress, `TRACING_*` | `qubership-open-telemetry-collector` |
-| Java libs                 | `qubership-core-java-libs`           |
-| Go libs                   | `qubership-core-lib-go-*` (to clone) |

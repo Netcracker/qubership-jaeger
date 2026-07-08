@@ -50,7 +50,7 @@ Supporting material:
 
 - `schemas/` — `L1-discovery-result.schema.json` + redirects (`L2`–`L4`) to umbrella schemas
 - `reference/` — local Java detection rules, framework coverage, build preconditions + redirects to umbrella shared references
-- `recipes/` — dependency / config / code / async-context / logging-correlation / fresh-build-and-image / validation-stack / stand-health-gate / log-error-triage migration recipes
+- `recipes/` — dependency / config / code / async-context / logging-correlation / fresh-build-and-image / validation-stack migration recipes; shared L5 stand-health, log-error-triage, and validation-cleanup in umbrella
 - shared core: `../opentelemetry-tracing-umbrella/`
 
 Examples in this package were intentionally removed. Use

@@ -12,8 +12,8 @@ Expected log shape:
 [yyyy-MM-ddTHH:mm:ss.SSS] ... [traceId=<value>] [spanId=<value>] ...
 ```
 
-First check whether a CloudCore library already injects the fields — if the
-fields are present in current logs, skip this recipe.
+First check whether the project's logging setup already injects the fields — if
+they are present in current logs, skip this recipe.
 
 ## Spring Boot — Log4j2 / Slf4j
 
