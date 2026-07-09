@@ -65,7 +65,7 @@ Tracer tracer = openTelemetry.getTracer("service-component");
 
 ## Mechanical rewrite table
 
-| Rule id                    | Before                        | After                                                          |
+| Rule ID                    | Before                        | After                                                          |
 |----------------------------|-------------------------------|----------------------------------------------------------------|
 | `buildSpan-to-spanBuilder` | `tracer.buildSpan(n).start()` | `tracer.spanBuilder(n).startSpan()`                            |
 | `finish-to-end`            | `span.finish()`               | `span.end()`                                                   |

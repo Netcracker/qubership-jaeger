@@ -8,7 +8,7 @@ stale, benign, or blocking.
 
 ## When to run
 
-- Runtime e2e is in progress (dev-minimal or user cluster).
+- Runtime end-to-end is in progress (dev-minimal or user cluster).
 - Stand health gate passed: SUT pod Ready `1/1`, stable after observation window.
 - **Before** tracing assertions or Jaeger pass/fail.
 
@@ -34,13 +34,13 @@ instance logs are candidates for **stale**.
 Assign exactly one bucket to each distinct error signature (message + logger
 class, not every duplicate line):
 
-| Bucket             | Meaning                                                                                                                                                           | e2e impact                             |
-|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------|
-| `stale`            | From a **previous** pod/container or pre-fix boot; absent in logs since current pod became Ready                                                                  | Does **not** block e2e pass            |
-| `benign`           | Recurring but **unrelated** to tracing/L4 scope (known dev-only misconfig, optional feature, third-party noise) **and** SUT is Ready + business endpoint succeeds | Does **not** block e2e pass — cite why |
-| `blocks-e2e`       | Active in current pod logs **and** indicates SUT or export path is broken (encryption, DB, readiness, OTel export, crash loop)                                    | **Blocks** `runtime.status` `pass`     |
-| `tracing-adjacent` | OTel/Jaeger/export/propagator related; may or may not block depending on span export                                                                              | Block if spans missing or export fails |
-| `unknown`          | Cannot classify — insufficient evidence                                                                                                                           | Treat as **blocking** until resolved   |
+| Bucket | Meaning | end-to-end impact |
+| --- | --- | --- |
+| `stale` | From a **previous** pod/container or pre-fix boot; absent in logs since current pod became Ready | Does **not** block end-to-end pass |
+| `benign` | Recurring but **unrelated** to tracing/L4 scope (known dev-only misconfig, optional feature, third-party noise) **and** SUT is Ready + business endpoint succeeds | Does **not** block end-to-end pass — cite why |
+| `blocks-e2e` | Active in current pod logs **and** indicates SUT or export path is broken (encryption, DB, readiness, OTel export, crash loop) | **Blocks** `runtime.status` `pass` |
+| `tracing-adjacent` | OTel/Jaeger/export/propagator related; may or may not block depending on span export | Block if spans missing or export fails |
+| `unknown` | Cannot classify — insufficient evidence | Treat as **blocking** until resolved |
 
 ### Heuristics
 
@@ -87,11 +87,11 @@ After triage, post a short block in chat **before** declaring runtime pass/fail:
 - **Verdict:** none | stale-only | benign (N) | blocks-e2e (N) | mixed
 - **Active findings:** … (or "none in current pod since Ready")
 - **Stale / fixed:** … (e.g. encryption secret before key regen)
-- **E2e impact:** does / does not block tracing validation
+- **End-to-end impact:** does / does not block tracing validation
 - **Evidence:** workload startTime, log query snippet, trace query result
 ```
 
-Do **not** say "errors in logs but e2e passed" without this brief.
+Do **not** say "errors in logs but end-to-end passed" without this brief.
 
 ## JSON artifact
 

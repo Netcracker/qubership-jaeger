@@ -7,7 +7,7 @@ Go [`models/5-validation.md`](../models/5-validation.md) and umbrella
 
 Use this baseline when the selected environment has **no** tracing backend yet.
 Confirm image tags from upstream release notes; read service-specific values from
-the repo — never hard-code them.
+the repository — never hardcode them.
 
 ## Preconditions
 

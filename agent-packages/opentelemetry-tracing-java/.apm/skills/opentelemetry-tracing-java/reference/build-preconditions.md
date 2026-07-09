@@ -1,9 +1,9 @@
 # Build and registry notes
 
 Use this file to **detect** registry blockers and enforce **fresh-build** rules
-before runtime e2e.
+before runtime end-to-end.
 
-**Runtime e2e after Layer 4:** the agent **must** run
+**Runtime end-to-end after Layer 4:** the agent **must** run
 [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md)
 (`mvn package` + container image build in the same session) before runtime deploy.
 Plan-only / audit runs without runtime deploy may defer build and set
@@ -50,12 +50,12 @@ instrumentation mechanism).
 
 Jaeger spans from probe traffic on a **crash-looping or not-Ready** pod are
 **smoke only**, not validation — run
-[`../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md) before
+[`../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md) before
 tracing pass/fail.
 
 ## Build artifact provenance (mandatory for runtime pass)
 
-Before runtime e2e, run [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md).
+Before runtime end-to-end, run [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md).
 **Every** Java validation session must:
 
 1. **Purge** stale `target/` output and cached SUT container images.
@@ -66,12 +66,12 @@ Before runtime e2e, run [`../recipes/fresh-build-and-image.md`](../recipes/fresh
 Record how the SUT artifact was produced in the L5 summary and in
 `validationPlan.runtime.buildProvenance`:
 
-| Provenance                                                             | Valid for L4 tracing validation?  |
-|------------------------------------------------------------------------|-----------------------------------|
-| Fresh Maven/Gradle **clean package** + new image **in this session**   | **Yes** (default requirement for `pass`) |
-| CI image tagged to the **current** commit/branch and proven to include the current L4 changes | Yes, if provenance matches the diff |
-| Pre-existing local image (`:e2e`, `:local`, `:latest`) without rebuild | **No** — max `fail`               |
-| Public/stock image without L4 changes                                  | **No**                            |
+| Provenance | Valid for L4 tracing validation? |
+| --- | --- |
+| Fresh Maven/Gradle **clean package** + new image **in this session** | **Yes** (default requirement for `pass`) |
+| CI image tagged to current commit/branch with current L4 changes | Yes, if provenance matches the diff |
+| Pre-existing local image (`:e2e`, `:local`, `:latest`) without rebuild | **No** — max `fail` |
+| Public/stock image without L4 changes | **No** |
 
 Checklist when a pre-built image is reused:
 
@@ -88,5 +88,5 @@ Checklist when a pre-built image is reused:
 
 Example honest summary:
 
-> Runtime e2e used pre-existing image `<service>:<tag>` built before L4.
+> Runtime end-to-end used pre-existing image `<service>:<tag>` built before L4.
 > Tracing export works on that image, but **L4 diff is not compile-verified**.

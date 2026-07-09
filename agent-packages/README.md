@@ -55,7 +55,7 @@ apm compile -t <target>
 
 Use the compile target your APM setup expects (for example `cursor`, `claude`, or another supported runtime).
 
-Root `apm.yml` depends on `./agent-packages/opentelemetry-tracing-java` when present at repo root.
+Root `apm.yml` depends on `./agent-packages/opentelemetry-tracing-java` when present at the repository root.
 That package transitively pulls `../opentelemetry-tracing-umbrella` (declared in the Java package `apm.yml`).
 
 To install the Go skill only, run `apm install -t <target>` from
@@ -68,6 +68,6 @@ Generated files depend on `<target>`. Examples:
 | Cursor                            | `.cursor/rules/opentelemetry-tracing-*.mdc` | `.agents/skills/opentelemetry-tracing-*/`         |
 | Claude Code / Codex-style compile | `CLAUDE.md` / `AGENTS.md`                   | target-native skill paths under `.agents/skills/` |
 
-You may also see `apm.lock.yaml` and `apm_modules/` (local resolution cache); both are gitignored at the repo root.
+You may also see `apm.lock.yaml` and `apm_modules/` (local resolution cache); both are gitignored at the repository root.
 
 Restart or reload your agent session (IDE restart, new chat, or rules refresh — per your runtime) so instructions and skills are picked up.

@@ -68,7 +68,7 @@ During Phase 1, do not:
 
 **Phase 2 (implementation):** L4 + one post-L4 build + L5 validation.
 
-**Multi-language repository:** if the repo contains services in **other language
+**Multi-language repository:** if the repository contains services in **other language
 families** besides Go, run the umbrella
 [Multi-language scope gate](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/SKILL.md)
 — ask the user **bulk vs single target** before any L4 edit.
@@ -129,18 +129,18 @@ Produce:
 
 ## 5. Non-negotiable rules
 
-| Rule                             | Reason                                                                                                                                               |
-|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Platform contract is binding     | Must enforce `TRACING_*`, OTLP `http/protobuf`, `b3multi`, `parentbased_traceidratio`, `${name}-${namespace}`, endpoint filtering, trace IDs in logs |
-| Evidence-first                   | Every claim cites file/path/env key                                                                                                                  |
-| No semantic auto-rename          | Semantic-convention renames are proposals, not automatic edits                                                                                       |
-| One tracing stack                | Final state cannot keep legacy Zipkin/OpenTracing/Jaeger as active stack                                                                             |
-| Sampling & propagation mandatory | Validation fails if unknown or unverified                                                                                                            |
-| Defer versions                   | Read versions from `go.mod`, never hard-code versions in skill text                                                                                  |
-| Sync docs on L4                  | If L4 changes config/env/deps, update service docs in the same pass                                                                                  |
-| Fresh post-L4 build              | Runtime pass requires post-L4 build + image provenance                                                                                               |
-| E2e only when stand is healthy   | Runtime `pass` requires stand health gate **before** Jaeger, log-error triage, and tracing assertions — see umbrella L5 recipes and §3.4              |
-| No Jaeger-first pass             | Spans in Jaeger while the SUT crash-loops or is not Ready **do not** count as e2e pass — fix the stand first                                         |
+| Rule | Reason |
+| --- | --- |
+| Platform contract is binding | Must enforce `TRACING_*`, OTLP `http/protobuf`, `b3multi`, `parentbased_traceidratio`, `${name}-${namespace}`, endpoint filtering, trace IDs in logs |
+| Evidence-first | Every claim cites file/path/env key |
+| No semantic auto-rename | Semantic-convention renames are proposals, not automatic edits |
+| One tracing stack | Final state cannot keep legacy Zipkin/OpenTracing/Jaeger as active stack |
+| Sampling & propagation mandatory | Validation fails if unknown or unverified |
+| Defer versions | Read versions from `go.mod`, never hardcode versions in skill text |
+| Sync docs on L4 | If L4 changes config/env/deps, update service docs in the same pass |
+| Fresh post-L4 build | Runtime pass requires post-L4 build + image provenance |
+| End-to-end only when stand is healthy | Runtime `pass` needs stand health + log triage before Jaeger (§3.4; umbrella L5) |
+| No Jaeger-first pass | Jaeger spans while SUT crash-loops or not Ready are not end-to-end pass — fix the stand first |
 
 ## 6. File index
 

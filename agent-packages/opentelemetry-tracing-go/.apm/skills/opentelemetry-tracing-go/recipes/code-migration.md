@@ -66,7 +66,7 @@ in one place; do not mix it with `WithEndpoint`/`WithURLPath`.
 
 ## Mechanical rewrite table
 
-| Rule id                     | Before                  | After                              |
+| Rule ID                     | Before                  | After                              |
 |-----------------------------|-------------------------|------------------------------------|
 | `startspan-to-tracer-start` | `opentracing.StartSpan` | `tracer.Start(ctx, name)`          |
 | `finish-to-end`             | `span.Finish()`         | `span.End()`                       |

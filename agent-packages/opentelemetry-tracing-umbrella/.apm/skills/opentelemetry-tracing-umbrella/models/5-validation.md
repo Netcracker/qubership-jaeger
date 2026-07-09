@@ -18,7 +18,7 @@ when the user opts in, on a running deployment (runtime).
 
 | Tier | Needs running service | Default when plan is emitted |
 | --- | --- | --- |
-| **static** | No — inspect repo manifests and sources | Run checks; record `pass` / `fail` per row |
+| **static** | No — inspect repository manifests and sources | Run checks; record `pass` / `fail` per row |
 | **configuration** | No — inspect config bindings toward platform contract | Run checks; record `pass` / `fail` per row |
 | **runtime** | Yes — user-named environment and deploy permission | `status: manual` until install path is known and user opts in |
 
@@ -62,7 +62,7 @@ Required on every migration plan (embedded Layer 5):
 | --- | --- | --- |
 | `static` | `staticCheck[]` | Repo-level checks (dependencies, instrumentation mode, retired libs) |
 | `configuration` | `staticCheck[]` | Platform contract bindings (export, propagation, sampler, service name, filters, log correlation) |
-| `runtime` | object | Opt-in e2e scenario — see below |
+| `runtime` | object | Opt-in end-to-end scenario — see below |
 
 Each `staticCheck`: `{ check, status, detail?, how? }`.
 
@@ -126,7 +126,7 @@ language package — do not invent a second pipeline.
 - Language **fresh-build** recipe succeeded when L4 changed the artifact —
   `buildProvenance.matchesL4` is `true`; never `pass` runtime on a pre-L4 or
   reused image without evidence.
-- User names a **concrete environment** with deploy permission.
+- User specifies a **concrete environment** with deploy permission.
 - If the user declines or cannot supply an environment, keep `runtime.status`
   as `manual`.
 
@@ -143,7 +143,7 @@ because a single in-process request succeeded:
 5. Pass/fail verdict      — only when steps 1–4 succeed
 ```
 
-**Forbidden before step 1 passes:** declaring e2e success, querying the tracing
+**Forbidden before step 1 passes:** declaring end-to-end success, querying the tracing
 backend for a final pass/fail, setting `runtime.status` to `pass`.
 
 Common failure mode: probe or startup traffic exports spans while the workload
@@ -157,14 +157,14 @@ a passing runtime tier.
 - `logErrorTriage.e2eBlocked` is not `true`.
 - Tracing assertions in `runtime.assertions` satisfied — including resolved
   `service.name`, server spans on the exercised endpoint, propagation intact,
-  non-empty trace/span ids in logs for the request, healthy export path.
+  non-empty trace/span IDs in logs for the request, healthy export path.
 - Build provenance documents a post-L4 artifact.
 
 ### Runtime failure and blockers
 
 - Stand or deploy failure → `runtime.status` `fail`; record evidence in
   `validationPlan.runtime.standHealth` and plan root `gaps`.
-- Log triage blocks e2e → `fail` until resolved or reclassified with evidence.
+- Log triage blocks end-to-end → `fail` until resolved or reclassified with evidence.
 - Install/build out of scope → `manual` or `fail` with reason — not `pass`.
 
 Endpoint selection: exercise a **business** route not on the platform suppression
@@ -178,7 +178,7 @@ SUT, dependency manifests, or documentation synced on apply).
 
 **Ephemeral** (typical — see [`recipes/validation-cleanup.md`](../recipes/validation-cleanup.md)):
 
-- throwaway e2e manifests, install scripts, or compose/k8s overlays;
+- throwaway end-to-end manifests, install scripts, or compose/k8s overlays;
 - local-only Dockerfiles or build helpers used solely for validation;
 - temporary env files or copied credentials templates for the test stand.
 

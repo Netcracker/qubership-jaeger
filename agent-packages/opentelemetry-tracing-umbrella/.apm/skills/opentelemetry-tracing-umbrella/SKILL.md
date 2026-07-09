@@ -53,7 +53,7 @@ independent SUTs** the user did not narrow to one target:
 3. Record the choice in chat and in `migration-plan.json` `gaps` or
    `validationPlan.runtime.scenario` (e.g. `scope: single — Go mesh-api only`).
 4. If the user does not answer, emit a **plan-only** L4 document and keep
-   `validationPlan.runtime.status` at `manual` — **no repo edits**.
+   `validationPlan.runtime.status` at `manual` — **no repository edits**.
 
 This gate is cross-language; language packages reference it from Phase 2 entry
 (Java/Go: root `SKILL.md` §3.0).
@@ -73,7 +73,7 @@ This gate is cross-language; language packages reference it from Phase 2 entry
   - Shared JSON schemas (capability, maturity, migration-plan — listed below)
 - **Language package owns (local):**
   - Layer 1 Discovery and `L1-discovery-result.schema.json`
-  - [`reference/detection-rules.md`](reference/detection-rules.md) (per language)
+  - `reference/detection-rules.md` in each **language package** (Layer 1; not in umbrella)
   - Layer 4 **apply** — framework gate, dependency/config/code/async recipes
   - Layer 5 **runtime execution** — fresh build, deploy, validation-stack; tracing assertions
   - `recipes/` for L4 apply and language-specific L5 (fresh-build, validation-stack)

@@ -8,12 +8,12 @@ mapping that is **not 1:1**.
 
 ## Export endpoint
 
-| From                                                    | To                                                                  | 1:1?                                      |
-|---------------------------------------------------------|---------------------------------------------------------------------|-------------------------------------------|
+| From | To | 1:1? |
+| --- | --- | --- |
 | `management.zipkin.tracing.endpoint=http://zipkin:9411` | `OTEL_EXPORTER_OTLP_ENDPOINT=http://${TRACING_HOST}:4318/v1/traces` | no — protocol Zipkin→OTLP, port 9411→4318 |
-| `JAEGER_AGENT_HOST` + `JAEGER_AGENT_PORT`               | `OTEL_EXPORTER_OTLP_ENDPOINT=http://${TRACING_HOST}:4318/v1/traces` | no — UDP agent model removed              |
-| `JAEGER_ENDPOINT=http://jaeger:14268/api/traces`        | `OTEL_EXPORTER_OTLP_ENDPOINT=http://${TRACING_HOST}:4318/v1/traces` | no — Thrift→OTLP                          |
-| hard-coded collector URL in code                        | env/Helm-driven endpoint                                            | no — move out of code                     |
+| `JAEGER_AGENT_HOST` + `JAEGER_AGENT_PORT` | `OTEL_EXPORTER_OTLP_ENDPOINT=http://${TRACING_HOST}:4318/v1/traces` | no — UDP agent model removed |
+| `JAEGER_ENDPOINT=http://jaeger:14268/api/traces` | `OTEL_EXPORTER_OTLP_ENDPOINT=http://${TRACING_HOST}:4318/v1/traces` | no — Thrift→OTLP |
+| hardcoded collector URL in code | env/Helm-driven endpoint | no — move out of code |
 
 ## Sampling
 
@@ -65,7 +65,7 @@ Follow [`../reference/quarkus-platform-contract.md`](../reference/quarkus-platfo
 After swapping `quarkus-jaeger` for `quarkus-opentelemetry`
 ([`dependency-migration.md`](dependency-migration.md)), remove every
 `quarkus.jaeger.*` key — they are ignored by the OTel extension, so propagation
-and sampling silently fall back to defaults unless re-declared under
+and sampling silently fall back to defaults unless redeclared under
 `quarkus.otel.*`:
 
 | From (`quarkus.jaeger.*`)                       | To (`quarkus.otel.*`)                                                                                   | Note                                          |
@@ -77,7 +77,7 @@ and sampling silently fall back to defaults unless re-declared under
 
 #### Service name (Quarkus)
 
-Without an explicit value Quarkus exports the **artifact id** as
+Without an explicit value Quarkus exports the **artifact ID** as
 `service.name` — that violates the `${name}-${namespace}` contract. Set:
 
 ```properties

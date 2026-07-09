@@ -69,23 +69,23 @@ quarkus.otel.exporter.otlp.protocol=http/protobuf
 Quarkus appends the signal path (`v1/traces`) for `http/protobuf`. Putting
 `/v1/traces` in the property can produce a double path and silent export failure.
 
-| Surface                         | Value                                      |
-|---------------------------------|--------------------------------------------|
-| Platform / Helm docs            | `http://${TRACING_HOST}:4318/v1/traces`    |
-| Quarkus `quarkus.otel.*`        | `http://${TRACING_HOST}:4318`              |
-| Runtime override env            | `QUARKUS_OTEL_EXPORTER_OTLP_ENDPOINT=http://…:4318` |
+| Surface | Value |
+| --- | --- |
+| Platform / Helm docs | `http://${TRACING_HOST}:4318/v1/traces` |
+| Quarkus `quarkus.otel.*` | `http://${TRACING_HOST}:4318` |
+| Runtime override env | `QUARKUS_OTEL_EXPORTER_OTLP_ENDPOINT=http://…:4318` |
 
 ## Build-time vs runtime (single image, many environments)
 
 Quarkus OpenTelemetry splits properties:
 
-| Property / area                         | Build-time fixed? | Runtime toggle note                                      |
-|-----------------------------------------|-------------------|----------------------------------------------------------|
-| `quarkus.otel.sdk.disabled`             | no (runtime)      | use for on/off export                                    |
-| `quarkus.otel.exporter.otlp.enabled`    | yes               | cannot re-enable export at runtime via this flag         |
-| `quarkus.otel.traces.exporter` = `none` | yes               | disables trace export in the built artifact              |
-| `quarkus.otel.traces.sampler`           | often build-time  | use `quarkus.otel.traces.sampler.arg` at runtime for ratio |
-| Sampler ratio off without SDK disable   | —                 | set `sampler.arg=0` per Quarkus docs (keeps propagation) |
+| Property / area | Build-time fixed? | Runtime toggle note |
+| --- | --- | --- |
+| `quarkus.otel.sdk.disabled` | no (runtime) | use for on/off export |
+| `quarkus.otel.exporter.otlp.enabled` | yes | cannot re-enable export at runtime via this flag |
+| `quarkus.otel.traces.exporter` = `none` | yes | disables trace export in the built artifact |
+| `quarkus.otel.traces.sampler` | often build-time | use `quarkus.otel.traces.sampler.arg` at runtime for ratio |
+| Sampler ratio off without SDK disable | — | set `sampler.arg=0` per Quarkus docs (keeps propagation) |
 
 If L5 validation shows **no services in Jaeger** while `opentelemetry` is in
 installed features, check in order:

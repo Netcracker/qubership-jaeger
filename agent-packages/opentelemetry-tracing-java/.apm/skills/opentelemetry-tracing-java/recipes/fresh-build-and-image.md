@@ -2,9 +2,9 @@
 
 **When:** exactly **once per session**, **after all Layer 4 edits**, **before**
 the first runtime deploy of the SUT. Not during L1–L3 analysis. Not again for
-runtime e2e if the post-L4 build already succeeded and L4 files are unchanged.
+runtime end-to-end if the post-L4 build already succeeded and L4 files are unchanged.
 
-Every runtime e2e must use the **post-L4** runnable artifact and container
+Every runtime end-to-end must use the **post-L4** runnable artifact and container
 image — never a pre-L4 build, cached `target/` output from before
 transformation, or a pre-existing local tag.
 
@@ -42,7 +42,7 @@ Typical pattern: `mvn --batch-mode clean package -pl <module-path> -am -DskipTes
 
 ## Step 1b — Reuse check (before runtime, no second build)
 
-When runtime e2e starts after Step 1 already succeeded in this session:
+When runtime end-to-end starts after Step 1 already succeeded in this session:
 
 1. Confirm no L4 file changed since Step 1 completed.
 2. Confirm runnable artifact mtime is **after** the last L4 edit.
@@ -88,7 +88,7 @@ Post a one-line chat confirmation:
 ## Forbidden shortcuts
 
 | Shortcut | Verdict |
-|----------|---------|
+| --- | --- |
 | `mvn clean package` during L1–L3 analysis | **forbidden** |
 | Second full rebuild when post-L4 build is still valid | **forbidden** |
 | Deploy pre-existing local tags without post-L4 build | `runtime.status` max **`fail`** |

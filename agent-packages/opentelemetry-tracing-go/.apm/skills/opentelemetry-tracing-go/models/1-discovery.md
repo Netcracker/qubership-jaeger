@@ -49,7 +49,7 @@ Inspect config/env locations:
 
 - `.env`, Helm values/templates, Deployment env vars;
 - app config loaders (`koanf`, `viper`, env/yaml/struct-based project loaders);
-- hard-coded tracing constants in Go files.
+- hardcoded tracing constants in Go files.
 
 Collect:
 

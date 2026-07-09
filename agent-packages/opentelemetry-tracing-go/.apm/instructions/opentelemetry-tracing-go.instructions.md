@@ -3,6 +3,8 @@ description: Audits and migrates Go distributed tracing to OpenTelemetry (maturi
 applyTo: "**/*.{go,mod,sum,yml,yaml,tpl,Dockerfile,dockerfile}"
 ---
 
+# OpenTelemetry tracing (Go)
+
 When auditing or changing distributed tracing in a Go service — assessing
 maturity, detecting legacy stacks (Zipkin, Jaeger client, OpenTracing),
 hybrid or incomplete OpenTelemetry, broken OTLP export, Kafka/async
@@ -17,7 +19,7 @@ language families**, ask the user **bulk vs single target** before L4 (umbrella
 Multi-language scope gate). Then Phase 2 (L4 + one post-L4 build + validation)
 if implementation is in scope.
 
-After runtime deploy, run the **stand health gate** before Jaeger or e2e pass/fail
+After runtime deploy, run the **stand health gate** before Jaeger or end-to-end pass/fail
 (umbrella `recipes/stand-health-gate.md`). Do not leave validation in a state
 where the SUT pod is not Ready or crash-looping.
 

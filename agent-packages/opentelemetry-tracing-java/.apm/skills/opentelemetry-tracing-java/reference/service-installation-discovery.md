@@ -4,7 +4,7 @@ Layer 5 runtime validation depends on **how this specific service is installed a
 tested**. That path is unknown until discovery runs in the target repository.
 This skill does **not** invent a service-specific Maven/Docker pipeline. It
 derives build/deploy commands from the service's own docs, CI, or scripts, then
-uses the Java fresh-build recipe to produce a post-L4 artifact when runtime e2e
+uses the Java fresh-build recipe to produce a post-L4 artifact when runtime end-to-end
 is in scope.
 
 ## Step 1 — Find installation documentation
@@ -18,7 +18,7 @@ locations:
 | Helm / charts       | `helm-templates/**`, `charts/**`, `values.yaml` + companion parameter docs                       |
 | Local bootstrap     | `bootstrap/`, `local.mk`, `Makefile`, `skaffold.yaml`, `docker-compose*.yml`                     |
 | CI deploy + test    | `.github/workflows/*integration*`, `integration-tests.yml`, `deploy-*.yml`                       |
-| Operator / platform | `docs/deployment/**`, product README in monorepo root                                            |
+| Operator / platform | `docs/deployment/**`, product readme in monorepo root                                            |
 
 Record every path found in the runtime `scenario`, evidence prose, or L5 brief
 with file citations. Use plan root `gaps` only for blockers: missing docs,

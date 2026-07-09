@@ -2,7 +2,7 @@
 
 The signature catalogue that powers Layer 1 discovery. Match these against
 build files, config, env, and code (AST/symbol search). Versions are
-deliberately omitted — read them from the repo's `pom.xml`/BOM.
+deliberately omitted — read them from the repository's `pom.xml`/BOM.
 
 ## Dependency signatures
 
@@ -108,13 +108,19 @@ These frameworks are supported in best-effort mode. If detected, keep using
 generic OTel discovery/capability/validation and emit framework evidence in
 the discovery result.
 
-| Signal                             | Framework                      |
-|------------------------------------|--------------------------------|
-| `io.micronaut:micronaut-*`         | Micronaut                      |
-| `io.helidon.*`                     | Helidon                        |
-| `io.vertx:vertx-*`                 | Vert.x                         |
+| Signal | Framework |
+| --- | --- |
+| `io.micronaut:micronaut-*` | Micronaut |
+| `io.helidon.*` | Helidon |
+| Eclipse Vert.x stack | Vert.x |
 | `jakarta.ws.rs`, `jakarta.servlet` | Jakarta EE / Servlet container |
-| `io.dropwizard:*`                  | Dropwizard                     |
+| `io.dropwizard:*` | Dropwizard |
+
+Typical Maven coordinates for Vert.x (grep `pom.xml` / Gradle files):
+
+```text
+io.vertx:vertx-*
+```
 
 ## Platform-contract signatures
 

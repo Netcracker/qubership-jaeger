@@ -1,7 +1,7 @@
 # opentelemetry-tracing-java
 
 APM skill for **Java** services (Spring Boot, Quarkus, **Pure Java**): a five-layer pipeline that audits an unknown
-service's tracing, scores its maturity, and generates an OpenTelemetry migration and validation plan. It also fixes 
+service's tracing, scores its maturity, and generates an OpenTelemetry migration and validation plan. It also fixes
 **Kafka/async context loss** and **verifies sampling and propagation** before a task is closed.
 
 Part of the multi-language tracing program — see [`../README.md`](../README.md)

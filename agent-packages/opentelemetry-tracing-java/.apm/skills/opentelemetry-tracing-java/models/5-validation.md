@@ -37,10 +37,10 @@ Run this **before** the environment questionnaire or any bootstrap commands:
 
 When Layer 4 edits exist, execute
 [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md)
-**once** after L4 — **before** any runtime deploy of the SUT for e2e.
+**once** after L4 — **before** any runtime deploy of the SUT for end-to-end.
 
 Do **not** run Maven during L1–L3. Do **not** run a **second** full rebuild
-when starting e2e if the post-L4 build already succeeded and L4 is unchanged —
+when starting end-to-end if the post-L4 build already succeeded and L4 is unchanged —
 **verify** provenance (runner JAR mtime after last L4 edit, image tag) per the
 recipe Step 1b.
 
@@ -53,8 +53,8 @@ recipe Step 1b.
 **Never** reuse pre-existing local tags or a build that predates L4. If Maven
 cannot run, runtime is at most `manual` or `fail` — not `pass`.
 
-Static/configuration L5 tiers do **not** trigger a rebuild — inspect repo files only.
-Runtime e2e is different: it must use either the fresh post-L4 image from this
+Static/configuration L5 tiers do **not** trigger a rebuild — inspect repository files only.
+Runtime end-to-end is different: it must use either the fresh post-L4 image from this
 session or a previously produced post-L4 image whose provenance still matches
 the current L4 edits. If provenance does not match, run the single post-L4 build
 again before runtime deploy.
@@ -70,14 +70,14 @@ runtime validation is still desired:
    [`../recipes/validation-stack.md`](../recipes/validation-stack.md) (Jaeger
    all-in-one + `nc-diagnostic-agent` alias).
 3. **Service dependencies** — from install docs (DB, secrets, volumes), not
-   guessed. Reuse the repo's official k8s/Helm manifests where they exist.
+   guessed. Reuse the repository's official k8s/Helm manifests where they exist.
 
 If the user cannot answer or declines, keep `runtime.status` as `manual`.
 
 ### Post-build prompt (mandatory)
 
 When a migrated artifact **builds successfully** and Layer 4 edits are in place,
-ask explicitly whether to run runtime e2e on the built image. Wait for the user
+ask explicitly whether to run runtime end-to-end on the built image. Wait for the user
 to confirm **and** to supply the target environment before applying any manifest
 from `validation-stack.md`.
 
@@ -100,7 +100,7 @@ Umbrella §5.3 order — execute **in this order**:
 6. Post-validation cleanup → ../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md (when status is pass)
 ```
 
-**Forbidden before step 1 passes:** querying Jaeger for pass/fail, declaring e2e
+**Forbidden before step 1 passes:** querying Jaeger for pass/fail, declaring end-to-end
 success, setting `runtime.status` to `pass`.
 
 Common failure mode: probe or startup traffic exports spans while liveness kills
@@ -113,7 +113,7 @@ Run [`../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tr
 after deploy. Post the **L5 Stand health** brief before any tracing check.
 
 | Check | Pass when |
-|-------|-----------|
+| --- | --- |
 | Rollout | `kubectl rollout status` succeeded for the SUT Deployment |
 | Workload health | SUT pod `Running` and Ready `1/1` (no crash loops, no perpetual not-ready) |
 | Stability | After a ≥60s observation window, Ready still `1/1` and restarts not increasing |
@@ -150,7 +150,7 @@ succeed:
 - build provenance per [`../reference/build-preconditions.md`](../reference/build-preconditions.md);
 - tracing backend healthy; no recurring export errors in SUT logs.
 
-**Do not** report e2e success when:
+**Do not** report end-to-end success when:
 
 - spans exist only from probe traffic on suppressed/failing paths;
 - the app listens but readiness never passes;

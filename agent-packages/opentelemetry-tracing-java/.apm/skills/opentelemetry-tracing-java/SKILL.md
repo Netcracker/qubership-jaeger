@@ -83,19 +83,19 @@ maturity verdict has no anchor.
 Split every **implement** run into two phases. Phase 1 is **read-only analysis**
 so the user has material to read while Phase 2 runs.
 
-**Phase 1 — L1 + L2 + L3 (analysis only)**
+#### Phase 1 — L1 + L2 + L3 (analysis only)
 
 Complete all three layers and post **all three user-facing briefs** (§3.1) in
 the agent chat **before** starting Phase 2.
 
 During Phase 1 the agent **must not**:
 
-- edit source, config, Helm, or docs in the target repo
+- edit source, config, Helm, or docs in the target repository
 - run build/package/image commands for the SUT
-- deploy runtime manifests or start runtime e2e
+- deploy runtime manifests or start runtime end-to-end
 - apply L4 transformation recipes
 
-Phase 1 **may** use read-only repo inspection (`grep`, `read`, dependency
+Phase 1 **may** use read-only repository inspection (`grep`, `read`, dependency
 declarations in `pom.xml`, static config review). Emit JSON artifacts
 (`discovery-result`, `capability-result`, `maturity-result`) and use their
 findings to write the briefs. Briefs do **not** replace the JSON artifacts.
@@ -104,7 +104,7 @@ findings to write the briefs. Briefs do **not** replace the JSON artifacts.
 (audit-only deliverable) or to proceed with implementation in the same turn.
 When the user asked to implement (e.g. “add OTel SDK”), post the three briefs,
 then continue to Phase 2 in the **same session** without re-running L1–L3
-unless the repo changed.
+unless the repository changed.
 
 **Multi-language repository:** if discovery spans **two or more language
 families** or multiple SUTs, run the umbrella
@@ -112,7 +112,7 @@ families** or multiple SUTs, run the umbrella
 — ask the user **bulk vs single target** before any L4 edit. Do not proceed to
 Phase 2 without an explicit choice.
 
-**Phase 2 — L4 + L5 (implementation and validation)**
+#### Phase 2 — L4 + L5 (implementation and validation)
 
 Only after Phase 1 briefs are posted:
 
@@ -193,7 +193,7 @@ only). Decision matrix and level wording:
 umbrella [`models/3-maturity.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/3-maturity.md).
 
 - **Current level** — level number + name + one sentence what it means for this
-  repo (e.g. “Level 2 — Legacy tracing: the service still uses Spring Cloud
+  repository (e.g. “Level 2 — Legacy tracing: the service still uses Spring Cloud
   Sleuth; OpenTelemetry is not the active export path”).
 - **Recommended work** — what to do next in prose (e.g. “Migrate from legacy
   tracing to OpenTelemetry per the platform contract”), not a schema enum.
@@ -229,20 +229,20 @@ handoff record for reviewers and for users returning to close the migration.
 When Layer 4 edits exist, run
 [`recipes/fresh-build-and-image.md`](recipes/fresh-build-and-image.md) **exactly
 once** in the session — **after all L4 file edits**, **before** the first SUT
-runtime deploy for e2e.
+runtime deploy for end-to-end.
 
-**One build rule**
+#### One build rule
 
 | When | Maven / image |
 | --- | --- |
 | Phase 1 (L1–L3) | **Forbidden** — no compile “to see if it works” |
 | After L4 completes | **Required once** — `mvn clean package` + new image tag |
-| L5 static/config checks | **No rebuild** — inspect repo + post-L4 artifact on disk |
-| L5 runtime e2e | **Reuse** the post-L4 artifact; **verify** provenance (§3.2.1) |
+| L5 static/config checks | **No rebuild** — inspect repository + post-L4 artifact on disk |
+| L5 runtime end-to-end | **Reuse** the post-L4 artifact; **verify** provenance (§3.2.1) |
 | L4 edits after first build | **Rebuild once** — new single build replaces the prior |
 
 **Forbidden:** running `mvn clean package` before L4; running a **second**
-full rebuild for e2e when the post-L4 build already succeeded and L4 files are
+full rebuild for end-to-end when the post-L4 build already succeeded and L4 files are
 unchanged; deploying pre-existing tags (`:e2e`, `:local`, stock `:latest`) without
 the post-L4 build.
 
@@ -268,12 +268,12 @@ Before runtime deploy, confirm the runnable artifact reflects **post-L4** state:
 If the only build predates L4, **do not deploy** — run the single post-L4 build
 from §3.2 instead of re-auditing.
 
-### 3.3 Runtime e2e opt-in (mandatory after build)
+### 3.3 Runtime end-to-end opt-in (mandatory after build)
 
 When Layer 4 changes are applied and the **fresh build** (§3.2) succeeds,
 **stop and ask the user** before any runtime deploy:
 
-> Static build is green. Run runtime e2e with a minimal tracing stack?
+> Static build is green. Run runtime end-to-end with a minimal tracing stack?
 > Please provide the target environment and deployment scope where runtime
 > deploy is allowed.
 
@@ -285,8 +285,8 @@ Rules:
   [`recipes/validation-stack.md`](recipes/validation-stack.md): Jaeger all-in-one +
   `nc-diagnostic-agent` Service + SUT dependencies from install docs.
 - If the user declines or gives no environment, set `validationPlan.runtime.status`
-  to `manual` — static/config alone is **not** e2e success.
-- Do **not** claim e2e passed from bypass traffic into unhealthy workloads, from
+  to `manual` — static/config alone is **not** end-to-end success.
+- Do **not** claim end-to-end passed from bypass traffic into unhealthy workloads, from
   spans produced only by failing probes, when service endpoints are not ready,
   or when the SUT pod is not Ready `1/1` with stable restarts.
 
@@ -312,7 +312,7 @@ Rules:
 After stand health passes, run
 [`recipes/log-error-triage.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md) before Jaeger
 pass/fail and before setting `validationPlan.runtime.status`. Post a short
-**L5 Log errors** block (5–8 bullets): verdict, active vs stale findings, e2e
+**L5 Log errors** block (5–8 bullets): verdict, active vs stale findings, end-to-end
 impact, evidence.
 
 Rules:
@@ -357,21 +357,21 @@ unless the user explicitly asks for it.
 
 ## 5. Non-negotiable rules
 
-| Rule                                  | Reason                                                                                                                                                                                                                                                                                       |
-|---------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Platform contract is binding          | Enforce umbrella [`platform-tracing-guide.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md): `TRACING_*` params, OTLP `http/protobuf`, `b3multi`, `parentbased_traceidratio` (never `always_on`), `service.name=${name}-${namespace}`, excluded probe/metrics endpoints, `traceId`/`spanId` in logs |
-| Evidence-first                        | Every claim in an artifact cites a file/line or env key                                                                                                                                                                                                                                      |
-| No semantic auto-rename               | Attribute renames to semconv are **proposed**, never applied without confirmation — see umbrella [`models/4-transformation.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/4-transformation.md) §4.3 |
-| One tracing stack                     | A migration plan must end with a single active tracer; no Brave/Jaeger client layered on OTel (Jaeger client / OpenTracing are retired)                                                                                                                                                      |
-| Sampling & propagation are mandatory  | The validation plan fails if either is unknown or unverified                                                                                                                                                                                                                                 |
-| Preserve intent                       | Keep service names, sampling intent, and peer-compatible propagation across the migration                                                                                                                                                                                                    |
-| Confirm the export target             | `TRACING_HOST` default is `nc-diagnostic-agent`; confirm the proxy/collector for the selected runtime environment — see umbrella [`platform-tracing-guide.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md) §Export |
-| Defer versions                        | Read versions from the repo's `pom.xml`/BOM, never hard-code them                                                                                                                                                                                                                            |
-| Spring Boot 4 OTLP starter            | Parent 4.x requires `spring-boot-micrometer-tracing-opentelemetry` **and** Boot 4 `management.tracing.export.*` keys — bridge/exporter alone or Boot 3 keys → no Jaeger export; see [`recipes/dependency-migration.md`](recipes/dependency-migration.md) |
-| Sync documentation on L4 edits        | When Layer 4 changes dependencies, config, Helm, or env contract, update the service's README, installation notes, or Helm schema/values docs in the same pass — see umbrella [`models/4-transformation.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/4-transformation.md) §Documentation sync                                               |
-| Fresh build before runtime            | **One** `mvn clean package` + image **after L4** only — [`recipes/fresh-build-and-image.md`](recipes/fresh-build-and-image.md); no pre-L4 build; no duplicate rebuild for e2e if post-L4 artifact is valid |
-| E2e only when stand is healthy        | Runtime tier `pass` requires stand health gate (§3.4) **before** Jaeger, Ready `1/1` pod, log-error triage (§3.5), fresh build (§3.2), build provenance, tracing assertions — see [`models/5-validation.md`](models/5-validation.md) |
-| No Jaeger-first pass                  | Spans in Jaeger while the SUT crash-loops or is not Ready **do not** count as e2e pass — fix the stand first                                                                                                              |
+| Rule | Reason |
+| --- | --- |
+| Platform contract is binding | Enforce umbrella [`platform-tracing-guide.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md): `TRACING_*`, OTLP `http/protobuf`, `b3multi`, `parentbased_traceidratio`, `${name}-${namespace}`, probe/metrics exclusion, log correlation |
+| Evidence-first | Every claim in an artifact cites a file/line or env key |
+| No semantic auto-rename | Attribute renames to semconv are **proposed**, never applied without confirmation — see umbrella [`models/4-transformation.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/4-transformation.md) §4.3 |
+| One tracing stack | A migration plan must end with a single active tracer; no Brave/Jaeger client layered on OTel |
+| Sampling & propagation are mandatory | The validation plan fails if either is unknown or unverified |
+| Preserve intent | Keep service names, sampling intent, and peer-compatible propagation across the migration |
+| Confirm the export target | `TRACING_HOST` default is `nc-diagnostic-agent`; confirm proxy/collector for the runtime environment — see umbrella [`platform-tracing-guide.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md) §Export |
+| Defer versions | Read versions from the repository's `pom.xml`/BOM, never hardcode them |
+| Spring Boot 4 OTLP starter | Parent 4.x requires `spring-boot-micrometer-tracing-opentelemetry` **and** Boot 4 `management.tracing.export.*` keys — see [`recipes/dependency-migration.md`](recipes/dependency-migration.md) |
+| Sync documentation on L4 edits | When L4 changes deps/config/Helm/env, update readme, install notes, or Helm docs — see umbrella [`models/4-transformation.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/4-transformation.md) §Documentation sync |
+| Fresh build before runtime | **One** `mvn clean package` + image **after L4** only — [`recipes/fresh-build-and-image.md`](recipes/fresh-build-and-image.md) |
+| End-to-end only when stand is healthy | Runtime `pass` requires stand health (§3.4) before Jaeger, log triage (§3.5), fresh build, provenance — see [`models/5-validation.md`](models/5-validation.md) |
+| No Jaeger-first pass | Spans in Jaeger while SUT crash-loops or is not Ready do not count as end-to-end pass |
 
 ## 6. File index
 
@@ -386,4 +386,8 @@ unless the user explicitly asks for it.
 - Service install discovery (L5): [`reference/service-installation-discovery.md`](reference/service-installation-discovery.md)
 - Code migration policy: umbrella `models/4-transformation.md` §4.3
 - Platform export grounding: umbrella [`platform-tracing-guide.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
-- Migration recipes: [`recipes/`](recipes/) — including [`recipes/fresh-build-and-image.md`](recipes/fresh-build-and-image.md), [`recipes/validation-stack.md`](recipes/validation-stack.md); shared L5 in umbrella [`recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md), [`recipes/log-error-triage.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md), [`recipes/validation-cleanup.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md)
+- Migration recipes: [`recipes/`](recipes/) — [`recipes/fresh-build-and-image.md`](recipes/fresh-build-and-image.md),
+  [`recipes/validation-stack.md`](recipes/validation-stack.md); shared L5 in umbrella
+  [`recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md),
+  [`recipes/log-error-triage.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md),
+  [`recipes/validation-cleanup.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md)

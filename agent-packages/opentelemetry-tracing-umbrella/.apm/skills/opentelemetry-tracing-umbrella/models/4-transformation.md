@@ -12,11 +12,11 @@ re-run discovery or capability analysis.
 
 ## When to skip transformation edits
 
-| `maturity-result.level`                | Typical handling                                                                                                                                                                            |
-|----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **5** — Working OTel                   | Emit a **plan-only** document: `basedOnMaturityLevel: 5`, embedded `validationPlan`, optional gap fixes. No dependency/config/code/async sections unless the user asked for targeted fixes. |
-| **1–4** with audit-only scope          | Plan sections describe proposed changes; do **not** edit the target repo until the user opts into Phase 2.                                                                                  |
-| Blockers in `maturity-result.blockers` | Record in plan `gaps`; do not apply edits that depend on missing evidence or blocked builds.                                                                                                |
+| `maturity-result.level` | Typical handling |
+| --- | --- |
+| **5** — Working OTel | Emit a **plan-only** document: `basedOnMaturityLevel: 5`, embedded `validationPlan`, optional gap fixes. No dependency/config/code/async sections unless the user asked for targeted fixes. |
+| **1–4** with audit-only scope | Plan sections describe proposed changes; do **not** edit the target repository until the user opts into Phase 2. |
+| Blockers in `maturity-result.blockers` | Record in plan `gaps`; do not apply edits that depend on missing evidence or blocked builds. |
 
 Set `basedOnMaturityLevel` to `maturity-result.level` on every plan.
 
@@ -24,7 +24,7 @@ Set `basedOnMaturityLevel` to `maturity-result.level` on every plan.
 
 When umbrella **Multi-language scope gate** applies (two or more language
 families or SUTs in scope), confirm user choice **bulk vs single target** before
-any plan row or repo edit. If scope is unset, stop at plan-only output. See
+any plan row or repository edit. If scope is unset, stop at plan-only output. See
 umbrella [`SKILL.md`](../SKILL.md) § Multi-language scope gate.
 
 ## Algorithm
@@ -40,7 +40,7 @@ umbrella [`SKILL.md`](../SKILL.md) § Multi-language scope gate.
 6. Record unresolved items, skipped doc sync, and build blockers in `gaps`.
 7. Validate against
    [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
-8. **Apply** (Phase 2 only) — edit the target repo, sync documentation (below),
+8. **Apply** (Phase 2 only) — edit the target repository, sync documentation (below),
    then run the language fresh-build recipe before runtime validation.
 
 ## Plan sections
@@ -86,13 +86,13 @@ updates are an **apply-time** obligation (below), not a JSON section.
 When Layer 4 edits are **applied** to the target repository (not plan-only),
 update developer-facing docs in the same change set:
 
-- README or installation guide — `TRACING_*` / OTel parameters and how to
+- Readme or installation guide — `TRACING_*` / OTel parameters and how to
   enable tracing.
-- Deployment config — chart values, env mapping, or equivalent for the repo's
+- Deployment config — chart values, env mapping, or equivalent for the repository's
   install path.
 - Non-obvious framework toggles — document in comments or install notes.
 
-If the repo has no docs surface for deployment parameters, record
+If the repository has no docs surface for deployment parameters, record
 `documentation sync skipped — <reason>` in plan `gaps` instead of omitting
 silently.
 

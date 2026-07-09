@@ -5,11 +5,11 @@ Shared plan structure, algorithm, and section numbering (§4.1–§4.5):
 
 Run the **Java gate below before §4.1**. Then fill §4.1–§4.4 from recipes:
 
-| Section                      | Recipe                                                                           |
-|------------------------------|----------------------------------------------------------------------------------|
-| §4.1 `dependencyMigration`   | [`../recipes/dependency-migration.md`](../recipes/dependency-migration.md)       |
-| §4.2 `configMigration`       | [`../recipes/config-migration.md`](../recipes/config-migration.md) + [`../recipes/logging-correlation.md`](../recipes/logging-correlation.md) (log patterns) |
-| §4.3 `codeMigration`         | [`../recipes/code-migration.md`](../recipes/code-migration.md)                   |
+| Section | Recipe |
+| --- | --- |
+| §4.1 `dependencyMigration` | [`../recipes/dependency-migration.md`](../recipes/dependency-migration.md) |
+| §4.2 `configMigration` | [`../recipes/config-migration.md`](../recipes/config-migration.md) + [`../recipes/logging-correlation.md`](../recipes/logging-correlation.md) (log patterns) |
+| §4.3 `codeMigration` | [`../recipes/code-migration.md`](../recipes/code-migration.md) |
 | §4.4 `asyncContextMigration` | [`../recipes/async-context-migration.md`](../recipes/async-context-migration.md) |
 
 §4.5 `validationPlan` and documentation-on-apply rules: umbrella
@@ -29,7 +29,7 @@ Do not emit §4.1 or §4.2 rows before this is fixed.
 | Pure Java                                                        | `opentelemetry-sdk` + `opentelemetry-exporter-otlp` (+ propagators)   | env / programmatic SDK builder                                                                                                             |
 | Best-effort (Micronaut, Helidon, Vert.x, Jakarta EE, Dropwizard) | framework OTel module if it exists, else SDK                          | framework config, else env                                                                                                                 |
 
-Pull versions from the repo BOM/`pom.xml`; never pin them in the plan.
+Pull versions from the repository BOM/`pom.xml`; never pin them in the plan.
 
 ## Step 0b — Instrumentation-mechanism guardrails (mandatory)
 

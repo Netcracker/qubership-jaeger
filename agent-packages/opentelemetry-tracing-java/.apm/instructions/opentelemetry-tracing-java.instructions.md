@@ -3,6 +3,8 @@ description: Audits and migrates Java distributed tracing to OpenTelemetry (matu
 applyTo: "**/*.{java,kt,xml,yml,yaml,properties,gradle,kts,Dockerfile,dockerfile}"
 ---
 
+# OpenTelemetry tracing (Java)
+
 When auditing or changing distributed tracing in a Java service — assessing
 maturity, detecting legacy stacks (Brave/Zipkin, Jaeger client, OpenTracing,
 Sleuth), hybrid or incomplete OpenTelemetry, broken OTLP export, Kafka/async
@@ -17,7 +19,7 @@ language families**, ask the user **bulk vs single target** before L4 (umbrella
 Multi-language scope gate). Then Phase 2 (L4 + one post-L4 build + validation)
 if implementation is in scope.
 
-After runtime deploy, run the **stand health gate** before Jaeger or e2e pass/fail
+After runtime deploy, run the **stand health gate** before Jaeger or end-to-end pass/fail
 (umbrella `recipes/stand-health-gate.md`). Do not leave validation in a state
 where the SUT pod is not Ready or crash-looping.
 

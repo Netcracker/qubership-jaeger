@@ -9,7 +9,7 @@ Go execution details:
 
 - runtime path must be discovered first via
   [`../reference/service-installation-discovery.md`](../reference/service-installation-discovery.md);
-- post-L4 build/image is mandatory before runtime e2e;
+- post-L4 build/image is mandatory before runtime end-to-end;
 - stand health and log triage are mandatory before tracing pass/fail.
 
 ## Fresh build gate (once after L4)

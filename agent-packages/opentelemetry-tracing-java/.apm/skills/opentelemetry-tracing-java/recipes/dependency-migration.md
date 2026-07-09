@@ -2,7 +2,7 @@
 
 Concrete `remove` / `add` / `upgrade` moves for Layer 4 **§4.1** (`dependencyMigration`) — see umbrella
 [`models/4-transformation.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/4-transformation.md).
-Keyed on discovery. Read versions from the repo's BOM/`pom.xml`; never pin here.
+Keyed on discovery. Read versions from the repository's BOM/`pom.xml`; never pin here.
 
 ## Choosing the target instrumentation
 
@@ -10,12 +10,12 @@ The framework family decided in [Layer 4 Step 0](../models/4-transformation.md)
 selects the row; it is **not** a free choice. Pick the path that matches the
 detected runtime, then stay on it for config and code.
 
-| Runtime         | Required/preferred OTel path                                          | Agent allowed? |
-|-----------------|----------------------------------------------------------------------|----------------|
-| Spring Boot 3   | Micrometer Tracing + `micrometer-tracing-bridge-otel` + OTLP exporter | yes (zero-touch, not with the bridge) |
-| Spring Boot 4   | Same bridge/exporter **plus** `spring-boot-micrometer-tracing-opentelemetry` (official Boot OTLP autoconfig) | yes (zero-touch, not with the bridge) |
-| Quarkus         | `quarkus-opentelemetry` extension (**required**)                     | **no** — forbidden, breaks Vert.x |
-| Pure Java       | `opentelemetry-sdk` + `opentelemetry-exporter-otlp` (+ propagators)   | yes (zero-touch) |
+| Runtime | Required/preferred OTel path | Agent allowed? |
+| --- | --- | --- |
+| Spring Boot 3 | Micrometer Tracing + `micrometer-tracing-bridge-otel` + OTLP exporter | yes (zero-touch, not with bridge) |
+| Spring Boot 4 | bridge/exporter + `spring-boot-micrometer-tracing-opentelemetry` | yes (zero-touch, not with bridge) |
+| Quarkus | `quarkus-opentelemetry` extension (**required**) | **no** — forbidden, breaks Vert.x |
+| Pure Java | `opentelemetry-sdk` + `opentelemetry-exporter-otlp` (+ propagators) | yes (zero-touch) |
 
 Agent vs SDK (only where the agent is allowed): choose the **agent** when the
 service has little or no manual instrumentation and you want broad auto-coverage
@@ -29,7 +29,7 @@ require a build the user cannot run, record the blocker in `gaps` — see
 
 ### Spring Boot 4 (parent `spring-boot-starter-parent` 4.x)
 
-Read the Boot version from the repo parent POM/BOM — do not assume Boot 3.
+Read the Boot version from the repository parent POM/BOM — do not assume Boot 3.
 
 On Boot 4, `micrometer-tracing-bridge-otel` + `opentelemetry-exporter-otlp` alone
 **do not** activate OTLP export. Micrometer may create spans and log

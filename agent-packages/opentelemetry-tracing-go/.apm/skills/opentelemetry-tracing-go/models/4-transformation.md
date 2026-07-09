@@ -16,7 +16,7 @@ Run the **Go gate below before §4.1**. Then fill §4.1–§4.4 from recipes:
 
 **Framework stack** = how the service serves HTTP (from L1 → `service.framework` in
 `discovery-result.json`): Fiber with a server wrapper, stdlib `net/http`, Gin, Echo,
-etc. — not programming language and not “one repo = one stack” by default.
+etc. — not programming language and not “one repository = one stack” by default.
 
 Read `discovery-result.service.framework` and pick exactly one migration path.
 Do not emit §4.1 or §4.2 rows before this is fixed.

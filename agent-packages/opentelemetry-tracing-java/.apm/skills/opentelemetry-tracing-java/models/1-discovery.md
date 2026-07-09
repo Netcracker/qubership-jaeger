@@ -161,8 +161,8 @@ Answer: *where can context be lost?*
 - **Reactor** — `Mono`, `Flux`, `publishOn`, `subscribeOn`, `contextWrite`.
 - **Quarkus Reactive Messaging** — Mutiny `Uni`/`Multi` handoffs.
 
-For each, record the boundary type, file/line, and whether any context-propagation wrapper is present nearby 
-(`Context.taskWrapping`, `ContextSnapshot`, OTel Kafka instrumentation). Absence ⇒ candidate context-loss point for 
+For each, record the boundary type, file/line, and whether any context-propagation wrapper is present nearby
+(`Context.taskWrapping`, `ContextSnapshot`, OTel Kafka instrumentation). Absence ⇒ candidate context-loss point for
 Layer 2.
 
 **Output:** the `asyncBoundaries` array.

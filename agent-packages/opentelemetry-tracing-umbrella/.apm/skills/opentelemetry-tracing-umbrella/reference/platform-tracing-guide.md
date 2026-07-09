@@ -33,7 +33,7 @@ Contracted values and in-service defaults:
 | `TRACING_SAMPLER_PROBABILISTIC` | float   | `0.01`–`1.0`     | `0.01` (1%)           |
 | `TRACING_SAMPLER_CONST`         | integer | `0` or `1`       | `1` (100%)            |
 
-Use `TRACING_SAMPLER_RATELIMITING` when the stack supports a rate-limiting sampler; fall back to 
+Use `TRACING_SAMPLER_RATELIMITING` when the stack supports a rate-limiting sampler; fall back to
 `TRACING_SAMPLER_PROBABILISTIC`, then to `TRACING_SAMPLER_CONST`, in that order.
 
 ### Export
@@ -42,7 +42,7 @@ Use `TRACING_SAMPLER_RATELIMITING` when the stack supports a rate-limiting sampl
 - Canonical endpoint: `http://${TRACING_HOST}:4318/v1/traces`.
 - Default `TRACING_HOST`: `nc-diagnostic-agent` (OTel proxy in the same namespace).
 - Alternative proxy in some clusters: `open-telemetry-collector`.
-- The proxy exists so services never hard-code direct Jaeger links (Jaeger is
+- The proxy exists so services never hardcode direct Jaeger links (Jaeger is
   usually deployed in another namespace); it exposes tracing-protocol endpoints
   and forwards to Jaeger.
 - Production path: service → proxy/collector → Jaeger. **Direct-to-Jaeger** is

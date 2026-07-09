@@ -3,13 +3,13 @@
 **Run this immediately after deploy completes and before log-error triage, Jaeger
 queries, or any runtime `pass` verdict.**
 
-Spans in Jaeger or a one-off curl **do not** satisfy this gate. Probe traffic on
+Spans in Jaeger or a one-off cURL **do not** satisfy this gate. Probe traffic on
 an unstable workload can still export traces while the runtime keeps restarting
 the process.
 
 ## When to run
 
-- Runtime e2e is in progress (dev-minimal or user cluster).
+- Runtime end-to-end is in progress (dev-minimal or user cluster).
 - SUT manifest is applied; rollout is in progress or finished.
 
 Skip only when `validationPlan.runtime.status` is `manual` (no deploy).
@@ -20,7 +20,7 @@ Skip only when `validationPlan.runtime.status` is `manual` (no deploy).
 deploy → stand health gate (this recipe) → log-error triage → business traffic → tracing assertions → pass/fail → validation cleanup (on pass)
 ```
 
-**Forbidden:** querying Jaeger, posting "e2e success", or setting
+**Forbidden:** querying Jaeger, posting "end-to-end success", or setting
 `runtime.status` to `pass` before this gate passes.
 
 ## Gate checklist (environment-agnostic)
@@ -96,7 +96,7 @@ kubectl run curl-sut -n <ns> --rm -i --restart=Never --image=curlimages/curl -- 
 ```
 
 Map checklist rows: rollout → step 1; pod Ready/restarts/endpoints → step 2;
-observation re-check → step 3; describe/logs → step 4; Service curl → step 5.
+observation re-check → step 3; describe/logs → step 4; Service cURL → step 5.
 
 ## Outcomes
 

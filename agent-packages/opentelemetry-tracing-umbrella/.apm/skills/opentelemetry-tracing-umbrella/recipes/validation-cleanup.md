@@ -7,7 +7,7 @@ Run **only** when `validationPlan.runtime.status` is `pass`. See
 
 Remove ephemeral artifacts created for runtime validation so they are not
 accidentally committed. **Do not** delete L4 service changes (source, Helm of the
-SUT, dependency manifests, synced README, chart values).
+SUT, dependency manifests, synced readme, chart values).
 
 ## Ephemeral (typical)
 

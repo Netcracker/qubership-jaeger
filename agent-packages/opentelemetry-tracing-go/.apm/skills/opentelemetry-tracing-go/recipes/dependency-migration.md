@@ -4,7 +4,7 @@ Concrete moves for Layer 4 §4.1 (`dependencyMigration`) — see umbrella
 [`models/4-transformation.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/4-transformation.md)
 §4.1.
 
-Read versions from target `go.mod`; do not hard-code versions here.
+Read versions from target `go.mod`; do not hardcode versions here.
 
 **Prerequisite:** complete Go [`models/4-transformation.md`](../models/4-transformation.md)
 Step 0 (framework stack) before emitting §4.1 rows — dependency moves follow
@@ -44,7 +44,7 @@ Applies to every framework stack when these are the active tracing dependencies:
 
 ### Platform/vendor HTTP wrapper (`cloudcore-fiber` and similar)
 
-When Step 0 selected a **Fiber + platform HTTP wrapper** stack (schema value `cloudcore-fiber`, or wrapper 
+When Step 0 selected a **Fiber + platform HTTP wrapper** stack (schema value `cloudcore-fiber`, or wrapper
 symbols such as `NewZipkinTracer`, `WithTracer` in `detection-rules.md`):
 
 1. check the wrapper library first — current and newer released versions may

@@ -22,12 +22,12 @@ resource attributes.
 
 ## Legacy config mappings
 
-| From                    | To                                            | 1:1     |
-|-------------------------|-----------------------------------------------|---------|
-| `tracing.host`          | `TRACING_HOST` + OTLP endpoint composition    | no      |
-| `tracing.enabled`       | `TRACING_ENABLED`                             | yes     |
+| From | To | 1:1 |
+| --- | --- | --- |
+| `tracing.host` | `TRACING_HOST` + OTLP endpoint composition | no |
+| `tracing.enabled` | `TRACING_ENABLED` | yes |
 | `tracing.sampler.const` | `TRACING_SAMPLER_CONST` or probabilistic path | partial |
-| hard-coded Zipkin URL   | OTLP endpoint from `TRACING_HOST`             | no      |
+| hardcoded Zipkin URL | OTLP endpoint from `TRACING_HOST` | no |
 
 ## Required target env shape
 

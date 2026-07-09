@@ -1,9 +1,9 @@
 # Build and registry notes (Go)
 
 Use this file to **detect** build blockers and enforce **fresh-build** rules
-before runtime e2e.
+before runtime end-to-end.
 
-**Runtime e2e after Layer 4:** the agent **must** run
+**Runtime end-to-end after Layer 4:** the agent **must** run
 [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md)
 (`go test`/`go build` + container image in the same session) before runtime deploy.
 Plan-only / audit runs without runtime deploy may defer build and set
@@ -38,7 +38,7 @@ before tracing pass/fail.
 
 ## Build artifact provenance (mandatory for runtime pass)
 
-Before runtime e2e, run [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md).
+Before runtime end-to-end, run [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md).
 **Every** Go validation session must:
 
 1. **Purge** stale build outputs (`bin/`, `dist/`, module-specific dirs) and cached SUT images.
@@ -67,5 +67,5 @@ Checklist when a pre-built image is reused:
 
 Example honest summary:
 
-> Runtime e2e used pre-existing image `<service>:<tag>` built before L4.
+> Runtime end-to-end used pre-existing image `<service>:<tag>` built before L4.
 > Tracing export works on that image, but **L4 diff is not compile-verified**.
