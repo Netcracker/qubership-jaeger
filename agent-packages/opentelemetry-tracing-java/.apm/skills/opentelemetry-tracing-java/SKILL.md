@@ -336,7 +336,7 @@ image without L4 rebuild in this session → runtime at most `fail`.
 
 When `validationPlan.runtime.status` is `pass`, run
 [`recipes/validation-cleanup.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md): remove or
-revert ephemeral L5-only files (e2e manifests, throwaway scripts, local-only
+revert ephemeral L5-only files (end-to-end manifests, throwaway scripts, local-only
 Dockerfiles). Do **not** delete L4 service changes. Post an **L5 Cleanup** line
 in chat. See umbrella [`models/5-validation.md`](models/5-validation.md) §5.4.
 

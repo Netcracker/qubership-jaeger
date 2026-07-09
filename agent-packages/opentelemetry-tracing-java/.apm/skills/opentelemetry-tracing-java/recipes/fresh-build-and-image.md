@@ -58,7 +58,7 @@ do **not** fall back to cached images. See
 ## Step 2 — Container image (mandatory, same session as Step 1)
 
 Build from the service Docker context using fresh post-L4 artifacts.
-Use a **session-unique tag** (git short SHA, timestamp, or equivalent).
+Use a **session-unique tag** (Git short SHA, timestamp, or equivalent).
 
 ## Step 3 — Runtime image availability (mandatory)
 

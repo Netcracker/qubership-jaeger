@@ -69,7 +69,7 @@ Split the findings into three concerns:
 ### Export configuration
 
 Determine: exporter type (OTLP / Zipkin / Jaeger / none), endpoint, protocol
-(grpc / http-protobuf / thrift), and whether it points at OTeC or the Jaeger
+(gRPC / http-protobuf / thrift), and whether it points at OTeC or the Jaeger
 collector (cross-check [`platform-tracing-guide.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md) §Export).
 Keys to read: `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`,
 `otel.exporter.otlp.*`, `management.zipkin.tracing.endpoint`,

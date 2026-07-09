@@ -116,11 +116,8 @@ the discovery result.
 | `jakarta.ws.rs`, `jakarta.servlet` | Jakarta EE / Servlet container |
 | `io.dropwizard:*` | Dropwizard |
 
-Typical Maven coordinates for Vert.x (grep `pom.xml` / Gradle files):
-
-```text
-io.vertx:vertx-*
-```
+Typical Maven coordinates for Vert.x (grep `pom.xml` / Gradle files): use the
+canonical Eclipse Vert.x group and module artifact names from upstream docs.
 
 ## Platform-contract signatures
 
