@@ -13,7 +13,6 @@
         },
         "annotations": {
           "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "annotations",
           "type": "object"
         },
@@ -29,7 +28,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "containerSecurityContext",
           "type": "object"
         },
@@ -60,7 +58,6 @@
         "extraEnv": {
           "description": "Cassandra schema job related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
           "items": {
-            "required": []
           },
           "title": "extraEnv",
           "type": "array"
@@ -97,7 +94,6 @@
         },
         "labels": {
           "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "labels",
           "type": "object"
         },
@@ -146,10 +142,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "limits",
               "type": "object"
             },
@@ -166,18 +158,10 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [
-            "requests",
-            "limits"
-          ],
           "title": "resources",
           "type": "object"
         },
@@ -210,7 +194,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "securityContext",
           "type": "object"
         },
@@ -254,11 +237,6 @@
               "type": "string"
             }
           },
-          "required": [
-            "enabled",
-            "existingSecret",
-            "cqlshrc"
-          ],
           "title": "tls",
           "type": "object"
         },
@@ -275,7 +253,6 @@
               "type": "string"
             }
           },
-          "required": [],
           "title": "ttl",
           "type": "object"
         },
@@ -292,31 +269,6 @@
           "type": "string"
         }
       },
-      "required": [
-        "name",
-        "enablePreHook",
-        "imagePullPolicy",
-        "imagePullSecrets",
-        "host",
-        "port",
-        "existingSecret",
-        "extraEnv",
-        "ttlSecondsAfterFinished",
-        "allowedAuthenticators",
-        "tls",
-        "mode",
-        "datacenter",
-        "keyspace",
-        "createKeyspace",
-        "username",
-        "password",
-        "resources",
-        "securityContext",
-        "containerSecurityContext",
-        "labels",
-        "annotations",
-        "ttl"
-      ],
       "title": "cassandraSchemaJob",
       "type": "object"
     },
@@ -330,14 +282,12 @@
         },
         "annotations": {
           "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "annotations",
           "type": "object"
         },
         "cmdlineParams": {
           "description": "Collector related cmd line opts to be configured on the concerned components.\nType: object\nDefault: []\n",
           "items": {
-            "required": []
           },
           "title": "cmdlineParams",
           "type": "array"
@@ -368,11 +318,6 @@
                           "type": "integer"
                         }
                       },
-                      "required": [
-                        "enabled",
-                        "num_consumers",
-                        "queue_size"
-                      ],
                       "title": "queue",
                       "type": "object"
                     },
@@ -400,27 +345,14 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "enabled",
-                        "initial_interval",
-                        "max_interval",
-                        "max_elapsed_time"
-                      ],
                       "title": "retry_on_failure",
                       "type": "object"
                     }
                   },
-                  "required": [
-                    "retry_on_failure",
-                    "queue"
-                  ],
                   "title": "jaeger_storage_exporter",
                   "type": "object"
                 }
               },
-              "required": [
-                "jaeger_storage_exporter"
-              ],
               "title": "exporters",
               "type": "object"
             },
@@ -453,19 +385,10 @@
                       "type": "integer"
                     }
                   },
-                  "required": [
-                    "enabled",
-                    "check_interval",
-                    "limit_mib",
-                    "spike_limit_mib"
-                  ],
                   "title": "memory_limiter",
                   "type": "object"
                 }
               },
-              "required": [
-                "memory_limiter"
-              ],
               "title": "processors",
               "type": "object"
             },
@@ -481,32 +404,18 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "level"
-                      ],
                       "title": "logs",
                       "type": "object"
                     }
                   },
-                  "required": [
-                    "logs"
-                  ],
                   "title": "telemetry",
                   "type": "object"
                 }
               },
-              "required": [
-                "telemetry"
-              ],
               "title": "service",
               "type": "object"
             }
           },
-          "required": [
-            "service",
-            "processors",
-            "exporters"
-          ],
           "title": "config",
           "type": "object"
         },
@@ -522,14 +431,12 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "containerSecurityContext",
           "type": "object"
         },
         "extraEnv": {
           "description": "Collector related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
           "items": {
-            "required": []
           },
           "title": "extraEnv",
           "type": "array"
@@ -548,7 +455,6 @@
         "imagePullSecrets": {
           "description": "A secret with secret for pulling images from private registry.\nDefault: []\n",
           "items": {
-            "required": []
           },
           "title": "imagePullSecrets",
           "type": "array"
@@ -583,7 +489,6 @@
                 },
                 "hosts": {
                   "items": {
-                    "required": []
                   },
                   "title": "hosts",
                   "type": "array"
@@ -594,11 +499,6 @@
                   "type": "boolean"
                 }
               },
-              "required": [
-                "install",
-                "hosts",
-                "defaultPaths"
-              ],
               "title": "grpc",
               "type": "object"
             },
@@ -643,26 +543,238 @@
                   "type": "boolean"
                 }
               },
-              "required": [
-                "install",
-                "hosts",
-                "defaultPaths"
-              ],
               "title": "http",
               "type": "object"
             },
             "tls": {
-              "required": [],
               "title": "tls",
               "type": "object"
             }
           },
-          "required": [
-            "http",
-            "grpc",
-            "tls"
-          ],
           "title": "ingress",
+          "type": "object"
+        },
+        "gatewayApi": {
+          "description": "Gateway API configuration for collector routes.\nUse this section to configure HTTPRoute and GRPCRoute resources.\n",
+          "properties": {
+            "httpRoute": {
+              "description": "Configuration for collector HTTPRoute resource.\n",
+              "properties": {
+                "install": {
+                  "default": false,
+                  "description": "Enable creation of HTTPRoute for collector HTTP endpoints.\n",
+                  "title": "install",
+                  "type": "boolean"
+                },
+                "labels": {
+                  "description": "Additional labels for HTTPRoute metadata.\n",
+                  "title": "labels",
+                  "type": "object"
+                },
+                "annotations": {
+                  "description": "Additional annotations for HTTPRoute metadata.\n",
+                  "title": "annotations",
+                  "type": "object"
+                },
+                "parentRefs": {
+                  "description": "List of parent Gateway references to attach the route to.\n",
+                  "items": {
+                    "description": "Reference to a parent Gateway resource.\n",
+                    "properties": {
+                      "name": {
+                        "description": "Name of the parent Gateway resource.\n",
+                        "type": "string"
+                      },
+                      "namespace": {
+                        "description": "Namespace of the parent Gateway resource.\n",
+                        "type": "string"
+                      },
+                      "sectionName": {
+                        "description": "Optional listener name on the parent Gateway.\n",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "Kind of the parent resource, usually Gateway.\n",
+                        "type": "string"
+                      },
+                      "group": {
+                        "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "title": "parentRefs",
+                  "type": "array"
+                },
+                "hosts": {
+                  "description": "List of hostnames for the HTTPRoute.\n",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "hosts",
+                  "type": "array"
+                },
+                "defaultPaths": {
+                  "description": "Default HTTP path rules rendered into HTTPRoute.spec.rules.\n",
+                  "items": {
+                    "properties": {
+                      "prefix": { "type": "string" },
+                      "rewritePrefix": { "type": "string" },
+                      "service": {
+                        "properties": {
+                          "name": { "type": "string" },
+                          "port": { "type": "integer" }
+                        },
+                        "type": "object"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "title": "defaultPaths",
+                  "type": "array"
+                }
+              },
+              "title": "httpRoute",
+              "type": "object"
+            },
+            "grpcRoute": {
+              "description": "Configuration for collector gRPC Gateway API route.\nDepending on kind, the chart renders either HTTPRoute or GRPCRoute.\n",
+              "properties": {
+                "install": {
+                  "default": false,
+                  "description": "Enable creation of Gateway API route for collector gRPC endpoint.\n",
+                  "title": "install",
+                  "type": "boolean"
+                },
+                "kind": {
+                  "default": "HTTPRoute",
+                  "enum": ["HTTPRoute", "GRPCRoute"],
+                  "description": "Gateway API resource kind to render for gRPC traffic.\n",
+                  "title": "kind",
+                  "type": "string"
+                },
+                "labels": {
+                  "description": "Additional labels for route metadata.\n",
+                  "title": "labels",
+                  "type": "object"
+                },
+                "annotations": {
+                  "description": "Additional annotations for route metadata.\n",
+                  "title": "annotations",
+                  "type": "object"
+                },
+                "parentRefs": {
+                  "description": "List of parent Gateway references to attach the route to.\n",
+                  "items": {
+                    "description": "Reference to a parent Gateway resource.\n",
+                    "properties": {
+                      "name": {
+                        "description": "Name of the parent Gateway resource.\n",
+                        "type": "string"
+                      },
+                      "namespace": {
+                        "description": "Namespace of the parent Gateway resource.\n",
+                        "type": "string"
+                      },
+                      "sectionName": {
+                        "description": "Optional listener name on the parent Gateway.\n",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "Kind of the parent resource, usually Gateway.\n",
+                        "type": "string"
+                      },
+                      "group": {
+                        "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "title": "parentRefs",
+                  "type": "array"
+                },
+                "hosts": {
+                  "description": "List of hostnames for the route.\n",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "hosts",
+                  "type": "array"
+                },
+                "defaultPaths": {
+                  "description": "Default path rules used when kind is HTTPRoute.\n",
+                  "items": {
+                    "description": "Single HTTPRoute path rule.\n",
+                    "properties": {
+                      "prefix": {
+                        "description": "Path prefix to match.\n",
+                        "type": "string"
+                      },
+                      "service": {
+                        "description": "Backend service configuration for the matched path.\n",
+                        "properties": {
+                          "name": {
+                            "description": "Optional backend service name. If omitted, the chart uses the default collector service.\n",
+                            "type": "string"
+                          },
+                          "port": {
+                            "description": "Backend service port.\n",
+                            "type": "integer"
+                          }
+                        },
+                        "type": "object"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "title": "defaultPaths",
+                  "type": "array"
+                },
+                "rules": {
+                  "description": "Explicit GRPCRoute rules used when kind is GRPCRoute.\n",
+                  "items": {
+                    "description": "Single GRPCRoute rule.\n",
+                    "properties": {
+                      "matches": {
+                        "description": "List of gRPC match conditions for the rule.\n",
+                        "items": {
+                          "description": "Single gRPC match condition.\n",
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "backendRefs": {
+                        "description": "List of backend references for the matched gRPC traffic.\n",
+                        "items": {
+                          "description": "Single backend reference.\n",
+                          "properties": {
+                            "name": {
+                              "description": "Backend service name.\n",
+                              "type": "string"
+                            },
+                            "port": {
+                              "description": "Backend service port.\n",
+                              "type": "integer"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "title": "rules",
+                  "type": "array"
+                }
+              },
+              "title": "grpcRoute",
+              "type": "object"
+            }
+          },
+          "title": "gatewayApi",
           "type": "object"
         },
         "install": {
@@ -695,11 +807,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "maxConnectionAge",
-                "maxConnectionAgeGrace",
-                "maxRecvMsgSizeMib"
-              ],
               "title": "grpc",
               "type": "object"
             },
@@ -724,25 +831,15 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "idleTimeout",
-                "readTimeout",
-                "readHeaderTimeout"
-              ],
               "title": "http",
               "type": "object"
             }
           },
-          "required": [
-            "grpc",
-            "http"
-          ],
           "title": "jaeger",
           "type": "object"
         },
         "labels": {
           "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "labels",
           "type": "object"
         },
@@ -754,7 +851,6 @@
         },
         "nodeSelector": {
           "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "nodeSelector",
           "type": "object"
         },
@@ -782,11 +878,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "maxConnectionAge",
-                "maxConnectionAgeGrace",
-                "maxRecvMsgSizeMib"
-              ],
               "title": "grpc",
               "type": "object"
             },
@@ -813,11 +904,6 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "allowedOrigins",
-                    "allowedHeaders",
-                    "maxAge"
-                  ],
                   "title": "cors",
                   "type": "object"
                 },
@@ -840,20 +926,10 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "idleTimeout",
-                "readHeaderTimeout",
-                "readTimeout",
-                "cors"
-              ],
               "title": "http",
               "type": "object"
             }
           },
-          "required": [
-            "grpc",
-            "http"
-          ],
           "title": "otlp",
           "type": "object"
         },
@@ -884,10 +960,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "limits",
               "type": "object"
             },
@@ -904,18 +976,10 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [
-            "limits",
-            "requests"
-          ],
           "title": "resources",
           "type": "object"
         },
@@ -937,10 +1001,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "initialSamplingProbability",
-                "targetSamplesPerSecond"
-              ],
               "title": "adaptive",
               "type": "object"
             },
@@ -951,10 +1011,6 @@
               "type": "string"
             }
           },
-          "required": [
-            "type",
-            "adaptive"
-          ],
           "title": "sampling",
           "type": "object"
         },
@@ -988,7 +1044,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "securityContext",
           "type": "object"
         },
@@ -1045,12 +1100,6 @@
                   "type": "integer"
                 }
               },
-              "required": [
-                "enabled",
-                "clusterIssuerName",
-                "duration",
-                "renewBefore"
-              ],
               "title": "generateCerts",
               "type": "object"
             },
@@ -1082,12 +1131,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "enabled",
-                "cipherSuites",
-                "maxVersion",
-                "minVersion"
-              ],
               "title": "jaegerHttp",
               "type": "object"
             },
@@ -1119,12 +1162,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "enabled",
-                "cipherSuites",
-                "maxVersion",
-                "minVersion"
-              ],
               "title": "jaegergRPC",
               "type": "object"
             },
@@ -1167,13 +1204,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "enabled",
-                "cipherSuites",
-                "maxVersion",
-                "minVersion",
-                "certificateReloadInterval"
-              ],
               "title": "otelHttp",
               "type": "object"
             },
@@ -1211,13 +1241,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "enabled",
-                "cipherSuites",
-                "maxVersion",
-                "minVersion",
-                "certificateReloadInterval"
-              ],
               "title": "otelgRPC",
               "type": "object"
             },
@@ -1249,30 +1272,15 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "enabled",
-                "cipherSuites",
-                "maxVersion",
-                "minVersion"
-              ],
               "title": "zipkin",
               "type": "object"
             }
           },
-          "required": [
-            "generateCerts",
-            "otelHttp",
-            "otelgRPC",
-            "jaegerHttp",
-            "jaegergRPC",
-            "zipkin"
-          ],
           "title": "tlsConfig",
           "type": "object"
         },
         "tolerations": {
           "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
-          "required": [],
           "title": "tolerations",
           "type": "object"
         },
@@ -1294,10 +1302,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "allowedHeaders",
-                "allowedOrigins"
-              ],
               "title": "cors",
               "type": "object"
             },
@@ -1308,10 +1312,6 @@
               "type": "boolean"
             }
           },
-          "required": [
-            "cors",
-            "disableKeepAlives"
-          ],
           "title": "zipkin",
           "type": "object"
         },
@@ -1322,32 +1322,6 @@
           "type": "integer"
         }
       },
-      "required": [
-        "install",
-        "name",
-        "imagePullPolicy",
-        "imagePullSecrets",
-        "replicas",
-        "otlp",
-        "jaeger",
-        "zipkin",
-        "tlsConfig",
-        "cmdlineParams",
-        "extraEnv",
-        "samplingConfig",
-        "zipkinPort",
-        "securityContext",
-        "containerSecurityContext",
-        "nodeSelector",
-        "tolerations",
-        "affinity",
-        "resources",
-        "sampling",
-        "labels",
-        "annotations",
-        "ingress",
-        "config"
-      ],
       "title": "collector",
       "type": "object"
     },
@@ -1402,7 +1376,6 @@
                   "type": "string"
               }
             },
-              "required": ["enabled","existingSecret"],
               "title": "tls",
               "type": "object"
             },
@@ -1419,13 +1392,6 @@
               "type": "string"
             }
           },
-          "required": [
-            "username",
-            "password",
-            "url",
-            "scheme",
-            "tls"
-          ],
           "title": "client",
           "type": "object"
         },
@@ -1438,7 +1404,6 @@
         "extraEnv": {
           "description": "Elasticsearch related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
           "items": {
-            "required": []
           },
           "title": "extraEnv",
           "type": "array"
@@ -1447,7 +1412,6 @@
           "properties": {
             "annotations": {
               "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-              "required": [],
               "title": "annotations",
               "type": "object"
             },
@@ -1467,19 +1431,16 @@
                 },
                 "capabilities": {
                   "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n",
-                  "required": [],
                   "title": "capabilities",
                   "type": "object"
                 }
               },
-              "required": [],
               "title": "containerSecurityContext",
               "type": "object"
             },
             "extraConfigmapMounts": {
               "description": "Specify extra configMap mounts for indexCleaner.\nType: array\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "extraConfigmapMounts",
               "type": "array"
@@ -1487,7 +1448,6 @@
             "extraEnv": {
               "description": "indexCleaner related extra env vars to be configured on the concerned components.\nType: array\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "extraEnv",
               "type": "array"
@@ -1495,7 +1455,6 @@
             "extraSecretMounts": {
               "description": "Specify extra secret mounts for indexCleaner.\nType: array\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "extraSecretMounts",
               "type": "array"
@@ -1521,7 +1480,6 @@
             "imagePullSecrets": {
               "description": "The secrets to be used for pulling the image from private docker registry.\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "imagePullSecrets",
               "type": "array"
@@ -1534,7 +1492,6 @@
             },
             "labels": {
               "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-              "required": [],
               "title": "labels",
               "type": "object"
             },
@@ -1546,7 +1503,6 @@
             },
             "nodeSelector": {
               "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
-              "required": [],
               "title": "nodeSelector",
               "type": "object"
             },
@@ -1577,10 +1533,6 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "cpu",
-                    "memory"
-                  ],
                   "title": "limits",
                   "type": "object"
                 },
@@ -1597,18 +1549,10 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "cpu",
-                    "memory"
-                  ],
                   "title": "requests",
                   "type": "object"
                 }
               },
-              "required": [
-                "limits",
-                "requests"
-              ],
               "title": "resources",
               "type": "object"
             },
@@ -1642,7 +1586,6 @@
                   "type": "object"
                 }
               },
-              "required": [],
               "title": "securityContext",
               "type": "object"
             },
@@ -1654,7 +1597,6 @@
             },
             "tolerations": {
               "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
-              "required": [],
               "title": "tolerations",
               "type": "object"
             },
@@ -1665,28 +1607,6 @@
               "type": "integer"
             }
           },
-          "required": [
-            "install",
-            "name",
-            "imagePullPolicy",
-            "imagePullSecrets",
-            "labels",
-            "annotations",
-            "concurrencyPolicy",
-            "schedule",
-            "successfulJobsHistoryLimit",
-            "failedJobsHistoryLimit",
-            "ttlSecondsAfterFinished",
-            "securityContext",
-            "containerSecurityContext",
-            "numberOfDays",
-            "extraEnv",
-            "extraConfigmapMounts",
-            "extraSecretMounts",
-            "nodeSelector",
-            "tolerations",
-            "resources"
-          ],
           "title": "indexCleaner",
           "type": "object"
         },
@@ -1700,7 +1620,6 @@
           "properties": {
             "annotations": {
               "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-              "required": [],
               "title": "annotations",
               "type": "object"
             },
@@ -1721,19 +1640,16 @@
                 },
                 "capabilities": {
                   "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n",
-                  "required": [],
                   "title": "capabilities",
                   "type": "object"
                 }
               },
-              "required": [],
               "title": "containerSecurityContext",
               "type": "object"
             },
             "extraConfigmapMounts": {
               "description": "Specify extra configMap mounts for lookback.\nType: object\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "extraConfigmapMounts",
               "type": "array"
@@ -1741,7 +1657,6 @@
             "extraEnv": {
               "description": "lookback related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "extraEnv",
               "type": "array"
@@ -1749,7 +1664,6 @@
             "extraSecretMounts": {
               "description": "Specify extra secret mounts for lookback.\nType: object\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "extraSecretMounts",
               "type": "array"
@@ -1769,7 +1683,6 @@
             "imagePullSecrets": {
               "description": "A secret name with secret for pulling images from private registry.\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "imagePullSecrets",
               "type": "array"
@@ -1782,7 +1695,6 @@
             },
             "labels": {
               "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-              "required": [],
               "title": "labels",
               "type": "object"
             },
@@ -1794,7 +1706,6 @@
             },
             "nodeSelector": {
               "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
-              "required": [],
               "title": "nodeSelector",
               "type": "object"
             },
@@ -1819,10 +1730,6 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "cpu",
-                    "memory"
-                  ],
                   "title": "limits",
                   "type": "object"
                 },
@@ -1839,18 +1746,10 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "cpu",
-                    "memory"
-                  ],
                   "title": "requests",
                   "type": "object"
                 }
               },
-              "required": [
-                "limits",
-                "requests"
-              ],
               "title": "resources",
               "type": "object"
             },
@@ -1891,7 +1790,6 @@
                   "type": "object"
                 }
               },
-              "required": [],
               "title": "securityContext",
               "type": "object"
             },
@@ -1903,7 +1801,6 @@
             },
             "tolerations": {
               "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
-              "required": [],
               "title": "tolerations",
               "type": "object"
             },
@@ -1914,27 +1811,6 @@
               "type": "integer"
             }
           },
-          "required": [
-            "install",
-            "name",
-            "imagePullPolicy",
-            "imagePullSecrets",
-            "labels",
-            "annotations",
-            "concurrencyPolicy",
-            "schedule",
-            "successfulJobsHistoryLimit",
-            "failedJobsHistoryLimit",
-            "ttlSecondsAfterFinished",
-            "securityContext",
-            "containerSecurityContext",
-            "nodeSelector",
-            "tolerations",
-            "extraEnv",
-            "extraConfigmapMounts",
-            "extraSecretMounts",
-            "resources"
-          ],
           "title": "lookback",
           "type": "object"
         },
@@ -1942,7 +1818,6 @@
           "properties": {
             "annotations": {
               "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-              "required": [],
               "title": "annotations",
               "type": "object"
             },
@@ -1963,19 +1838,16 @@
                 },
                 "capabilities": {
                   "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n",
-                  "required": [],
                   "title": "capabilities",
                   "type": "object"
                 }
               },
-              "required": [],
               "title": "containerSecurityContext",
               "type": "object"
             },
             "extraConfigmapMounts": {
               "description": "Specify extra configMap mounts for rollover.\nType: object\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "extraConfigmapMounts",
               "type": "array"
@@ -1983,7 +1855,6 @@
             "extraEnv": {
               "description": "rollover related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "extraEnv",
               "type": "array"
@@ -1991,7 +1862,6 @@
             "extraSecretMounts": {
               "description": "Specify extra secret mounts for rollover.\nType: object\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "extraSecretMounts",
               "type": "array"
@@ -2016,7 +1886,6 @@
             "imagePullSecrets": {
               "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
               "items": {
-                "required": []
               },
               "title": "imagePullSecrets",
               "type": "array"
@@ -2026,7 +1895,6 @@
                 "extraEnv": {
                   "description": "rollover init related extra env vars to be configured on the concerned components.\nType: array\nDefault: []\n",
                   "items": {
-                    "required": []
                   },
                   "title": "extraEnv",
                   "type": "array"
@@ -2044,10 +1912,6 @@
                   "type": "integer"
                 }
               },
-              "required": [
-                "name",
-                "ttlSecondsAfterFinished"
-              ],
               "title": "initHook",
               "type": "object"
             },
@@ -2059,7 +1923,6 @@
             },
             "labels": {
               "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-              "required": [],
               "title": "labels",
               "type": "object"
             },
@@ -2071,7 +1934,6 @@
             },
             "nodeSelector": {
               "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
-              "required": [],
               "title": "nodeSelector",
               "type": "object"
             },
@@ -2096,10 +1958,6 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "cpu",
-                    "memory"
-                  ],
                   "title": "limits",
                   "type": "object"
                 },
@@ -2116,18 +1974,10 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "cpu",
-                    "memory"
-                  ],
                   "title": "requests",
                   "type": "object"
                 }
               },
-              "required": [
-                "limits",
-                "requests"
-              ],
               "title": "resources",
               "type": "object"
             },
@@ -2166,7 +2016,6 @@
                   "title": "seccompProfile"
                 }
               },
-              "required": [],
               "title": "securityContext",
               "type": "object"
             },
@@ -2178,7 +2027,6 @@
             },
             "tolerations": {
               "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
-              "required": [],
               "title": "tolerations",
               "type": "object"
             },
@@ -2189,47 +2037,15 @@
               "type": "integer"
             }
           },
-          "required": [
-            "install",
-            "name",
-            "initHook",
-            "imagePullPolicy",
-            "imagePullSecrets",
-            "labels",
-            "annotations",
-            "concurrencyPolicy",
-            "schedule",
-            "successfulJobsHistoryLimit",
-            "failedJobsHistoryLimit",
-            "ttlSecondsAfterFinished",
-            "securityContext",
-            "containerSecurityContext",
-            "nodeSelector",
-            "tolerations",
-            "extraEnv",
-            "extraConfigmapMounts",
-            "extraSecretMounts",
-            "resources"
-          ],
           "title": "rollover",
           "type": "object"
         }
       },
-      "required": [
-        "existingSecret",
-        "indexPrefix",
-        "extraEnv",
-        "client",
-        "indexCleaner",
-        "lookback",
-        "rollover"
-      ],
       "title": "elasticsearch",
       "type": "object"
     },
     "global": {
       "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
-      "required": [],
       "title": "global",
       "type": "object"
     },
@@ -2237,7 +2053,6 @@
       "properties": {
         "annotations": {
           "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "annotations",
           "type": "object"
         },
@@ -2252,12 +2067,10 @@
             },
             "capabilities": {
               "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n",
-              "required": [],
               "title": "capabilities",
               "type": "object"
             }
           },
-          "required": [],
           "title": "containerSecurityContext",
           "type": "object"
         },
@@ -2275,7 +2088,6 @@
         "imagePullSecrets": {
           "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
           "items": {
-            "required": []
           },
           "title": "imagePullSecrets",
           "type": "array"
@@ -2305,17 +2117,80 @@
                 "description": "A list of FQDNs and a secret with the TLS certs to secure them. More info: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls\n Type: object\nDefault: []\n",
                 "type": "object"
               },
-              "required": [],
               "title": "tls",
               "type": "array"
             }
           },
-          "required": [
-            "install",
-            "host",
-            "tls"
-          ],
           "title": "ingress",
+          "type": "object"
+        },
+        "gatewayApi": {
+          "description": "Gateway API configuration for hotrod routes.\n",
+          "properties": {
+            "httpRoute": {
+              "description": "Configuration for hotrod HTTPRoute resource.\n",
+              "properties": {
+                "install": {
+                  "default": false,
+                  "description": "Enable creation of HTTPRoute for hotrod.\n",
+                  "title": "install",
+                  "type": "boolean"
+                },
+                "labels": {
+                  "description": "Additional labels for HTTPRoute metadata.\n",
+                  "title": "labels",
+                  "type": "object"
+                },
+                "annotations": {
+                  "description": "Additional annotations for HTTPRoute metadata.\n",
+                  "title": "annotations",
+                  "type": "object"
+                },
+                "parentRefs": {
+                  "description": "List of parent Gateway references to attach the route to.\n",
+                  "items": {
+                    "description": "Reference to a parent Gateway resource.\n",
+                    "properties": {
+                      "name": {
+                        "description": "Name of the parent Gateway resource.\n",
+                        "type": "string"
+                      },
+                      "namespace": {
+                        "description": "Namespace of the parent Gateway resource.\n",
+                        "type": "string"
+                      },
+                      "sectionName": {
+                        "description": "Optional listener name on the parent Gateway.\n",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "Kind of the parent resource, usually Gateway.\n",
+                        "type": "string"
+                      },
+                      "group": {
+                        "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "title": "parentRefs",
+                  "type": "array"
+                },
+                "hosts": {
+                  "description": "List of hostnames for the HTTPRoute.\n",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "hosts",
+                  "type": "array"
+                }
+              },
+              "title": "httpRoute",
+              "type": "object"
+            }
+          },
+          "title": "gatewayApi",
           "type": "object"
         },
         "install": {
@@ -2326,7 +2201,6 @@
         },
         "labels": {
           "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "labels",
           "type": "object"
         },
@@ -2338,7 +2212,6 @@
         },
         "nodeSelector": {
           "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "nodeSelector",
           "type": "object"
         },
@@ -2357,9 +2230,6 @@
               "type": "integer"
             }
           },
-          "required": [
-            "port"
-          ],
           "title": "otelExporter",
           "type": "object"
         },
@@ -2384,10 +2254,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "limits",
               "type": "object"
             },
@@ -2404,18 +2270,10 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [
-            "limits",
-            "requests"
-          ],
           "title": "resources",
           "type": "object"
         },
@@ -2434,10 +2292,6 @@
               "type": "boolean"
             }
           },
-          "required": [
-            "install",
-            "host"
-          ],
           "title": "route",
           "type": "object"
         },
@@ -2465,7 +2319,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "securityContext",
           "type": "object"
         },
@@ -2478,36 +2331,15 @@
               "type": "integer"
             }
           },
-          "required": [
-            "port"
-          ],
           "title": "service",
           "type": "object"
         },
         "tolerations": {
           "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
-          "required": [],
           "title": "tolerations",
           "type": "object"
         }
       },
-      "required": [
-        "install",
-        "name",
-        "imagePullPolicy",
-        "imagePullSecrets",
-        "labels",
-        "annotations",
-        "securityContext",
-        "containerSecurityContext",
-        "otelExporter",
-        "resources",
-        "nodeSelector",
-        "tolerations",
-        "ingress",
-        "route",
-        "service"
-      ],
       "title": "hotrod",
       "type": "object"
     },
@@ -2523,12 +2355,10 @@
             },
             "capabilities": {
               "description": "Allow to give or drop a process some privileges, but not all the privileges of the root user.\nType: object\nMandatory: no\n",
-              "required": [],
               "title": "capabilities",
               "type": "object"
             }
           },
-          "required": [],
           "title": "containerSecurityContext",
           "type": "object"
         },
@@ -2575,10 +2405,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "memory",
-                "cpu"
-              ],
               "title": "limits",
               "type": "object"
             },
@@ -2595,18 +2421,10 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "memory",
-                "cpu"
-              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [
-            "requests",
-            "limits"
-          ],
           "title": "resources",
           "type": "object"
         },
@@ -2634,7 +2452,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "securityContext",
           "type": "object"
         },
@@ -2647,9 +2464,6 @@
               "type": "string"
             }
           },
-          "required": [
-            "name"
-          ],
           "title": "service",
           "type": "object"
         },
@@ -2668,10 +2482,6 @@
               "type": "string"
             }
           },
-          "required": [
-            "create",
-            "name"
-          ],
           "title": "serviceAccount",
           "type": "object"
         },
@@ -2699,11 +2509,6 @@
               "type": "boolean"
             }
           },
-          "required": [
-            "enabled",
-            "isShortStatusMessage",
-            "onlyIntegrationTests"
-          ],
           "title": "statusWriting",
           "type": "object"
         },
@@ -2719,20 +2524,6 @@
           "type": "string"
         }
       },
-      "required": [
-        "install",
-        "tags",
-        "hookDeletePolicy",
-        "linkForGenerator",
-        "generateCount",
-        "waitingTime",
-        "resources",
-        "service",
-        "statusWriting",
-        "serviceAccount",
-        "securityContext",
-        "containerSecurityContext"
-      ],
       "title": "integrationTests",
       "type": "object"
     },
@@ -2765,19 +2556,10 @@
               "type": "string"
             }
           },
-          "required": [
-            "type"
-          ],
           "title": "storage",
           "type": "object"
         }
       },
-      "required": [
-        "serviceName",
-        "prometheusMonitoring",
-        "prometheusMonitoringDashboard",
-        "storage"
-      ],
       "title": "jaeger",
       "type": "object"
     },
@@ -2796,16 +2578,12 @@
               "default": ["YWRtaW46YWRtaW4=", "dGVzdDp0ZXN0"],
               "description": "List of login:password in base64.\nFor example\n  admin:admin -\u003e YWRtaW46YWRtaW4=\n  test:test -\u003e dGVzdDp0ZXN0\nDefault: no\n",
               "items": {
-                "type": "string",
-                "required": []
+                "type": "string"
               },
               "title": "users",
               "type": "array"
             }
           },
-          "required": [
-            "users"
-          ],
           "title": "basic",
           "type": "object"
         },
@@ -2823,7 +2601,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "containerSecurityContext",
           "type": "object"
         },
@@ -2879,14 +2656,6 @@
               "type": "string"
             }
           },
-          "required": [
-            "tokenEndpoint",
-            "authorizationEndpoint",
-            "clientId",
-            "clientToken",
-            "idpAddress",
-            "idpPort"
-          ],
           "title": "oauth2",
           "type": "object"
         },
@@ -2906,10 +2675,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "limits",
               "type": "object"
             },
@@ -2926,24 +2691,15 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [
-            "limits",
-            "requests"
-          ],
           "title": "resources",
           "type": "object"
         },
         "securityContext": {
           "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 2000",
-          "required": [],
           "title": "securityContext",
           "type": "object"
         },
@@ -2955,15 +2711,6 @@
           "type": "string"
         }
       },
-      "required": [
-        "install",
-        "type",
-        "access_logs_enabled",
-        "oauth2",
-        "basic",
-        "resources",
-        "containerSecurityContext"
-      ],
       "title": "proxy",
       "type": "object"
     },
@@ -2983,14 +2730,12 @@
         },
         "annotations": {
           "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "annotations",
           "type": "object"
         },
         "cmdlineParams": {
           "description": "Query related cmd line opts to be configured on the concerned components.\nType: object\nDefault: []\n",
           "items": {
-            "required": []
           },
           "title": "cmdlineParams",
           "type": "array"
@@ -3014,7 +2759,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "containerSecurityContext",
           "type": "object"
         },
@@ -3026,7 +2770,6 @@
         "extraEnv": {
           "description": "Query related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
           "items": {
-            "required": []
           },
           "title": "extraEnv",
           "type": "array"
@@ -3040,7 +2783,6 @@
         "imagePullSecrets": {
           "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
           "items": {
-            "required": []
           },
           "title": "imagePullSecrets",
           "type": "array"
@@ -3061,17 +2803,80 @@
             },
             "tls": {
               "description": "Configuration for ingress TLS.\nType: object\nDefault: {}\n",
-              "required": [],
               "title": "tls",
               "type": "object"
             }
           },
-          "required": [
-            "install",
-            "host",
-            "tls"
-          ],
           "title": "ingress",
+          "type": "object"
+        },
+        "gatewayApi": {
+          "description": "Gateway API configuration for query routes.\n",
+          "properties": {
+            "httpRoute": {
+              "description": "Configuration for query HTTPRoute resource.\n",
+              "properties": {
+                "install": {
+                  "default": false,
+                  "description": "Enable creation of HTTPRoute for query service.\n",
+                  "title": "install",
+                  "type": "boolean"
+                },
+                "labels": {
+                  "description": "Additional labels for HTTPRoute metadata.\n",
+                  "title": "labels",
+                  "type": "object"
+                },
+                "annotations": {
+                  "description": "Additional annotations for HTTPRoute metadata.\n",
+                  "title": "annotations",
+                  "type": "object"
+                },
+                "parentRefs": {
+                  "description": "List of parent Gateway references to attach the route to.\n",
+                  "items": {
+                    "description": "Reference to a parent Gateway resource.\n",
+                    "properties": {
+                      "name": {
+                        "description": "Name of the parent Gateway resource.\n",
+                        "type": "string"
+                      },
+                      "namespace": {
+                        "description": "Namespace of the parent Gateway resource.\n",
+                        "type": "string"
+                      },
+                      "sectionName": {
+                        "description": "Optional listener name on the parent Gateway.\n",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "Kind of the parent resource, usually Gateway.\n",
+                        "type": "string"
+                      },
+                      "group": {
+                        "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "title": "parentRefs",
+                  "type": "array"
+                },
+                "hosts": {
+                  "description": "List of hostnames for the HTTPRoute.\n",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "hosts",
+                  "type": "array"
+                }
+              },
+              "title": "httpRoute",
+              "type": "object"
+            }
+          },
+          "title": "gatewayApi",
           "type": "object"
         },
         "install": {
@@ -3082,7 +2887,6 @@
         },
         "labels": {
           "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "labels",
           "type": "object"
         },
@@ -3119,10 +2923,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "limits",
               "type": "object"
             },
@@ -3139,18 +2939,10 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [
-            "requests",
-            "limits"
-          ],
           "title": "resources",
           "type": "object"
         },
@@ -3169,10 +2961,6 @@
               "type": "boolean"
             }
           },
-          "required": [
-            "install",
-            "host"
-          ],
           "title": "route",
           "type": "object"
         },
@@ -3200,7 +2988,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "securityContext",
           "type": "object"
         },
@@ -3225,35 +3012,10 @@
               "type": "boolean"
             }
           },
-          "required": [
-            "config",
-            "assetsPath",
-            "logStaticAssetsAccess"
-          ],
           "title": "ui",
           "type": "object"
         }
       },
-      "required": [
-        "install",
-        "imagePullPolicy",
-        "imagePullSecrets",
-        "replicas",
-        "ui",
-        "maxClockSkewAdjustment",
-        "allowBearerTokenPropagation",
-        "ingress",
-        "route",
-        "cmdlineParams",
-        "extraEnv",
-        "securityContext",
-        "containerSecurityContext",
-        "resources",
-        "affinity",
-        "labels",
-        "annotations",
-        "config"
-      ],
       "title": "query",
       "type": "object"
     },
@@ -3262,8 +3024,7 @@
         "args": {
           "description": "Command line arguments for readiness probe container.",
           "items": {
-            "type": "string",
-            "required": []
+            "type": "string"
           },
           "title": "args",
           "type": "array"
@@ -3280,7 +3041,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "containerSecurityContext",
           "type": "object"
         },
@@ -3322,10 +3082,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "limits",
               "type": "object"
             },
@@ -3342,18 +3098,10 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [
-            "requests",
-            "limits"
-          ],
           "title": "resources",
           "type": "object"
         },
@@ -3363,12 +3111,6 @@
           "type": "integer"
         }
       },
-      "required": [
-        "install",
-        "imagePullPolicy",
-        "resources",
-        "containerSecurityContext"
-      ],
       "title": "readinessProbe",
       "type": "object"
     },
@@ -3423,19 +3165,10 @@
               "type": "string"
             }
           },
-          "required": [
-            "enabled",
-            "existingSecret"
-          ],
           "title": "tls",
           "type": "object"
         }
       },
-      "required": [
-        "endpoint",
-        "timeout",
-        "tls"
-      ],
       "title": "remotegRPC",
       "type": "object"
     },
@@ -3449,13 +3182,11 @@
         },
         "affinity": {
           "description": "If specified, the pod's scheduling constraints\nMore info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core\nType: object\nMandatory: no\nDefault: see below\n",
-          "required": [],
           "title": "affinity",
           "type": "object"
         },
         "annotations": {
           "description": "Annotations is an unstructured key value map stored\nwith a resource that may be set by external tools to store and retrieve arbitrary metadata.\nThey are not queryable and should be preserved when modifying objects.\nMore info: https://kubernetes.io/docs/user-guide/annotations\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "annotations",
           "type": "object"
         },
@@ -3478,7 +3209,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "containerSecurityContext",
           "type": "object"
         },
@@ -3503,11 +3233,6 @@
               "type": "string"
             }
           },
-          "required": [
-            "indexDateSeparator",
-            "timeRange",
-            "useAliases"
-          ],
           "title": "elasticsearch",
           "type": "object"
         },
@@ -3531,7 +3256,6 @@
         "imagePullSecrets": {
           "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
           "items": {
-            "required": []
           },
           "title": "imagePullSecrets",
           "type": "array"
@@ -3554,10 +3278,6 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "cpu",
-                    "memory"
-                  ],
                   "title": "limits",
                   "type": "object"
                 },
@@ -3574,25 +3294,14 @@
                       "type": "string"
                     }
                   },
-                  "required": [
-                    "cpu",
-                    "memory"
-                  ],
                   "title": "requests",
                   "type": "object"
                 }
               },
-              "required": [
-                "limits",
-                "requests"
-              ],
               "title": "resources",
               "type": "object"
             }
           },
-          "required": [
-            "resources"
-          ],
           "title": "init",
           "type": "object"
         },
@@ -3610,13 +3319,11 @@
         },
         "labels": {
           "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects.\nMay match selectors of replication controllers and services.\nMore info: https://kubernetes.io/docs/user-guide/labels\nType: map[string]string\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "labels",
           "type": "object"
         },
         "nodeSelector": {
           "description": "Allow defining which Nodes the Pods are scheduled on.\nType: map[string]\nMandatory: no\nDefault: not set\n",
-          "required": [],
           "title": "nodeSelector",
           "type": "object"
         },
@@ -3641,10 +3348,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "limits",
               "type": "object"
             },
@@ -3661,18 +3364,10 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "cpu",
-                "memory"
-              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [
-            "limits",
-            "requests"
-          ],
           "title": "resources",
           "type": "object"
         },
@@ -3706,7 +3401,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "securityContext",
           "type": "object"
         },
@@ -3718,7 +3412,6 @@
         },
         "tolerations": {
           "description": "Tolerations allow the pods to schedule onto nodes with matching taints.\nType: object\nMandatory: no\n",
-          "required": [],
           "title": "tolerations",
           "type": "object"
         },
@@ -3740,29 +3433,6 @@
           "type": "string"
         }
       },
-      "required": [
-        "install",
-        "labels",
-        "annotations",
-        "imagePullPolicy",
-        "imagePullSecrets",
-        "javaOpts",
-        "trustStoreSecretName",
-        "elasticsearch",
-        "restartPolicy",
-        "resources",
-        "init",
-        "nodeSelector",
-        "tolerations",
-        "affinity",
-        "concurrencyPolicy",
-        "successfulJobsHistoryLimit",
-        "failedJobsHistoryLimit",
-        "activeDeadlineSeconds",
-        "ttlSecondsAfterFinished",
-        "securityContext",
-        "containerSecurityContext"
-      ],
       "title": "spark",
       "type": "object"
     },
@@ -3781,7 +3451,6 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "containerSecurityContext",
           "type": "object"
         },
@@ -3832,10 +3501,6 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "memory",
-                "cpu"
-              ],
               "title": "limits",
               "type": "object"
             },
@@ -3852,18 +3517,10 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "memory",
-                "cpu"
-              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [
-            "requests",
-            "limits"
-          ],
           "title": "resources",
           "type": "object"
         },
@@ -3891,38 +3548,13 @@
               "type": "object"
             }
           },
-          "required": [],
           "title": "securityContext",
           "type": "object"
         }
       },
-      "required": [
-        "install",
-        "lifetimeAfterCompletion",
-        "podReadinessTimeout",
-        "integrationTestsTimeout",
-        "resources",
-        "resourceToSetStatus",
-        "securityContext",
-        "containerSecurityContext"
-      ],
       "title": "statusProvisioner",
       "type": "object"
     }
   },
-  "required": [
-    "jaeger",
-    "proxy",
-    "elasticsearch",
-    "cassandraSchemaJob",
-    "remotegRPC",
-    "collector",
-    "hotrod",
-    "query",
-    "integrationTests",
-    "statusProvisioner",
-    "readinessProbe",
-    "spark"
-  ],
   "type": "object"
 }
