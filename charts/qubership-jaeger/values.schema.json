@@ -461,10 +461,103 @@
                   ],
                   "title": "memory_limiter",
                   "type": "object"
+                },
+                "transform": {
+                  "properties": {
+                    "enabled": {
+                      "default": false,
+                      "description": "Enable transform processor to limit attribute count and attribute value size.\nRequires a Jaeger image that includes the OpenTelemetry transform processor.\nType: boolean\nDefault: false\n",
+                      "title": "enabled",
+                      "type": "boolean"
+                    },
+                    "resource": {
+                      "properties": {
+                        "limit": {
+                          "default": 32,
+                          "description": "Maximum number of resource attributes to keep.\nType: integer\nDefault: 32\n",
+                          "title": "limit",
+                          "type": "integer"
+                        },
+                        "maxAttributeValueLength": {
+                          "default": 256,
+                          "description": "Maximum resource attribute value length.\nType: integer\nDefault: 256\n",
+                          "title": "maxAttributeValueLength",
+                          "type": "integer"
+                        },
+                        "priorityAttributes": {
+                          "default": [
+                            "service.name",
+                            "service.namespace",
+                            "service.version",
+                            "host.name"
+                          ],
+                          "description": "Resource attributes that are preserved first when the limit is applied.\nType: list[string]\nDefault: [\"service.name\", \"service.namespace\", \"service.version\", \"host.name\"]\n",
+                          "items": {
+                            "type": "string"
+                          },
+                          "title": "priorityAttributes",
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "limit",
+                        "priorityAttributes",
+                        "maxAttributeValueLength"
+                      ],
+                      "title": "resource",
+                      "type": "object"
+                    },
+                    "span": {
+                      "properties": {
+                        "limit": {
+                          "default": 56,
+                          "description": "Maximum number of span attributes to keep.\nType: integer\nDefault: 56\n",
+                          "title": "limit",
+                          "type": "integer"
+                        },
+                        "maxAttributeValueLength": {
+                          "default": 1024,
+                          "description": "Maximum span attribute value length.\nType: integer\nDefault: 1024\n",
+                          "title": "maxAttributeValueLength",
+                          "type": "integer"
+                        },
+                        "priorityAttributes": {
+                          "default": [
+                            "name",
+                            "kind",
+                            "operation.name",
+                            "error",
+                            "component"
+                          ],
+                          "description": "Span attributes that are preserved first when the limit is applied.\nType: list[string]\nDefault: [\"name\", \"kind\", \"operation.name\", \"error\", \"component\"]\n",
+                          "items": {
+                            "type": "string"
+                          },
+                          "title": "priorityAttributes",
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "limit",
+                        "priorityAttributes",
+                        "maxAttributeValueLength"
+                      ],
+                      "title": "span",
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "span",
+                    "resource"
+                  ],
+                  "title": "transform",
+                  "type": "object"
                 }
               },
               "required": [
-                "memory_limiter"
+                "memory_limiter",
+                "transform"
               ],
               "title": "processors",
               "type": "object"

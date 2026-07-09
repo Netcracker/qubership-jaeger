@@ -302,6 +302,21 @@ false
 {{- end -}}
 
 {{/*
+Build the collector trace processor chain.
+*/}}
+{{- define "collector.traceProcessors" -}}
+  {{- $processors := list -}}
+  {{- if eq (include "collector.memoryLimiterEnabled" .) "true" -}}
+    {{- $processors = append $processors "memory_limiter" -}}
+  {{- end -}}
+  {{- if ne (toString .Values.collector.config.processors.transform.enabled) "false" -}}
+    {{- $processors = append $processors "transform" -}}
+  {{- end -}}
+  {{- $processors = append $processors "batch" -}}
+  {{- printf "[%s]" (join ", " $processors) -}}
+{{- end -}}
+
+{{/*
 Find a Deployment Status Provisioner image in various places.
 */}}
 {{- define "deployment-status-provisioner.image" -}}
