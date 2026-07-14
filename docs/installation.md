@@ -643,9 +643,8 @@ collector:
     #    ... certificate content ...
     #    -----END CERTIFICATE-----
     #  key: |-
-    #    -----BEGIN RSA PRIVATE KEY-----
-    #    ... certificate content ...
-    #    -----END RSA PRIVATE KEY-----
+    #    <PEM-encoded private key>
+    #    ...
     #  cert: |-
     #    -----BEGIN CERTIFICATE-----
     #    ... certificate content ...
@@ -860,7 +859,7 @@ cassandraSchemaJob:
 ```
 
 <!-- markdownlint-disable no-inline-html -->
-<!-- markdownlint-disable line-length -->
+<!-- markdownlint-disable line-length MD060 -->
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                                                                                             | Description                                                                                                                                                                                                                                                                                                                                           |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `image`                    | string                                                                                                                        | no        | -                                                                                                                                         | **Deprecated.** Former Docker image for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                                                                          |
@@ -932,9 +931,8 @@ cassandraSchemaJob:
       <content>
       -----END CERTIFICATE-----
     key: |-
-      -----BEGIN RSA PRIVATE KEY-----
-      <content>
-      -----END RSA PRIVATE KEY-----
+      <PEM-encoded private key>
+      ...
 
   ttl:
     trace: 172800s
@@ -1011,9 +1009,8 @@ elasticsearch:
         <content>
         -----END CERTIFICATE-----
       key: |-
-        -----BEGIN PRIVATE KEY-----
-        <content>
-        -----END PRIVATE KEY-----
+        <PEM-encoded private key>
+        ...
 
       # Insecure and strongly doesn't recommended for production
       insecureSkipVerify: true
