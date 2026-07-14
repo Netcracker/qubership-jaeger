@@ -1651,6 +1651,9 @@ collector:
       # Default: false
       #
       addGatewayApiAnnotation: false
+      labels:
+        deployment.netcracker.com/ingress-type: private-network
+        deployment.netcracker.com/ingress-audience-type: ops-user
       hosts: []
       defaultPaths:
       # Format:
@@ -1682,6 +1685,9 @@ collector:
       # Default: false
       #
       addGatewayApiAnnotation: false
+      labels:
+        deployment.netcracker.com/ingress-type: private-network
+        deployment.netcracker.com/ingress-audience-type: ops-user
       hosts: []
       defaultPaths:
       # Format:
@@ -1995,6 +2001,10 @@ hotrod:
     #
     addGatewayApiAnnotation: false
 
+    labels:
+      deployment.netcracker.com/ingress-type: private-network
+      deployment.netcracker.com/ingress-audience-type: ops-user
+
     # FQDN of ingress host.
     # Type: string
     # Mandatory: yes
@@ -2140,6 +2150,10 @@ query:
     # Default: false
     #
     addGatewayApiAnnotation: false
+
+    labels:
+      deployment.netcracker.com/ingress-type: private-network
+      deployment.netcracker.com/ingress-audience-type: ops-user
 
     # FQDN of ingress host.
     # Type: string

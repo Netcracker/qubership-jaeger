@@ -1,13 +1,13 @@
 # Based on python:3.13-alpine3.22
 # checkov:skip=CKV_DOCKER_3: User already set in the base image
-FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.4.3
+FROM ghcr.io/netcracker/qubership-docker-integration-tests:0.5.5@sha256:69a2e42dbe5aed9508a5edc705f60ec0dd78c6711763d5df9720cbbe115a2048
 
 # Env ${ROBOT_HOME} is set in the base image as /opt/robot
 ENV SERVICE_CHECKER_SCRIPT=${ROBOT_HOME}/jaeger_pods_checker.py
 
 # Install tracegen for reliable load generation
 # Copy binary from official jaeger-tracegen Docker image (located at /go/bin/tracegen-linux)
-COPY --from=jaegertracing/jaeger-tracegen:2.18.0@sha256:96e94561b4cf76e87fc114f2a94b409d762c3db0966dc2f71e5fb9a2022fe6ce /go/bin/tracegen-linux /usr/local/bin/tracegen
+COPY --from=jaegertracing/jaeger-tracegen:2.19.0@sha256:22fa2710ac408f98f59f02ab6944512ff589d330255ee4d881bf5f84b4a8e7c3 /go/bin/tracegen-linux /usr/local/bin/tracegen
 RUN chmod +x /usr/local/bin/tracegen
 
 # Copy tests source code

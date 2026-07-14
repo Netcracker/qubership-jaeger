@@ -4,6 +4,13 @@
         "**/.git/**",
         "**/charts/*/templates/*/*.yaml",
         "**/charts/*/templates/*/*/*.yaml",
-        "**/docs/examples/**"
+        "**/charts/*/*/*.json",
+        "**/charts/*/values.schema.json",
+        "**/charts/*/values.yaml",
+        "**/docs/examples/**",
+        "**/docs/installation.md",
+        "**/docs/observability.md",
+        "**/charts/*/templates/**/*.tpl",
+        "**/*_test.go"
     ]
 }
