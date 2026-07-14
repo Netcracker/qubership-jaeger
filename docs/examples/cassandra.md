@@ -11,8 +11,8 @@ Basic single-node configuration for development or testing.
 ```
 
 **Key parameters:**
-- `cassandraSchemaJob.mode: prod` - Uses NetworkReplicationStrategy for production
 - `cassandraSchemaJob.host` - Cassandra service endpoint
+- `cassandraSchemaJob.datacenter` - Cassandra datacenter name
 - `hotrod.install: true` - Deploys test trace generator
 
 ## Cassandra Cluster Setup
@@ -52,7 +52,6 @@ TLS configuration using existing Kubernetes secret.
 **Key parameters:**
 - `tls.enabled: true` - Enables TLS encryption
 - `tls.existingSecret` - References existing Kubernetes secret
-- `mode: prod` - Production replication strategy
 - Assumes TLS secret already exists in cluster
 
 ## Custom TTL Configuration

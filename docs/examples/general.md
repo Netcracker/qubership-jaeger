@@ -12,7 +12,7 @@ Jaeger agent deployment with Cassandra storage backend.
 
 **Key parameters:**
 - `jaeger.storage.type: cassandra` - Uses Cassandra as storage backend
-- `cassandraSchemaJob.mode: prod` - Production replication strategy
+- `cassandraSchemaJob.host` - Cassandra connection endpoint
 - `ttl.trace: 1209600s` - Traces retained for 2 weeks
 - `ttl.dependencies: 0` - Dependencies stored forever
 - `hotrod.install: true` - Deploys demo application for testing
@@ -29,7 +29,6 @@ Override default images with custom or specific versions.
 - `collector.image` - Custom Jaeger collector image
 - `query.image` - Custom Jaeger query image
 - `proxy.image` - Custom Envoy proxy image
-- `cassandraSchemaJob.image` - Custom schema migration image
 - `integrationTests.image` - Custom integration tests image
 
 **Use cases:**

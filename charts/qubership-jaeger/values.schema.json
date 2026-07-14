@@ -29,7 +29,9 @@
             }
           },
           "title": "containerSecurityContext",
-          "type": "object"
+          "type": "object",
+          "deprecated": true,
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n"
         },
         "createKeyspace": {
           "default": true,
@@ -45,9 +47,10 @@
         },
         "enablePreHook": {
           "default": false,
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n\nType: boolean\nDefault: false\n",
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\nType: boolean\nDefault: false\n",
           "title": "enablePreHook",
-          "type": "boolean"
+          "type": "boolean",
+          "deprecated": true
         },
         "existingSecret": {
           "default": "",
@@ -56,35 +59,45 @@
           "type": "string"
         },
         "extraEnv": {
-          "description": "Cassandra schema job related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {
-          },
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
+          "items": {},
           "title": "extraEnv",
-          "type": "array"
+          "type": "array",
+          "deprecated": true
         },
         "host": {
           "description": "This is the host used to connect to Cassandra.\nType: string\nDefault: \"cassandra.cassandra.svc\"\n",
           "title": "host",
-          "anyOf": [{"type": "string"},{"type": "null"}]
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "image": {
-          "description": "The image for cassandra schema job container.\nType: string\nDefault: \"jaegertracing/jaeger-cassandra-schema:1.76.0\"\n",
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
           "title": "image",
-          "type": "string"
+          "type": "string",
+          "deprecated": true
         },
         "imagePullPolicy": {
           "default": "IfNotPresent",
-          "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
           "title": "imagePullPolicy",
-          "type": "string"
+          "type": "string",
+          "deprecated": true
         },
         "imagePullSecrets": {
-          "description": "A secret name with secret for pulling images from private registry.\nDefault: []\n",
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
           "items": {
             "type": "string"
           },
           "title": "imagePullSecrets",
-          "type": "array"
+          "type": "array",
+          "deprecated": true
         },
         "keyspace": {
           "default": "jaeger",
@@ -100,14 +113,14 @@
         "mode": {
           "deprecated": true,
           "default": "test",
-          "description": "Deprecated: no longer used after pre-hook schema job removal. Kept for backward compatibility with existing values files.\nType: string\nDefault: test\n",
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\nType: string\nDefault: test\n",
           "title": "mode",
           "type": "string"
         },
         "name": {
           "deprecated": true,
           "default": "cassandra-schema-job",
-          "description": "Deprecated: no longer used after pre-hook schema job removal. Kept for backward compatibility with existing values files.\n",
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
           "title": "name",
           "type": "string"
         },
@@ -130,7 +143,7 @@
         },
         "resources": {
           "deprecated": true,
-          "description": "Deprecated: no longer used after pre-hook schema job removal. Kept for backward compatibility with existing values files.\n...",
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
           "properties": {
             "limits": {
               "properties": {
@@ -169,7 +182,7 @@
           "type": "object"
         },
         "securityContext": {
-          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
           "properties": {
             "runAsUser": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
@@ -190,7 +203,7 @@
               "description": "The seccomp profile for the container.\n Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Mandatory: no",
               "properties": {
                 "type": {
-                  "type":"string"
+                  "type": "string"
                 }
               },
               "title": "seccompProfile",
@@ -198,7 +211,8 @@
             }
           },
           "title": "securityContext",
-          "type": "object"
+          "type": "object",
+          "deprecated": true
         },
         "tls": {
           "properties": {
@@ -219,7 +233,7 @@
             },
             "cqlshrc": {
               "deprecated": true,
-              "description": "Deprecated: no longer used after pre-hook schema job removal. Kept for backward compatibility with existing values files.\n...",
+              "description": "Deprecated: no longer used. Previously configured cqlsh SSL settings for the removed Cassandra schema pre-hook Job. Kept for backward compatibility with existing values files.\n",
               "title": "cqlshrc",
               "type": "string"
             },
@@ -263,7 +277,7 @@
         "ttlSecondsAfterFinished": {
           "deprecated": true,
           "default": 0,
-          "description": "Deprecated: no longer used after pre-hook schema job removal. Kept for backward compatibility with existing values files.\n...",
+          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\nType: int\nDefault: 0\n",
           "title": "ttlSecondsAfterFinished",
           "type": "integer"
         },
@@ -280,7 +294,26 @@
     "collector": {
       "properties": {
         "affinity": {
-          "default": {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [{"labelSelector": {"matchExpressions": [{"key": "app.kubernetes.io/name", "operator": "In", "values": ["jaeger-collector"]}]}, "topologyKey": "kubernetes.io/hostname"}]}},
+          "default": {
+            "podAntiAffinity": {
+              "requiredDuringSchedulingIgnoredDuringExecution": [
+                {
+                  "labelSelector": {
+                    "matchExpressions": [
+                      {
+                        "key": "app.kubernetes.io/name",
+                        "operator": "In",
+                        "values": [
+                          "jaeger-collector"
+                        ]
+                      }
+                    ]
+                  },
+                  "topologyKey": "kubernetes.io/hostname"
+                }
+              ]
+            }
+          },
           "description": "The pod's scheduling constraints\nMore info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core\nType: object\nMandatory: no\nDefault: see below\n",
           "title": "affinity",
           "type": "object"
@@ -292,8 +325,7 @@
         },
         "cmdlineParams": {
           "description": "Collector related cmd line opts to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {
-          },
+          "items": {},
           "title": "cmdlineParams",
           "type": "array"
         },
@@ -441,8 +473,7 @@
         },
         "extraEnv": {
           "description": "Collector related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {
-          },
+          "items": {},
           "title": "extraEnv",
           "type": "array"
         },
@@ -459,8 +490,7 @@
         },
         "imagePullSecrets": {
           "description": "A secret with secret for pulling images from private registry.\nDefault: []\n",
-          "items": {
-          },
+          "items": {},
           "title": "imagePullSecrets",
           "type": "array"
         },
@@ -469,7 +499,20 @@
             "grpc": {
               "properties": {
                 "defaultPaths": {
-                  "default": [{"prefix": "/otel/grpc","service":{"port": 4317}},{"prefix": "/thrift/grpc","service":{"port": 14250}}],
+                  "default": [
+                    {
+                      "prefix": "/otel/grpc",
+                      "service": {
+                        "port": 4317
+                      }
+                    },
+                    {
+                      "prefix": "/thrift/grpc",
+                      "service": {
+                        "port": 14250
+                      }
+                    }
+                  ],
                   "items": {
                     "type": "object",
                     "properties": {
@@ -493,8 +536,7 @@
                   "type": "array"
                 },
                 "hosts": {
-                  "items": {
-                  },
+                  "items": {},
                   "title": "hosts",
                   "type": "array"
                 },
@@ -510,7 +552,38 @@
             "http": {
               "properties": {
                 "defaultPaths": {
-                  "default":[{"prefix":"/","service":{"port":13133}},{"prefix":"/zipkin","service":{"port":9411}},{"prefix":"/otlp/http","service":{"port":4318}} ,{"prefix":"/thrift/tchannel","service":{"port":14250}},{"prefix":"/thrift/http","service":{"port":14268}}],
+                  "default": [
+                    {
+                      "prefix": "/",
+                      "service": {
+                        "port": 13133
+                      }
+                    },
+                    {
+                      "prefix": "/zipkin",
+                      "service": {
+                        "port": 9411
+                      }
+                    },
+                    {
+                      "prefix": "/otlp/http",
+                      "service": {
+                        "port": 4318
+                      }
+                    },
+                    {
+                      "prefix": "/thrift/tchannel",
+                      "service": {
+                        "port": 14250
+                      }
+                    },
+                    {
+                      "prefix": "/thrift/http",
+                      "service": {
+                        "port": 14268
+                      }
+                    }
+                  ],
                   "items": {
                     "type": "object",
                     "properties": {
@@ -624,12 +697,20 @@
                   "description": "Default HTTP path rules rendered into HTTPRoute.spec.rules.\n",
                   "items": {
                     "properties": {
-                      "prefix": { "type": "string" },
-                      "rewritePrefix": { "type": "string" },
+                      "prefix": {
+                        "type": "string"
+                      },
+                      "rewritePrefix": {
+                        "type": "string"
+                      },
                       "service": {
                         "properties": {
-                          "name": { "type": "string" },
-                          "port": { "type": "integer" }
+                          "name": {
+                            "type": "string"
+                          },
+                          "port": {
+                            "type": "integer"
+                          }
                         },
                         "type": "object"
                       }
@@ -654,7 +735,10 @@
                 },
                 "kind": {
                   "default": "HTTPRoute",
-                  "enum": ["HTTPRoute", "GRPCRoute"],
+                  "enum": [
+                    "HTTPRoute",
+                    "GRPCRoute"
+                  ],
                   "description": "Gateway API resource kind to render for gRPC traffic.\n",
                   "title": "kind",
                   "type": "string"
@@ -1379,8 +1463,8 @@
                   "description": "Private key for Elasticsearch TLS connection.\nMandatory field when using SSL connection to OpenSearch.\nIgnored if the existingSecret is specified.\nType: string\nDefault: \"\"\n",
                   "title": "key",
                   "type": "string"
-              }
-            },
+                }
+              },
               "title": "tls",
               "type": "object"
             },
@@ -1408,8 +1492,7 @@
         },
         "extraEnv": {
           "description": "Elasticsearch related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {
-          },
+          "items": {},
           "title": "extraEnv",
           "type": "array"
         },
@@ -1445,22 +1528,19 @@
             },
             "extraConfigmapMounts": {
               "description": "Specify extra configMap mounts for indexCleaner.\nType: array\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "extraConfigmapMounts",
               "type": "array"
             },
             "extraEnv": {
               "description": "indexCleaner related extra env vars to be configured on the concerned components.\nType: array\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "extraEnv",
               "type": "array"
             },
             "extraSecretMounts": {
               "description": "Specify extra secret mounts for indexCleaner.\nType: array\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "extraSecretMounts",
               "type": "array"
             },
@@ -1478,14 +1558,17 @@
             "imagePullPolicy": {
               "default": "IfNotPresent",
               "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available values : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
-              "enum": ["IfNotPresent", "Always", "Never"],
+              "enum": [
+                "IfNotPresent",
+                "Always",
+                "Never"
+              ],
               "title": "imagePullPolicy",
               "type": "string"
             },
             "imagePullSecrets": {
               "description": "The secrets to be used for pulling the image from private docker registry.\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "imagePullSecrets",
               "type": "array"
             },
@@ -1654,22 +1737,19 @@
             },
             "extraConfigmapMounts": {
               "description": "Specify extra configMap mounts for lookback.\nType: object\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "extraConfigmapMounts",
               "type": "array"
             },
             "extraEnv": {
               "description": "lookback related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "extraEnv",
               "type": "array"
             },
             "extraSecretMounts": {
               "description": "Specify extra secret mounts for lookback.\nType: object\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "extraSecretMounts",
               "type": "array"
             },
@@ -1687,8 +1767,7 @@
             },
             "imagePullSecrets": {
               "description": "A secret name with secret for pulling images from private registry.\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "imagePullSecrets",
               "type": "array"
             },
@@ -1788,7 +1867,11 @@
                     "type": {
                       "description": "Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'",
                       "type": "string",
-                      "enum": ["RuntimeDefault", "Unconfined", "Localhost"]
+                      "enum": [
+                        "RuntimeDefault",
+                        "Unconfined",
+                        "Localhost"
+                      ]
                     }
                   },
                   "title": "seccompProfile",
@@ -1852,22 +1935,19 @@
             },
             "extraConfigmapMounts": {
               "description": "Specify extra configMap mounts for rollover.\nType: object\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "extraConfigmapMounts",
               "type": "array"
             },
             "extraEnv": {
               "description": "rollover related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "extraEnv",
               "type": "array"
             },
             "extraSecretMounts": {
               "description": "Specify extra secret mounts for rollover.\nType: object\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "extraSecretMounts",
               "type": "array"
             },
@@ -1890,8 +1970,7 @@
             },
             "imagePullSecrets": {
               "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
-              "items": {
-              },
+              "items": {},
               "title": "imagePullSecrets",
               "type": "array"
             },
@@ -1899,8 +1978,7 @@
               "properties": {
                 "extraEnv": {
                   "description": "rollover init related extra env vars to be configured on the concerned components.\nType: array\nDefault: []\n",
-                  "items": {
-                  },
+                  "items": {},
                   "title": "extraEnv",
                   "type": "array"
                 },
@@ -2092,8 +2170,7 @@
         },
         "imagePullSecrets": {
           "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
-          "items": {
-          },
+          "items": {},
           "title": "imagePullSecrets",
           "type": "array"
         },
@@ -2493,7 +2570,7 @@
         "statusWriting": {
           "properties": {
             "customResourcePath": {
-              "description": "Defines a path where test results will be stored. The path should be in format: '<apiVersion>/{namespace_name}/{resource_type}/{deployment_name}'. Can be extracted from the selflink of the resource." ,
+              "description": "Defines a path where test results will be stored. The path should be in format: '<apiVersion>/{namespace_name}/{resource_type}/{deployment_name}'. Can be extracted from the selflink of the resource.",
               "title": "customResourcePath",
               "type": "string"
             },
@@ -2580,8 +2657,11 @@
           "description": "Settings for basic authentication.\n",
           "properties": {
             "users": {
-              "default": ["YWRtaW46YWRtaW4=", "dGVzdDp0ZXN0"],
-              "description": "List of login:password in base64.\nFor example\n  admin:admin -\u003e YWRtaW46YWRtaW4=\n  test:test -\u003e dGVzdDp0ZXN0\nDefault: no\n",
+              "default": [
+                "YWRtaW46YWRtaW4=",
+                "dGVzdDp0ZXN0"
+              ],
+              "description": "List of login:password in base64.\nFor example\n  admin:admin -> YWRtaW46YWRtaW4=\n  test:test -> dGVzdDp0ZXN0\nDefault: no\n",
               "items": {
                 "type": "string"
               },
@@ -2711,7 +2791,10 @@
         "type": {
           "default": "basic",
           "description": "Authentication type to be used\nAvailable values - \"basic\" and \"oauth2\"\nType: string\nMandatory: no\nDefault: \"basic\"\n",
-          "enum": ["basic", "oauth2"],
+          "enum": [
+            "basic",
+            "oauth2"
+          ],
           "title": "type",
           "type": "string"
         }
@@ -2722,7 +2805,26 @@
     "query": {
       "properties": {
         "affinity": {
-          "default": {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [{"labelSelector": {"matchExpressions": [{"key": "app.kubernetes.io/name", "operator": "In", "values": ["jaeger-query"]}]}, "topologyKey": "kubernetes.io/hostname"}]}},
+          "default": {
+            "podAntiAffinity": {
+              "requiredDuringSchedulingIgnoredDuringExecution": [
+                {
+                  "labelSelector": {
+                    "matchExpressions": [
+                      {
+                        "key": "app.kubernetes.io/name",
+                        "operator": "In",
+                        "values": [
+                          "jaeger-query"
+                        ]
+                      }
+                    ]
+                  },
+                  "topologyKey": "kubernetes.io/hostname"
+                }
+              ]
+            }
+          },
           "description": "If specified, the pod's scheduling constraints\nMore info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core\nType: object\nMandatory: no\nDefault: see below\n",
           "title": "affinity",
           "type": "object"
@@ -2740,13 +2842,20 @@
         },
         "cmdlineParams": {
           "description": "Query related cmd line opts to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {
-          },
+          "items": {},
           "title": "cmdlineParams",
           "type": "array"
         },
         "config": {
-          "default":{"service":{"telemetry":{"logs":{"level":"info"}}}},
+          "default": {
+            "service": {
+              "telemetry": {
+                "logs": {
+                  "level": "info"
+                }
+              }
+            }
+          },
           "description": "Jaeger query config, contains only several options to configure, other part of parameters take from\ncassandraSchemaJob and elasticsearch sections",
           "title": "config",
           "type": "object"
@@ -2774,8 +2883,7 @@
         },
         "extraEnv": {
           "description": "Query related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {
-          },
+          "items": {},
           "title": "extraEnv",
           "type": "array"
         },
@@ -2787,8 +2895,7 @@
         },
         "imagePullSecrets": {
           "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
-          "items": {
-          },
+          "items": {},
           "title": "imagePullSecrets",
           "type": "array"
         },
@@ -3260,8 +3367,7 @@
         },
         "imagePullSecrets": {
           "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
-          "items": {
-          },
+          "items": {},
           "title": "imagePullSecrets",
           "type": "array"
         },
