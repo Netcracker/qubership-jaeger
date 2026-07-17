@@ -12,7 +12,7 @@ when the user opts in, on a running deployment (runtime).
   [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
 - **Language execution:** build, deploy, stand health, log triage, and tracing
   assertions — each language package (Java:
-  [`opentelemetry-tracing-java`](../../../../../opentelemetry-tracing-java/.apm/skills/opentelemetry-tracing-java/models/5-validation.md)).
+  [`opentelemetry-tracing-java`](../../opentelemetry-tracing-java/models/5-validation.md)).
 
 ## Validation tiers
 

@@ -1,9 +1,9 @@
 # Recipe — configuration migration
 
 Concrete config mappings for Layer 4 **§4.2** (`configMigration`) — see umbrella
-[`models/4-transformation.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/4-transformation.md).
+[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md).
 Resolve the export target with
-[`platform-tracing-guide.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md) §Export. Flag every
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md) §Export. Flag every
 mapping that is **not 1:1**.
 
 ## Export endpoint
@@ -36,7 +36,7 @@ Production sampling must not be 100% unless explicitly approved.
 ## Target config shapes
 
 Binding rules come from
-[`platform-tracing-guide.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md).
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md).
 Framework-specific shapes are in **this recipe** (Spring Boot below) and
 [`../reference/quarkus-platform-contract.md`](../reference/quarkus-platform-contract.md)
 (Quarkus). Do not invent a different shape. Key points the target must satisfy:

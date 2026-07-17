@@ -1,7 +1,7 @@
 # Recipe — dependency migration
 
 Concrete `remove` / `add` / `upgrade` moves for Layer 4 **§4.1** (`dependencyMigration`) — see umbrella
-[`models/4-transformation.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/4-transformation.md).
+[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md).
 Keyed on discovery. Read versions from the repository's BOM/`pom.xml`; never pin here.
 
 ## Choosing the target instrumentation
@@ -101,7 +101,7 @@ exports to the legacy Jaeger collector (`:14268`), not OTLP `:4318`.
 ## Canonical platform additions
 
 Beyond the per-stack bridge/exporter above, the platform contract
-([`platform-tracing-guide.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md))
+([`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md))
 expects these on the target side:
 
 - `io.opentelemetry:opentelemetry-bom` (import) and

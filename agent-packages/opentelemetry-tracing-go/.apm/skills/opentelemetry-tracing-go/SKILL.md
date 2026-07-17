@@ -1,6 +1,6 @@
 ---
 name: opentelemetry-tracing-go
-description: Audits distributed tracing in unknown Go services (Fiber with platform HTTP wrapper, net/http, Gin/Echo), scores maturity (levels 1-5), and produces OpenTelemetry migration and validation plans against the Qubership platform tracing contract. Use when the repository has no tracing, legacy tracing (Zipkin/OpenTracing/Jaeger client), hybrid or incomplete OTel, failed OTLP export, or work touching TRACING_* variables, sampling, B3/b3multi/W3C propagation, traceId/spanId log correlation, go.mod tracing dependencies, or Helm tracing values.
+description: Audits distributed tracing in unknown Go services (Fiber with platform HTTP wrapper, net/http, Gin/Echo), scores maturity (levels 1-5), and produces OpenTelemetry migration and validation plans against the Qubership platform tracing contract. Use when the repository has no tracing, legacy tracing (Zipkin/OpenTracing/Jaeger client), hybrid or incomplete OTel, broken Kafka/goroutine context propagation, failed OTLP export, or work touching TRACING_* variables, sampling, B3/b3multi/W3C propagation, traceId/spanId log correlation, go.mod tracing dependencies, or Helm tracing values — including when the user only mentions tracing, spans, Jaeger, OpenTelemetry, or broken/missing traces without naming this skill. Prefer over generic OTel advice for any Go tracing change to code, config, Helm, or dependencies.
 ---
 
 # OpenTelemetry tracing audit & migration engine (Go)
@@ -10,7 +10,7 @@ and produces five machine-readable artifacts: discovery profile, capability
 assessment, maturity verdict, migration plan, and validation plan.
 
 Read umbrella platform contract first:
-[`platform-tracing-guide.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+[`platform-tracing-guide.md`](../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
 — it is the binding source for `TRACING_*` parameters, OTLP export shape,
 B3/B3Multi propagation, sampling, service naming, endpoint filtering, and log
 correlation. Platform/vendor HTTP tracing wrappers are allowed only when they
@@ -70,7 +70,7 @@ During Phase 1, do not:
 
 **Multi-language repository:** if the repository contains services in **other language
 families** besides Go, run the umbrella
-[Multi-language scope gate](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/SKILL.md)
+[Multi-language scope gate](../opentelemetry-tracing-umbrella/SKILL.md)
 — ask the user **bulk vs single target** before any L4 edit.
 
 ### 3.1 User-facing briefs (mandatory)
@@ -106,16 +106,16 @@ deploy -> stand health -> log error triage -> business traffic -> tracing assert
 
 Recipes (umbrella):
 
-- [`recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md)
-- [`recipes/log-error-triage.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md)
+- [`recipes/stand-health-gate.md`](../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md)
+- [`recipes/log-error-triage.md`](../opentelemetry-tracing-umbrella/recipes/log-error-triage.md)
 
 Never do Jaeger-first pass/fail.
 
 ### 3.5 Post-validation cleanup (mandatory after runtime `pass`)
 
 When `validationPlan.runtime.status` is `pass`, run
-[`recipes/validation-cleanup.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md). See umbrella
-[`models/5-validation.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/5-validation.md)
+[`recipes/validation-cleanup.md`](../opentelemetry-tracing-umbrella/recipes/validation-cleanup.md). See umbrella
+[`models/5-validation.md`](../opentelemetry-tracing-umbrella/models/5-validation.md)
 §5.4.
 
 ## 4. Output contract
@@ -150,4 +150,4 @@ Produce:
 - Build blockers: [`reference/build-preconditions.md`](reference/build-preconditions.md)
 - Runtime install discovery: [`reference/service-installation-discovery.md`](reference/service-installation-discovery.md)
 - Recipes: [`recipes/`](recipes/) — L4 apply + `fresh-build-and-image`, `validation-stack`
-- Shared L5 runtime (umbrella): [`recipes/stand-health-gate.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md), [`recipes/log-error-triage.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md), [`recipes/validation-cleanup.md`](../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md)
+- Shared L5 runtime (umbrella): [`recipes/stand-health-gate.md`](../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md), [`recipes/log-error-triage.md`](../opentelemetry-tracing-umbrella/recipes/log-error-triage.md), [`recipes/validation-cleanup.md`](../opentelemetry-tracing-umbrella/recipes/validation-cleanup.md)

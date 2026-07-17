@@ -6,7 +6,7 @@ Concrete mappings for Layer 4 §4.2 (`configMigration`).
 
 Contracted parameters, export format, propagation, sampling, and service
 naming come from the umbrella platform contract
-([`platform-tracing-guide.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md))
+([`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md))
 — do not restate or override them here.
 
 ### Service name and namespace (Go pitfall)

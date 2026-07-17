@@ -5,7 +5,7 @@
   "description": "Use shared schema from tracing umbrella package.",
   "allOf": [
     {
-      "$ref": "../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/schemas/L4-migration-plan.schema.json"
+      "$ref": "../../opentelemetry-tracing-umbrella/schemas/L4-migration-plan.schema.json"
     }
   ]
 }

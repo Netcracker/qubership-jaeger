@@ -18,7 +18,12 @@ Sources in this monorepo and sibling clones:
 | Java libraries (external clone) | `../qubership-core-java-libs/`                                     |
 
 Status: **draft** — language-specific Java layer aligned with umbrella core.
-APM version `0.2.10` (Spring Boot 4 OTLP starter + export property keys; stand health gate before Jaeger; explicit L5 runtime order; one post-L4 Maven/image build; L3 decision matrix in umbrella `3-maturity.md`).
+Package version lives in [`apm.yml`](apm.yml) — the manifest APM actually reads. Do not restate it here; a
+second copy only drifts.
+
+Current revision covers: Spring Boot 4 OTLP starter + export property keys; stand health gate before
+Jaeger; explicit L5 runtime order; one post-L4 Maven/image build; L3 decision matrix in umbrella
+`3-maturity.md`.
 
 ## Architecture
 

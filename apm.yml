@@ -1,0 +1,12 @@
+name: opentelemetry-tracing
+version: 0.1.0
+description: Aggregator for the Qubership OpenTelemetry tracing skills. Installs every language package (Java, Go) plus the shared umbrella core in one step, so an agent can audit and migrate tracing in a repository without the user knowing which language the service is written in.
+author: Qubership
+
+# Language packages pull ../opentelemetry-tracing-umbrella transitively.
+# Do not declare the umbrella here — it resolves to the same _local package
+# from both dependencies and would be installed twice.
+dependencies:
+  apm:
+    - ./agent-packages/opentelemetry-tracing-java
+    - ./agent-packages/opentelemetry-tracing-go

@@ -1,7 +1,7 @@
 # Recipe — dependency migration (Go)
 
 Concrete moves for Layer 4 §4.1 (`dependencyMigration`) — see umbrella
-[`models/4-transformation.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/4-transformation.md)
+[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md)
 §4.1.
 
 Read versions from target `go.mod`; do not hardcode versions here.
@@ -25,7 +25,7 @@ Wrapper and router detection signatures:
 ## Source-of-truth constraints
 
 From the umbrella platform contract
-([`platform-tracing-guide.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)):
+([`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)):
 
 - preferred client library: OpenTelemetry SDK for Go;
 - wrappers are allowed only if they preserve platform requirements;

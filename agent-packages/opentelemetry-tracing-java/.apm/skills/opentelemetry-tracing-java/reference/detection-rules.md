@@ -122,7 +122,7 @@ canonical Eclipse Vert.x group and module artifact names from upstream docs.
 ## Platform-contract signatures
 
 These feed the contract checks (see umbrella
-[`platform-tracing-guide.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)).
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)).
 
 | Signal                                                                                                                                 | Maps to                         | Compliant when                                   |
 |----------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|--------------------------------------------------|

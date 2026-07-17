@@ -3,7 +3,7 @@
 Shared tiers, `validationPlan` structure, static/configuration checks, runtime
 gating, and pass/fail rules:
 
-[`opentelemetry-tracing-umbrella/models/5-validation.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/models/5-validation.md).
+[`opentelemetry-tracing-umbrella/models/5-validation.md`](../../opentelemetry-tracing-umbrella/models/5-validation.md).
 
 Go execution details:
 
@@ -29,6 +29,6 @@ deploy -> stand health gate -> log error triage -> business traffic -> tracing a
 
 Recipes:
 
-- [`../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/stand-health-gate.md)
-- [`../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/log-error-triage.md)
-- [`../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md`](../../../../../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/recipes/validation-cleanup.md)
+- [`../../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md)
+- [`../../opentelemetry-tracing-umbrella/recipes/log-error-triage.md`](../../opentelemetry-tracing-umbrella/recipes/log-error-triage.md)
+- [`../../opentelemetry-tracing-umbrella/recipes/validation-cleanup.md`](../../opentelemetry-tracing-umbrella/recipes/validation-cleanup.md)
