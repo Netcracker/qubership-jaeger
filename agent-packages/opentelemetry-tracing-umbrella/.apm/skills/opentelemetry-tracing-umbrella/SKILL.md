@@ -52,6 +52,13 @@ independent SUTs** the user did not narrow to one target:
      apply only to that choice until the user expands scope.
 3. Record the choice in chat and in `migration-plan.json` `gaps` or
    `validationPlan.runtime.scenario` (e.g. `scope: single — Go mesh-api only`).
+   **Ask the propagation-format question here too, once for the whole scope**,
+   when any target has no format configured — it is a fleet decision, not a
+   per-service one, and asking per service produces inconsistent answers across
+   the very services that must interoperate. Each target then encodes the same
+   decision in its own framework syntax and list order. Rules:
+   [`reference/platform-tracing-guide.md`](reference/platform-tracing-guide.md)
+   §Propagation.
 4. If the user does not answer, emit a **plan-only** L4 document and keep
    `validationPlan.runtime.status` at `manual` — **no repository edits**.
 

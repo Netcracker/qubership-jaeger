@@ -27,11 +27,63 @@ Production sampling must not be 100% unless explicitly approved.
 
 ## Propagation
 
-| From               | To                                                                    | Note                                |
-|--------------------|-----------------------------------------------------------------------|-------------------------------------|
-| Brave B3 (default) | `OTEL_PROPAGATORS=b3multi`                                            | keep B3 only while peers require it |
-| Jaeger propagation | `OTEL_PROPAGATORS=jaeger` (interim) then plan move to `b3multi`/`w3c` | coordinate with peers               |
-| mixed/unknown      | one explicit format across HTTP + Kafka                               | never leave it implicit             |
+**The migration preserves the wire format; it does not change it.** Rules and
+rationale: umbrella
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+§Propagation. In short: carry the configured inject format across, raise a
+conflict with the contract as a **question** to the user, and on a greenfield
+service ask the user to pick `B3` / `B3_MULTI` / `W3C` / a multi-format set
+rather than choosing silently.
+
+| From               | To                                                        | Note                                                         |
+|--------------------|------------------------------------------------------------|--------------------------------------------------------------|
+| Brave B3 (default) | same format on the OTel stack (`b3multi`)                  | 1:1 — property path changes, wire format does not            |
+| Jaeger propagation | same format (`jaeger`) until peers move                    | a move to `b3multi`/`w3c` is a **separate**, fleet-wide task |
+| mixed/unknown      | resolve the effective inject format first                  | ask the user before writing a row; never guess               |
+| nothing configured | user's explicit choice, contract default `b3multi` offered | record the choice in the plan `note`                         |
+
+### Per-framework surfaces
+
+**Extract** order is priority, and **the winning end differs per framework** —
+the same list means opposite things on Boot and on Quarkus. The user states
+which format should win; **the agent derives the list order** from this table.
+Never ask a developer which end wins.
+
+**Inject** ignores order entirely: a composite writes **every** configured
+format. On a single-list surface you cannot emit only one format without custom
+code — only Boot's `produce`/`consume` split gives that control.
+
+| Framework     | Inject                                              | Extract    | Extract winner                                                                                                            | Scope                             |
+|---------------|-----------------------------------------------------|------------|---------------------------------------------------------------------------------------------------------------------------|-----------------------------------|
+| Quarkus       | `quarkus.otel.propagators` — **all** listed written | same list  | **last** (`MultiTextMapPropagator`)                                                                                       | **build-time** — rebuild required |
+| Spring Boot 3 | `…propagation.produce` — all listed written         | `.consume` | **first** (`CompositePropagationFactory$CompositePropagation` Brave bridge; `CompositeTextMapPropagator` OTel bridge)      | runtime                           |
+| Spring Boot 4 | `…propagation.produce` — all listed written         | `.consume` | **first** — `…micrometer.tracing.opentelemetry.autoconfigure.CompositeTextMapPropagator`, `extract` identical to Boot 3    | runtime                           |
+| Pure Java     | `OTEL_PROPAGATORS` — one list, **all** written      | same list  | **last** (`MultiTextMapPropagator`)                                                                                       | runtime                           |
+
+Verified by disassembly: `spring-boot-actuator-autoconfigure:3.5.11`,
+`spring-boot-micrometer-tracing-opentelemetry:4.0.2`, `opentelemetry-context:1.57.0`.
+
+Do **not** set `management.tracing.propagation.type` next to `produce`/`consume`:
+it is itself a list and overrides both, silently discarding the lenient
+`consume` default.
+
+Spring Boot defaults, when neither property is set, are **asymmetric**:
+
+```yaml
+management:
+  tracing:
+    propagation:
+      consume: [W3C, B3, B3_MULTI]   # framework default
+      produce: [W3C]                 # framework default — B3 fleets break outbound
+```
+
+An unconfigured Boot service in a B3 fleet therefore looks healthy on incoming
+requests and breaks trace continuity on outgoing ones. Always set `produce`
+explicitly; do not read "no key" as "no propagation".
+
+Multi-format is a valid target: several formats on `consume`, one (or several)
+on `produce`. Nothing extra is needed around it — the assumption is that adjacent
+tooling does not overwrite an already-present context.
 
 ## Target config shapes
 
@@ -43,7 +95,9 @@ Framework-specific shapes are in **this recipe** (Spring Boot below) and
 
 - `TRACING_ENABLED` drives the SDK on/off toggle.
 - exporter OTLP `http/protobuf` to `http://${TRACING_HOST}:4318/v1/traces`.
-- `propagators: b3multi` (+ `opentelemetry-extension-trace-propagators`).
+- propagation set to the **preserved or user-chosen** format (contract default
+  `b3multi`) on the framework surface from the table above
+  (+ `opentelemetry-extension-trace-propagators` for any B3 format).
 - `sampler: parentbased_traceidratio` with `sampler.args=${TRACING_SAMPLER_PROBABILISTIC}`.
 - `service.name` built from app name + injected `NAMESPACE`.
 - probe/metrics/management endpoints excluded; `traceId`/`spanId` added to logs
@@ -68,12 +122,12 @@ After swapping `quarkus-jaeger` for `quarkus-opentelemetry`
 and sampling silently fall back to defaults unless redeclared under
 `quarkus.otel.*`:
 
-| From (`quarkus.jaeger.*`)                       | To (`quarkus.otel.*`)                                                                                   | Note                                          |
-|-------------------------------------------------|---------------------------------------------------------------------------------------------------------|-----------------------------------------------|
-| `quarkus.jaeger.endpoint` (`:14268/api/traces`) | `quarkus.otel.exporter.otlp.endpoint=http://${TRACING_HOST}:4318`                                       | legacy collector → OTLP base URL              |
-| `quarkus.jaeger.service-name`                   | `quarkus.otel.service.name` (or `quarkus.application.name`)                                             | must compose `${name}-${namespace}`           |
-| `quarkus.jaeger.sampler-type` / `sampler-param` | `quarkus.otel.traces.sampler=parentbased_traceidratio` + `sampler.arg=${TRACING_SAMPLER_PROBABILISTIC}` | map ratio semantics                           |
-| `quarkus.jaeger.propagation`                    | `quarkus.otel.propagators=b3multi`                                                                      | + `opentelemetry-extension-trace-propagators` |
+| From (`quarkus.jaeger.*`)                       | To (`quarkus.otel.*`)                                                                                   | Note                                                                                                    |
+|-------------------------------------------------|---------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
+| `quarkus.jaeger.endpoint` (`:14268/api/traces`) | `quarkus.otel.exporter.otlp.endpoint=http://${TRACING_HOST}:4318`                                       | legacy collector → OTLP base URL                                                                        |
+| `quarkus.jaeger.service-name`                   | `quarkus.otel.service.name` (or `quarkus.application.name`)                                             | must compose `${name}-${namespace}`                                                                     |
+| `quarkus.jaeger.sampler-type` / `sampler-param` | `quarkus.otel.traces.sampler=parentbased_traceidratio` + `sampler.arg=${TRACING_SAMPLER_PROBABILISTIC}` | map ratio semantics                                                                                     |
+| `quarkus.jaeger.propagation`                    | `quarkus.otel.propagators=<same format>`                                                                | keep the format; **build-time** — needs a rebuild; + `opentelemetry-extension-trace-propagators` for B3 |
 
 #### Service name (Quarkus)
 
@@ -131,8 +185,13 @@ otel:
   service.name: ${spring.application.name}-${NAMESPACE:local}
 ```
 
-Pair with `management.tracing.enabled`, OTLP endpoint, `B3_MULTI` propagation,
-and `management.tracing.sampling.probability` wired to
+The `otel.propagators` list above is the OTel-native surface (winner **last**).
+When the Micrometer bridge owns propagation instead, use
+`management.tracing.propagation.produce` / `.consume` — winner **first**. Do not
+mix both surfaces in one service.
+
+Pair with `management.tracing.enabled`, OTLP endpoint, the preserved propagation
+format, and `management.tracing.sampling.probability` wired to
 `${TRACING_SAMPLER_PROBABILISTIC}` — same contract as Boot 4, different property
 paths (see Boot 4 table below when upgrading).
 
@@ -169,7 +228,8 @@ management:
       otlp:
         enabled: true
     propagation:
-      type: B3_MULTI
+      produce: [B3_MULTI]            # outbound — set explicitly, default is [W3C]
+      consume: [B3_MULTI, W3C]       # inbound — lenient, first in the list wins
     sampling:
       probability: ${TRACING_SAMPLER_PROBABILISTIC}
 ```

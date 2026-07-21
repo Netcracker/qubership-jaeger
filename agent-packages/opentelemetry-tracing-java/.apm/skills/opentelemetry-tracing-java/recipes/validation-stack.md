@@ -125,8 +125,14 @@ Tracing assertions apply **only after** steps 1–2 pass:
 
 - a span with the resolved `service.name=<name>-<namespace>`;
 - `span.kind=server` for the exercised path;
-- propagation intact (`traceparent` or `b3`/`b3multi`); one `trace_id` across any
-  async hop;
+- **injected header names** match the configured format — assert against a
+  receiver that dumps incoming headers (`b3` vs `X-B3-TraceId` vs `traceparent`),
+  not against a shared `trace_id`. One `trace_id` across services also appears
+  when the format is wrong, because the receiver extracts leniently;
+- span hierarchy correct (parent/child, not just a shared trace) where a mesh or
+  sidecar sits in the path — stale headers re-parent spans without breaking the
+  trace ID;
+- one `trace_id` across any async hop;
 - non-empty `traceId`/`spanId` in the service logs for the request.
 
 ### Post-deploy verification checklist

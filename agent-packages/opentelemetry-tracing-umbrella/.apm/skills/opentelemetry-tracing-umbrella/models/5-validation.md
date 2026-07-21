@@ -105,7 +105,14 @@ against proposed or actual config (post-L4):
 
 - `TRACING_ENABLED`, `TRACING_HOST`, sampler precedence
 - OTLP exporter `http/protobuf` and endpoint shape
-- Propagation `b3multi`
+- Propagation — **two rows, never one**: the inject format matches what peers
+  expect, and the extract set covers the peers that call in. Where the framework
+  has a default (Spring Boot produces `[W3C]` unless told otherwise), check the
+  effective value, not the presence of a key.
+- Propagation composite order puts the **intended priority format** at the
+  framework's winner end — the agent derives the end from the framework (first
+  on Spring Boot, last on Quarkus / Pure Java / Go); the user only states which
+  format should win
 - Sampler `parentbased_traceidratio` (never `always_on`)
 - `service.name=${service_name}-${namespace_name}` (resolved naming pattern)
 - Probe / metrics / management endpoints excluded from trace export
@@ -159,6 +166,22 @@ a passing runtime tier.
   `service.name`, server spans on the exercised endpoint, propagation intact,
   non-empty trace/span IDs in logs for the request, healthy export path.
 - Build provenance documents a post-L4 artifact.
+
+#### Propagation asserts the mechanism, not the outcome
+
+"One `traceId` across services" is **not** a propagation check. It also passes
+when the inject format is wrong (the receiver extracts leniently and joins the
+trace anyway) and when the hierarchy is wrong (a stale header re-parents the
+span). To assert propagation, the runtime tier needs:
+
+- a **wire-header assert** — a receiver that dumps incoming headers, confirming
+  the exact header names the service emits (`b3` vs `X-B3-*` vs `traceparent`);
+- a **hierarchy assert** where a mesh or sidecar is in the path — parent/child
+  relations in the backend, not just a shared trace ID.
+
+Generalize this beyond propagation: **whenever a property has a lenient
+fallback, end-to-end success does not prove the property is correct.** Assert
+the mechanism directly.
 
 ### Runtime failure and blockers
 

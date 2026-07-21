@@ -90,6 +90,25 @@ When L4 implementation is planned, add a **target level** in the L3 brief only
   not shorthand like “1→2” (Level 2 means **legacy tracing today**, not “step
   two of a plan”).
 
+### Propagation format is a user decision — raise it in the L3 brief
+
+- **Level 1** (nothing configured): the wire format is **not** an agent choice.
+  Ask in the brief which format the fleet speaks — `B3`, `B3_MULTI`, `W3C`, or a
+  multi-format set — offering the contract default as the suggestion. L4 must
+  not emit a propagation row before the answer arrives. With several targets in
+  scope, ask **once for the whole scope**, not once per service.
+- What the user chooses is the **format and which one wins**. The list order
+  that expresses it is derived by the agent from the framework — never ask for
+  it.
+- **Levels 2–4** (a format is already configured): the migration **preserves**
+  it. If it conflicts with the contract default, state the conflict in the brief
+  as a question about peer compatibility — do not present a switch as part of
+  the migration.
+
+Rationale and per-framework detail:
+[`../reference/platform-tracing-guide.md`](../reference/platform-tracing-guide.md)
+§Propagation.
+
 Skip the target level and migration path for audit-only runs (no L4). Brief
 template and timing: each language root skill (Java: `opentelemetry-tracing-java`
 `SKILL.md` §3.1).

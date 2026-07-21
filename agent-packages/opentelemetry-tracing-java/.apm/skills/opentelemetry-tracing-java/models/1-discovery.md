@@ -77,12 +77,40 @@ Keys to read: `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`,
 
 ### Context-propagation configuration
 
-Determine the wire format(s) configured:
+Record the wire format(s) as **two separate sets** — `inject` (written outbound)
+and `extract` (accepted inbound). Extract is a race — several formats tried,
+order decides the winner; inject is a fan-out — a composite writes **every**
+configured format. One merged list hides the common defect where a service reads
+B3 and still emits only `traceparent`. See
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+§Propagation.
+
+Formats to look for:
 
 - **W3C Trace Context** — `traceparent` / `tracestate`
   (`OTEL_PROPAGATORS=tracecontext`, `management.tracing.propagation.type=w3c`).
-- **B3** — `X-B3-TraceId` / `X-B3-SpanId` (`OTEL_PROPAGATORS=b3` / `b3multi`,
-  `management.tracing.propagation.type=b3`).
+- **B3 single** — one `b3` header (`OTEL_PROPAGATORS=b3`).
+- **B3 multi** — `X-B3-TraceId` / `X-B3-SpanId` (`OTEL_PROPAGATORS=b3multi`,
+  `management.tracing.propagation.type=b3` / `B3_MULTI`).
+
+Keys per surface, with the `configScope` each implies:
+
+| Surface           | Keys                                                                                                                          | `configScope`                               |
+|-------------------|-------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|
+| Pure Java / agent | `OTEL_PROPAGATORS` (one list, drives both sets)                                                                               | `runtime`                                   |
+| Quarkus           | `quarkus.otel.propagators`                                                                                                    | **`build-time`** — a change needs a rebuild |
+| Spring Boot       | `management.tracing.propagation.produce` (inject) / `.consume` (extract); legacy single `management.tracing.propagation.type` | `runtime`                                   |
+
+**Record the effective default when no key is present** and set
+`propagation.fromFrameworkDefault: true`. Spring Boot defaults to
+`consume = [W3C, B3, B3_MULTI]` and `produce = [W3C]` — an unconfigured Boot
+service therefore accepts B3 inbound and emits W3C-only outbound, which is
+silently incompatible with a B3 fleet on outgoing calls. Do not record "not
+configured" as "no propagation".
+
+Where several formats are listed, record `injectOrder`/`extractOrder` as written
+and note the framework's winner end (**first** on Spring Boot, **last** on
+Quarkus / Pure Java) — the same list means opposite priorities across stacks.
 
 Then record per-component support as `OK` / `FAILED` / `unknown` (the
 detailed verdict is Layer 2; here just note which components are wired):
@@ -183,8 +211,10 @@ Collect:
 - **Sampler tier** — which of `TRACING_SAMPLER_RATELIMITING` /
   `_PROBABILISTIC` / `_CONST` is wired, and is the OTel sampler
   `parentbased_traceidratio` (not `always_on`)?
-- **Propagation standard** — is `b3multi` configured, and is
-  `opentelemetry-extension-trace-propagators` present?
+- **Propagation standard** — which format is **injected** (contract default
+  `b3multi`), which formats are **extracted**, and is
+  `opentelemetry-extension-trace-propagators` present? Record the effective
+  value including framework defaults, not just explicit keys.
 - **Endpoint filtering** — are probe/metrics/management URLs excluded?
 - **Logging correlation** — is `traceId`/`spanId` in the log pattern, and is
   the MDC dependency (`opentelemetry-log4j-context-data-*` /
@@ -217,7 +247,13 @@ Emit one JSON object validated against
   },
   "configuration": {
     "export": { "exporter": "zipkin", "endpoint": "http://zipkin:9411", "protocol": "http-thrift", "targetGuess": "legacy-zipkin" },
-    "propagation": { "formats": ["b3"], "components": { "http": "OK", "kafka": "FAILED" } },
+    "propagation": {
+      "inject": ["b3multi"],
+      "extract": ["b3multi", "w3c"],
+      "configScope": "runtime",
+      "fromFrameworkDefault": false,
+      "components": { "http": "OK", "kafka": "FAILED" }
+    },
     "sampling": { "configured": true, "type": "probabilistic", "ratio": 1.0, "consistentAcrossServices": "unknown" }
   },
   "apiUsage": [

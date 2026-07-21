@@ -16,6 +16,8 @@
       "required": ["overall"],
       "properties": {
         "overall": { "$ref": "#/$defs/verdict" },
+        "injectFormat": { "$ref": "#/$defs/verdict", "description": "Do the outbound (inject) wire formats match what peers expect? Judged separately from extract. A composite injects EVERY configured format, so this covers the whole emitted set, not a single choice." },
+        "extractFormats": { "$ref": "#/$defs/verdict", "description": "Do the inbound (extract) formats cover the peers that call this service? Several accepted formats is normal, not a defect." },
         "http": { "$ref": "#/$defs/verdict" },
         "kafka": { "$ref": "#/$defs/verdict" },
         "async": { "$ref": "#/$defs/verdict" },

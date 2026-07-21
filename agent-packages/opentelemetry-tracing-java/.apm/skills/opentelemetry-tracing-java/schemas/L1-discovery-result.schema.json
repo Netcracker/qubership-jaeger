@@ -59,8 +59,12 @@
         "propagation": {
           "type": "object",
           "additionalProperties": false,
+          "description": "Inject and extract are separate sets. Extract is a race (several formats tried, order decides the winner); inject is a fan-out (a composite writes EVERY configured format, so OTEL_PROPAGATORS/quarkus.otel.propagators emit all listed formats). Record the effective values including framework defaults.",
           "properties": {
-            "formats": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] } },
+            "inject": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] }, "description": "Formats written on outgoing calls, in configured order." },
+            "extract": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] }, "description": "Formats accepted on incoming calls, in configured order." },
+            "configScope": { "enum": ["runtime", "build-time", "unknown"], "description": "build-time for quarkus.otel.propagators (rebuild required); runtime for OTEL_PROPAGATORS and Spring Boot produce/consume." },
+            "fromFrameworkDefault": { "type": "boolean", "description": "True when inject/extract come from the framework default rather than an explicit key (e.g. Spring Boot consume [W3C, B3, B3_MULTI] / produce [W3C])." },
             "components": {
               "type": "object",
               "additionalProperties": { "enum": ["OK", "FAILED", "unknown"] }

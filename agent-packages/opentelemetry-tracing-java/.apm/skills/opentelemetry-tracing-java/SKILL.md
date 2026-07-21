@@ -170,7 +170,13 @@ non-obvious.
 
 - framework family and service name guess
 - dependency buckets (`hasOtelApi/Sdk/Exporter`, `hasLegacy`, key artifacts)
-- export / propagation / sampling config (or "none configured")
+- export / sampling config (or "none configured")
+- **propagation** — say it as two directions, in plain words, and name the source
+  of each: e.g. "accepts W3C, B3 and B3-multi inbound; sends **W3C only**
+  outbound — both are Spring Boot defaults, nothing is set in config". Where the
+  value is a framework default rather than a written key, say so — "not
+  configured" is not the same as "not propagating". Add "(changing this needs a
+  rebuild)" for Quarkus.
 - instrumentation mode (`auto` / `manual` / `mixed` / `none`)
 - async-boundary hotspots (Kafka, executors, reactive) or "none found"
 - **Platform guide** — only if gaps exist: plain-language issues (e.g. "logs lack
@@ -181,6 +187,11 @@ non-obvious.
 
 - propagation verdict per component (HTTP, Kafka, async) — **plain language**
   (e.g. "Kafka loses context on async handoff"), not `PASS`/`FAILED` enums
+- **inbound vs outbound compatibility**, stated separately — whether what the
+  service *sends* matches what its peers read is a different answer from whether
+  it *understands* what arrives. Call out the asymmetric case explicitly, since
+  it is invisible in testing: "incoming traces are picked up fine, but outgoing
+  calls emit a format B3-only peers will ignore"
 - span quality (lifecycle, attributes, errors) at a high level
 - export path (exporter, endpoint, protocol, target guess) in prose
 - **Platform guide compliance** — summarize contract gaps or confirmations in

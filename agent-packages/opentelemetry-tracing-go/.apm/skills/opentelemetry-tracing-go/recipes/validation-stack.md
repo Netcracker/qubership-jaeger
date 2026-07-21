@@ -61,6 +61,14 @@ TRACING_SAMPLER_PROBABILISTIC=1.0
 3. Business traffic — non-suppressed endpoint through the normal service path
 4. Tracing assertions — resolved `service.name`, server span, propagation, log correlation
 
+Assert propagation on the **wire headers** (a receiver dumping incoming headers
+shows `b3` vs `X-B3-*` vs `traceparent`), and on span hierarchy where a mesh is
+in the path. A single `trace_id` across services passes with the wrong inject
+format too, because receivers extract leniently — see umbrella
+[`5-validation.md`](../../opentelemetry-tracing-umbrella/models/5-validation.md) §5.3.
+This matters most in Go, where `b3.New()` without options emits single `b3`
+while the plan may say `b3multi`.
+
 **Not sufficient for pass:** Jaeger spans from probe traffic alone while the SUT
 is `CrashLoopBackOff`, not Ready, or restart-prone.
 

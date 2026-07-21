@@ -38,7 +38,8 @@ OTel keys:
 
 - `OTEL_EXPORTER_OTLP_ENDPOINT`
 - `OTEL_EXPORTER_OTLP_PROTOCOL` (`http/protobuf` expected)
-- `OTEL_PROPAGATORS` (`b3multi` expected when B3 compatibility required)
+- `OTEL_PROPAGATORS` (contract default `b3multi`; runtime scope — drives inject
+  and extract; an already-configured format is preserved, not replaced)
 - `OTEL_TRACES_SAMPLER`
 - `OTEL_TRACES_SAMPLER_ARG`
 - `OTEL_SERVICE_NAME`
@@ -59,7 +60,10 @@ OTel:
 - `otel.Tracer(...)`
 - `tracer.Start(...)`
 - `trace.SpanFromContext(...)`
-- `propagation.TraceContext` / `b3.New`
+- `propagation.TraceContext` / `b3.New` — read the **options**: bare `b3.New()`
+  injects single `b3`, `X-B3-*` needs `b3.WithInjectEncoding(b3.B3MultipleHeader)`
+- `otel.SetTextMapPropagator` / `propagation.NewCompositeTextMapPropagator` —
+  composite priority is the **last** entry
 - `otlptracehttp.New(...)` / `otlptracegrpc.New(...)`
 
 Legacy:

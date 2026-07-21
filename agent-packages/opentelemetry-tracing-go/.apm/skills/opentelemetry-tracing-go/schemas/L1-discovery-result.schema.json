@@ -72,8 +72,12 @@
         "propagation": {
           "type": "object",
           "additionalProperties": false,
+          "description": "Inject and extract are separate sets. Extract is a race (several formats tried, order decides the winner - last wins in Go); inject is a fan-out (a composite writes EVERY configured format). Record the effective values, resolved from the actual constructor options (b3.New() with no options injects single b3, not X-B3-*).",
           "properties": {
-            "formats": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] } },
+            "inject": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] }, "description": "Formats written on outgoing calls, in composite order (last wins in Go)." },
+            "extract": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] }, "description": "Formats accepted on incoming calls, in composite order (last wins in Go)." },
+            "configScope": { "enum": ["runtime", "build-time", "unknown"], "description": "Runtime for Go — OTEL_PROPAGATORS or programmatic otel.SetTextMapPropagator." },
+            "fromFrameworkDefault": { "type": "boolean", "description": "True when inject/extract come from an SDK or wrapper default rather than explicit configuration." },
             "components": {
               "type": "object",
               "additionalProperties": { "enum": ["OK", "FAILED", "unknown"] }

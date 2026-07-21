@@ -97,7 +97,7 @@ still work and remain useful when developing a single package. They are not the 
 and they leave an `apm_modules/` cache inside the package that a later root install reports as an orphaned
 package. Delete the package-local `apm_modules/` and `apm.lock.yaml` when you go back to the root install.
 
-A successful root install produces three skills (java, go, umbrella) plus one rule per package, under the
+A successful root install produces three skills (Java, go, umbrella) plus one rule per package, under the
 paths listed in the `-t` table above.
 
 You may also see `apm.lock.yaml` and `apm_modules/` (local resolution cache); both are gitignored.

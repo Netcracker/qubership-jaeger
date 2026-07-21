@@ -145,7 +145,11 @@ succeed:
 
 - `service.name = <name>-<namespace>` (resolved value);
 - `span.kind = server` for the exercised endpoint;
-- propagation intact (`traceparent` or `b3`/`b3multi`); one `trace_id` across async hops if applicable;
+- propagation asserted on the **wire headers** (a receiver dumping incoming
+  headers shows the configured format), plus span hierarchy where a mesh is in
+  the path — a shared `trace_id` alone proves neither (umbrella
+  [`5-validation.md`](../../opentelemetry-tracing-umbrella/models/5-validation.md) §5.3);
+- one `trace_id` across async hops if applicable;
 - non-empty `traceId`/`spanId` in logs for the request;
 - build provenance per [`../reference/build-preconditions.md`](../reference/build-preconditions.md);
 - tracing backend healthy; no recurring export errors in SUT logs.

@@ -77,8 +77,15 @@ families** besides Go, run the umbrella
 
 After each L1, L2, L3 artifact, post a short brief:
 
-- L1: framework stack (`service.framework`), dependency buckets, export/propagation/sampling, instrumentation mode, async hotspots, platform gaps.
-- L2: propagation verdict, span quality, export path, platform compliance.
+- L1: framework stack (`service.framework`), dependency buckets, export/sampling,
+  instrumentation mode, async hotspots, platform gaps. State **propagation as two
+  directions** in plain words — what is accepted inbound vs what is sent outbound
+  — and name the source of each (explicit config, or an SDK/wrapper default).
+  "Not configured" is not "not propagating".
+- L2: propagation verdict, span quality, export path, platform compliance. Report
+  inbound and outbound compatibility **separately** — a service can read incoming
+  traces fine and still emit a format its peers ignore, which no end-to-end test
+  will show.
 - L3: current level, recommended work in prose, target level (if L4 planned),
   **migration path** (`Migration path: Level N → Level M` when L4 planned),
   blockers.

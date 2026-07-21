@@ -56,6 +56,32 @@ Array of `{ from, to, oneToOne, note? }` mappings toward the platform contract
 ([`../reference/platform-tracing-guide.md`](../reference/platform-tracing-guide.md)).
 Flag non-1:1 mappings in `note`.
 
+#### Propagation rows (mandatory handling)
+
+Propagation is the one contract area a migration must **not** normalize on its
+own. Follow §Propagation of the platform guide:
+
+- **Format already configured** (L1 `propagation.inject` non-empty, or a known
+  framework default) → carry the same inject format to the target stack. Emit
+  the row as `oneToOne: true` even when the property path changes. Do **not**
+  emit a row that switches the wire format.
+- **Configured format conflicts with the contract default** → emit no switching
+  row. Ask the user in chat (which peers speak which format, who else changes),
+  and record the question and answer in plan `gaps`.
+- **Nothing configured and nothing defaulted** (maturity Level 1) → ask the user
+  to choose `B3` / `B3_MULTI` / `W3C` / a multi-format set before emitting the
+  row, suggesting the contract default. Record the choice in `note`. Do not pick
+  silently, and do not emit the row on an unanswered question — fall back to a
+  plan-only document.
+- Every propagation row must name the **concrete** target: property value, or
+  constructor plus option where the format is set in code (Go
+  `b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader))`, not `b3.New()`), checked
+  against the SDK source.
+- **Derive** the composite order yourself — do not ask the user for it. They
+  state which format wins; you map that to the framework's winner end (first on
+  Spring Boot, last on Quarkus / Pure Java / Go). Record the resulting list and
+  the reason in `note`, along with whether the surface is build-time or runtime.
+
 ### §4.3 `codeMigration`
 
 - `mechanical` — deterministic API rewrites (may apply on confirmation). Examples

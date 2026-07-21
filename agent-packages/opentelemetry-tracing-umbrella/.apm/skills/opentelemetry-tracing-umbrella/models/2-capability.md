@@ -25,9 +25,22 @@ Verdict scale:
      component signal is `FAILED`.
    - `async`: required when executor/reactor/completable-future boundaries exist;
      same wrapper rule as Kafka.
+   - `injectFormat`: judge `propagation.inject` (the format written outbound) —
+     `PASS` when it matches the format the peers expect, `FAILED` when it does
+     not, `UNKNOWN` when discovery could not resolve it. Note that an empty
+     `inject` set does **not** mean "nothing is emitted": use the framework
+     default recorded in L1 (Spring Boot defaults to `[W3C]` on produce).
+   - `extractFormats`: judge `propagation.extract` (formats accepted inbound).
+     Lenient extraction is normal — several formats here are not a defect.
    - `overall`: worst applicable component verdict (`FAILED` > `PARTIAL` >
      `UNKNOWN` > `PASS`). When no tracing stack exists, set `overall` to
      `UNKNOWN`.
+
+   Never collapse inject and extract into one verdict. A service that extracts
+   B3 correctly and injects W3C looks healthy inbound and breaks every peer
+   outbound — see
+   [`../reference/platform-tracing-guide.md`](../reference/platform-tracing-guide.md)
+   §Propagation.
 
 2. **Span quality** — read `apiUsage`, `instrumentation`, and `dependencyProfile`:
    - `lifecycle`: `PASS` when span create/end is evidenced or instrumentation
@@ -59,14 +72,14 @@ Verdict scale:
    [`../reference/platform-tracing-guide.md`](../reference/platform-tracing-guide.md)
    (mandatory platform rules):
 
-   | JSON facet | Platform rule |
-   | --- | --- |
-   | `serviceNameNamespace` | `service.name` = `<service>-<namespace>` |
-   | `sampler` | `parentbased_traceidratio`; never `always_on`; sampler env precedence |
-   | `propagationStandard` | `b3multi` + required propagator extension |
-   | `endpointFilter` | Probes / metrics / management excluded from trace export |
-   | `loggingCorrelation` | `traceId` and `spanId` in logs |
-   | `exportShape` | OTLP `http/protobuf` to platform endpoint via `TRACING_HOST` |
+   | JSON facet             | Platform rule                                                                                                                                      |
+   |------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+   | `serviceNameNamespace` | `service.name` = `<service>-<namespace>`                                                                                                           |
+   | `sampler`              | `parentbased_traceidratio`; never `always_on`; sampler env precedence                                                                              |
+   | `propagationStandard`  | Inject set matches the format peers expect (contract default `b3multi`) + required propagator extension; extract set covers the peers that call in |
+   | `endpointFilter`       | Probes / metrics / management excluded from trace export                                                                                           |
+   | `loggingCorrelation`   | `traceId` and `spanId` in logs                                                                                                                     |
+   | `exportShape`          | OTLP `http/protobuf` to platform endpoint via `TRACING_HOST`                                                                                       |
 
    Treat mandatory contract gaps as `FAILED`, not `UNKNOWN`, unless discovery
    could not inspect the source file. Use `notes[]` for file citations — internal

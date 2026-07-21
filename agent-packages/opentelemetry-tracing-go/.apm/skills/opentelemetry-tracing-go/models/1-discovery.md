@@ -54,8 +54,35 @@ Inspect config/env locations:
 Collect:
 
 - export endpoint/protocol/target guess;
-- propagation formats and per-component wiring (HTTP/Kafka/async);
+- propagation **inject** and **extract** sets (separately — see below) and
+  per-component wiring (HTTP/Kafka/async);
 - sampler type and ratio.
+
+### Propagation: two sets, resolved from the actual constructor
+
+Record `propagation.inject` and `propagation.extract` separately: the SDK
+extracts as a race (several formats tried, **last** wins in Go) but injects as a
+fan-out — `compositeTextMapPropagator.Inject` loops every member, so **all**
+configured formats are written. A merged list hides the case where a service
+reads B3 and still emits only `traceparent`. See
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+§Propagation.
+
+Sources, both `runtime` scope in Go:
+
+- `OTEL_PROPAGATORS` env (`b3`, `b3multi`, `tracecontext`, …);
+- programmatic `otel.SetTextMapPropagator(...)` — read the **options**, not the
+  constructor name. `b3.New()` with no options injects the **single** `b3`
+  header, not `X-B3-*`. `X-B3-*` requires
+  `b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader))`. Mechanism and source
+  coordinates:
+  [`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+  §Verify constructor defaults — check them against the b3 version in `go.mod`,
+  not the version cited there.
+
+With `propagation.NewCompositeTextMapPropagator(...)` the **last** entry wins.
+That is the opposite of Spring Boot — record the order as written, do not
+normalize it against another stack's convention.
 
 ## 1.3 API discovery (AST/symbol)
 
@@ -94,7 +121,8 @@ Collect mandatory contract evidence:
 
 - `TRACING_ENABLED`, `TRACING_HOST`, `TRACING_SAMPLER_*`;
 - OTLP `http/protobuf` path and host alias;
-- `b3multi` propagation;
+- propagation — the injected format (contract default `b3multi`) and the
+  extracted set, resolved from constructor options;
 - `parentbased_traceidratio` or equivalent parent-based ratio behavior;
 - `service.name=${name}-${namespace}` and namespace source
   (Downward API/Helm/SA file);

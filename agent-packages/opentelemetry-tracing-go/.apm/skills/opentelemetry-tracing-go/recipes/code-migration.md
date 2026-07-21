@@ -39,7 +39,9 @@ Decide the wrapper path in this order:
    wrapper — do not build a parallel provider.
 2. **Wrapper has no OTLP path** (only a Zipkin factory such as
    `NewZipkinTracer`) — build a local `TracerProvider` (OTLP HTTP exporter +
-   B3 Multi propagator + `parentbased_traceidratio` sampler wired to platform
+   the service's existing propagation format, `b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader))`
+   for B3 multi — see [`config-migration.md`](config-migration.md) §Propagation —
+   + `parentbased_traceidratio` sampler wired to platform
    env) and hand it to the wrapper via its tracer injection point
    (e.g. `WithTracer(...)`), keeping wrapper middleware for span creation.
 
