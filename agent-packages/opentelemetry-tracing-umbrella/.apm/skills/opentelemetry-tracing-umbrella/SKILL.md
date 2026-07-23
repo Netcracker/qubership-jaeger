@@ -1,6 +1,6 @@
 ---
 name: opentelemetry-tracing-umbrella
-description: Shared internal core for the OpenTelemetry tracing language packages (opentelemetry-tracing-java, opentelemetry-tracing-go) — holds the cross-language capability, maturity, transformation, and validation layers plus the platform tracing contract. Do not start a tracing task here; this package has no discovery layer and no phase gates, so entering it directly skips the analysis a migration depends on. For any actual service work, start from the language package matching the repository and let it pull these layers in. Read this file directly only when editing the shared layers themselves, or when a language package sends you here.
+description: Shared internal core for the OpenTelemetry tracing language packages (opentelemetry-tracing-java, opentelemetry-tracing-go, opentelemetry-tracing-python) — holds the cross-language capability, maturity, transformation, and validation layers plus the platform tracing contract. Do not start a tracing task here; this package has no discovery layer and no phase gates, so entering it directly skips the analysis a migration depends on. For any actual service work, start from the language package matching the repository and let it pull these layers in. Read this file directly only when editing the shared layers themselves, or when a language package sends you here.
 ---
 
 # OpenTelemetry tracing umbrella (shared core)

@@ -13,6 +13,7 @@ site/
 # APM install artifacts (regenerate with apm install / apm compile)
 .agents/
 .cursor/
+.claude/
 apm_modules/
 apm.lock.yaml
 

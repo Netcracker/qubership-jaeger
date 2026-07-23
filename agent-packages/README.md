@@ -15,12 +15,12 @@ fixing broken distributed traces across the platform.
 
 ## Target languages and frameworks
 
-| Language        | Frameworks / stacks                   | APM package                    | Status  |
-|-----------------|---------------------------------------|--------------------------------|---------|
-| Java            | Spring Boot, Quarkus, Pure (OTel SDK) | `opentelemetry-tracing-java`   | done    |
-| Go              | stdlib, Fiber, platform libs          | `opentelemetry-tracing-go`     | done    |
-| Python          | TBD (FastAPI, Django, etc.)           | `opentelemetry-tracing-python` | planned |
-| JS / TypeScript | Node, Nest, etc.                      | `opentelemetry-tracing-js`     | planned |
+| Language        | Frameworks / stacks                     | APM package                    | Status  |
+|-----------------|-----------------------------------------|--------------------------------|---------|
+| Java            | Spring Boot, Quarkus, Pure (OTel SDK)   | `opentelemetry-tracing-java`   | done    |
+| Go              | stdlib, Fiber, platform libs            | `opentelemetry-tracing-go`     | done    |
+| Python          | FastAPI, Django, Flask, Pure (OTel SDK) | `opentelemetry-tracing-python` | done    |
+| JS / TypeScript | Node, Nest, etc.                        | `opentelemetry-tracing-js`     | planned |
 
 Shared platform pieces (same for all languages):
 
@@ -38,7 +38,7 @@ qubership-jaeger/
     ├── opentelemetry-tracing-umbrella/    # shared cross-language core
     ├── opentelemetry-tracing-java/        # Java (Spring Boot, Quarkus, Pure)
     ├── opentelemetry-tracing-go/          # Go (stdlib, platform libs)
-    ├── opentelemetry-tracing-python/      # planned
+    ├── opentelemetry-tracing-python/      # Python (FastAPI, Django, Flask, Pure)
     └── opentelemetry-tracing-js/          # planned
 ```
 
@@ -81,9 +81,9 @@ exits with "no output files". Skills are deployed by `install`, not by `compile`
 Verified against APM CLI 0.19.0.
 
 Root [`apm.yml`](../apm.yml) depends on **every** language package
-(`opentelemetry-tracing-java`, `opentelemetry-tracing-go`); each of those declares
-`../opentelemetry-tracing-umbrella`, so the shared core arrives transitively — install it separately and
-you would get it twice.
+(`opentelemetry-tracing-java`, `opentelemetry-tracing-go`, `opentelemetry-tracing-python`); each of those
+declares `../opentelemetry-tracing-umbrella`, so the shared core arrives transitively — install it separately
+and you would get it twice.
 
 Installing everything is deliberate, not convenience. Whoever runs the skill often does not know which
 language the target service is written in, and a repository may hold several. With all language packages
@@ -97,8 +97,8 @@ still work and remain useful when developing a single package. They are not the 
 and they leave an `apm_modules/` cache inside the package that a later root install reports as an orphaned
 package. Delete the package-local `apm_modules/` and `apm.lock.yaml` when you go back to the root install.
 
-A successful root install produces three skills (Java, go, umbrella) plus one rule per package, under the
-paths listed in the `-t` table above.
+A successful root install produces four skills (Java, go, python, umbrella) plus one rule per package, under
+the paths listed in the `-t` table above.
 
 You may also see `apm.lock.yaml` and `apm_modules/` (local resolution cache); both are gitignored.
 `apm_modules/` holds the packages in their **source** layout, so the cross-package links inside it do not
