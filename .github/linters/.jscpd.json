@@ -4,6 +4,7 @@
         "**/.git/**",
         "**/charts/*/templates/*/*.yaml",
         "**/charts/*/templates/*/*/*.yaml",
-        "**/docs/examples/**"
+        "**/docs/examples/**",
+        "**/agent-packages/**"
     ]
 }

@@ -182,7 +182,7 @@ Context is lost across manual concurrency regardless of the chosen mechanism.
 
 ## G. Logging correlation
 
-### G1 — Service already writes a trace id under a different field name vs the contract one
+### G1 — Service already writes a trace ID under a different field name vs the contract one
 
 - (a) Do not break silently — offer a rename as a proposal (like semantic renames) ✅
 - (b) Auto-rename to the contract name
