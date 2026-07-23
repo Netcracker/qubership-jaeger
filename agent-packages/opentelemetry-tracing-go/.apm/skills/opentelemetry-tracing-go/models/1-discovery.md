@@ -65,7 +65,7 @@ extracts as a race (several formats tried, **last** wins in Go) but injects as a
 fan-out — `compositeTextMapPropagator.Inject` loops every member, so **all**
 configured formats are written. A merged list hides the case where a service
 reads B3 and still emits only `traceparent`. See
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Propagation.
 
 Sources, both `runtime` scope in Go:
@@ -76,7 +76,7 @@ Sources, both `runtime` scope in Go:
   header, not `X-B3-*`. `X-B3-*` requires
   `b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader))`. Mechanism and source
   coordinates:
-  [`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+  [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
   §Verify constructor defaults — check them against the b3 version in `go.mod`,
   not the version cited there.
 

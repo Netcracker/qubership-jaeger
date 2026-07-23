@@ -3,7 +3,7 @@
 Shared tiers, `validationPlan` structure, static/configuration checks, runtime
 gating, and pass/fail rules:
 
-[`opentelemetry-tracing-umbrella/models/5-validation.md`](../../opentelemetry-tracing-umbrella/models/5-validation.md).
+[`opentelemetry-tracing-common/models/5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md).
 
 Python execution details:
 
@@ -44,6 +44,6 @@ deploy -> stand health gate -> log error triage -> business traffic -> tracing a
 
 Recipes:
 
-- [`../../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md)
-- [`../../opentelemetry-tracing-umbrella/recipes/log-error-triage.md`](../../opentelemetry-tracing-umbrella/recipes/log-error-triage.md)
-- [`../../opentelemetry-tracing-umbrella/recipes/validation-cleanup.md`](../../opentelemetry-tracing-umbrella/recipes/validation-cleanup.md)
+- [`../../opentelemetry-tracing-common/recipes/stand-health-gate.md`](../../opentelemetry-tracing-common/recipes/stand-health-gate.md)
+- [`../../opentelemetry-tracing-common/recipes/log-error-triage.md`](../../opentelemetry-tracing-common/recipes/log-error-triage.md)
+- [`../../opentelemetry-tracing-common/recipes/validation-cleanup.md`](../../opentelemetry-tracing-common/recipes/validation-cleanup.md)

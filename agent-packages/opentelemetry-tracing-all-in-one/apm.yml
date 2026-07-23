@@ -1,0 +1,15 @@
+name: opentelemetry-tracing-all-in-one
+version: 0.1.0
+description: One-step install of every Qubership OpenTelemetry tracing language package (Java, Go, Python) plus the shared core. Use when the target repository's language is unknown or spans several languages — the agent gets every discovery/detection/recipe set at once and picks the right one per service, without the user choosing a language up front.
+author: Qubership
+
+# Depends on every language package. Each one declares
+# ../opentelemetry-tracing-common in its own apm.yml, so the shared core
+# arrives transitively; APM resolves it once and dedupes. Do not list the
+# common here — keep a single place (the language package) deciding which
+# common version it gets.
+dependencies:
+  apm:
+    - ../opentelemetry-tracing-java
+    - ../opentelemetry-tracing-go
+    - ../opentelemetry-tracing-python

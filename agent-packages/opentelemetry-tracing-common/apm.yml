@@ -1,4 +1,4 @@
-name: opentelemetry-tracing-umbrella
+name: opentelemetry-tracing-common
 version: 0.1.0
 description: Shared tracing core for all language packages. Contains common capability, maturity, transformation, validation layers, shared schemas, decision logic, and platform tracing contract. Language packages must implement only language-specific discovery/detection/recipes.
 author: Qubership

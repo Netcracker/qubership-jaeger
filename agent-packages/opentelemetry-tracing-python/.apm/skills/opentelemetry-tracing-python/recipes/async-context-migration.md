@@ -1,7 +1,7 @@
 # Recipe — async context migration (Python)
 
-Fixes for Layer 4 §4.4 (`asyncContextMigration`) — see umbrella
-[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md)
+Fixes for Layer 4 §4.4 (`asyncContextMigration`) — see common
+[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
 §4.4.
 
 **Input:** each context-loss candidate from `discovery-result.asyncBoundaries`

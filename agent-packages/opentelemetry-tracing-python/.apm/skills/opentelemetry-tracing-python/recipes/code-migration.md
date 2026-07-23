@@ -77,8 +77,8 @@ app — pick one mechanism (Step 0b in [`../models/4-transformation.md`](../mode
 
 Attribute renames toward OpenTelemetry semantic conventions (e.g. custom
 `http_path` → `http.route`, business keys) are **never** auto-applied. List them
-in `codeMigration.semantic` and ask for confirmation (umbrella
-[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md)
+in `codeMigration.semantic` and ask for confirmation (common
+[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
 §4.3).
 
 ## Guardrails

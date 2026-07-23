@@ -355,8 +355,8 @@ Before declaring runtime `pass`:
 | Contract area           | Where enforced                                                   |
 |-------------------------|------------------------------------------------------------------|
 | Detection / L1 evidence | Language `reference/detection-rules.md`, `models/1-discovery.md` |
-| L2 verdicts             | Umbrella `models/2-capability.md`                                |
-| L3 maturity             | Umbrella `models/3-maturity.md`                                  |
-| L4 migration            | Umbrella `models/4-transformation.md` + language `recipes/`      |
-| L5 validation           | Umbrella `models/5-validation.md` + language runtime recipes     |
+| L2 verdicts             | Common `models/2-capability.md`                                |
+| L3 maturity             | Common `models/3-maturity.md`                                  |
+| L4 migration            | Common `models/4-transformation.md` + language `recipes/`      |
+| L5 validation           | Common `models/5-validation.md` + language runtime recipes     |
 | Build/registry blockers | Language `reference/build-preconditions.md`                      |

@@ -127,7 +127,7 @@
     "platformContract": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Evidence for the shared platform tracing contract (umbrella reference/platform-tracing-guide.md).",
+      "description": "Evidence for the shared platform tracing contract (common reference/platform-tracing-guide.md).",
       "properties": {
         "serviceName": {
           "type": "object",

@@ -46,7 +46,7 @@ confidently identified, prefer the matching contrib instrumentor; otherwise emit
 
 ## Configuration signatures
 
-Platform-level keys (from the umbrella platform contract):
+Platform-level keys (from the common platform contract):
 
 - `TRACING_ENABLED`
 - `TRACING_HOST` (default `nc-diagnostic-agent`)

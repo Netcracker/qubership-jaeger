@@ -1,7 +1,7 @@
 # Layer 4 — Transformation (Python)
 
 Shared plan structure, algorithm, and section numbering (§4.1–§4.5):
-[`opentelemetry-tracing-umbrella/models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md).
+[`opentelemetry-tracing-common/models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md).
 
 Run the **Python gate below before §4.1**. Then fill §4.1–§4.4 from recipes:
 

@@ -32,8 +32,8 @@ migration works. Never mark the runtime tier `pass` unless the running artifact
 includes Layer 4 changes (dependencies, config, instrumentation mechanism).
 
 Jaeger spans from probe traffic on a **crash-looping or not-Ready** workload are
-**smoke only**, not validation — run umbrella
-[`recipes/stand-health-gate.md`](../../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md)
+**smoke only**, not validation — run common
+[`recipes/stand-health-gate.md`](../../opentelemetry-tracing-common/recipes/stand-health-gate.md)
 before tracing pass/fail.
 
 ## Build artifact provenance (mandatory for runtime pass)

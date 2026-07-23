@@ -1,7 +1,7 @@
 # Layer 4 — Transformation (Java)
 
 Shared plan structure, algorithm, and section numbering (§4.1–§4.5):
-[`opentelemetry-tracing-umbrella/models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md).
+[`opentelemetry-tracing-common/models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md).
 
 Run the **Java gate below before §4.1**. Then fill §4.1–§4.4 from recipes:
 
@@ -12,9 +12,9 @@ Run the **Java gate below before §4.1**. Then fill §4.1–§4.4 from recipes:
 | §4.3 `codeMigration` | [`../recipes/code-migration.md`](../recipes/code-migration.md) |
 | §4.4 `asyncContextMigration` | [`../recipes/async-context-migration.md`](../recipes/async-context-migration.md) |
 
-§4.5 `validationPlan` and documentation-on-apply rules: umbrella
-[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md)
-and [`5-validation.md`](../../opentelemetry-tracing-umbrella/models/5-validation.md).
+§4.5 `validationPlan` and documentation-on-apply rules: common
+[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
+and [`5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md).
 
 ## Step 0 — Framework family decision (mandatory)
 

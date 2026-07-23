@@ -2,10 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://qubership.org/otel-tracing-java/L2-capability-result.schema.json",
   "title": "CapabilityResultRedirect",
-  "description": "Use shared schema from tracing umbrella package.",
+  "description": "Use shared schema from tracing common package.",
   "allOf": [
     {
-      "$ref": "../../opentelemetry-tracing-umbrella/schemas/L2-capability-result.schema.json"
+      "$ref": "../../opentelemetry-tracing-common/schemas/L2-capability-result.schema.json"
     }
   ]
 }

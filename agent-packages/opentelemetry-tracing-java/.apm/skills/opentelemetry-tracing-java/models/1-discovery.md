@@ -70,7 +70,7 @@ Split the findings into three concerns:
 
 Determine: exporter type (OTLP / Zipkin / Jaeger / none), endpoint, protocol
 (gRPC / http-protobuf / thrift), and whether it points at OTeC or the Jaeger
-collector (cross-check [`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md) §Export).
+collector (cross-check [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md) §Export).
 Keys to read: `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`,
 `otel.exporter.otlp.*`, `management.zipkin.tracing.endpoint`,
 `quarkus.otel.exporter.otlp.endpoint`, and platform `TRACING_HOST`.
@@ -82,7 +82,7 @@ and `extract` (accepted inbound). Extract is a race — several formats tried,
 order decides the winner; inject is a fan-out — a composite writes **every**
 configured format. One merged list hides the common defect where a service reads
 B3 and still emits only `traceparent`. See
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Propagation.
 
 Formats to look for:
@@ -199,7 +199,7 @@ Layer 2.
 
 Answer: *does the service follow the platform tracing contract?* These facts are mandatory for the Qubership/NC
 platform — collect them so Layers 2 and 5 can verify them. Source of truth:
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md);
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md);
 signatures in [`../reference/detection-rules.md`](../reference/detection-rules.md)
 (§Platform-contract signatures).
 

@@ -5,4 +5,4 @@ author: Qubership
 
 dependencies:
   apm:
-    - ../opentelemetry-tracing-umbrella
+    - ../opentelemetry-tracing-common

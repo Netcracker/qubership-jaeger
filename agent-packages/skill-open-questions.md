@@ -4,7 +4,7 @@ Working list of unresolved / under-specified decisions that are **shared across
 all language packages** (Java, Go, Python). Two kinds of question live here:
 
 - **general** — the decision belongs entirely to the platform contract / shared
-  logic (umbrella) and applies identically to every language;
+  logic (common) and applies identically to every language;
 - **hybrid** — the concept is shared but the concrete realization is refined per
   language package; here the question is posed **language-agnostically**.
 
@@ -19,7 +19,7 @@ option directly in the skill.)
   accept it, reject it, or replace it with your own).
 - A letter (A, B, C…) is an area (grouping). A letter+number (A1, C2…) is a
   concrete question — the unit of discussion.
-- An answer to a general/hybrid question should land in the umbrella contract /
+- An answer to a general/hybrid question should land in the common contract /
   shared layers so it propagates to every language.
 - The "Decision" line is filled in as decisions are made.
 

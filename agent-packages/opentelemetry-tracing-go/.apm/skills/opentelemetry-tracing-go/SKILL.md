@@ -9,8 +9,8 @@ This skill is an analysis pipeline. It takes an unknown Go repository as input
 and produces five machine-readable artifacts: discovery profile, capability
 assessment, maturity verdict, migration plan, and validation plan.
 
-Read umbrella platform contract first:
-[`platform-tracing-guide.md`](../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+Read common platform contract first:
+[`platform-tracing-guide.md`](../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 — it is the binding source for `TRACING_*` parameters, OTLP export shape,
 B3/B3Multi propagation, sampling, service naming, endpoint filtering, and log
 correlation. Platform/vendor HTTP tracing wrappers are allowed only when they
@@ -52,7 +52,7 @@ repository
 Layer ownership:
 
 - L1: this package (`models/1-discovery.md`, Go rules and recipes)
-- L2-L5: umbrella shared logic with Go runtime execution details
+- L2-L5: common shared logic with Go runtime execution details
 
 ## 3. Execution order
 
@@ -69,8 +69,8 @@ During Phase 1, do not:
 **Phase 2 (implementation):** L4 + one post-L4 build + L5 validation.
 
 **Multi-language repository:** if the repository contains services in **other language
-families** besides Go, run the umbrella
-[Multi-language scope gate](../opentelemetry-tracing-umbrella/SKILL.md)
+families** besides Go, run the common
+[Multi-language scope gate](../opentelemetry-tracing-common/SKILL.md)
 — ask the user **bulk vs single target** before any L4 edit.
 
 ### 3.1 User-facing briefs (mandatory)
@@ -105,24 +105,24 @@ If user declines or environment is unknown, set runtime status to `manual`.
 
 ### 3.4 Runtime order
 
-Umbrella §5.3 — execute in order:
+Common §5.3 — execute in order:
 
 ```text
 deploy -> stand health -> log error triage -> business traffic -> tracing assertions -> pass/fail -> validation cleanup (on pass)
 ```
 
-Recipes (umbrella):
+Recipes (common):
 
-- [`recipes/stand-health-gate.md`](../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md)
-- [`recipes/log-error-triage.md`](../opentelemetry-tracing-umbrella/recipes/log-error-triage.md)
+- [`recipes/stand-health-gate.md`](../opentelemetry-tracing-common/recipes/stand-health-gate.md)
+- [`recipes/log-error-triage.md`](../opentelemetry-tracing-common/recipes/log-error-triage.md)
 
 Never do Jaeger-first pass/fail.
 
 ### 3.5 Post-validation cleanup (mandatory after runtime `pass`)
 
 When `validationPlan.runtime.status` is `pass`, run
-[`recipes/validation-cleanup.md`](../opentelemetry-tracing-umbrella/recipes/validation-cleanup.md). See umbrella
-[`models/5-validation.md`](../opentelemetry-tracing-umbrella/models/5-validation.md)
+[`recipes/validation-cleanup.md`](../opentelemetry-tracing-common/recipes/validation-cleanup.md). See common
+[`models/5-validation.md`](../opentelemetry-tracing-common/models/5-validation.md)
 §5.4.
 
 ## 4. Output contract
@@ -130,9 +130,9 @@ When `validationPlan.runtime.status` is `pass`, run
 Produce:
 
 - `discovery-result.json` (Go schema in this package)
-- `capability-result.json` (umbrella schema redirect)
-- `maturity-result.json` (umbrella schema redirect)
-- `migration-plan.json` (umbrella schema redirect; includes `validationPlan`)
+- `capability-result.json` (common schema redirect)
+- `maturity-result.json` (common schema redirect)
+- `migration-plan.json` (common schema redirect; includes `validationPlan`)
 
 ## 5. Non-negotiable rules
 
@@ -146,7 +146,7 @@ Produce:
 | Defer versions | Read versions from `go.mod`, never hardcode versions in skill text |
 | Sync docs on L4 | If L4 changes config/env/deps, update service docs in the same pass |
 | Fresh post-L4 build | Runtime pass requires post-L4 build + image provenance |
-| End-to-end only when stand is healthy | Runtime `pass` needs stand health + log triage before Jaeger (§3.4; umbrella L5) |
+| End-to-end only when stand is healthy | Runtime `pass` needs stand health + log triage before Jaeger (§3.4; common L5) |
 | No Jaeger-first pass | Jaeger spans while SUT crash-loops or not Ready are not end-to-end pass — fix the stand first |
 
 ## 6. File index
@@ -157,4 +157,4 @@ Produce:
 - Build blockers: [`reference/build-preconditions.md`](reference/build-preconditions.md)
 - Runtime install discovery: [`reference/service-installation-discovery.md`](reference/service-installation-discovery.md)
 - Recipes: [`recipes/`](recipes/) — L4 apply + `fresh-build-and-image`, `validation-stack`
-- Shared L5 runtime (umbrella): [`recipes/stand-health-gate.md`](../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md), [`recipes/log-error-triage.md`](../opentelemetry-tracing-umbrella/recipes/log-error-triage.md), [`recipes/validation-cleanup.md`](../opentelemetry-tracing-umbrella/recipes/validation-cleanup.md)
+- Shared L5 runtime (common): [`recipes/stand-health-gate.md`](../opentelemetry-tracing-common/recipes/stand-health-gate.md), [`recipes/log-error-triage.md`](../opentelemetry-tracing-common/recipes/log-error-triage.md), [`recipes/validation-cleanup.md`](../opentelemetry-tracing-common/recipes/validation-cleanup.md)

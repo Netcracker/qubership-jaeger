@@ -5,8 +5,8 @@ Concrete mappings for Layer 4 §4.2 (`configMigration`).
 ## Source of truth
 
 Contracted parameters, export format, propagation, sampling, and service
-naming come from the umbrella platform contract
-([`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md))
+naming come from the common platform contract
+([`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md))
 — do not restate or override them here.
 
 ### Service name and namespace (Python pitfall)
@@ -29,8 +29,8 @@ programmatic `Resource.create({"service.name": ...})`.
 configured inject format across, raise a conflict with the contract as a
 **question** to the user, and on a greenfield service ask the user to pick
 `B3` / `B3_MULTI` / `W3C` / a multi-format set instead of choosing silently
-(umbrella
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+(common
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Propagation).
 
 `OTEL_PROPAGATORS` and programmatic `set_global_textmap` are both **runtime** in
@@ -46,7 +46,7 @@ the source of truth and record the env value as overridden.
 `X-B3-Sampled`. The legacy name `B3Format` is a **deprecated alias of
 `B3MultiFormat`** — it emits `X-B3-*`, not single `b3`. Source coordinates and
 the exact header constants:
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Verify constructor defaults — verify against the b3 version in the service's
 manifest.
 

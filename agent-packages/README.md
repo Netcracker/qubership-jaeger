@@ -35,14 +35,14 @@ qubership-jaeger/
 ├── apm.yml                            # aggregator — installs every package below
 └── agent-packages/
     ├── README.md                      # this file
-    ├── opentelemetry-tracing-umbrella/    # shared cross-language core
+    ├── opentelemetry-tracing-common/    # shared cross-language core
     ├── opentelemetry-tracing-java/        # Java (Spring Boot, Quarkus, Pure)
     ├── opentelemetry-tracing-go/          # Go (stdlib, platform libs)
     ├── opentelemetry-tracing-python/      # Python (FastAPI, Django, Flask, Pure)
     └── opentelemetry-tracing-js/          # planned
 ```
 
-`opentelemetry-tracing-umbrella` owns shared layers (capability/maturity/transformation/validation), shared schemas,
+`opentelemetry-tracing-common` owns shared layers (capability/maturity/transformation/validation), shared schemas,
 and the platform tracing contract. Language packages are separate APM units and own language-specific discovery,
 detection rules, and recipes.
 
@@ -82,13 +82,13 @@ Verified against APM CLI 0.19.0.
 
 Root [`apm.yml`](../apm.yml) depends on **every** language package
 (`opentelemetry-tracing-java`, `opentelemetry-tracing-go`, `opentelemetry-tracing-python`); each of those
-declares `../opentelemetry-tracing-umbrella`, so the shared core arrives transitively — install it separately
+declares `../opentelemetry-tracing-common`, so the shared core arrives transitively — install it separately
 and you would get it twice.
 
 Installing everything is deliberate, not convenience. Whoever runs the skill often does not know which
 language the target service is written in, and a repository may hold several. With all language packages
-present, discovery (L1) identifies the stack itself and the umbrella
-[multi-language scope gate](opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/SKILL.md)
+present, discovery (L1) identifies the stack itself and the common
+[multi-language scope gate](opentelemetry-tracing-common/.apm/skills/opentelemetry-tracing-common/SKILL.md)
 asks whether to migrate one target or all of them. A partial install turns that question into a silent
 gap — the agent simply cannot see a Go service if only the Java package is installed.
 
@@ -97,7 +97,7 @@ still work and remain useful when developing a single package. They are not the 
 and they leave an `apm_modules/` cache inside the package that a later root install reports as an orphaned
 package. Delete the package-local `apm_modules/` and `apm.lock.yaml` when you go back to the root install.
 
-A successful root install produces four skills (Java, go, python, umbrella) plus one rule per package, under
+A successful root install produces four skills (Java, go, python, common) plus one rule per package, under
 the paths listed in the `-t` table above.
 
 You may also see `apm.lock.yaml` and `apm_modules/` (local resolution cache); both are gitignored.
@@ -117,9 +117,9 @@ reads:
 
 ```text
 .agents/skills/opentelemetry-tracing-java/SKILL.md
-  → ../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md
+  → ../opentelemetry-tracing-common/reference/platform-tracing-guide.md
 .agents/skills/opentelemetry-tracing-java/models/5-validation.md
-  → ../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md
+  → ../../opentelemetry-tracing-common/reference/platform-tracing-guide.md
 ```
 
 The trade-off is that these links do not resolve when browsing `agent-packages/` in an IDE. That is

@@ -1,7 +1,7 @@
 # Recipe — dependency migration (Python)
 
-Concrete moves for Layer 4 §4.1 (`dependencyMigration`) — see umbrella
-[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md)
+Concrete moves for Layer 4 §4.1 (`dependencyMigration`) — see common
+[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
 §4.1.
 
 Read versions from the target manifest (`requirements.txt`, `pyproject.toml`,
@@ -26,8 +26,8 @@ Framework and instrumentation signatures:
 
 ## Source-of-truth constraints
 
-From the umbrella platform contract
-([`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)):
+From the common platform contract
+([`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)):
 
 - preferred client library: OpenTelemetry SDK for Python;
 - framework instrumentation is allowed only if it preserves platform requirements;

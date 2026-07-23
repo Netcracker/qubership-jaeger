@@ -1,7 +1,7 @@
 # Recipe — trace IDs in logs
 
 Adding `traceId`/`spanId` to the log pattern is **mandatory** on the platform
-([`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+([`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 § Log correlation), so a migration plan must include it whenever the service
 writes logs. The goal: every log line emitted inside a span carries the trace
 and span IDs, so logs and traces correlate.

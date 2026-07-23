@@ -1,9 +1,9 @@
 # Recipe — configuration migration
 
-Concrete config mappings for Layer 4 **§4.2** (`configMigration`) — see umbrella
-[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md).
+Concrete config mappings for Layer 4 **§4.2** (`configMigration`) — see common
+[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md).
 Resolve the export target with
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md) §Export. Flag every
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md) §Export. Flag every
 mapping that is **not 1:1**.
 
 ## Export endpoint
@@ -28,8 +28,8 @@ Production sampling must not be 100% unless explicitly approved.
 ## Propagation
 
 **The migration preserves the wire format; it does not change it.** Rules and
-rationale: umbrella
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+rationale: common
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Propagation. In short: carry the configured inject format across, raise a
 conflict with the contract as a **question** to the user, and on a greenfield
 service ask the user to pick `B3` / `B3_MULTI` / `W3C` / a multi-format set
@@ -88,7 +88,7 @@ tooling does not overwrite an already-present context.
 ## Target config shapes
 
 Binding rules come from
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md).
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md).
 Framework-specific shapes are in **this recipe** (Spring Boot below) and
 [`../reference/quarkus-platform-contract.md`](../reference/quarkus-platform-contract.md)
 (Quarkus). Do not invent a different shape. Key points the target must satisfy:

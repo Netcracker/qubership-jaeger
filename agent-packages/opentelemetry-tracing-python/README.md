@@ -15,22 +15,22 @@ the previous artifact and emits the next:
 | Layer             | File                         | Output                                        |
 |-------------------|------------------------------|-----------------------------------------------|
 | L1 Discovery      | `models/1-discovery.md`      | `discovery-result.json`                       |
-| L2 Capability     | `models/2-capability.md`     | delegated to umbrella                         |
-| L3 Maturity       | `models/3-maturity.md`       | delegated to umbrella                         |
+| L2 Capability     | `models/2-capability.md`     | delegated to common                         |
+| L3 Maturity       | `models/3-maturity.md`       | delegated to common                         |
 | L4 Transformation | `models/4-transformation.md` | shared plan + Python framework/mechanism gate |
 | L5 Validation     | `models/5-validation.md`     | shared tiers + Python runtime execution rules |
 
 ## Supporting material
 
-- `schemas/` — `L1-discovery-result.schema.json` + redirects (`L2`–`L4`) to umbrella schemas
+- `schemas/` — `L1-discovery-result.schema.json` + redirects (`L2`–`L4`) to common schemas
 - `reference/` — local Python detection rules, framework coverage, build preconditions, service installation discovery
-- `recipes/` — dependency / config / code / async-context / logging-correlation / fresh-build-and-image / validation-stack migration recipes; shared L5 stand-health, log-error-triage, and validation-cleanup in umbrella
-- shared core: `../opentelemetry-tracing-umbrella/`
+- `recipes/` — dependency / config / code / async-context / logging-correlation / fresh-build-and-image / validation-stack migration recipes; shared L5 stand-health, log-error-triage, and validation-cleanup in common
+- shared core: `../opentelemetry-tracing-common/`
 
 ## Source-of-truth policy
 
-- Qubership platform contract comes from umbrella
-  [`platform-tracing-guide.md`](../opentelemetry-tracing-umbrella/.apm/skills/opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+- Qubership platform contract comes from common
+  [`platform-tracing-guide.md`](../opentelemetry-tracing-common/.apm/skills/opentelemetry-tracing-common/reference/platform-tracing-guide.md)
   (contracted `TRACING_*`, OTLP format, B3/B3Multi, sampling, namespace in `service.name`,
   endpoint filtering, and log correlation).
 - Python-specific detection rules and recipes live in this package.

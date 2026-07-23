@@ -1,7 +1,7 @@
 # Recipe — async context migration
 
-Concrete fixes for Layer 4 **§4.4** (`asyncContextMigration`) — see umbrella
-[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md).
+Concrete fixes for Layer 4 **§4.4** (`asyncContextMigration`) — see common
+[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md).
 Addresses context-loss points from
 `asyncBoundaries`. The goal: one `trace_id` across the async boundary, with
 the downstream span a child of the upstream span.

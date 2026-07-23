@@ -3,7 +3,7 @@
 Shared tiers, `validationPlan` structure, static/configuration checks, runtime
 gating, and pass/fail rules:
 
-[`opentelemetry-tracing-umbrella/models/5-validation.md`](../../opentelemetry-tracing-umbrella/models/5-validation.md).
+[`opentelemetry-tracing-common/models/5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md).
 
 This file defines Java **execution** details only. Runtime validation is **not**
 "build and deploy whatever service we touched" — the target app and install scope
@@ -11,7 +11,7 @@ are unknown until discovery runs. Follow
 [`../reference/service-installation-discovery.md`](../reference/service-installation-discovery.md)
 before any runtime or compile work.
 
-Emit and run **static** and **configuration** tiers per umbrella §5.1–§5.2 by
+Emit and run **static** and **configuration** tiers per common §5.1–§5.2 by
 default (repository only). Set `validationPlan.runtime.status` to `manual` with
 `manualInstruction` until the steps below complete and the user opts in.
 
@@ -89,15 +89,15 @@ define `TRACING_HOST` / collector wiring.
 
 ### Runtime validation order (mandatory)
 
-Umbrella §5.3 order — execute **in this order**:
+Common §5.3 order — execute **in this order**:
 
 ```text
-1. Stand health gate     → ../../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md
-2. Log error triage      → ../../opentelemetry-tracing-umbrella/recipes/log-error-triage.md
+1. Stand health gate     → ../../opentelemetry-tracing-common/recipes/stand-health-gate.md
+2. Log error triage      → ../../opentelemetry-tracing-common/recipes/log-error-triage.md
 3. Business traffic      → non-suppressed endpoint (below)
 4. Tracing assertions    → Jaeger/query API + log correlation
 5. Pass/fail verdict     → only when steps 1–4 succeed
-6. Post-validation cleanup → ../../opentelemetry-tracing-umbrella/recipes/validation-cleanup.md (when status is pass)
+6. Post-validation cleanup → ../../opentelemetry-tracing-common/recipes/validation-cleanup.md (when status is pass)
 ```
 
 **Forbidden before step 1 passes:** querying Jaeger for pass/fail, declaring end-to-end
@@ -109,7 +109,7 @@ runtime tier.
 
 ### Stand health gate (step 1 — mandatory, run first)
 
-Run [`../../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md`](../../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md) immediately
+Run [`../../opentelemetry-tracing-common/recipes/stand-health-gate.md`](../../opentelemetry-tracing-common/recipes/stand-health-gate.md) immediately
 after deploy. Post the **L5 Stand health** brief before any tracing check.
 
 | Check | Pass when |
@@ -127,7 +127,7 @@ If any check fails, set `runtime.status` to `fail`. Record evidence under
 ### Log error triage (step 2 — mandatory before tracing pass/fail)
 
 After stand health passes, run
-[`../../opentelemetry-tracing-umbrella/recipes/log-error-triage.md`](../../opentelemetry-tracing-umbrella/recipes/log-error-triage.md). Post the
+[`../../opentelemetry-tracing-common/recipes/log-error-triage.md`](../../opentelemetry-tracing-common/recipes/log-error-triage.md). Post the
 **L5 Log errors** brief. Set `validationPlan.runtime.logErrorTriage` in the
 migration plan JSON.
 
@@ -147,8 +147,8 @@ succeed:
 - `span.kind = server` for the exercised endpoint;
 - propagation asserted on the **wire headers** (a receiver dumping incoming
   headers shows the configured format), plus span hierarchy where a mesh is in
-  the path — a shared `trace_id` alone proves neither (umbrella
-  [`5-validation.md`](../../opentelemetry-tracing-umbrella/models/5-validation.md) §5.3);
+  the path — a shared `trace_id` alone proves neither (common
+  [`5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md) §5.3);
 - one `trace_id` across async hops if applicable;
 - non-empty `traceId`/`spanId` in logs for the request;
 - build provenance per [`../reference/build-preconditions.md`](../reference/build-preconditions.md);

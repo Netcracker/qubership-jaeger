@@ -5,8 +5,8 @@ Concrete mappings for Layer 4 §4.2 (`configMigration`).
 ## Source of truth
 
 Contracted parameters, export format, propagation, sampling, and service
-naming come from the umbrella platform contract
-([`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md))
+naming come from the common platform contract
+([`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md))
 — do not restate or override them here.
 
 ### Service name and namespace (Go pitfall)
@@ -26,8 +26,8 @@ resource attributes.
 configured inject format across, raise a conflict with the contract as a
 **question** to the user, and on a greenfield service ask the user to pick
 `B3` / `B3_MULTI` / `W3C` / a multi-format set instead of choosing silently
-(umbrella
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+(common
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Propagation).
 
 `OTEL_PROPAGATORS` and programmatic setup are both **runtime** in Go — the
@@ -39,7 +39,7 @@ format stays switchable without a rebuild.
 the default fires an explicit `InjectEncoding == B3Unspecified` fallback that
 writes `b3`, while the `X-B3-*` branch has no such fallback. Source coordinates
 and the exact mechanism:
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Verify constructor defaults — verify against the b3 version in the service's
 `go.mod`.
 

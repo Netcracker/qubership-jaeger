@@ -2,8 +2,8 @@
 
 A parameterized, throwaway stack for the Layer 5 **runtime** tier, used only
 after the user opts in. Shared runtime gates and tiers:
-Python [`models/5-validation.md`](../models/5-validation.md) and umbrella
-[`models/5-validation.md`](../../opentelemetry-tracing-umbrella/models/5-validation.md).
+Python [`models/5-validation.md`](../models/5-validation.md) and common
+[`models/5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md).
 
 Use this baseline when the selected environment has **no** tracing backend yet.
 Confirm image tags from upstream release notes; read service-specific values from
@@ -46,8 +46,8 @@ TRACING_SAMPLER_PROBABILISTIC=1.0
 2. Expose it through the runtime alias used by `TRACING_HOST`.
 3. Deploy the SUT with the post-L4 image and required dependencies.
 4. Generate traffic to a **non-suppressed business endpoint** (not probes,
-   metrics, or health-only paths — see umbrella
-   [`models/5-validation.md`](../../opentelemetry-tracing-umbrella/models/5-validation.md)
+   metrics, or health-only paths — see common
+   [`models/5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md)
    §5.3).
 5. Query traces from the backend API and verify assertions.
 6. Tear down or revert temporary runtime resources after validation (see cleanup below).
@@ -56,16 +56,16 @@ TRACING_SAMPLER_PROBABILISTIC=1.0
 
 **Runtime pass requires all gates in order:**
 
-1. [`stand-health-gate.md`](../../opentelemetry-tracing-umbrella/recipes/stand-health-gate.md) — Ready workload, stable restarts, non-empty endpoints
-2. [`log-error-triage.md`](../../opentelemetry-tracing-umbrella/recipes/log-error-triage.md) — classified log errors; no `blocks-e2e`
+1. [`stand-health-gate.md`](../../opentelemetry-tracing-common/recipes/stand-health-gate.md) — Ready workload, stable restarts, non-empty endpoints
+2. [`log-error-triage.md`](../../opentelemetry-tracing-common/recipes/log-error-triage.md) — classified log errors; no `blocks-e2e`
 3. Business traffic — non-suppressed endpoint through the normal service path
 4. Tracing assertions — resolved `service.name`, server span, propagation, log correlation
 
 Assert propagation on the **wire headers** (a receiver dumping incoming headers
 shows `b3` vs `X-B3-*` vs `traceparent`), and on span hierarchy where a mesh is
 in the path. A single `trace_id` across services passes with the wrong inject
-format too, because receivers extract leniently — see umbrella
-[`5-validation.md`](../../opentelemetry-tracing-umbrella/models/5-validation.md) §5.3.
+format too, because receivers extract leniently — see common
+[`5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md) §5.3.
 This matters in Python, where `B3SingleFormat` emits single `b3` while the plan
 may say `b3multi`.
 
@@ -73,4 +73,4 @@ may say `b3multi`.
 is `CrashLoopBackOff`, not Ready, or restart-prone.
 
 After runtime **`pass`**, run
-[`validation-cleanup.md`](../../opentelemetry-tracing-umbrella/recipes/validation-cleanup.md).
+[`validation-cleanup.md`](../../opentelemetry-tracing-common/recipes/validation-cleanup.md).

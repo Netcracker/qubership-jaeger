@@ -1,9 +1,9 @@
 ---
-name: opentelemetry-tracing-umbrella
+name: opentelemetry-tracing-common
 description: Shared internal core for the OpenTelemetry tracing language packages (opentelemetry-tracing-java, opentelemetry-tracing-go, opentelemetry-tracing-python) — holds the cross-language capability, maturity, transformation, and validation layers plus the platform tracing contract. Do not start a tracing task here; this package has no discovery layer and no phase gates, so entering it directly skips the analysis a migration depends on. For any actual service work, start from the language package matching the repository and let it pull these layers in. Read this file directly only when editing the shared layers themselves, or when a language package sends you here.
 ---
 
-# OpenTelemetry tracing umbrella (shared core)
+# OpenTelemetry tracing common (shared core)
 
 This package is the **shared core** pulled in by language tracing skills
 (Java: `opentelemetry-tracing-java`). **Start from the language package
@@ -22,20 +22,20 @@ repository
 [L1] Discovery        ──► discovery-result.json      (language package)
    │
    ▼
-[L2] Capability       ──► capability-result.json     (umbrella models/2)
+[L2] Capability       ──► capability-result.json     (common models/2)
    │
    ▼
-[L3] Maturity         ──► maturity-result.json       (umbrella models/3)
+[L3] Maturity         ──► maturity-result.json       (common models/3)
    │
    ▼
-[L4] Transformation   ──► migration-plan.json          (umbrella models/4 + language apply)
+[L4] Transformation   ──► migration-plan.json          (common models/4 + language apply)
    │
    ▼
-[L5] Validation       ──► validationPlan             (embedded in migration-plan; umbrella models/5 + language runtime)
+[L5] Validation       ──► validationPlan             (embedded in migration-plan; common models/5 + language runtime)
 ```
 
 Each layer reads upstream artifact(s) only — not the raw repository again
-(except L1). Language packages stub or extend umbrella `models/` for local
+(except L1). Language packages stub or extend common `models/` for local
 framework gates and execution recipes.
 
 ## Multi-language scope gate (mandatory — before Phase 2 / L4)
@@ -67,7 +67,7 @@ This gate is cross-language; language packages reference it from Phase 2 entry
 
 ## Ownership split
 
-- **Umbrella owns (shared):**
+- **Common owns (shared):**
   - Layer 2 Capability — full
   - Layer 3 Maturity — full (decision matrix in `models/3-maturity.md`)
   - Layer 4 Transformation — **generic plan structure**, §4.1–§4.5, documentation sync on apply
@@ -80,21 +80,21 @@ This gate is cross-language; language packages reference it from Phase 2 entry
   - Shared JSON schemas (capability, maturity, migration-plan — listed below)
 - **Language package owns (local):**
   - Layer 1 Discovery and `L1-discovery-result.schema.json`
-  - `reference/detection-rules.md` in each **language package** (Layer 1; not in umbrella)
+  - `reference/detection-rules.md` in each **language package** (Layer 1; not in common)
   - Layer 4 **apply** — framework gate, dependency/config/code/async recipes
   - Layer 5 **runtime execution** — fresh build, deploy, validation-stack; tracing assertions
   - `recipes/` for L4 apply and language-specific L5 (fresh-build, validation-stack)
 
 ## Shared layer files
 
-| Layer | Umbrella model                                             | Language extension                                |
+| Layer | Common model                                             | Language extension                                |
 |-------|------------------------------------------------------------|---------------------------------------------------|
-| L2    | [`models/2-capability.md`](models/2-capability.md)         | stub → umbrella                                   |
-| L3    | [`models/3-maturity.md`](models/3-maturity.md)             | stub → umbrella (matrix in model)                 |
+| L2    | [`models/2-capability.md`](models/2-capability.md)         | stub → common                                   |
+| L3    | [`models/3-maturity.md`](models/3-maturity.md)             | stub → common (matrix in model)                 |
 | L4    | [`models/4-transformation.md`](models/4-transformation.md) | Step 0 / recipes / apply                          |
 | L5    | [`models/5-validation.md`](models/5-validation.md)         | install path, fresh-build; shared runtime recipes |
 
-## Shared schemas (umbrella)
+## Shared schemas (common)
 
 - [`schemas/L2-capability-result.schema.json`](schemas/L2-capability-result.schema.json)
 - [`schemas/L3-maturity-result.schema.json`](schemas/L3-maturity-result.schema.json)
@@ -103,7 +103,7 @@ This gate is cross-language; language packages reference it from Phase 2 entry
 `L1-discovery-result.schema.json` lives in each **language package** (Layer 1 output).
 
 Language packages may ship schema redirects (`allOf` + `$ref`) pointing here;
-umbrella schemas are the source of truth.
+common schemas are the source of truth.
 
 ## Shared reference
 

@@ -1,11 +1,11 @@
 # Recipe — code migration
 
-Concrete API rewrites for Layer 4 **§4.3** (`codeMigration`) — see umbrella
-[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md).
+Concrete API rewrites for Layer 4 **§4.3** (`codeMigration`) — see common
+[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md).
 Mechanical rewrites are deterministic
 and may be applied on confirmation; semantic attribute changes are proposals
-only — see umbrella
-[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md) §4.3.
+only — see common
+[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md) §4.3.
 
 ## OpenTracing / Jaeger client → OTel
 
@@ -75,8 +75,8 @@ Tracer tracer = openTelemetry.getTracer("service-component");
 
 ## Attributes
 
-Use semantic-convention keys where they exist (see umbrella
-[`models/4-transformation.md`](../../opentelemetry-tracing-umbrella/models/4-transformation.md)
+Use semantic-convention keys where they exist (see common
+[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
 §4.3). Keep custom
 attributes small, low-cardinality, and stable. Never record secrets, tokens,
 full payloads, or unbounded values. Emit any business-key rename as a

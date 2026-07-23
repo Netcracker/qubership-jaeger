@@ -22,10 +22,10 @@ Set `basedOnMaturityLevel` to `maturity-result.level` on every plan.
 
 ## Step 0 — Confirm scope (before framework gate)
 
-When umbrella **Multi-language scope gate** applies (two or more language
+When common **Multi-language scope gate** applies (two or more language
 families or SUTs in scope), confirm user choice **bulk vs single target** before
 any plan row or repository edit. If scope is unset, stop at plan-only output. See
-umbrella [`SKILL.md`](../SKILL.md) § Multi-language scope gate.
+common [`SKILL.md`](../SKILL.md) § Multi-language scope gate.
 
 ## Algorithm
 
@@ -36,7 +36,7 @@ umbrella [`SKILL.md`](../SKILL.md) § Multi-language scope gate.
 4. Fill plan sections **§4.1–§4.4** from language recipes when migration work
    is required (levels 1–4, or Level 5 with explicit fix scope).
 5. Build **§4.5 `validationPlan`** — static and configuration tiers by default;
-   runtime tier per umbrella `models/5-validation.md` (opt-in).
+   runtime tier per common `models/5-validation.md` (opt-in).
 6. Record unresolved items, skipped doc sync, and build blockers in `gaps`.
 7. Validate against
    [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).

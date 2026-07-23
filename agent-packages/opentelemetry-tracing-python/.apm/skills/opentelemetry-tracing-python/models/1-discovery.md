@@ -78,7 +78,7 @@ fan-out — `CompositePropagator.inject` loops every member, so **all** configur
 formats are written (a later member overrides the same carrier key). A merged
 list hides the case where a service reads B3 and still emits only `traceparent`.
 See
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Propagation.
 
 Sources, both `runtime` scope in Python (interpreted — no build-time propagation
@@ -90,7 +90,7 @@ surface):
   header; `B3MultiFormat` (and env `b3multi`) injects `X-B3-*`. The legacy name
   `B3Format` is a deprecated alias of `B3MultiFormat` — it emits `X-B3-*`, not
   single `b3`. Mechanism and source coordinates:
-  [`platform-tracing-guide.md`](../../opentelemetry-tracing-umbrella/reference/platform-tracing-guide.md)
+  [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
   §Verify constructor defaults — check them against the b3 version in the repo's
   manifest, not the version cited there.
 
