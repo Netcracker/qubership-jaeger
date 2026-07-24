@@ -36,6 +36,9 @@ spec:
             type: PathPrefix
             value: "/"
       backendRefs:
-        - name: {{ .Values.jaeger.serviceName }}-hotrod
+        - group: ""
+          kind: Service
+          name: {{ .Values.jaeger.serviceName }}-hotrod
           port: {{ .Values.hotrod.service.port }}
+          weight: 1
 {{- end }}

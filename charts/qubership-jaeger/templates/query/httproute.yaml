@@ -36,6 +36,9 @@ spec:
             type: PathPrefix
             value: "/"
       backendRefs:
-        - name: {{ $name }}
+        - group: ""
+          kind: Service
+          name: {{ $name }}
           port: 16686
+          weight: 1
 {{- end }}

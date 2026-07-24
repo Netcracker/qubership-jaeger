@@ -127,8 +127,11 @@ Render shared HTTPRoute rules.
           replacePrefixMatch: {{ .rewritePrefix | quote }}
   {{- end }}
   backendRefs:
-    - name: {{ coalesce .service.name $defaultServiceName }}
+    - group: ""
+      kind: Service
+      name: {{ coalesce .service.name $defaultServiceName }}
       port: {{ .service.port }}
+      weight: 1
 {{- end -}}
 {{- end -}}
 

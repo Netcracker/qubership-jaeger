@@ -2,7 +2,7 @@
 {{- $grpcRouteSpec := $gatewayApi.grpcRoute | default dict -}}
 {{- $parentRefs := $grpcRouteSpec.parentRefs | default list -}}
 {{- $hostnames := $grpcRouteSpec.hosts | default list -}}
-{{- $defaultRules := list (dict "backendRefs" (list (dict "name" (printf "%s-collector" $.Values.jaeger.serviceName) "port" 4317))) -}}
+{{- $defaultRules := list (dict "backendRefs" (list (dict "group" "" "kind" "Service" "name" (printf "%s-collector" $.Values.jaeger.serviceName) "port" 4317 "weight" 1))) -}}
 {{- $rules := $grpcRouteSpec.rules | default $defaultRules -}}
 {{- if and .Values.collector.install ($grpcRouteSpec.install | default false) (eq ($grpcRouteSpec.kind | default "HTTPRoute") "GRPCRoute") }}
 {{- $resourceName := include "collector.httpRoute.resourceName" (list $ "grpc") }}
