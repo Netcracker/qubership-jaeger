@@ -12,11 +12,6 @@ cassandraSchemaJob:
   username: admin
   datacenter: dc1
 
-  # This parameter responsible for with either with SimpleStrategy (without replication)
-  # or with NetworkReplicationStrategy (with replication):
-  # * prod - will use NetworkReplicationStrategy
-  # * test - will use SimpleStrategy
-  mode: prod
 
   # This block allow to specify custom settings for Cassandra TTL
   # By default all traces store only 2 days, and all dependencies stored forever
