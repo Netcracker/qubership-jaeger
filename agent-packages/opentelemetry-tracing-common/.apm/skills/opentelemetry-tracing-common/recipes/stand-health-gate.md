@@ -41,13 +41,13 @@ tracing checks.
 
 **Pass only when all hold:**
 
-| Check             | Pass                                           | Fail (stop — fix stand first)                                |
-|-------------------|------------------------------------------------|--------------------------------------------------------------|
-| Process phase     | Running / healthy                              | Crash loop, error exit, stuck pending beyond expected window |
-| Ready signal      | Expected ready count (e.g. `1/1`)              | Not ready, perpetual terminating/creating                    |
-| Restarts          | `0`, or stable and explained after triage      | Restart storm, count increasing during observation           |
-| Network endpoints | Non-empty target for the client-facing service | Empty targets while claiming availability                    |
-| Rollout / deploy  | Completed successfully                         | Failed / timed out                                           |
+| Check | Pass | Fail (stop — fix stand first) |
+| ------------------- | ------------------------------------------------ | -------------------------------------------------------------- |
+| Process phase | Running / healthy | Crash loop, error exit, stuck pending beyond expected window |
+| Ready signal | Expected ready count (e.g. `1/1`) | Not ready, perpetual terminating/creating |
+| Restarts | `0`, or stable and explained after triage | Restart storm, count increasing during observation |
+| Network endpoints | Non-empty target for the client-facing service | Empty targets while claiming availability |
+| Rollout / deploy | Completed successfully | Failed / timed out |
 
 If **any** row fails, set `runtime.status` to `fail` (record evidence in plan
 root `gaps`). **Do not** query Jaeger as a substitute for a healthy workload.
@@ -100,11 +100,11 @@ observation re-check → step 3; describe/logs → step 4; Service cURL → step
 
 ## Outcomes
 
-| Outcome              | Next step                                                                      |
-|----------------------|--------------------------------------------------------------------------------|
-| All checks pass      | Run [`log-error-triage.md`](log-error-triage.md), then tracing assertions      |
-| Any check fails      | Fix manifest/config/secrets/probes; redeploy; **re-run this gate from step 1** |
-| Fixed during session | Re-run steps 1–3 after rollout restart before claiming pass                    |
+| Outcome | Next step |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| All checks pass | Run [`log-error-triage.md`](log-error-triage.md), then tracing assertions |
+| Any check fails | Fix manifest/config/secrets/probes; redeploy; **re-run this gate from step 1** |
+| Fixed during session | Re-run steps 1–3 after rollout restart before claiming pass |
 
 ## User-facing brief (mandatory before tracing checks)
 

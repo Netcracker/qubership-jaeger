@@ -68,12 +68,12 @@ in one place; do not mix it with `WithEndpoint`/`WithURLPath`.
 
 ## Mechanical rewrite table
 
-| Rule ID                     | Before                  | After                              |
-|-----------------------------|-------------------------|------------------------------------|
-| `startspan-to-tracer-start` | `opentracing.StartSpan` | `tracer.Start(ctx, name)`          |
-| `finish-to-end`             | `span.Finish()`         | `span.End()`                       |
-| `zipkin-wrapper-to-otel`    | `NewZipkinTracer`       | OTel provider/exporter wiring      |
-| `globaltracer-to-context`   | global span usage       | context-based tracer/span handling |
+| Rule ID | Before | After |
+| ----------------------------- | ------------------------- | ------------------------------------ |
+| `startspan-to-tracer-start` | `opentracing.StartSpan` | `tracer.Start(ctx, name)` |
+| `finish-to-end` | `span.Finish()` | `span.End()` |
+| `zipkin-wrapper-to-otel` | `NewZipkinTracer` | OTel provider/exporter wiring |
+| `globaltracer-to-context` | global span usage | context-based tracer/span handling |
 
 ## Guardrails
 

@@ -136,19 +136,19 @@ Produce:
 
 ## 5. Non-negotiable rules
 
-| Rule                                  | Reason                                                                                                                                               |
-|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Platform contract is binding          | Must enforce `TRACING_*`, OTLP `http/protobuf`, `b3multi`, `parentbased_traceidratio`, `${name}-${namespace}`, endpoint filtering, trace IDs in logs |
-| Evidence-first                        | Every claim cites file/path/env key                                                                                                                  |
-| No semantic auto-rename               | Semantic-convention renames are proposals, not automatic edits                                                                                       |
-| One tracing stack                     | Final state cannot keep legacy Zipkin/OpenTracing/Jaeger as active stack                                                                             |
-| One instrumentation mechanism         | Do not run the `opentelemetry-instrument` auto-launcher and manual `.instrument()` for the same library — double instrumentation duplicates spans    |
-| Sampling & propagation mandatory      | Validation fails if unknown or unverified                                                                                                            |
-| Defer versions                        | Read versions from `requirements.txt`/`pyproject.toml`, never hardcode versions in skill text                                                        |
-| Sync docs on L4                       | If L4 changes config/env/deps, update service docs in the same pass                                                                                  |
-| Fresh post-L4 build                   | Runtime pass requires post-L4 dependency reinstall + image provenance                                                                                |
-| End-to-end only when stand is healthy | Runtime `pass` needs stand health + log triage before Jaeger (§3.4; common L5)                                                                     |
-| No Jaeger-first pass                  | Jaeger spans while SUT crash-loops or not Ready are not end-to-end pass — fix the stand first                                                        |
+| Rule | Reason |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Platform contract is binding | Must enforce `TRACING_*`, OTLP `http/protobuf`, `b3multi`, `parentbased_traceidratio`, `${name}-${namespace}`, endpoint filtering, trace IDs in logs |
+| Evidence-first | Every claim cites file/path/env key |
+| No semantic auto-rename | Semantic-convention renames are proposals, not automatic edits |
+| One tracing stack | Final state cannot keep legacy Zipkin/OpenTracing/Jaeger as active stack |
+| One instrumentation mechanism | Do not run the `opentelemetry-instrument` auto-launcher and manual `.instrument()` for the same library — double instrumentation duplicates spans |
+| Sampling & propagation mandatory | Validation fails if unknown or unverified |
+| Defer versions | Read versions from `requirements.txt`/`pyproject.toml`, never hardcode versions in skill text |
+| Sync docs on L4 | If L4 changes config/env/deps, update service docs in the same pass |
+| Fresh post-L4 build | Runtime pass requires post-L4 dependency reinstall + image provenance |
+| End-to-end only when stand is healthy | Runtime `pass` needs stand health + log triage before Jaeger (§3.4; common L5) |
+| No Jaeger-first pass | Jaeger spans while SUT crash-loops or not Ready are not end-to-end pass — fix the stand first |
 
 ## 6. File index
 

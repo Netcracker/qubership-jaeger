@@ -9,13 +9,13 @@ Part of the multi-language tracing program — see [`../README.md`](../README.md
 
 Sources in this monorepo and sibling clones:
 
-| Topic                           | Location                                                           |
-|---------------------------------|--------------------------------------------------------------------|
-| Skill package                   | `agent-packages/opentelemetry-tracing-java/`                       |
-| Program scope (all languages)   | `agent-packages/README.md`                                         |
-| Jaeger Helm / collector ports   | `charts/qubership-jaeger/values.yaml`, `README.md`, `docs/`        |
-| OTeC ingress & Jaeger export    | `../qubership-open-telemetry-collector/docs/installation-notes.md` |
-| Java libraries (external clone) | `../qubership-core-java-libs/`                                     |
+| Topic | Location |
+| --------------------------------- | -------------------------------------------------------------------- |
+| Skill package | `agent-packages/opentelemetry-tracing-java/` |
+| Program scope (all languages) | `agent-packages/README.md` |
+| Jaeger Helm / collector ports | `charts/qubership-jaeger/values.yaml`, `README.md`, `docs/` |
+| OTeC ingress & Jaeger export | `../qubership-open-telemetry-collector/docs/installation-notes.md` |
+| Java libraries (external clone) | `../qubership-core-java-libs/` |
 
 Status: **draft** — language-specific Java layer aligned with common core.
 Package version lives in [`apm.yml`](apm.yml) — the manifest APM actually reads. Do not restate it here; a
@@ -31,13 +31,13 @@ The skill is an analysis pipeline orchestrated by
 [`SKILL.md`](.apm/skills/opentelemetry-tracing-java/SKILL.md). Each layer reads
 the previous artifact and emits the next:
 
-| Layer             | File                         | Output                                             |
-|-------------------|------------------------------|----------------------------------------------------|
-| L1 Discovery      | `models/1-discovery.md`      | `discovery-result.json`                            |
-| L2 Capability     | `models/2-capability.md`     | delegated to common                              |
-| L3 Maturity       | `models/3-maturity.md`       | delegated to common                              |
+| Layer | File | Output |
+| ------------------- | ------------------------------ | ---------------------------------------------------- |
+| L1 Discovery | `models/1-discovery.md` | `discovery-result.json` |
+| L2 Capability | `models/2-capability.md` | delegated to common |
+| L3 Maturity | `models/3-maturity.md` | delegated to common |
 | L4 Transformation | `models/4-transformation.md` | shared plan + Java framework-family/mechanism gate |
-| L5 Validation     | `models/5-validation.md`     | shared tiers + Java runtime execution rules        |
+| L5 Validation | `models/5-validation.md` | shared tiers + Java runtime execution rules |
 
 ## Naming convention (L1-L5)
 

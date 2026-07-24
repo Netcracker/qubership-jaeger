@@ -25,13 +25,13 @@ layer must enforce these rules or record an explicit `gap`.
 
 Contracted values and in-service defaults:
 
-| Parameter                       | Type    | Allowed values   | Default in service    |
-|---------------------------------|---------|------------------|-----------------------|
-| `TRACING_ENABLED`               | boolean | `true` / `false` | `false` (tracing off) |
-| `TRACING_HOST`                  | string  | valid host       | `nc-diagnostic-agent` |
-| `TRACING_SAMPLER_RATELIMITING`  | integer | `>= 0`           | `10` (10 per second)  |
-| `TRACING_SAMPLER_PROBABILISTIC` | float   | `0.01`–`1.0`     | `0.01` (1%)           |
-| `TRACING_SAMPLER_CONST`         | integer | `0` or `1`       | `1` (100%)            |
+| Parameter | Type | Allowed values | Default in service |
+| --------------------------------- | --------- | ------------------ | ----------------------- |
+| `TRACING_ENABLED` | boolean | `true` / `false` | `false` (tracing off) |
+| `TRACING_HOST` | string | valid host | `nc-diagnostic-agent` |
+| `TRACING_SAMPLER_RATELIMITING` | integer | `>= 0` | `10` (10 per second) |
+| `TRACING_SAMPLER_PROBABILISTIC` | float | `0.01`–`1.0` | `0.01` (1%) |
+| `TRACING_SAMPLER_CONST` | integer | `0` or `1` | `1` (100%) |
 
 Use `TRACING_SAMPLER_RATELIMITING` when the stack supports a rate-limiting sampler; fall back to
 `TRACING_SAMPLER_PROBABILISTIC`, then to `TRACING_SAMPLER_CONST`, in that order.
@@ -77,7 +77,7 @@ Consequence for configuration surfaces: **a single list cannot express
 "extract several, inject one".**
 
 | Surface | Inject set | Extract set |
-|---------|-----------|-------------|
+| --------- | ----------- | ------------- |
 | `OTEL_PROPAGATORS`, `quarkus.otel.propagators`, Go composite | the **whole** list — every format is written | the whole list |
 | Spring Boot `produce` / `consume` | only `produce` | only `consume` |
 
@@ -134,12 +134,12 @@ Where several propagators are configured, list order decides which one supplies
 the context. The winning end is **not** the same across stacks, and the two
 families get there by different mechanics:
 
-| Stack                          | Composite implementation                           | Winner    | Mechanism |
-|--------------------------------|----------------------------------------------------|-----------|-----------|
-| Go OTel SDK                    | `NewCompositeTextMapPropagator`                    | **last**  | chains the context through **all** propagators; the last one that finds anything overwrites |
-| Quarkus / Pure Java (OTel SDK) | `MultiTextMapPropagator`                           | **last**  | same — loops the whole array, reassigning `ctx` |
-| Spring Boot, Brave bridge      | `CompositePropagationFactory$CompositePropagation` | **first** | returns at the **first** extractor whose result is not `EMPTY` |
-| Spring Boot, OTel bridge       | `CompositeTextMapPropagator`                       | **first** | breaks at the **first** extractor that changes the context |
+| Stack | Composite implementation | Winner | Mechanism |
+| -------------------------------- | ---------------------------------------------------- | ----------- | ----------- |
+| Go OTel SDK | `NewCompositeTextMapPropagator` | **last** | chains the context through **all** propagators; the last one that finds anything overwrites |
+| Quarkus / Pure Java (OTel SDK) | `MultiTextMapPropagator` | **last** | same — loops the whole array, reassigning `ctx` |
+| Spring Boot, Brave bridge | `CompositePropagationFactory$CompositePropagation` | **first** | returns at the **first** extractor whose result is not `EMPTY` |
+| Spring Boot, OTel bridge | `CompositeTextMapPropagator` | **first** | breaks at the **first** extractor that changes the context |
 
 Verified by disassembly: `spring-boot-actuator-autoconfigure:3.5.11`,
 `opentelemetry-context:1.57.0`, `go.opentelemetry.io/otel@v1.43.0`
@@ -207,12 +207,12 @@ discards the lenient `consume` default. Never emit `type` alongside
 Whether the format can be changed without a rebuild decides whether a request
 like "make the propagation format switchable" is feasible at all.
 
-| Surface                                             | Scope          |
-|-----------------------------------------------------|----------------|
-| `quarkus.otel.propagators`                          | **build-time** — rebuild required |
-| Spring Boot `propagation.produce` / `.consume`      | runtime        |
-| Pure Java `OTEL_PROPAGATORS`                        | runtime        |
-| Go `OTEL_PROPAGATORS` / programmatic setup          | runtime        |
+| Surface | Scope |
+| ----------------------------------------------------- | ---------------- |
+| `quarkus.otel.propagators` | **build-time** — rebuild required |
+| Spring Boot `propagation.produce` / `.consume` | runtime |
+| Pure Java `OTEL_PROPAGATORS` | runtime |
+| Go `OTEL_PROPAGATORS` / programmatic setup | runtime |
 
 #### Verify constructor defaults, never assume them
 
@@ -323,12 +323,12 @@ these rules.
 
 ## Operational constraints
 
-| Situation                             | Required skill behavior                                                                    |
-|---------------------------------------|--------------------------------------------------------------------------------------------|
+| Situation | Required skill behavior |
+| --------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Exporter unavailable / collector down | Runtime cannot be `pass`; record buffering/drop risk; set `manual` or `fail` with evidence |
-| SDK overhead                          | Do not hard-assert fixed CPU/memory numbers; note overhead is workload-dependent           |
-| Third-party SDK regressions           | Recommend verifying SDK version and known issue trackers when symptoms match               |
-| Framework/logging wrappers            | Allowed only if log contract above still holds; confirm output before stacking layers      |
+| SDK overhead | Do not hard-assert fixed CPU/memory numbers; note overhead is workload-dependent |
+| Third-party SDK regressions | Recommend verifying SDK version and known issue trackers when symptoms match |
+| Framework/logging wrappers | Allowed only if log contract above still holds; confirm output before stacking layers |
 
 Collector/exporter unavailability semantics (SDK defaults): spans buffer
 in memory in the batch processor queue (default `maxQueueSize` 2048); when the
@@ -352,11 +352,11 @@ Before declaring runtime `pass`:
 
 ## Skill coverage map
 
-| Contract area           | Where enforced                                                   |
-|-------------------------|------------------------------------------------------------------|
+| Contract area | Where enforced |
+| ------------------------- | ------------------------------------------------------------------ |
 | Detection / L1 evidence | Language `reference/detection-rules.md`, `models/1-discovery.md` |
-| L2 verdicts             | Common `models/2-capability.md`                                |
-| L3 maturity             | Common `models/3-maturity.md`                                  |
-| L4 migration            | Common `models/4-transformation.md` + language `recipes/`      |
-| L5 validation           | Common `models/5-validation.md` + language runtime recipes     |
-| Build/registry blockers | Language `reference/build-preconditions.md`                      |
+| L2 verdicts | Common `models/2-capability.md` |
+| L3 maturity | Common `models/3-maturity.md` |
+| L4 migration | Common `models/4-transformation.md` + language `recipes/` |
+| L5 validation | Common `models/5-validation.md` + language runtime recipes |
+| Build/registry blockers | Language `reference/build-preconditions.md` |

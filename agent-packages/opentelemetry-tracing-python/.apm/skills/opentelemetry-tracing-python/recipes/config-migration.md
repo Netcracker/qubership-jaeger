@@ -108,12 +108,12 @@ app object is created per worker, so that path is already fork-safe.
 
 ## Legacy config mappings
 
-| From                       | To                                            | 1:1     |
-|----------------------------|-----------------------------------------------|---------|
-| `JAEGER_AGENT_HOST` (udp)  | `TRACING_HOST` + OTLP endpoint composition    | no      |
-| `tracing.enabled`          | `TRACING_ENABLED`                             | yes     |
-| `JAEGER_SAMPLER_PARAM`     | `TRACING_SAMPLER_PROBABILISTIC` path          | partial |
-| hardcoded Zipkin URL       | OTLP endpoint from `TRACING_HOST`             | no      |
+| From | To | 1:1 |
+| ---------------------------- | ----------------------------------------------- | --------- |
+| `JAEGER_AGENT_HOST` (udp) | `TRACING_HOST` + OTLP endpoint composition | no |
+| `tracing.enabled` | `TRACING_ENABLED` | yes |
+| `JAEGER_SAMPLER_PARAM` | `TRACING_SAMPLER_PROBABILISTIC` path | partial |
+| hardcoded Zipkin URL | OTLP endpoint from `TRACING_HOST` | no |
 
 ## Required target env shape
 

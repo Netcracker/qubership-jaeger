@@ -12,13 +12,13 @@ is in scope.
 Search the repository (and linked docs) for install/run guidance. Typical
 locations:
 
-| Signal              | Examples                                                                                         |
-|---------------------|--------------------------------------------------------------------------------------------------|
-| Install docs        | `docs/installation/**`, `docs/installation/parameters.md`, `README.md` (install/deploy sections) |
-| Helm / charts       | `helm-templates/**`, `charts/**`, `values.yaml` + companion parameter docs                       |
-| Local bootstrap     | `bootstrap/`, `local.mk`, `Makefile`, `skaffold.yaml`, `docker-compose*.yml`                     |
-| CI deploy + test    | `.github/workflows/*integration*`, `integration-tests.yml`, `deploy-*.yml`                       |
-| Operator / platform | `docs/deployment/**`, product readme in monorepo root                                            |
+| Signal | Examples |
+| --------------------- | -------------------------------------------------------------------------------------------------- |
+| Install docs | `docs/installation/**`, `docs/installation/parameters.md`, `README.md` (install/deploy sections) |
+| Helm / charts | `helm-templates/**`, `charts/**`, `values.yaml` + companion parameter docs |
+| Local bootstrap | `bootstrap/`, `local.mk`, `Makefile`, `skaffold.yaml`, `docker-compose*.yml` |
+| CI deploy + test | `.github/workflows/*integration*`, `integration-tests.yml`, `deploy-*.yml` |
+| Operator / platform | `docs/deployment/**`, product readme in monorepo root |
 
 Record every path found in the runtime `scenario`, evidence prose, or L5 brief
 with file citations. Use plan root `gaps` only for blockers: missing docs,

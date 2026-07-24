@@ -8,12 +8,12 @@
 
 Verdict scale:
 
-| Verdict   | Use when                                                                           |
-|-----------|------------------------------------------------------------------------------------|
-| `PASS`    | Discovery evidence shows the capability is present and correctly wired.            |
-| `PARTIAL` | Capability is present but incomplete, unverified, or mixed (legacy + OTel).        |
-| `FAILED`  | Evidence shows broken wiring, contract violation, or context loss with no wrapper. |
-| `UNKNOWN` | A required discovery field is missing — record the reason in `gaps`.               |
+| Verdict | Use when |
+| ----------- | ------------------------------------------------------------------------------------ |
+| `PASS` | Discovery evidence shows the capability is present and correctly wired. |
+| `PARTIAL` | Capability is present but incomplete, unverified, or mixed (legacy + OTel). |
+| `FAILED` | Evidence shows broken wiring, contract violation, or context loss with no wrapper. |
+| `UNKNOWN` | A required discovery field is missing — record the reason in `gaps`. |
 
 ## Algorithm
 
@@ -72,14 +72,14 @@ Verdict scale:
    [`../reference/platform-tracing-guide.md`](../reference/platform-tracing-guide.md)
    (mandatory platform rules):
 
-   | JSON facet             | Platform rule                                                                                                                                      |
-   |------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-   | `serviceNameNamespace` | `service.name` = `<service>-<namespace>`                                                                                                           |
-   | `sampler`              | `parentbased_traceidratio`; never `always_on`; sampler env precedence                                                                              |
-   | `propagationStandard`  | Inject set matches the format peers expect (contract default `b3multi`) + required propagator extension; extract set covers the peers that call in |
-   | `endpointFilter`       | Probes / metrics / management excluded from trace export                                                                                           |
-   | `loggingCorrelation`   | `traceId` and `spanId` in logs                                                                                                                     |
-   | `exportShape`          | OTLP `http/protobuf` to platform endpoint via `TRACING_HOST`                                                                                       |
+   | JSON facet | Platform rule |
+   | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | `serviceNameNamespace` | `service.name` = `<service>-<namespace>` |
+   | `sampler` | `parentbased_traceidratio`; never `always_on`; sampler env precedence |
+   | `propagationStandard` | Inject set matches the format peers expect (contract default `b3multi`) + required propagator extension; extract set covers the peers that call in |
+   | `endpointFilter` | Probes / metrics / management excluded from trace export |
+   | `loggingCorrelation` | `traceId` and `spanId` in logs |
+   | `exportShape` | OTLP `http/protobuf` to platform endpoint via `TRACING_HOST` |
 
    Treat mandatory contract gaps as `FAILED`, not `UNKNOWN`, unless discovery
    could not inspect the source file. Use `notes[]` for file citations — internal

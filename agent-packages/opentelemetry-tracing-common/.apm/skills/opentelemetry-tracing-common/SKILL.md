@@ -87,12 +87,12 @@ This gate is cross-language; language packages reference it from Phase 2 entry
 
 ## Shared layer files
 
-| Layer | Common model                                             | Language extension                                |
-|-------|------------------------------------------------------------|---------------------------------------------------|
-| L2    | [`models/2-capability.md`](models/2-capability.md)         | stub → common                                   |
-| L3    | [`models/3-maturity.md`](models/3-maturity.md)             | stub → common (matrix in model)                 |
-| L4    | [`models/4-transformation.md`](models/4-transformation.md) | Step 0 / recipes / apply                          |
-| L5    | [`models/5-validation.md`](models/5-validation.md)         | install path, fresh-build; shared runtime recipes |
+| Layer | Common model | Language extension |
+| ------- | ------------------------------------------------------------ | --------------------------------------------------- |
+| L2 | [`models/2-capability.md`](models/2-capability.md) | stub → common |
+| L3 | [`models/3-maturity.md`](models/3-maturity.md) | stub → common (matrix in model) |
+| L4 | [`models/4-transformation.md`](models/4-transformation.md) | Step 0 / recipes / apply |
+| L5 | [`models/5-validation.md`](models/5-validation.md) | install path, fresh-build; shared runtime recipes |
 
 ## Shared schemas (common)
 

@@ -5,12 +5,12 @@ Shared plan structure, algorithm, and section numbering (§4.1–§4.5):
 
 Run the **Python gate below before §4.1**. Then fill §4.1–§4.4 from recipes:
 
-| Section                      | Recipe                                                                                                                                        |
-|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
-| §4.1 `dependencyMigration`   | [`../recipes/dependency-migration.md`](../recipes/dependency-migration.md)                                                                    |
-| §4.2 `configMigration`       | [`../recipes/config-migration.md`](../recipes/config-migration.md) + [`../recipes/logging-correlation.md`](../recipes/logging-correlation.md) |
-| §4.3 `codeMigration`         | [`../recipes/code-migration.md`](../recipes/code-migration.md)                                                                                |
-| §4.4 `asyncContextMigration` | [`../recipes/async-context-migration.md`](../recipes/async-context-migration.md)                                                              |
+| Section | Recipe |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| §4.1 `dependencyMigration` | [`../recipes/dependency-migration.md`](../recipes/dependency-migration.md) |
+| §4.2 `configMigration` | [`../recipes/config-migration.md`](../recipes/config-migration.md) + [`../recipes/logging-correlation.md`](../recipes/logging-correlation.md) |
+| §4.3 `codeMigration` | [`../recipes/code-migration.md`](../recipes/code-migration.md) |
+| §4.4 `asyncContextMigration` | [`../recipes/async-context-migration.md`](../recipes/async-context-migration.md) |
 
 ## Step 0 — Framework stack decision (mandatory)
 
@@ -22,15 +22,15 @@ default.
 Read `discovery-result.service.framework` and pick exactly one migration path.
 Do not emit §4.1 or §4.2 rows before this is fixed.
 
-| `service.framework`        | Target instrumentation                                                           | Config surface                  |
-|----------------------------|----------------------------------------------------------------------------------|---------------------------------|
-| `fastapi`                  | `opentelemetry-instrumentation-fastapi` (ASGI) + SDK + OTLP HTTP + B3 propagator | env + programmatic/instrumentor |
-| `django`                   | `opentelemetry-instrumentation-django` (WSGI/ASGI) + SDK + OTLP HTTP + B3        | env + `settings.py`             |
-| `flask`                    | `opentelemetry-instrumentation-flask` (WSGI) + SDK + OTLP HTTP + B3              | env + app-factory instrument    |
-| `pure-python`              | `opentelemetry-sdk` + OTLP HTTP exporter + B3 propagator (no web middleware)     | env + programmatic setup        |
-| `unknown`                  | conservative SDK path; record assumptions in `gaps`                              | env                             |
+| `service.framework` | Target instrumentation | Config surface |
+| ---------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
+| `fastapi` | `opentelemetry-instrumentation-fastapi` (ASGI) + SDK + OTLP HTTP + B3 propagator | env + programmatic/instrumentor |
+| `django` | `opentelemetry-instrumentation-django` (WSGI/ASGI) + SDK + OTLP HTTP + B3 | env + `settings.py` |
+| `flask` | `opentelemetry-instrumentation-flask` (WSGI) + SDK + OTLP HTTP + B3 | env + app-factory instrument |
+| `pure-python` | `opentelemetry-sdk` + OTLP HTTP exporter + B3 propagator (no web middleware) | env + programmatic setup |
+| `unknown` | conservative SDK path; record assumptions in `gaps` | env |
 
-Pull versions from the repo manifest (`requirements.txt`/`pyproject.toml`); never
+Pull versions from the repository manifest (`requirements.txt`/`pyproject.toml`); never
 pin in the plan.
 
 ## Step 0b — Instrumentation-mechanism guardrails (mandatory)

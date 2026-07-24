@@ -21,9 +21,9 @@ SDK and the service entry module is the closest analogue to a compile check. A
 migration that "looks applied" in source but was never installed into the image
 is unverified — treat it as such.
 
-## Private package indexes
+## Private package indices
 
-Some Python services install from private indexes (internal PyPI mirror, GitHub
+Some Python services install from private indices (internal PyPI mirror, GitHub
 Packages, `--extra-index-url`, `[[tool.poetry.source]]`). If post-L4 install fails
 due to auth (401/403 or package download denied):
 
@@ -60,12 +60,12 @@ Before runtime end-to-end, run [`../recipes/fresh-build-and-image.md`](../recipe
 Record how the SUT artifact was produced in the L5 summary and in
 `validationPlan.runtime.buildProvenance`:
 
-| Provenance                                                                                | Valid for L4 tracing validation?    |
-|-------------------------------------------------------------------------------------------|-------------------------------------|
-| Fresh **clean install + smoke** + new image **in this session**                           | **Yes** (default for `pass`)        |
+| Provenance | Valid for L4 tracing validation? |
+| ------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Fresh **clean install + smoke** + new image **in this session** | **Yes** (default for `pass`) |
 | CI image tagged to the **current** commit/branch and proven to include current L4 changes | Yes, if provenance matches the diff |
-| Pre-existing local image (`:e2e`, `:local`, `:latest`) without reinstall                  | **No** — max `fail`                 |
-| Public/stock image without L4 changes                                                     | **No**                              |
+| Pre-existing local image (`:e2e`, `:local`, `:latest`) without reinstall | **No** — max `fail` |
+| Public/stock image without L4 changes | **No** |
 
 Checklist when a pre-built image is reused:
 

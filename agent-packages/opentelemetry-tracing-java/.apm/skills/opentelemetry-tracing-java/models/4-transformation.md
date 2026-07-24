@@ -21,13 +21,13 @@ and [`5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.m
 Read `discovery-result.service.framework` and pick exactly one target path.
 Do not emit §4.1 or §4.2 rows before this is fixed.
 
-| Family                                                           | Target instrumentation                                                | Config surface                                                                                                                             |
-|------------------------------------------------------------------|-----------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| Spring Boot 3                                                    | Micrometer Tracing + `micrometer-tracing-bridge-otel` + OTLP exporter | `application.yaml` (`management.*`, `otel.*`)                                                                                              |
-| Spring Boot 4                                                    | Boot 3 stack **+** `spring-boot-micrometer-tracing-opentelemetry`     | `application.yaml` — Boot 4 `management.tracing.export.*` / `management.opentelemetry.tracing.export.otlp.*` (Boot 3 keys fail)            |
-| Quarkus                                                          | `quarkus-opentelemetry` **extension** (build-time)                    | `application.properties` (`quarkus.otel.*`) — see [`../reference/quarkus-platform-contract.md`](../reference/quarkus-platform-contract.md) |
-| Pure Java                                                        | `opentelemetry-sdk` + `opentelemetry-exporter-otlp` (+ propagators)   | env / programmatic SDK builder                                                                                                             |
-| Best-effort (Micronaut, Helidon, Vert.x, Jakarta EE, Dropwizard) | framework OTel module if it exists, else SDK                          | framework config, else env                                                                                                                 |
+| Family | Target instrumentation | Config surface |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Spring Boot 3 | Micrometer Tracing + `micrometer-tracing-bridge-otel` + OTLP exporter | `application.yaml` (`management.*`, `otel.*`) |
+| Spring Boot 4 | Boot 3 stack **+** `spring-boot-micrometer-tracing-opentelemetry` | `application.yaml` — Boot 4 `management.tracing.export.*` / `management.opentelemetry.tracing.export.otlp.*` (Boot 3 keys fail) |
+| Quarkus | `quarkus-opentelemetry` **extension** (build-time) | `application.properties` (`quarkus.otel.*`) — see [`../reference/quarkus-platform-contract.md`](../reference/quarkus-platform-contract.md) |
+| Pure Java | `opentelemetry-sdk` + `opentelemetry-exporter-otlp` (+ propagators) | env / programmatic SDK builder |
+| Best-effort (Micronaut, Helidon, Vert.x, Jakarta EE, Dropwizard) | framework OTel module if it exists, else SDK | framework config, else env |
 
 Pull versions from the repository BOM/`pom.xml`; never pin them in the plan.
 
@@ -36,12 +36,12 @@ Pull versions from the repository BOM/`pom.xml`; never pin them in the plan.
 After the family is chosen, validate the **mechanism** (extension / starter /
 SDK / agent). Reject forbidden combinations in the plan.
 
-| Family        | extension / starter                                                         | manual SDK                    | OTel Java agent (`-javaagent`)                    |
-|---------------|-----------------------------------------------------------------------------|-------------------------------|---------------------------------------------------|
-| Spring Boot 3 | preferred                                                                   | allowed                       | allowed (zero-touch), not with the starter bridge |
+| Family | extension / starter | manual SDK | OTel Java agent (`-javaagent`) |
+| --------------- | ----------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------- |
+| Spring Boot 3 | preferred | allowed | allowed (zero-touch), not with the starter bridge |
 | Spring Boot 4 | **`spring-boot-micrometer-tracing-opentelemetry` required** for OTLP export | allowed with bridge + starter | allowed (zero-touch), not with the starter bridge |
-| Quarkus       | **required**                                                                | n/a                           | **forbidden**                                     |
-| Pure Java     | n/a                                                                         | preferred                     | allowed (zero-touch)                              |
+| Quarkus | **required** | n/a | **forbidden** |
+| Pure Java | n/a | preferred | allowed (zero-touch) |
 
 **Quarkus + `-javaagent` is forbidden.** Quarkus instruments at build time via
 `quarkus-opentelemetry`; the runtime agent double-instruments and breaks Vert.x

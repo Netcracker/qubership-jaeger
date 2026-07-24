@@ -13,13 +13,13 @@ Step 0 (framework stack) before emitting §4.1 rows — dependency moves follow
 
 ## Framework stack → dependency path
 
-| `service.framework`   | §4.1 focus                                                                          |
-|-----------------------|--------------------------------------------------------------------------------------|
-| `fastapi`             | baseline + `opentelemetry-instrumentation-fastapi` (ASGI)                            |
-| `django`              | baseline + `opentelemetry-instrumentation-django` (WSGI/ASGI)                        |
-| `flask`               | baseline + `opentelemetry-instrumentation-flask` (WSGI)                              |
-| `pure-python`         | OTel SDK baseline modules only                                                       |
-| `unknown`             | conservative baseline; record assumptions in `gaps`                                 |
+| `service.framework` | §4.1 focus |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| `fastapi` | baseline + `opentelemetry-instrumentation-fastapi` (ASGI) |
+| `django` | baseline + `opentelemetry-instrumentation-django` (WSGI/ASGI) |
+| `flask` | baseline + `opentelemetry-instrumentation-flask` (WSGI) |
+| `pure-python` | OTel SDK baseline modules only |
+| `unknown` | conservative baseline; record assumptions in `gaps` |
 
 Framework and instrumentation signatures:
 [`../reference/detection-rules.md`](../reference/detection-rules.md).

@@ -26,11 +26,11 @@ Install one thing, cover every supported language.
 
 ## Which entry point to use
 
-| You want to…                                                                  | Use                                   |
-|-------------------------------------------------------------------------------|---------------------------------------|
-| Install everything from *inside this repo*                                    | root [`apm.yml`](../../apm.yml)       |
-| Reference the whole suite as **one dependency** from another repo (or by path) | this package                          |
-| Install a single, known language                                              | that language package directly        |
+| You want to… | Use |
+| ------------------------------------------------------------------------------- | --------------------------------------- |
+| Install everything from *inside this repository* | root [`apm.yml`](../../apm.yml) |
+| Reference the whole suite as **one dependency** from another repository (or by path) | this package |
+| Install a single, known language | that language package directly |
 
 The difference from the root `apm.yml`: the root uses in-repo paths
 (`./agent-packages/...`) and only works from the repository root; this package
@@ -43,5 +43,5 @@ from anywhere.
 apm install -t <target>
 ```
 
-Run from a repo whose `apm.yml` depends on this package, or point an install at
+Run from a repository whose `apm.yml` depends on this package, or point an install at
 this package directly. The shared core is resolved automatically.

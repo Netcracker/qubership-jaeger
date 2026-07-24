@@ -17,11 +17,11 @@ mapping that is **not 1:1**.
 
 ## Sampling
 
-| From                                                                     | To                                                                              | Note                                        |
-|--------------------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------|
-| `spring.sleuth.sampler.probability`                                      | `management.tracing.sampling.probability`                                       | semantics preserved                         |
-| Jaeger `JAEGER_SAMPLER_TYPE=probabilistic` + `JAEGER_SAMPLER_PARAM=0.01` | `OTEL_TRACES_SAMPLER=parentbased_traceidratio` + `OTEL_TRACES_SAMPLER_ARG=0.01` | map ratio; prefer parent-based              |
-| platform `TRACING_SAMPLER_PROBABILISTIC`                                 | framework sampler ratio                                                         | wire platform value into the chosen sampler |
+| From | To | Note |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------- |
+| `spring.sleuth.sampler.probability` | `management.tracing.sampling.probability` | semantics preserved |
+| Jaeger `JAEGER_SAMPLER_TYPE=probabilistic` + `JAEGER_SAMPLER_PARAM=0.01` | `OTEL_TRACES_SAMPLER=parentbased_traceidratio` + `OTEL_TRACES_SAMPLER_ARG=0.01` | map ratio; prefer parent-based |
+| platform `TRACING_SAMPLER_PROBABILISTIC` | framework sampler ratio | wire platform value into the chosen sampler |
 
 Production sampling must not be 100% unless explicitly approved.
 
@@ -35,12 +35,12 @@ conflict with the contract as a **question** to the user, and on a greenfield
 service ask the user to pick `B3` / `B3_MULTI` / `W3C` / a multi-format set
 rather than choosing silently.
 
-| From               | To                                                        | Note                                                         |
-|--------------------|------------------------------------------------------------|--------------------------------------------------------------|
-| Brave B3 (default) | same format on the OTel stack (`b3multi`)                  | 1:1 — property path changes, wire format does not            |
-| Jaeger propagation | same format (`jaeger`) until peers move                    | a move to `b3multi`/`w3c` is a **separate**, fleet-wide task |
-| mixed/unknown      | resolve the effective inject format first                  | ask the user before writing a row; never guess               |
-| nothing configured | user's explicit choice, contract default `b3multi` offered | record the choice in the plan `note`                         |
+| From | To | Note |
+| -------------------- | ------------------------------------------------------------ | -------------------------------------------------------------- |
+| Brave B3 (default) | same format on the OTel stack (`b3multi`) | 1:1 — property path changes, wire format does not |
+| Jaeger propagation | same format (`jaeger`) until peers move | a move to `b3multi`/`w3c` is a **separate**, fleet-wide task |
+| mixed/unknown | resolve the effective inject format first | ask the user before writing a row; never guess |
+| nothing configured | user's explicit choice, contract default `b3multi` offered | record the choice in the plan `note` |
 
 ### Per-framework surfaces
 
@@ -53,12 +53,12 @@ Never ask a developer which end wins.
 format. On a single-list surface you cannot emit only one format without custom
 code — only Boot's `produce`/`consume` split gives that control.
 
-| Framework     | Inject                                              | Extract    | Extract winner                                                                                                            | Scope                             |
-|---------------|-----------------------------------------------------|------------|---------------------------------------------------------------------------------------------------------------------------|-----------------------------------|
-| Quarkus       | `quarkus.otel.propagators` — **all** listed written | same list  | **last** (`MultiTextMapPropagator`)                                                                                       | **build-time** — rebuild required |
-| Spring Boot 3 | `…propagation.produce` — all listed written         | `.consume` | **first** (`CompositePropagationFactory$CompositePropagation` Brave bridge; `CompositeTextMapPropagator` OTel bridge)      | runtime                           |
-| Spring Boot 4 | `…propagation.produce` — all listed written         | `.consume` | **first** — `…micrometer.tracing.opentelemetry.autoconfigure.CompositeTextMapPropagator`, `extract` identical to Boot 3    | runtime                           |
-| Pure Java     | `OTEL_PROPAGATORS` — one list, **all** written      | same list  | **last** (`MultiTextMapPropagator`)                                                                                       | runtime                           |
+| Framework | Inject | Extract | Extract winner | Scope |
+| --------------- | ----------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Quarkus | `quarkus.otel.propagators` — **all** listed written | same list | **last** (`MultiTextMapPropagator`) | **build-time** — rebuild required |
+| Spring Boot 3 | `…propagation.produce` — all listed written | `.consume` | **first** (`CompositePropagationFactory$CompositePropagation` Brave bridge; `CompositeTextMapPropagator` OTel bridge) | runtime |
+| Spring Boot 4 | `…propagation.produce` — all listed written | `.consume` | **first** — `…micrometer.tracing.opentelemetry.autoconfigure.CompositeTextMapPropagator`, `extract` identical to Boot 3 | runtime |
+| Pure Java | `OTEL_PROPAGATORS` — one list, **all** written | same list | **last** (`MultiTextMapPropagator`) | runtime |
 
 Verified by disassembly: `spring-boot-actuator-autoconfigure:3.5.11`,
 `spring-boot-micrometer-tracing-opentelemetry:4.0.2`, `opentelemetry-context:1.57.0`.
@@ -108,11 +108,11 @@ Framework-specific shapes are in **this recipe** (Spring Boot below) and
 Spring SpEL toggles and platform URL literals do **not** map 1:1 to Quarkus.
 Follow [`../reference/quarkus-platform-contract.md`](../reference/quarkus-platform-contract.md):
 
-| Platform / Spring idea                                | Quarkus target                                                                               | 1:1?                             |
-|-------------------------------------------------------|----------------------------------------------------------------------------------------------|----------------------------------|
-| SpEL / nested `TRACING_ENABLED` → SDK off             | `QUARKUS_OTEL_SDK_DISABLED=false` when enabled (Helm env or direct property)                 | no                               |
-| endpoint `http://${TRACING_HOST}:4318/v1/traces`      | `quarkus.otel.exporter.otlp.endpoint=http://${TRACING_HOST}:4318` + `protocol=http/protobuf` | no — Quarkus appends `v1/traces` |
-| `tracing.sdk.disabled.${TRACING_ENABLED}` nested keys | reject; mark high risk in plan `gaps` if present                                             | no                               |
+| Platform / Spring idea | Quarkus target | 1:1? |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------- |
+| SpEL / nested `TRACING_ENABLED` → SDK off | `QUARKUS_OTEL_SDK_DISABLED=false` when enabled (Helm env or direct property) | no |
+| endpoint `http://${TRACING_HOST}:4318/v1/traces` | `quarkus.otel.exporter.otlp.endpoint=http://${TRACING_HOST}:4318` + `protocol=http/protobuf` | no — Quarkus appends `v1/traces` |
+| `tracing.sdk.disabled.${TRACING_ENABLED}` nested keys | reject; mark high risk in plan `gaps` if present | no |
 
 #### Legacy `quarkus.jaeger.*` keys (retired extension)
 
@@ -122,12 +122,12 @@ After swapping `quarkus-jaeger` for `quarkus-opentelemetry`
 and sampling silently fall back to defaults unless redeclared under
 `quarkus.otel.*`:
 
-| From (`quarkus.jaeger.*`)                       | To (`quarkus.otel.*`)                                                                                   | Note                                                                                                    |
-|-------------------------------------------------|---------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
-| `quarkus.jaeger.endpoint` (`:14268/api/traces`) | `quarkus.otel.exporter.otlp.endpoint=http://${TRACING_HOST}:4318`                                       | legacy collector → OTLP base URL                                                                        |
-| `quarkus.jaeger.service-name`                   | `quarkus.otel.service.name` (or `quarkus.application.name`)                                             | must compose `${name}-${namespace}`                                                                     |
-| `quarkus.jaeger.sampler-type` / `sampler-param` | `quarkus.otel.traces.sampler=parentbased_traceidratio` + `sampler.arg=${TRACING_SAMPLER_PROBABILISTIC}` | map ratio semantics                                                                                     |
-| `quarkus.jaeger.propagation`                    | `quarkus.otel.propagators=<same format>`                                                                | keep the format; **build-time** — needs a rebuild; + `opentelemetry-extension-trace-propagators` for B3 |
+| From (`quarkus.jaeger.*`) | To (`quarkus.otel.*`) | Note |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `quarkus.jaeger.endpoint` (`:14268/api/traces`) | `quarkus.otel.exporter.otlp.endpoint=http://${TRACING_HOST}:4318` | legacy collector → OTLP base URL |
+| `quarkus.jaeger.service-name` | `quarkus.otel.service.name` (or `quarkus.application.name`) | must compose `${name}-${namespace}` |
+| `quarkus.jaeger.sampler-type` / `sampler-param` | `quarkus.otel.traces.sampler=parentbased_traceidratio` + `sampler.arg=${TRACING_SAMPLER_PROBABILISTIC}` | map ratio semantics |
+| `quarkus.jaeger.propagation` | `quarkus.otel.propagators=<same format>` | keep the format; **build-time** — needs a rebuild; + `opentelemetry-extension-trace-propagators` for B3 |
 
 #### Service name (Quarkus)
 
@@ -201,11 +201,11 @@ Boot 4 renamed tracing export properties. Boot 3 keys still parse in YAML but
 **fail** at startup with `PropertiesMigrationListener` ("uses an incompatible
 target type") and OTLP export stays off.
 
-| Boot 3 / legacy key                | Boot 4 key                                                       |
-|------------------------------------|------------------------------------------------------------------|
-| `management.tracing.enabled`       | `management.tracing.export.enabled`                              |
-| `management.otlp.tracing.endpoint` | `management.opentelemetry.tracing.export.otlp.endpoint`          |
-| (implicit)                         | `management.tracing.export.otlp.enabled: true` when export is on |
+| Boot 3 / legacy key | Boot 4 key |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| `management.tracing.enabled` | `management.tracing.export.enabled` |
+| `management.otlp.tracing.endpoint` | `management.opentelemetry.tracing.export.otlp.endpoint` |
+| (implicit) | `management.tracing.export.otlp.enabled: true` when export is on |
 
 **Remove** the legacy keys when adding the Boot 4 ones — do not leave both
 generations in config (the old keys either fail startup or mislead readers

@@ -9,20 +9,20 @@ framework only on confident evidence; otherwise `unknown`.
 Distribution names as they appear in `requirements.txt` / `pyproject.toml` /
 `poetry.lock` / `Pipfile`.
 
-| Distribution                                        | Bucket | Technology            |
-|-----------------------------------------------------|--------|-----------------------|
-| `opentracing`, `opentracing-instrumentation`        | legacy | opentracing           |
-| `jaeger-client`                                      | legacy | jaeger-client         |
-| `py_zipkin`, `python-zipkin`                          | legacy | zipkin                |
-| `flask-opentracing`, `django-opentracing`            | legacy | opentracing           |
-| `opentelemetry-exporter-jaeger*` (retired)           | legacy | jaeger-client         |
-| `opentelemetry-api`                                  | modern | otel-api              |
-| `opentelemetry-sdk`                                  | modern | otel-sdk              |
-| `opentelemetry-exporter-otlp-proto-http`             | modern | otel-exporter         |
-| `opentelemetry-exporter-otlp-proto-grpc`             | modern | otel-exporter         |
-| `opentelemetry-propagator-b3`                        | modern | otel-propagator       |
-| `opentelemetry-instrumentation-*`                    | modern | otel-instrumentation  |
-| `opentelemetry-distro`, `opentelemetry-instrumentation` | modern | otel-distro        |
+| Distribution | Bucket | Technology |
+| ----------------------------------------------------- | -------- | ----------------------- |
+| `opentracing`, `opentracing-instrumentation` | legacy | opentracing |
+| `jaeger-client` | legacy | jaeger-client |
+| `py_zipkin`, `python-zipkin` | legacy | zipkin |
+| `flask-opentracing`, `django-opentracing` | legacy | opentracing |
+| `opentelemetry-exporter-jaeger*` (retired) | legacy | jaeger-client |
+| `opentelemetry-api` | modern | otel-api |
+| `opentelemetry-sdk` | modern | otel-sdk |
+| `opentelemetry-exporter-otlp-proto-http` | modern | otel-exporter |
+| `opentelemetry-exporter-otlp-proto-grpc` | modern | otel-exporter |
+| `opentelemetry-propagator-b3` | modern | otel-propagator |
+| `opentelemetry-instrumentation-*` | modern | otel-instrumentation |
+| `opentelemetry-distro`, `opentelemetry-instrumentation` | modern | otel-distro |
 
 Aggregate flags:
 
@@ -33,12 +33,12 @@ Aggregate flags:
 
 ## Framework signatures
 
-| Framework | Signature                                                                     |
-|-----------|-------------------------------------------------------------------------------|
+| Framework | Signature |
+| ----------- | ------------------------------------------------------------------------------- |
 | `fastapi` | `from fastapi import FastAPI`; ASGI `app`; uvicorn or gunicorn uvicorn worker |
-| `django`  | `manage.py`, `DJANGO_SETTINGS_MODULE`, `wsgi.py`/`asgi.py`, `INSTALLED_APPS`  |
-| `flask`   | `from flask import Flask`; WSGI `app`; gunicorn/uwsgi                         |
-| `pure-python` | OTel wiring with no web framework import (worker/CLI/consumer)             |
+| `django` | `manage.py`, `DJANGO_SETTINGS_MODULE`, `wsgi.py`/`asgi.py`, `INSTALLED_APPS` |
+| `flask` | `from flask import Flask`; WSGI `app`; gunicorn/uwsgi |
+| `pure-python` | OTel wiring with no web framework import (worker/CLI/consumer) |
 
 Best-effort: Starlette, aiohttp, Tornado, Falcon, Sanic, Bottle, gRPC — when
 confidently identified, prefer the matching contrib instrumentor; otherwise emit
@@ -92,13 +92,13 @@ Legacy:
 
 ## Instrumentation mode signatures
 
-| Evidence                                                    | Mode   |
-|-------------------------------------------------------------|--------|
-| `opentelemetry-instrument` launcher / distro, no app spans  | auto   |
-| `Instrumentor().instrument()` calls, no app spans           | auto   |
-| Explicit `start_as_current_span` in app code                | manual |
-| Both auto path and explicit spans                           | mixed  |
-| No symbols from table                                       | none   |
+| Evidence | Mode |
+| ------------------------------------------------------------- | -------- |
+| `opentelemetry-instrument` launcher / distro, no app spans | auto |
+| `Instrumentor().instrument()` calls, no app spans | auto |
+| Explicit `start_as_current_span` in app code | manual |
+| Both auto path and explicit spans | mixed |
+| No symbols from table | none |
 
 `mode` is the coarse **detected** state. For the **target** mechanism the
 transformation gate distinguishes `launcher` (the `opentelemetry-instrument`
@@ -107,13 +107,13 @@ here as `auto`. See [`../models/4-transformation.md`](../models/4-transformation
 
 ## Async-boundary signatures
 
-| Symbol/pattern                                               | Boundary type                   |
-|-------------------------------------------------------------|---------------------------------|
-| `ThreadPoolExecutor`, `run_in_executor`, `threading.Thread` | thread-pool / asyncio-executor  |
-| `@shared_task`, `@app.task`, `.delay()`, `.apply_async()`   | celery-task                     |
+| Symbol/pattern | Boundary type |
+| ------------------------------------------------------------- | --------------------------------- |
+| `ThreadPoolExecutor`, `run_in_executor`, `threading.Thread` | thread-pool / asyncio-executor |
+| `@shared_task`, `@app.task`, `.delay()`, `.apply_async()` | celery-task |
 | `kafka-python` / `confluent-kafka` / `aiokafka` produce/consume | kafka-producer / kafka-consumer |
-| `multiprocessing`, `subprocess`                             | subprocess                      |
-| outbound HTTP client in async worker                        | http-client                     |
+| `multiprocessing`, `subprocess` | subprocess |
+| outbound HTTP client in async worker | http-client |
 
 `async`/`await` and `asyncio.create_task` propagate `contextvars` automatically —
 mark those `contextWrapper: true`, not a loss candidate. Mark a boundary as a

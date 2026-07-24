@@ -19,13 +19,13 @@ a fixed whitelist — classify to a first-class value only when the evidence is
 confident, otherwise `unknown`. First-class coverage and best-effort fallbacks:
 [`../reference/framework-coverage.md`](../reference/framework-coverage.md).
 
-| Framework     | Typical evidence                                                                             |
-|---------------|----------------------------------------------------------------------------------------------|
-| `fastapi`     | `from fastapi import FastAPI`; ASGI app; uvicorn/gunicorn+uvicorn worker                     |
-| `django`      | `manage.py`, `DJANGO_SETTINGS_MODULE`, `wsgi.py`/`asgi.py`, `INSTALLED_APPS`                 |
-| `flask`       | `from flask import Flask`; WSGI app; gunicorn/uwsgi entrypoint                               |
-| `pure-python` | OTel wired without a web framework above (worker, CLI, library, consumer)                    |
-| `unknown`     | insufficient or best-effort evidence (Starlette, aiohttp, Tornado, Falcon…) — note in `gaps` |
+| Framework | Typical evidence |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| `fastapi` | `from fastapi import FastAPI`; ASGI app; uvicorn/gunicorn+uvicorn worker |
+| `django` | `manage.py`, `DJANGO_SETTINGS_MODULE`, `wsgi.py`/`asgi.py`, `INSTALLED_APPS` |
+| `flask` | `from flask import Flask`; WSGI app; gunicorn/uwsgi entrypoint |
+| `pure-python` | OTel wired without a web framework above (worker, CLI, library, consumer) |
+| `unknown` | insufficient or best-effort evidence (Starlette, aiohttp, Tornado, Falcon…) — note in `gaps` |
 
 ## 1.1 Dependency discovery
 
