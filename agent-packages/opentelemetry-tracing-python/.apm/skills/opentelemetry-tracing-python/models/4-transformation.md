@@ -52,6 +52,13 @@ combinations in the plan:
   `FastAPIInstrumentor.instrument_app()` / `DjangoInstrumentor().instrument()`
   calls), and `hand-spans` (spans written by hand with `start_as_current_span`).
   The plan states which one it targets.
+- **`pure-python` → mechanism is `hand-spans`.** With no web framework there is
+  nothing for the `launcher`/`instrumentor` axis to hook, so the XOR below is
+  N/A; instrument the units of work by hand with `start_as_current_span`. The
+  guardrails that still apply are one active stack, platform contract, and (for
+  a short-lived process) flush on exit — see
+  [`../recipes/config-migration.md`](../recipes/config-migration.md) §Short-lived
+  processes.
 - **`launcher` XOR `instrumentor` for the same library.** Do **not** run the
   launcher *and* call `.instrument()` for the same library — running both
   double-instruments and duplicates spans. Choose `launcher` **or** `instrumentor`.

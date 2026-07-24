@@ -18,15 +18,34 @@ compile step.
 Run only after L4 edits. Typical commands from service docs:
 
 - `pip install -r requirements.txt` (clean venv) / `poetry install` / `uv sync`;
-- `python -c "import opentelemetry.sdk.trace"` and an import of the service entry
-  module — proves the new deps resolve and the app still imports;
+- smoke-import the **OTLP exporter**, not just the SDK, plus the service entry
+  module:
+
+  ```shell
+  python -c "from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter; print('otlp ok')"
+  ```
+
+  A successful install does **not** prove the exporter imports. `import
+  opentelemetry.sdk.trace` alone passes even when export is broken, because the
+  SDK does not pull `opentelemetry-proto` / `protobuf`; the exporter does.
 - `pytest` (or the documented test command) when a suite exists.
 
 Pass criteria:
 
 - clean install exits 0 with the L4 dependency set resolved;
-- service module imports without error;
+- the OTLP exporter **and** the service module import without error;
 - documented tests pass (or are recorded as absent in `gaps`).
+
+> **Common failure — protobuf/proto mismatch.** If the exporter import raises
+> `TypeError: Descriptors cannot be created directly` (or "generated code is out
+> of date … regenerate with protoc >= 3.19"), the resolver installed an
+> `opentelemetry-proto` whose generated code is incompatible with the installed
+> `protobuf` runtime — typically an ancient `opentelemetry-exporter-otlp-proto-*`
+> pulled in against a newer `protobuf`, i.e. the split version set
+> [`dependency-migration.md`](dependency-migration.md) warns about. Fix by
+> aligning the whole OTel set to one release train (§Manifest guardrails there),
+> not by pinning `protobuf` down. This is resolver-agnostic — pip, poetry, conda,
+> and OS packages can all produce it.
 
 ## Step 2 — Build image
 

@@ -106,6 +106,28 @@ def post_fork(server, worker):
 For framework instrumentors called at app startup (`instrument_app(app)`), the
 app object is created per worker, so that path is already fork-safe.
 
+## Short-lived processes (CLI / one-shot job / worker / `python -c`)
+
+The mirror image of the fork-server case. A `BatchSpanProcessor` exports on a
+background thread on an interval; a process that finishes its work and exits
+(a CLI command, a one-shot Job, a `python -c` invocation, a notebook kernel)
+can terminate **before** that thread flushes, silently dropping the spans it
+just created. The `pure-python` target — worker / CLI / library / consumer — hits
+this routinely.
+
+Flush on exit. Either register a shutdown hook once at setup:
+
+```python
+import atexit
+atexit.register(provider.shutdown)   # drains BatchSpanProcessor on interpreter exit
+```
+
+or call `provider.force_flush()` explicitly at the end of the unit of work
+(before the process returns). For a very short process a `SimpleSpanProcessor`
+(synchronous export, nothing to flush) is also acceptable. Without one of these,
+end-to-end validation fails intermittently — the trace is created but never
+arrives at the backend.
+
 ## Legacy config mappings
 
 | From | To | 1:1 |

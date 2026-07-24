@@ -14,12 +14,42 @@ Expected shape:
 2. If not, wire the current span context into log records.
 3. Keep field names stable in the output: `traceId`, `spanId`.
 
-## Standard `logging` — OTel LoggingInstrumentor
+## Standard `logging` — LogRecordFactory (recommended default)
+
+Prefer a `LogRecordFactory` that **always** stamps the contract fields on every
+record (empty outside a span). It is dependency-free, uses the contract names
+directly (`traceId` / `spanId`), and — crucially — cannot make the formatter
+throw, because the fields are always present:
+
+```python
+import logging
+from opentelemetry import trace
+
+_old_factory = logging.getLogRecordFactory()
+
+def _factory(*args, **kwargs):
+    record = _old_factory(*args, **kwargs)
+    ctx = trace.get_current_span().get_span_context()
+    record.traceId = format(ctx.trace_id, "032x") if ctx.is_valid else ""
+    record.spanId = format(ctx.span_id, "016x") if ctx.is_valid else ""
+    return record
+
+logging.setLogRecordFactory(_factory)
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s "
+           "[traceId=%(traceId)s] [spanId=%(spanId)s] %(message)s",
+)
+```
+
+A `logging.Filter` on the root handlers works too, but a factory is simpler
+because it covers every record regardless of which handler emits it.
+
+## Alternative — OTel LoggingInstrumentor (with a hard caveat)
 
 `opentelemetry-instrumentation-logging` injects `otelTraceID`, `otelSpanID`, and
-`otelServiceName` into every `LogRecord`. Enable it and reference the fields in
-the format string. Note the injected field **names** are `otelTraceID` /
-`otelSpanID`; the contract wants `traceId` / `spanId`, so map them in the pattern:
+`otelServiceName` into `LogRecord`s. The injected field **names** are
+`otelTraceID` / `otelSpanID`; the contract wants `traceId` / `spanId`, so map
+them in the pattern:
 
 ```python
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
@@ -30,6 +60,14 @@ logging.basicConfig(
            "[traceId=%(otelTraceID)s] [spanId=%(otelSpanID)s] %(message)s",
 )
 ```
+
+> **Caveat — this format can crash the logger.** A global format string that
+> references `%(otelTraceID)s` raises `ValueError: Formatting field not found in
+> record: 'otelTraceID'` (and a `KeyError`) for **any** record the instrumentor
+> did not stamp — third-party library loggers, the SDK's own export-retry
+> warnings, or records created before `instrument()` ran. The factory above does
+> not have this failure mode because it sets the fields on *every* record. If you
+> use the instrumentor, verify no unstamped record ever hits that formatter.
 
 `OTEL_PYTHON_LOG_CORRELATION=true` enables the auto path, but it only turns on
 **injection** of the OTel `LogRecord` attributes (and, via `set_logging_format`,

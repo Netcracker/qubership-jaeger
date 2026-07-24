@@ -35,6 +35,7 @@ qubership-jaeger/
 ├── apm.yml                            # aggregator — installs every package below
 └── agent-packages/
     ├── README.md                      # this file
+    ├── opentelemetry-tracing-all-in-one/ # aggregator — one dependency pulls every language + common
     ├── opentelemetry-tracing-common/    # shared cross-language core
     ├── opentelemetry-tracing-java/        # Java (Spring Boot, Quarkus, Pure)
     ├── opentelemetry-tracing-go/          # Go (stdlib, platform libs)
@@ -84,6 +85,21 @@ Root [`apm.yml`](../apm.yml) depends on **every** language package
 (`opentelemetry-tracing-java`, `opentelemetry-tracing-go`, `opentelemetry-tracing-python`); each of those
 declares `../opentelemetry-tracing-common`, so the shared core arrives transitively — install it separately
 and you would get it twice.
+
+### Which entry point to use
+
+| You want to…                                                                | Use                                                          |
+|-----------------------------------------------------------------------------|-------------------------------------------------------------|
+| Install everything from *inside this repository*                            | root [`apm.yml`](../apm.yml)                                 |
+| Reference the whole suite as **one dependency** from another repo (by path) | [`opentelemetry-tracing-all-in-one`](opentelemetry-tracing-all-in-one) |
+| Install a single, known language                                            | that language package directly                              |
+
+The [`opentelemetry-tracing-all-in-one`](opentelemetry-tracing-all-in-one) aggregator exists because the
+root `apm.yml` only works from *this* repository root (it uses in-repo `./agent-packages/...` paths).
+The all-in-one package uses sibling `../...` paths, so another repository can depend on the entire suite
+through a single entry — it pulls all language packages, and the shared core arrives transitively (do not
+add `opentelemetry-tracing-common` alongside it or you get it twice). See its
+[README](opentelemetry-tracing-all-in-one/README.md).
 
 Installing everything is deliberate, not convenience. Whoever runs the skill often does not know which
 language the target service is written in, and a repository may hold several. With all language packages

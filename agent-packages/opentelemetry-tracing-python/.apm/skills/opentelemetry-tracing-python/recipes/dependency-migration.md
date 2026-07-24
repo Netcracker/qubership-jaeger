@@ -79,3 +79,22 @@ the resulting set in the manifest rather than running it at container start.
   migration plan. If the service pins an old `opentelemetry-api` for an unrelated
   reason, upgrade the whole OTel set together rather than partially — record an
   unresolvable conflict in `gaps`, never leave a split version set.
+- **Coherence overrides "defer versions" when the resolver produces a split.**
+  The [`SKILL.md`](../SKILL.md) *Defer versions* rule forbids **inventing**
+  version numbers in the plan — it does **not** forbid constraining a broken
+  resolution back to coherence. Precedence:
+  1. default — do not pin; let the resolver align the OTel set;
+  2. if the resolver yields a split (versions from different release trains, or
+     the OTLP exporter fails to import — see
+     [`fresh-build-and-image.md`](fresh-build-and-image.md) §Step 1) — pin the
+     **whole** OTel stack to **one** release train, taking that train from the
+     resolution the environment already produced (e.g. the `api`/`sdk` version),
+     not an invented number, and install them together from one index so they
+     lock. Record the pinned set in the plan.
+
+  A resolver's default is not sacred: a coherent pinned set sourced from the
+  existing resolution honors *defer versions* (no invented number) **and**
+  *never leave a split set*. When a channel simply has no coherent build for the
+  target runtime (e.g. an OS/conda channel lacking a recent OTLP exporter for a
+  new Python), install the whole OTel stack from a single index (PyPI) as the
+  authoritative resolver rather than accepting the channel's split.
