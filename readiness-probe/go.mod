@@ -3,7 +3,7 @@ module tracing-readiness-probe
 go 1.26.0
 
 require (
-	github.com/gocql/gocql v1.7.0
+	github.com/gocql/gocql/v2 v2.1.2
 	k8s.io/api v0.36.2
 	k8s.io/apimachinery v0.36.2
 	k8s.io/client-go v0.36.2
