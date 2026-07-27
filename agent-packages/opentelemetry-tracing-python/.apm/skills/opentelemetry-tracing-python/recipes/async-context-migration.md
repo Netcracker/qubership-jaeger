@@ -4,25 +4,22 @@ Fixes for Layer 4 §4.4 (`asyncContextMigration`) — see common
 [`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
 §4.4.
 
-**Input:** each context-loss candidate from `discovery-result.asyncBoundaries`
-that remains `FAILED` in capability. **Goal:** one `trace_id` across the async
-boundary; downstream span is a child of the upstream span.
+**Input:** each context-loss candidate from `discovery-result.asyncBoundaries` that remains `FAILED` in capability. 
+**Goal:** one `trace_id` across the async boundary; downstream span is a child of the upstream span.
 
 Boundary signatures: [`../reference/detection-rules.md`](../reference/detection-rules.md)
 § Async-boundary signatures.
 
 ## asyncio (usually already fine)
 
-`contextvars` propagate automatically across `await` and `asyncio.create_task`,
-so the current OTel context follows a coroutine without extra work. Do **not**
-add carriers here — treat plain `async`/`await` as `contextWrapper: true`. The
-loss happens when you leave the event loop (below).
+`contextvars` propagate automatically across `await` and `asyncio.create_task`, so the current OTel context 
+follows a coroutine without extra work. Do **not** add carriers here — plain `async`/`await` is not a loss
+boundary. The loss happens when you leave the event loop (below).
 
 ## Thread pools / executors
 
-`ThreadPoolExecutor`, `loop.run_in_executor`, and raw `threading.Thread` do
-**not** copy `contextvars` — the OTel context is lost. Capture the context and
-re-attach it in the worker:
+`ThreadPoolExecutor`, `loop.run_in_executor`, and raw `threading.Thread` do **not** copy 
+`contextvars` — the OTel context is lost. Capture the context and re-attach it in the worker:
 
 ```python
 from opentelemetry import context as otel_context
@@ -42,10 +39,9 @@ executor.submit(work)
 
 ## Celery
 
-Prefer `opentelemetry-instrumentation-celery` — it injects/extracts context
-across the producer/worker boundary automatically. When instrumenting manually,
-inject on publish and extract in the task before starting the span, so the task
-span is a **child**, not a new root.
+Prefer `opentelemetry-instrumentation-celery` — it injects/extracts context across the producer/worker boundary 
+automatically. When instrumenting manually, inject on publish and extract in the task before starting the 
+span, so the task span is a **child**, not a new root.
 
 ## Kafka
 
@@ -54,7 +50,6 @@ Prefer `opentelemetry-instrumentation-kafka-python` /
 
 ```python
 from opentelemetry.propagate import inject, extract
-from opentelemetry import trace
 from opentelemetry.trace import SpanKind
 
 # producer — inject current context into record headers before send
@@ -71,8 +66,6 @@ with tracer.start_as_current_span("process " + topic, context=ctx, kind=SpanKind
 ```
 
 **Common failure:** consumer span started without extracted parent → new root trace.
-**Second failure:** B3 multi vs W3C `traceparent` mismatch — both sides must use
-the same propagator configured for the service.
 
 ## HTTP async clients
 
@@ -89,6 +82,5 @@ resp = await client.get(url, headers=headers)
 
 ## Validation
 
-After the fix, run the Layer 5 runtime scenario: trigger HTTP → produce →
-consume (when applicable) and confirm a single `trace_id` with correct
-parent-child links in the tracing backend.
+After the fix, run the Layer 5 runtime scenario: trigger HTTP → produce → consume (when applicable) and 
+confirm a single `trace_id` with correct parent-child links in the tracing backend.

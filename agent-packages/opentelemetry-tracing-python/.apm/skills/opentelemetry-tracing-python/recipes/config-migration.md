@@ -29,8 +29,7 @@ programmatic `Resource.create({"service.name": ...})`.
 configured inject format across, raise a conflict with the contract as a
 **question** to the user, and on a greenfield service ask the user to pick
 `B3` / `B3_MULTI` / `W3C` / a multi-format set instead of choosing silently
-(common
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
+(common [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Propagation).
 
 `OTEL_PROPAGATORS` and programmatic `set_global_textmap` are both **runtime** in
@@ -65,13 +64,13 @@ set_global_textmap(B3MultiFormat())
 
 On **extract**, `CompositePropagator` chains the context through every member in
 order, so the **last** member that finds a context overwrites the earlier result
-— priority goes to the **last** entry. That is the opposite of Spring Boot.
-Derive the order yourself from the user's intent ("B3 wins") — do not ask which
-end wins, and do not copy a list from a Java service.
+— priority goes to the **last** entry. Derive the order yourself from the user's
+intent ("B3 wins") — do not ask which end wins, and do not copy an order from
+another service's config.
 
 On **inject** the composite loops every member, so both formats below are written
-to each outgoing request (a later member overrides the same carrier key). Order
-does not change which formats are emitted.
+to each outgoing request (each writes its own carrier keys; override only on a
+key collision). Order does not change which formats are emitted.
 
 ```python
 # extract: accepts traceparent and X-B3-*; B3 wins when both arrive (it is last)
@@ -104,7 +103,9 @@ def post_fork(server, worker):
 ```
 
 For framework instrumentors called at app startup (`instrument_app(app)`), the
-app object is created per worker, so that path is already fork-safe.
+app object is created per worker when the app factory runs per worker (i.e. not
+under `--preload`), so that path is fork-safe. Under `--preload` it is not — the
+app and its tracing setup run in the master; initialize per worker as above.
 
 ## Short-lived processes (CLI / one-shot job / worker / `python -c`)
 
@@ -130,12 +131,12 @@ arrives at the backend.
 
 ## Legacy config mappings
 
-| From | To | 1:1 |
-| ---------------------------- | ----------------------------------------------- | --------- |
-| `JAEGER_AGENT_HOST` (udp) | `TRACING_HOST` + OTLP endpoint composition | no |
-| `tracing.enabled` | `TRACING_ENABLED` | yes |
-| `JAEGER_SAMPLER_PARAM` | `TRACING_SAMPLER_PROBABILISTIC` path | partial |
-| hardcoded Zipkin URL | OTLP endpoint from `TRACING_HOST` | no |
+| From                      | To                                         | 1:1     |
+|---------------------------|--------------------------------------------|---------|
+| `JAEGER_AGENT_HOST` (udp) | `TRACING_HOST` + OTLP endpoint composition | no      |
+| `tracing.enabled`         | `TRACING_ENABLED`                          | yes     |
+| `JAEGER_SAMPLER_PARAM`    | `TRACING_SAMPLER_PROBABILISTIC` path       | partial |
+| hardcoded Zipkin URL      | OTLP endpoint from `TRACING_HOST`          | no      |
 
 ## Required target env shape
 

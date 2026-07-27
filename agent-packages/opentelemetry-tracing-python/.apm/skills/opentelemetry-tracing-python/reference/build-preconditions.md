@@ -49,13 +49,11 @@ before tracing pass/fail.
 
 ## Build artifact provenance (mandatory for runtime pass)
 
-Before runtime end-to-end, run [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md).
-**Every** Python validation session must:
-
-1. **Purge** stale build outputs (`build/`, `dist/`, `*.egg-info/`, `__pycache__/`) and cached SUT images.
-2. **Clean install + smoke import** (`pip install` / `poetry install` + `import`) **after** Layer 4 edits.
-3. **Build and load** a **new** container image with a session-unique tag.
-4. **Deploy only that image** — never a tag left from a previous agent run.
+Before runtime end-to-end, run [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md)
+— it defines the mandatory sequence for **every** Python validation session: purge
+stale artifacts and cached SUT images → clean install + smoke import after Layer 4
+→ build a session-unique image → deploy only that image, never a tag left from a
+previous agent run.
 
 Record how the SUT artifact was produced in the L5 summary and in
 `validationPlan.runtime.buildProvenance`:

@@ -2,8 +2,7 @@
 
 Concrete API rewrites for Layer 4 §4.3 (`codeMigration`).
 
-Mechanical rewrites can be applied when safe; semantic attribute renames are
-proposal-only.
+Mechanical rewrites can be applied when safe; semantic attribute renames are proposal-only.
 
 ## Legacy -> OTel examples
 
@@ -18,6 +17,7 @@ finally:
     span.finish()
 
 # after
+from opentelemetry import trace
 tracer = trace.get_tracer(__name__)
 with tracer.start_as_current_span("operation") as span:
     ...
@@ -65,19 +65,18 @@ app — pick one mechanism (Step 0b in [`../models/4-transformation.md`](../mode
 
 ## Mechanical rewrite table
 
-| Rule ID | Before | After |
-| ----------------------------- | --------------------------------- | --------------------------------------------- |
-| `startspan-to-tracer` | `opentracing.tracer.start_span` | `tracer.start_as_current_span(name)` |
-| `finish-to-end` | `span.finish()` | `span.end()` (or `with` block auto-ends) |
-| `set-tag-to-set-attribute` | `span.set_tag(k, v)` | `span.set_attribute(k, v)` |
-| `jaeger-client-to-otel` | `jaeger_client.Config` | OTel `TracerProvider` + OTLP exporter |
+| Rule ID                    | Before                          | After                                       |
+|----------------------------|---------------------------------|---------------------------------------------|
+| `startspan-to-tracer`      | `opentracing.tracer.start_span` | `tracer.start_as_current_span(name)` (activates context — check nesting) |
+| `finish-to-end`            | `span.finish()`                 | `span.end()` (or `with` block auto-ends)    |
+| `set-tag-to-set-attribute` | `span.set_tag(k, v)`            | `span.set_attribute(k, v)`                  |
+| `jaeger-client-to-otel`    | `jaeger_client.Config`          | OTel `TracerProvider` + OTLP exporter       |
 | `global-tracer-to-context` | `opentracing.tracer` global use | `trace.get_tracer(__name__)` + current span |
 
 ## Semantic renames (proposal-only)
 
-Attribute renames toward OpenTelemetry semantic conventions (e.g. custom
-`http_path` → `http.route`, business keys) are **never** auto-applied. List them
-in `codeMigration.semantic` and ask for confirmation (common
+Attribute renames toward OpenTelemetry semantic conventions (e.g. custom `http_path` → `http.route`, 
+business keys) are **never** auto-applied. List them in `codeMigration.semantic` and ask for confirmation (common
 [`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
 §4.3).
 

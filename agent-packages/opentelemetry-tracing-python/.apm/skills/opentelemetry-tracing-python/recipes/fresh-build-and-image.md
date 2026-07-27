@@ -9,7 +9,7 @@ compile step.
 
 ## Step 0 — Purge stale artifacts
 
-1. clean build outputs (`build/`, `dist/`, `*.egg-info/`, stray `__pycache__/`);
+1. clean packaging outputs (`build/`, `dist/`, `*.egg-info/`) if the service is a packaged distribution;
 2. remove stale SUT image tags from the active runtime image store;
 3. ensure the deploy manifest references a session-unique image tag.
 

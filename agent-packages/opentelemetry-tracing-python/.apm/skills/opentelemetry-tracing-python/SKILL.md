@@ -142,7 +142,7 @@ Produce:
 | Evidence-first | Every claim cites file/path/env key |
 | No semantic auto-rename | Semantic-convention renames are proposals, not automatic edits |
 | One tracing stack | Final state cannot keep legacy Zipkin/OpenTracing/Jaeger as active stack |
-| One instrumentation mechanism | Do not run the `opentelemetry-instrument` auto-launcher and manual `.instrument()` for the same library — double instrumentation duplicates spans |
+| One instrumentation mechanism | Do not run the `opentelemetry-instrument` auto-launcher and manual `.instrument()` for the same library — double instrumentation can duplicate spans |
 | Sampling & propagation mandatory | Validation fails if unknown or unverified |
 | Defer versions | Read versions from `requirements.txt`/`pyproject.toml`, never hardcode versions in skill text |
 | Sync docs on L4 | If L4 changes config/env/deps, update service docs in the same pass |

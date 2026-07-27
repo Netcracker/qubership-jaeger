@@ -65,17 +65,17 @@
           "properties": {
             "exporter": { "enum": ["otlp", "zipkin", "jaeger", "none", "unknown"] },
             "endpoint": { "type": ["string", "null"] },
-            "protocol": { "enum": ["grpc", "http-protobuf", "http-thrift", "udp", "unknown"] },
+            "protocol": { "enum": ["grpc", "http/protobuf", "http-thrift", "udp", "unknown"] },
             "targetGuess": { "enum": ["otec", "jaeger-collector", "legacy-zipkin", "unknown"] }
           }
         },
         "propagation": {
           "type": "object",
           "additionalProperties": false,
-          "description": "Inject and extract are separate sets. Extract is a race (several formats tried, order decides the winner - last wins in Python, the composite chains the context through every propagator); inject is a fan-out (a composite writes EVERY configured format, a later member overrides the same carrier key). Record the effective values, resolved from the actual propagator class/env value (B3SingleFormat and env b3 inject single b3; B3MultiFormat and env b3multi inject X-B3-*; the legacy B3Format is a deprecated alias of B3MultiFormat).",
+          "description": "Inject and extract are separate sets. Extract is sequential (each configured format tried in list order, the last one that finds its headers wins in Python; the composite chains the context through every propagator); inject is a fan-out (a composite writes EVERY configured format, each to its own carrier keys, a later member overriding another only on a key collision). Record the effective values, resolved from the actual propagator class/env value (B3SingleFormat and env b3 inject single b3; B3MultiFormat and env b3multi inject X-B3-*; the legacy B3Format is a deprecated alias of B3MultiFormat).",
           "properties": {
-            "inject": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] }, "description": "Formats written on outgoing calls, in composite order (last overrides same carrier key)." },
-            "extract": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] }, "description": "Formats accepted on incoming calls, in composite order (last wins in Python)." },
+            "inject": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] }, "description": "Formats written on outgoing calls, in composite order (each to its own carrier keys; override only on a key collision)." },
+            "extract": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] }, "description": "Formats accepted on incoming calls, in composite order (last one that finds its headers wins in Python)." },
             "configScope": { "enum": ["runtime", "unknown"], "description": "Runtime for Python — OTEL_PROPAGATORS or programmatic set_global_textmap; Python is interpreted, there is no build-time propagation surface." },
             "fromFrameworkDefault": { "type": "boolean", "description": "True when inject/extract come from an SDK or instrumentation default rather than explicit configuration." },
             "components": {
@@ -150,7 +150,6 @@
             "namespaceSource": { "enum": ["downward-api", "helm", "appdeployer", "sa-file", "none", "unknown"] }
           }
         },
-        "samplerTier": { "enum": ["ratelimiting", "probabilistic", "const", "none", "unknown"] },
         "samplerType": { "enum": ["parentbased_traceidratio", "traceidratio", "always_on", "always_off", "ratelimiting", "const", "unknown"] },
         "propagationStandard": { "enum": ["b3multi", "b3", "w3c", "jaeger", "none", "unknown"] },
         "hasB3PropagatorExtension": { "type": "boolean" },

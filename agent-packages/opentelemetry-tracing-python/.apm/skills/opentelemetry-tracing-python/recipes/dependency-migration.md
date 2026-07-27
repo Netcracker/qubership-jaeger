@@ -13,13 +13,13 @@ Step 0 (framework stack) before emitting §4.1 rows — dependency moves follow
 
 ## Framework stack → dependency path
 
-| `service.framework` | §4.1 focus |
-| ----------------------- | -------------------------------------------------------------------------------------- |
-| `fastapi` | baseline + `opentelemetry-instrumentation-fastapi` (ASGI) |
-| `django` | baseline + `opentelemetry-instrumentation-django` (WSGI/ASGI) |
-| `flask` | baseline + `opentelemetry-instrumentation-flask` (WSGI) |
-| `pure-python` | OTel SDK baseline modules only |
-| `unknown` | conservative baseline; record assumptions in `gaps` |
+| `service.framework` | §4.1 focus                                                    |
+|---------------------|---------------------------------------------------------------|
+| `fastapi`           | baseline + `opentelemetry-instrumentation-fastapi` (ASGI)     |
+| `django`            | baseline + `opentelemetry-instrumentation-django` (WSGI/ASGI) |
+| `flask`             | baseline + `opentelemetry-instrumentation-flask` (WSGI)       |
+| `pure-python`       | OTel SDK baseline modules only                                |
+| `unknown`           | conservative baseline; record assumptions in `gaps`           |
 
 Framework and instrumentation signatures:
 [`../reference/detection-rules.md`](../reference/detection-rules.md).
@@ -39,12 +39,11 @@ From the common platform contract
 Applies to every framework stack when these are the active tracing dependencies:
 
 - remove: `opentracing`, `opentracing-instrumentation`, `jaeger-client`,
-  `py_zipkin`/`python-zipkin`, framework shims (`flask-opentracing`,
+  `py-zipkin`, framework shims (`flask-opentracing`,
   `django-opentracing`), and the retired `opentelemetry-exporter-jaeger*`
   (when they form the active stack).
-- add: `opentelemetry-api`, `opentelemetry-sdk`, the OTLP HTTP exporter, and the
-  B3 propagator module (baseline below), plus the framework instrumentation
-  package from the table above.
+- add: `opentelemetry-api`, `opentelemetry-sdk`, the OTLP HTTP exporter, and the B3 propagator 
+  module (baseline below), plus the framework instrumentation package from the table above.
 
 ## Target baseline modules
 
@@ -75,26 +74,15 @@ the resulting set in the manifest rather than running it at container start.
   extras — they must be present in the built image.
 - OTel packages version-lock together; mixing an old `opentelemetry-api` with a
   newer SDK/exporter raises `ImportError` on moved symbols. Install them as one
-  coherent set and let the resolver align them; record the resolved set in the
-  migration plan. If the service pins an old `opentelemetry-api` for an unrelated
-  reason, upgrade the whole OTel set together rather than partially — record an
-  unresolvable conflict in `gaps`, never leave a split version set.
-- **Coherence overrides "defer versions" when the resolver produces a split.**
-  The [`SKILL.md`](../SKILL.md) *Defer versions* rule forbids **inventing**
-  version numbers in the plan — it does **not** forbid constraining a broken
-  resolution back to coherence. Precedence:
-  1. default — do not pin; let the resolver align the OTel set;
-  2. if the resolver yields a split (versions from different release trains, or
-     the OTLP exporter fails to import — see
-     [`fresh-build-and-image.md`](fresh-build-and-image.md) §Step 1) — pin the
-     **whole** OTel stack to **one** release train, taking that train from the
-     resolution the environment already produced (e.g. the `api`/`sdk` version),
-     not an invented number, and install them together from one index so they
-     lock. Record the pinned set in the plan.
-
-  A resolver's default is not sacred: a coherent pinned set sourced from the
-  existing resolution honors *defer versions* (no invented number) **and**
-  *never leave a split set*. When a channel simply has no coherent build for the
-  target runtime (e.g. an OS/conda channel lacking a recent OTLP exporter for a
-  new Python), install the whole OTel stack from a single index (PyPI) as the
-  authoritative resolver rather than accepting the channel's split.
+  coherent set from a single index, let the resolver align them, and record the
+  resolved set in the plan — never leave a split version set. If the service pins
+  an old `opentelemetry-api` for an unrelated reason, upgrade the whole OTel set
+  together (or record an unresolvable conflict in `gaps`), never partially.
+- **Coherence overrides "defer versions" on a split.** [`SKILL.md`](../SKILL.md)
+  *Defer versions* forbids **inventing** version numbers — not constraining a
+  broken resolution back to coherence. Default: don't pin, let the resolver
+  align. But if it yields a split (different release trains, or the OTLP exporter
+  fails to import — see [`fresh-build-and-image.md`](fresh-build-and-image.md)
+  §Step 1), pin the **whole** OTel stack to **one** release train taken from the
+  resolution already produced (e.g. the `api`/`sdk` version, not an invented one)
+  and install it from a single index (PyPI) so it locks. Record the pinned set.

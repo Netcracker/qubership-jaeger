@@ -61,17 +61,20 @@ logging.basicConfig(
 )
 ```
 
-> **Caveat — this format can crash the logger.** A global format string that
-> references `%(otelTraceID)s` raises `ValueError: Formatting field not found in
-> record: 'otelTraceID'` (and a `KeyError`) for **any** record the instrumentor
-> did not stamp — third-party library loggers, the SDK's own export-retry
-> warnings, or records created before `instrument()` ran. The factory above does
-> not have this failure mode because it sets the fields on *every* record. If you
-> use the instrumentor, verify no unstamped record ever hits that formatter.
+> **Caveat — this format breaks log output for unstamped records.** A global
+> format string that references `%(otelTraceID)s` raises `ValueError: Formatting
+> field not found in record: 'otelTraceID'` (from an underlying `KeyError`) for
+> **any** record the instrumentor did not stamp — third-party library loggers,
+> the SDK's own export-retry warnings, or records created before `instrument()`
+> ran. By default `logging` catches this in `handleError` (prints `--- Logging
+> error ---` to stderr and drops the message), so the app does not crash — but
+> that record's log line is lost. The factory above does not have this failure
+> mode because it sets the fields on *every* record. If you use the instrumentor,
+> verify no unstamped record ever hits that formatter.
 
 `OTEL_PYTHON_LOG_CORRELATION=true` enables the auto path, but it only turns on
 **injection** of the OTel `LogRecord` attributes (and, via `set_logging_format`,
-the SDK's *default* format labelled `trace_id=`/`span_id=`) — it does **not**
+the instrumentor's *default* format labelled `trace_id=`/`span_id=`) — it does **not**
 produce the contract shape `[traceId=…] [spanId=…]`. Set the contract format
 string explicitly even on the auto path.
 

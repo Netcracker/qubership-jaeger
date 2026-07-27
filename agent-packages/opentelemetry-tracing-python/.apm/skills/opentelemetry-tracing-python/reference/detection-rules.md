@@ -13,7 +13,7 @@ Distribution names as they appear in `requirements.txt` / `pyproject.toml` /
 | ----------------------------------------------------- | -------- | ----------------------- |
 | `opentracing`, `opentracing-instrumentation` | legacy | opentracing |
 | `jaeger-client` | legacy | jaeger-client |
-| `py_zipkin`, `python-zipkin` | legacy | zipkin |
+| `py-zipkin`, `py_zipkin` | legacy | zipkin |
 | `flask-opentracing`, `django-opentracing` | legacy | opentracing |
 | `opentelemetry-exporter-jaeger*` (retired) | legacy | jaeger-client |
 | `opentelemetry-api` | modern | otel-api |
@@ -77,8 +77,8 @@ OTel:
 - `trace.get_tracer(...)` / `trace.set_tracer_provider(...)`
 - `tracer.start_as_current_span(...)` / `tracer.start_span(...)`
 - `trace.get_current_span(...)`
-- `set_global_textmap(...)` / `CompositePropagator(...)` — composite priority is
-  the **last** entry on extract
+- `set_global_textmap(...)` / `CompositePropagator(...)` — on extract the
+  **last** member that finds a context wins
 - `B3MultiFormat` (X-B3-*) vs `B3SingleFormat` (single `b3`); `B3Format` is a
   deprecated alias of `B3MultiFormat` (multi)
 - `OTLPSpanExporter` from `opentelemetry.exporter.otlp.proto.http.trace_exporter`
@@ -86,8 +86,8 @@ OTel:
 
 Legacy:
 
-- `opentracing.tracer` / `opentracing.set_global_tracer` / `init_tracer`
-- `jaeger_client.Config`
+- `opentracing.tracer` / `opentracing.set_global_tracer`
+- `jaeger_client.Config` / `initialize_tracer`
 - `py_zipkin` symbols
 
 ## Instrumentation mode signatures
@@ -116,7 +116,7 @@ here as `auto`. See [`../models/4-transformation.md`](../models/4-transformation
 | outbound HTTP client in async worker | http-client |
 
 `async`/`await` and `asyncio.create_task` propagate `contextvars` automatically —
-mark those `contextWrapper: true`, not a loss candidate. Mark a boundary as a
+not a loss candidate, do not record them. Mark a boundary as a
 context-loss candidate when no explicit context propagation is visible
 (`context.attach`, OTel Celery/Kafka instrumentation, or manual inject/extract).
 
