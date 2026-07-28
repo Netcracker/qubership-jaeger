@@ -1,7 +1,7 @@
-{{- if and .Values.collector.install .Values.collector.ingress.http.install }}
+{{- if and .Values.collector.install .Values.collector.ingress.http.install (include "jaeger.legacyIngress.enabled" .) }}
 {{- $defaultServiceName := printf "%s-collector" $.Values.jaeger.serviceName -}}
 {{- $annotations := deepCopy (.Values.collector.ingress.http.annotations | default dict) -}}
-{{- if .Values.collector.ingress.http.addGatewayApiAnnotation }}
+{{- if or .Values.collector.ingress.http.addGatewayApiAnnotation (include "jaeger.gatewayApi.enabled" .) }}
 {{- $_ := set $annotations "gateway-api-converter.netcracker.com/ignore" "true" -}}
 {{- end }}
 ---
@@ -15,12 +15,12 @@ metadata:
     {{- if .Values.collector.ingress.http.labels }}
       {{- toYaml .Values.collector.ingress.http.labels | nindent 4 }}
     {{- end }}
-  {{- if $annotations }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2   # mandatory annotation
     nginx.ingress.kubernetes.io/use-regex: 'true'     # mandatory annotation
+    {{- if $annotations }}
     {{- toYaml $annotations | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   {{- if .Values.collector.ingress.className }}
   ingressClassName: {{ .Values.collector.ingress.className }}

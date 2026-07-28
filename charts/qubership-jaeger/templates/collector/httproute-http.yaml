@@ -1,7 +1,6 @@
 {{- $gatewayApi := .Values.collector.gatewayApi | default dict -}}
 {{- $httpRouteSpec := $gatewayApi.httpRoute | default dict -}}
-{{- $parentRefs := $httpRouteSpec.parentRefs | default list -}}
-{{- $hostnames := $httpRouteSpec.hosts | default list -}}
+{{- $hostnames := include "collector.gatewayApi.hosts" (list $ $httpRouteSpec .Values.collector.ingress.http) | fromYamlArray -}}
 {{- $defaultRules := list
       (dict "prefix" "/" "service" (dict "port" 13133))
       (dict "prefix" "/zipkin" "rewritePrefix" "/" "service" (dict "port" 9411))
@@ -10,7 +9,8 @@
       (dict "prefix" "/thrift/http" "rewritePrefix" "/" "service" (dict "port" 14268))
 -}}
 {{- $rules := $httpRouteSpec.defaultPaths | default $defaultRules -}}
-{{- if and .Values.collector.install ($httpRouteSpec.install | default false) }}
+{{- $install := or ($httpRouteSpec.install | default false) (and .Values.collector.ingress.http.install (include "jaeger.gatewayApi.enabled" .)) -}}
+{{- if and .Values.collector.install $install }}
 {{- $resourceName := include "collector.httpRoute.resourceName" (list $ "http") }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -28,16 +28,12 @@ metadata:
     {{- toYaml $httpRouteSpec.annotations | nindent 4 }}
   {{- end }}
 spec:
-  {{- with $parentRefs }}
   parentRefs:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- include "jaeger.gatewayApi.parentRefs" (dict "ctx" $ "parentRefs" $httpRouteSpec.parentRefs) | nindent 4 }}
   {{- if $hostnames }}
   hostnames:
-    {{- range $hostname := $hostnames }}
-    - {{ tpl $hostname $ | quote }}
-    {{- end }}
+    {{- include "jaeger.gatewayApi.hostnames" (dict "ctx" $ "hosts" $hostnames) | nindent 4 }}
   {{- end }}
   rules:
-    {{- include "collector.httpRoute.rules" (list $ $rules) | nindent 4 }}
+    {{- include "collector.httpRoute.rules" (list $ $rules) | trim | nindent 4 }}
 {{- end }}

@@ -1,7 +1,7 @@
-{{- if and .Values.collector.install .Values.collector.ingress.grpc.install }}
+{{- if and .Values.collector.install .Values.collector.ingress.grpc.install (include "jaeger.legacyIngress.enabled" .) }}
 {{- $defaultServiceName := printf "%s-collector" $.Values.jaeger.serviceName -}}
 {{- $annotations := deepCopy (.Values.collector.ingress.grpc.annotations | default dict) -}}
-{{- if .Values.collector.ingress.grpc.addGatewayApiAnnotation }}
+{{- if or .Values.collector.ingress.grpc.addGatewayApiAnnotation (include "jaeger.gatewayApi.enabled" .) }}
 {{- $_ := set $annotations "gateway-api-converter.netcracker.com/ignore" "true" -}}
 {{- end }}
 ---
@@ -15,12 +15,12 @@ metadata:
     {{- if .Values.collector.ingress.grpc.labels }}
       {{- toYaml .Values.collector.ingress.grpc.labels | nindent 4 }}
     {{- end }}
-  {{- if $annotations }}
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: GRPC       # mandatory annotation
     nginx.ingress.kubernetes.io/grpc-backend-for-port: grpc  # mandatory annotation
+    {{- if $annotations }}
     {{- toYaml $annotations | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   {{- if .Values.collector.ingress.className }}
   ingressClassName: {{ .Values.collector.ingress.className }}

@@ -46,6 +46,92 @@ Set default value for query route host if not specify in Values.
 {{- end -}}
 
 {{/*
+Return "true" when GATEWAY_SYSTEM_TYPE asks for Gateway API resources (HTTPRoute/GRPCRoute).
+GATEWAY_SYSTEM_TYPE is a cloud passport parameter and may contain several comma-separated
+values, for example "legacy-ingress,gateway-api-default", so it is always checked with
+"contains" and never with equality.
+*/}}
+{{- define "jaeger.gatewayApi.enabled" -}}
+  {{- if contains "gateway-api-default" (.Values.GATEWAY_SYSTEM_TYPE | default "") -}}
+      true
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Return "true" when GATEWAY_SYSTEM_TYPE asks for legacy Ingress resources.
+An unset or empty value is treated as "legacy-ingress" to keep the behavior
+of the existing installations unchanged.
+*/}}
+{{- define "jaeger.legacyIngress.enabled" -}}
+  {{- if contains "legacy-ingress" (.Values.GATEWAY_SYSTEM_TYPE | default "legacy-ingress") -}}
+      true
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Render the parentRefs section of a route.
+Uses the explicitly specified parentRefs when they are set, otherwise resolves the shared
+external Gateway from the cloud passport parameters. The Gateway is never hardcoded.
+Usage: {{- include "jaeger.gatewayApi.parentRefs" (dict "ctx" $ "parentRefs" $spec.parentRefs) | nindent 4 }}
+*/}}
+{{- define "jaeger.gatewayApi.parentRefs" -}}
+{{- $ctx := .ctx -}}
+{{- if .parentRefs -}}
+{{- toYaml .parentRefs -}}
+{{- else if $ctx.Values.PEER_NAMESPACE -}}
+- group: gateway.networking.k8s.io
+  kind: Gateway
+  name: edge-router
+  namespace: {{ $ctx.Values.CONTROLLER_NAMESPACE | default $ctx.Release.Namespace }}
+{{- else -}}
+- group: gateway.networking.k8s.io
+  kind: Gateway
+  name: {{ $ctx.Values.GATEWAY_SYSTEM_NAME | default "default-external-gateway" }}
+  namespace: {{ $ctx.Values.GATEWAY_SYSTEM_NAMESPACE | default "gateway-system" }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Render the hostnames section of a route.
+Falls back to the hosts of the matching Ingress so that a route needs no extra
+parameters when the Ingress hosts are already configured.
+Usage: {{- include "jaeger.gatewayApi.hostnames" (dict "ctx" $ "hosts" $hosts) | nindent 4 }}
+*/}}
+{{- define "jaeger.gatewayApi.hostnames" -}}
+{{- $ctx := .ctx -}}
+{{- $hostnames := list -}}
+{{- range $hostname := .hosts -}}
+{{- $hostnames = append $hostnames (tpl (toString $hostname) $ctx | trim | trimAll "\"") -}}
+{{- end -}}
+{{- toYaml $hostnames -}}
+{{- end -}}
+
+{{/*
+Return the list of hostnames for the collector routes.
+Supports both the single ".host" and the list ".hosts" syntax of the matching Ingress.
+Usage: include "collector.gatewayApi.hosts" (list $ $routeSpec .Values.collector.ingress.http)
+*/}}
+{{- define "collector.gatewayApi.hosts" -}}
+{{- $ := index . 0 -}}
+{{- $routeSpec := index . 1 -}}
+{{- $ingress := index . 2 | default dict -}}
+{{- if $routeSpec.hosts -}}
+{{- toYaml $routeSpec.hosts -}}
+{{- else -}}
+{{- $hosts := list -}}
+{{- if $ingress.host -}}
+{{- $hosts = append $hosts $ingress.host -}}
+{{- end -}}
+{{- range $ingress.hosts -}}
+{{- if .host -}}
+{{- $hosts = append $hosts .host -}}
+{{- end -}}
+{{- end -}}
+{{- toYaml $hosts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Base resource labels: name, app.kubernetes.io/name, component, part-of, managed-by.
 Instance, version, technology are set inline in chart templates, not here.
 Usage: {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" $component) | nindent 4 }}

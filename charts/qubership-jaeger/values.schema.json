@@ -1,6 +1,24 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
+    "GATEWAY_SYSTEM_TYPE": {
+      "default": "",
+      "description": "Cloud passport parameter that defines which kind of ingress resources have to be created.\nMay contain several comma-separated values, for example \"legacy-ingress,gateway-api-default\".\nAn empty or unset value is treated as \"legacy-ingress\".\n",
+      "title": "GATEWAY_SYSTEM_TYPE",
+      "type": "string"
+    },
+    "GATEWAY_SYSTEM_NAME": {
+      "default": "default-external-gateway",
+      "description": "Name of the shared external Gateway the created routes are attached to.\nUsed only when the route does not specify its own parentRefs.\n",
+      "title": "GATEWAY_SYSTEM_NAME",
+      "type": "string"
+    },
+    "GATEWAY_SYSTEM_NAMESPACE": {
+      "default": "gateway-system",
+      "description": "Namespace of the shared external Gateway the created routes are attached to.\nUsed only when the route does not specify its own parentRefs.\n",
+      "title": "GATEWAY_SYSTEM_NAMESPACE",
+      "type": "string"
+    },
     "cassandraSchemaJob": {
       "properties": {
         "allowedAuthenticators": {
@@ -493,6 +511,12 @@
                   "title": "hosts",
                   "type": "array"
                 },
+                "addGatewayApiAnnotation": {
+                  "default": false,
+                  "description": "Add the \"gateway-api-converter.netcracker.com/ignore\" annotation that prevents the Gateway API converter\nfrom processing this Ingress.\nThe annotation is added automatically when GATEWAY_SYSTEM_TYPE contains \"gateway-api-default\".\nType: boolean\nDefault: false\n",
+                  "title": "addGatewayApiAnnotation",
+                  "type": "boolean"
+                },
                 "install": {
                   "default": false,
                   "title": "install",
@@ -531,10 +555,27 @@
                 "hosts": {
                   "description": "A list of FQDN hosts to access jaeger outside the cloud.",
                   "items": {
-                    "type": "string"
+                    "type": "object",
+                    "properties": {
+                      "host": {
+                        "type": "string"
+                      },
+                      "paths": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
                   },
                   "title": "hosts",
                   "type": "array"
+                },
+                "addGatewayApiAnnotation": {
+                  "default": false,
+                  "description": "Add the \"gateway-api-converter.netcracker.com/ignore\" annotation that prevents the Gateway API converter\nfrom processing this Ingress.\nThe annotation is added automatically when GATEWAY_SYSTEM_TYPE contains \"gateway-api-default\".\nType: boolean\nDefault: false\n",
+                  "title": "addGatewayApiAnnotation",
+                  "type": "boolean"
                 },
                 "install": {
                   "default": false,
@@ -2105,6 +2146,12 @@
               "title": "host",
               "type": "string"
             },
+            "addGatewayApiAnnotation": {
+              "default": false,
+              "description": "Add the \"gateway-api-converter.netcracker.com/ignore\" annotation that prevents the Gateway API converter\nfrom processing this Ingress.\nThe annotation is added automatically when GATEWAY_SYSTEM_TYPE contains \"gateway-api-default\".\nType: boolean\nDefault: false\n",
+              "title": "addGatewayApiAnnotation",
+              "type": "boolean"
+            },
             "install": {
               "default": false,
               "description": "Allow disabling create ingress.\nType: boolean\nDefault: false\n",
@@ -2794,6 +2841,12 @@
               "description": "FQDN of ingress host.\nType: string\nMandatory: yes\nDefault: \"\"\n",
               "title": "host",
               "type": "string"
+            },
+            "addGatewayApiAnnotation": {
+              "default": false,
+              "description": "Add the \"gateway-api-converter.netcracker.com/ignore\" annotation that prevents the Gateway API converter\nfrom processing this Ingress.\nThe annotation is added automatically when GATEWAY_SYSTEM_TYPE contains \"gateway-api-default\".\nType: boolean\nDefault: false\n",
+              "title": "addGatewayApiAnnotation",
+              "type": "boolean"
             },
             "install": {
               "default": false,

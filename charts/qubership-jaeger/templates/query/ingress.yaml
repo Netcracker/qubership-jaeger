@@ -1,6 +1,6 @@
-{{- if and .Values.query.install .Values.query.ingress.install }}
+{{- if and .Values.query.install .Values.query.ingress.install (include "jaeger.legacyIngress.enabled" .) }}
 {{- $annotations := deepCopy (.Values.query.annotations | default dict) -}}
-{{- if .Values.query.ingress.addGatewayApiAnnotation }}
+{{- if or .Values.query.ingress.addGatewayApiAnnotation (include "jaeger.gatewayApi.enabled" .) }}
 {{- $_ := set $annotations "gateway-api-converter.netcracker.com/ignore" "true" -}}
 {{- end }}
 ---
@@ -17,11 +17,11 @@ metadata:
     {{- if .Values.query.ingress.labels }}
       {{- toYaml .Values.query.ingress.labels | nindent 4 }}
     {{- end }}
-  {{- if $annotations }}
   annotations:
-    {{- toYaml $annotations | nindent 4 }}
     nginx.ingress.kubernetes.io/proxy-buffer-size: 256k
-  {{- end }}
+    {{- if $annotations }}
+    {{- toYaml $annotations | nindent 4 }}
+    {{- end }}
 spec:
   {{- if .Values.query.ingress.className }}
   ingressClassName: {{ .Values.query.ingress.className }}

@@ -3,6 +3,34 @@
 # Declare variables to be passed into your templates.
 # yamllint disable rule:comments-indentation
 
+# Cloud passport parameter that defines which kind of ingress resources have to be created.
+# May contain several comma-separated values, for example "legacy-ingress,gateway-api-default":
+#   * legacy-ingress      - create Ingress resources
+#   * gateway-api-default - create Gateway API resources (HTTPRoute/GRPCRoute) and add the
+#                           "gateway-api-converter.netcracker.com/ignore" annotation to Ingresses
+# An empty or unset value is treated as "legacy-ingress".
+# Type: string
+# Mandatory: no
+# Default: ""
+#
+# GATEWAY_SYSTEM_TYPE: ""
+
+# Name of the shared external Gateway the created routes are attached to.
+# Used only when the route does not specify its own "gatewayApi.*.parentRefs".
+# Type: string
+# Mandatory: no
+# Default: "default-external-gateway"
+#
+# GATEWAY_SYSTEM_NAME: "default-external-gateway"
+
+# Namespace of the shared external Gateway the created routes are attached to.
+# Used only when the route does not specify its own "gatewayApi.*.parentRefs".
+# Type: string
+# Mandatory: no
+# Default: "gateway-system"
+#
+# GATEWAY_SYSTEM_NAMESPACE: "gateway-system"
+
 jaeger:
   # Name of jaeger service.
   # Type: string
@@ -1777,6 +1805,7 @@ collector:
       install: false
       # Add annotation that prevents Gateway API converter from processing this Ingress.
       # Use it when HTTPRoute/GRPCRoute analogue is already configured.
+      # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
       # Type: boolean
       # Default: false
       #
@@ -1811,6 +1840,7 @@ collector:
       install: false
       # Add annotation that prevents Gateway API converter from processing this Ingress.
       # Use it when HTTPRoute/GRPCRoute analogue is already configured.
+      # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
       # Type: boolean
       # Default: false
       #
@@ -1835,9 +1865,18 @@ collector:
 
   gatewayApi:
     httpRoute:
+      # Allow creating HTTPRoute for the HTTP collector endpoints unconditionally.
+      # It is not necessary to enable it when GATEWAY_SYSTEM_TYPE contains "gateway-api-default",
+      # in that case the HTTPRoute is created for every enabled Ingress automatically.
+      # Type: boolean
+      # Default: false
+      #
       install: false
       labels: {}
       annotations: {}
+      # List of parent Gateway references. When the list is empty, the route is attached to the
+      # shared external Gateway resolved from GATEWAY_SYSTEM_NAME and GATEWAY_SYSTEM_NAMESPACE.
+      #
       parentRefs: []
       # Format:
       # - name: <gateway_name>
@@ -1845,6 +1884,9 @@ collector:
       #   sectionName: <listener_name>
       #   kind: Gateway
       #   group: gateway.networking.k8s.io
+      # List of hostnames for the route. When the list is empty, the hosts of the HTTP collector
+      # Ingress (collector.ingress.http.host and collector.ingress.http.hosts) are used.
+      #
       hosts: []
       defaultPaths:
       # Format:
@@ -1874,12 +1916,21 @@ collector:
         service:
           port: 14268
     grpcRoute:
+      # Allow creating a route for the gRPC collector endpoints unconditionally.
+      # It is not necessary to enable it when GATEWAY_SYSTEM_TYPE contains "gateway-api-default",
+      # in that case the route is created for every enabled Ingress automatically.
+      # Type: boolean
+      # Default: false
+      #
       install: false
       # Available values: HTTPRoute, GRPCRoute
       #
       kind: HTTPRoute
       labels: {}
       annotations: {}
+      # List of parent Gateway references. When the list is empty, the route is attached to the
+      # shared external Gateway resolved from GATEWAY_SYSTEM_NAME and GATEWAY_SYSTEM_NAMESPACE.
+      #
       parentRefs: []
       # Format:
       # - name: <gateway_name>
@@ -1887,6 +1938,9 @@ collector:
       #   sectionName: <listener_name>
       #   kind: Gateway
       #   group: gateway.networking.k8s.io
+      # List of hostnames for the route. When the list is empty, the hosts of the gRPC collector
+      # Ingress (collector.ingress.grpc.host and collector.ingress.grpc.hosts) are used.
+      #
       hosts: []
       defaultPaths:
       # Format:
@@ -2126,6 +2180,7 @@ hotrod:
 
     # Add annotation that prevents Gateway API converter from processing this Ingress.
     # Use it when HTTPRoute analogue is already configured.
+    # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
     # Type: boolean
     # Default: false
     #
@@ -2173,9 +2228,18 @@ hotrod:
 
   gatewayApi:
     httpRoute:
+      # Allow creating HTTPRoute for hotrod unconditionally.
+      # It is not necessary to enable it when GATEWAY_SYSTEM_TYPE contains "gateway-api-default",
+      # in that case the HTTPRoute is created automatically when hotrod.ingress.install is true.
+      # Type: boolean
+      # Default: false
+      #
       install: false
       labels: {}
       annotations: {}
+      # List of parent Gateway references. When the list is empty, the route is attached to the
+      # shared external Gateway resolved from GATEWAY_SYSTEM_NAME and GATEWAY_SYSTEM_NAMESPACE.
+      #
       parentRefs: []
       # Format:
       # - name: <gateway_name>
@@ -2183,6 +2247,9 @@ hotrod:
       #   sectionName: <listener_name> (optional)
       #   kind: Gateway
       #   group: gateway.networking.k8s.io
+      # List of hostnames for the route. When the list is empty, the host of the hotrod Ingress
+      # (hotrod.ingress.host) is used.
+      #
       hosts: []
 
   # Specify port for hotrod service.
@@ -2276,6 +2343,7 @@ query:
 
     # Add annotation that prevents Gateway API converter from processing this Ingress.
     # Use it when HTTPRoute analogue is already configured.
+    # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
     # Type: boolean
     # Default: false
     #
@@ -2323,9 +2391,18 @@ query:
 
   gatewayApi:
     httpRoute:
+      # Allow creating HTTPRoute for query unconditionally.
+      # It is not necessary to enable it when GATEWAY_SYSTEM_TYPE contains "gateway-api-default",
+      # in that case the HTTPRoute is created automatically when query.ingress.install is true.
+      # Type: boolean
+      # Default: false
+      #
       install: false
       labels: {}
       annotations: {}
+      # List of parent Gateway references. When the list is empty, the route is attached to the
+      # shared external Gateway resolved from GATEWAY_SYSTEM_NAME and GATEWAY_SYSTEM_NAMESPACE.
+      #
       parentRefs: []
       # Format:
       # - name: <gateway_name>
@@ -2333,6 +2410,9 @@ query:
       #   sectionName: <listener_name> (optional)
       #   kind: Gateway
       #   group: gateway.networking.k8s.io
+      # List of hostnames for the route. When the list is empty, the host of the query Ingress
+      # (query.ingress.host) is used.
+      #
       hosts: []
 
   # Query related cmd line opts to be configured on the concerned components.
