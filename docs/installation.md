@@ -108,11 +108,13 @@ It is recommended not to override these values because Kubernetes `restricted`` 
 
 ### Azure
 
+<!-- markdownlint-disable line-length table-column-style -->
 | Azure Managed Service                                                                           | Jaeger support |
 | ----------------------------------------------------------------------------------------------- | -------------- |
 | [Azure CosmosDB (Cassandra)](https://azure.microsoft.com/en-in/products/cosmos-db)              | ❌ Not Support  |
 | [Azure Cassandra](https://azure.microsoft.com/en-in/products/managed-instance-apache-cassandra) | ❔ Not Verified |
 | Azure OpenSearch                                                                                | - N/A          |
+<!-- markdownlint-enable line-length table-column-style -->
 
 We almost didn't verify Jaeger working with Azure managed services. But we know about some GitHub issues related
 to supporting Azure managed services. So we know that Jaeger doesn't support Azure CosmosDB now. GitHub issue
