@@ -88,18 +88,18 @@ and you would get it twice.
 
 ### Which entry point to use
 
-| You want to…                                                                | Use                                                          |
-|-----------------------------------------------------------------------------|-------------------------------------------------------------|
-| Install everything from *inside this repository*                            | root [`apm.yml`](../apm.yml)                                 |
-| Reference the whole suite as **one dependency** from another repo (by path) | [`opentelemetry-tracing-all-in-one`](opentelemetry-tracing-all-in-one) |
-| Install a single, known language                                            | that language package directly                              |
+| You want to…                                                                      | Use                                                                    |
+|-----------------------------------------------------------------------------------|------------------------------------------------------------------------|
+| Install everything from *inside this repository*                                  | root [`apm.yml`](../apm.yml)                                           |
+| Reference the whole suite as **one dependency** from another repository (by path) | [`opentelemetry-tracing-all-in-one`](opentelemetry-tracing-all-in-one) |
+| Install a single, known language                                                  | that language package directly                                         |
 
 The [`opentelemetry-tracing-all-in-one`](opentelemetry-tracing-all-in-one) aggregator exists because the
 root `apm.yml` only works from *this* repository root (it uses in-repo `./agent-packages/...` paths).
 The all-in-one package uses sibling `../...` paths, so another repository can depend on the entire suite
 through a single entry — it pulls all language packages, and the shared core arrives transitively (do not
 add `opentelemetry-tracing-common` alongside it or you get it twice). See its
-[README](opentelemetry-tracing-all-in-one/README.md).
+[Readme](opentelemetry-tracing-all-in-one/README.md).
 
 Installing everything is deliberate, not convenience. Whoever runs the skill often does not know which
 language the target service is written in, and a repository may hold several. With all language packages

@@ -51,7 +51,7 @@ Pass criteria:
 
 Build the SUT image from the post-L4 tree with a session-unique tag. Confirm the
 image's installed packages include the L4 additions
-(`pip show opentelemetry-sdk` inside the image, or inspect the lock file baked in).
+(`pip show opentelemetry-sdk` inside the image, or inspect the lockfile baked in).
 
 ## Step 3 — Runtime availability
 
