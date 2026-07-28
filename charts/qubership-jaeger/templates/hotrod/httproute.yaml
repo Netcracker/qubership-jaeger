@@ -1,5 +1,4 @@
-{{- $gatewayApi := .Values.hotrod.gatewayApi | default dict -}}
-{{- $httpRouteSpec := $gatewayApi.httpRoute | default dict -}}
+{{- $httpRouteSpec := .Values.hotrod.httpRoute | default dict -}}
 {{- $hostnames := $httpRouteSpec.hosts | default (list (include "hotrod.ingress" .)) -}}
 {{- $name := printf "%s-hotrod" .Values.jaeger.serviceName -}}
 {{- $install := or ($httpRouteSpec.install | default false) (and .Values.hotrod.ingress.install (include "jaeger.gatewayApi.enabled" .)) -}}

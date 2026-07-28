@@ -1,5 +1,4 @@
-{{- $gatewayApi := .Values.collector.gatewayApi | default dict -}}
-{{- $grpcRouteSpec := $gatewayApi.grpcRoute | default dict -}}
+{{- $grpcRouteSpec := .Values.collector.grpcRoute | default dict -}}
 {{- $hostnames := include "collector.gatewayApi.hosts" (list $ $grpcRouteSpec .Values.collector.ingress.grpc) | fromYamlArray -}}
 {{- $defaultRules := list (dict "backendRefs" (list (dict "name" (printf "%s-collector" $.Values.jaeger.serviceName) "port" 4317))) -}}
 {{- $rules := $grpcRouteSpec.rules | default $defaultRules -}}

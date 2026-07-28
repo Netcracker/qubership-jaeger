@@ -1,5 +1,4 @@
-{{- $gatewayApi := .Values.collector.gatewayApi | default dict -}}
-{{- $httpRouteSpec := $gatewayApi.httpRoute | default dict -}}
+{{- $httpRouteSpec := .Values.collector.httpRoute | default dict -}}
 {{- $hostnames := include "collector.gatewayApi.hosts" (list $ $httpRouteSpec .Values.collector.ingress.http) | fromYamlArray -}}
 {{- $defaultRules := list
       (dict "prefix" "/" "service" (dict "port" 13133))

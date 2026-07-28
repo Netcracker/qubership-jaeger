@@ -1,5 +1,4 @@
-{{- $gatewayApi := .Values.query.gatewayApi | default dict -}}
-{{- $httpRouteSpec := $gatewayApi.httpRoute | default dict -}}
+{{- $httpRouteSpec := .Values.query.httpRoute | default dict -}}
 {{- $hostnames := $httpRouteSpec.hosts | default (list (include "query.ingress" .)) -}}
 {{- $name := printf "%s-query" .Values.jaeger.serviceName -}}
 {{- $install := or ($httpRouteSpec.install | default false) (and .Values.query.ingress.install (include "jaeger.gatewayApi.enabled" .)) -}}

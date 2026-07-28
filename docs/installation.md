@@ -286,7 +286,7 @@ Ingress to Gateway API without downtime:
 
 The routes created this way reuse the hosts of the matching Ingress, so no additional parameters are required.
 Routes can still be enabled independently of `GATEWAY_SYSTEM_TYPE` with the per-component
-`gatewayApi.*.install` parameters described below.
+`httpRoute.install`/`grpcRoute.install` parameters described below.
 
 Example of a deployment that exposes Jaeger through the Gateway API only:
 
@@ -555,19 +555,18 @@ explicitly or to override the Gateway, the hostnames or the path rules resolved 
 
 The chart can create routes for collector HTTP endpoints and collector gRPC endpoints. Collector gRPC endpoints can be
 exposed either with `HTTPRoute` or with native `GRPCRoute`, depending on the value of
-`collector.gatewayApi.grpcRoute.kind`.
+`collector.grpcRoute.kind`.
 
 TLS termination is configured on the Gateway listener. To bind a route to a specific listener, use
 `parentRefs[].sectionName`. More info in [Attaching to gateways](https://gateway-api.sigs.k8s.io/reference/api-types/httproute/#attaching-to-gateways).
 
 ```yaml
 collector:
-  gatewayApi:
-    httpRoute:
-      install: true
-    grpcRoute:
-      install: true
-      kind: GRPCRoute
+  httpRoute:
+    install: true
+  grpcRoute:
+    install: true
+    kind: GRPCRoute
 ```
 
 <!-- markdownlint-disable line-length -->
@@ -611,25 +610,24 @@ Example:
 
 ```yaml
 collector:
-  gatewayApi:
-    httpRoute:
-      install: true
-      hosts:
-        - jaeger-collector-http.test.org
-      parentRefs:
-        - name: gateway
-          namespace: istio-system
-          sectionName: default
+  httpRoute:
+    install: true
+    hosts:
+      - jaeger-collector-http.test.org
+    parentRefs:
+      - name: gateway
+        namespace: istio-system
+        sectionName: default
 
-    grpcRoute:
-      install: true
-      kind: GRPCRoute
-      hosts:
-        - jaeger-collector-grpc.test.org
-      parentRefs:
-        - name: gateway
-          namespace: istio-system
-          sectionName: default
+  grpcRoute:
+    install: true
+    kind: GRPCRoute
+    hosts:
+      - jaeger-collector-grpc.test.org
+    parentRefs:
+      - name: gateway
+        namespace: istio-system
+        sectionName: default
 ```
 
 #### TLSConfig
@@ -762,11 +760,11 @@ query:
 | `ingress.host`                     | string                                                                                                                        | no        | -                                                                            | FQDN of the ingress host                                                                                                            |
 | `route.install`                    | boolean                                                                                                                       | no        | false                                                                        | Enabling/disabling creating query route                                                                                             |
 | `route.host`                       | string                                                                                                                        | no        | -                                                                            | FQDN of the route host                                                                                                              |
-| `gatewayApi.httpRoute.install`     | boolean                                                                                                                       | no        | false                                                                        | Enabling creating query HTTPRoute unconditionally. Not needed when `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default`, in that case the HTTPRoute is created automatically if `ingress.install` is `true`                                                                                         |
-| `gatewayApi.httpRoute.labels`      | map                                                                                                                           | no        | {}                                                                           | Labels for query HTTPRoute                                                                                                          |
-| `gatewayApi.httpRoute.annotations` | map                                                                                                                           | no        | {}                                                                           | Annotations for query HTTPRoute                                                                                                     |
-| `gatewayApi.httpRoute.parentRefs`  | array                                                                                                                         | no        | []                                                                           | Gateway API parent references. If empty, the Gateway from `GATEWAY_SYSTEM_NAME` and `GATEWAY_SYSTEM_NAMESPACE` is used              |
-| `gatewayApi.httpRoute.hosts`       | array                                                                                                                         | no        | []                                                                           | List of hostnames for query HTTPRoute. If empty, `ingress.host` is used                                                                                               |
+| `httpRoute.install`                | boolean                                                                                                                       | no        | false                                                                        | Enabling creating query HTTPRoute unconditionally. Not needed when `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default`, in that case the HTTPRoute is created automatically if `ingress.install` is `true`                                                                                         |
+| `httpRoute.labels`                 | map                                                                                                                           | no        | {}                                                                           | Labels for query HTTPRoute                                                                                                          |
+| `httpRoute.annotations`            | map                                                                                                                           | no        | {}                                                                           | Annotations for query HTTPRoute                                                                                                     |
+| `httpRoute.parentRefs`             | array                                                                                                                         | no        | []                                                                           | Gateway API parent references. If empty, the Gateway from `GATEWAY_SYSTEM_NAME` and `GATEWAY_SYSTEM_NAMESPACE` is used              |
+| `httpRoute.hosts`                  | array                                                                                                                         | no        | []                                                                           | List of hostnames for query HTTPRoute. If empty, `ingress.host` is used                                                                                               |
 | `resources`                        | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 200m, memory: 256Mi}}` | Describes computing resource requests and limits for single Pods                                                                    |
 | `securityContext`                  | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                           | Describes pod-level security attributes                                                                                             |
 | `containerSecurityContext`         | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                           | Holds container-level security attributes                                                                                           |
@@ -807,14 +805,13 @@ query:
     install: false
     host: query.cloud.test.org
 
-  gatewayApi:
-    httpRoute:
-      install: false
-      hosts:
-        - query.cloud.test.org
-      parentRefs:
-        - name: gateway
-          namespace: istio-system
+  httpRoute:
+    install: false
+    hosts:
+      - query.cloud.test.org
+    parentRefs:
+      - name: gateway
+        namespace: istio-system
 
   resources:
     requests:
@@ -1555,11 +1552,11 @@ hotrod:
 | `ingress.tls`                      | object                                                                                                                        | no        | {}                                                                           | TLS configuration for hotrod ingress                                                                                                    |
 | `route.install`                    | boolean                                                                                                                       | no        | false                                                                        | Enabling or disabling creating a `hotrod` route                                                                                         |
 | `route.host`                       | string                                                                                                                        | no        | 0                                                                            | The FQDN of the route host                                                                                                              |
-| `gatewayApi.httpRoute.install`     | boolean                                                                                                                       | no        | false                                                                        | Enabling creating a `hotrod` HTTPRoute unconditionally. Not needed when `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default`, in that case the HTTPRoute is created automatically if `ingress.install` is `true`                                                                                     |
-| `gatewayApi.httpRoute.labels`      | map                                                                                                                           | no        | {}                                                                           | Labels for hotrod HTTPRoute                                                                                                             |
-| `gatewayApi.httpRoute.annotations` | map                                                                                                                           | no        | {}                                                                           | Annotations for hotrod HTTPRoute                                                                                                        |
-| `gatewayApi.httpRoute.parentRefs`  | array                                                                                                                         | no        | []                                                                           | Gateway API parent references. If empty, the Gateway from `GATEWAY_SYSTEM_NAME` and `GATEWAY_SYSTEM_NAMESPACE` is used                  |
-| `gatewayApi.httpRoute.hosts`       | array                                                                                                                         | no        | []                                                                           | List of hostnames for hotrod HTTPRoute. If empty, `ingress.host` is used                                                                                                  |
+| `httpRoute.install`                | boolean                                                                                                                       | no        | false                                                                        | Enabling creating a `hotrod` HTTPRoute unconditionally. Not needed when `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default`, in that case the HTTPRoute is created automatically if `ingress.install` is `true`                                                                                     |
+| `httpRoute.labels`                 | map                                                                                                                           | no        | {}                                                                           | Labels for hotrod HTTPRoute                                                                                                             |
+| `httpRoute.annotations`            | map                                                                                                                           | no        | {}                                                                           | Annotations for hotrod HTTPRoute                                                                                                        |
+| `httpRoute.parentRefs`             | array                                                                                                                         | no        | []                                                                           | Gateway API parent references. If empty, the Gateway from `GATEWAY_SYSTEM_NAME` and `GATEWAY_SYSTEM_NAMESPACE` is used                  |
+| `httpRoute.hosts`                  | array                                                                                                                         | no        | []                                                                           | List of hostnames for hotrod HTTPRoute. If empty, `ingress.host` is used                                                                                                  |
 | `service.port`                     | integer                                                                                                                       | no        | 80                                                                           | The port for hotrod service                                                                                                             |
 | `resources`                        | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 100m, memory: 128Mi}}` | Computing resource requests and limits for single Pods                                                                                  |
 | `securityContext`                  | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                           | Holds pod-level security attributes                                                                                                     |
@@ -1599,14 +1596,13 @@ hotrod:
     install: false
     host: hotrod.cloud.test.org
 
-  gatewayApi:
-    httpRoute:
-      install: false
-      hosts:
-        - hotrod.cloud.test.org
-      parentRefs:
-        - name: gateway
-          namespace: istio-system
+  httpRoute:
+    install: false
+    hosts:
+      - hotrod.cloud.test.org
+    parentRefs:
+      - name: gateway
+        namespace: istio-system
 
   resources:
     limits:
