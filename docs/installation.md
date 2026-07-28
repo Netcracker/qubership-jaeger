@@ -122,10 +122,12 @@ There is no Azure managed OpenSearch. You can find only custom solutions in the 
 
 ### AWS
 
+<!-- markdownlint-disable line-length table-column-style -->
 | AWS Managed Service       | Jaeger support |
 | ------------------------- | -------------- |
 | AWS Keyspaces (Cassandra) | ❌ Not Support  |
 | AWS OpenSearch            | ✅ Support      |
+<!-- markdownlint-enable line-length table-column-style -->
 
 Jaeger doesn't support AWS Keyspaces because Keyspaces doesn't allow to creation of frozen structures and custom
 structures. GitHub issue
@@ -243,11 +245,13 @@ And disk space usage will be:
 
 Support matrix Jaeger as third-party:
 
+<!-- markdownlint-disable line-length table-column-style -->
 | Connection                 | Support TLS   |
 | -------------------------- | ------------- |
 | Client to Collector        | ✅ Support     |
 | Collector/Query to Storage | ✅ Support     |
 | Browser to UI              | ❌ Not Support |
+<!-- markdownlint-enable line-length table-column-style -->
 
 ## Parameters
 
@@ -426,7 +430,6 @@ collector:
     example.label/key: example-label-value
 ```
 
-
 #### Ingress
 
 This section describes Ingress configuration for `jaeger-collector`.
@@ -535,7 +538,6 @@ collector:
               service:
                 port: 14268
 ```
-
 
 #### Gateway API
 
@@ -723,7 +725,6 @@ collector:
       minVersion: 1.2
 ```
 
-
 ### Query
 
 `jaeger-query` is a service that exposes the APIs for retrieving traces from storage and hosts a Web UI for searching
@@ -829,7 +830,6 @@ query:
   labels:
     example.label/key: example-label-value
 ```
-
 
 ### Readiness probe
 
