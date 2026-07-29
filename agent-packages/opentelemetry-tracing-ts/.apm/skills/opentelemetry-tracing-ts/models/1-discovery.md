@@ -20,13 +20,13 @@ a fixed whitelist — classify to a first-class value only when the evidence is
 confident, otherwise `unknown`. First-class coverage and best-effort fallbacks:
 [`../reference/framework-coverage.md`](../reference/framework-coverage.md).
 
-| Framework   | Typical evidence                                                                          |
-|-------------|-------------------------------------------------------------------------------------------|
-| `express`   | `import express` / `require('express')`; `express()` app; `app.listen(...)`                |
-| `fastify`   | `import Fastify` / `require('fastify')`; `fastify()` instance; `app.listen(...)`           |
-| `nestjs`    | `@nestjs/core`, `NestFactory.create(...)`, `@Module`/`@Controller` decorators              |
+| Framework   | Typical evidence                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| `express`   | `import express` / `require('express')`; `express()` app; `app.listen(...)`                 |
+| `fastify`   | `import Fastify` / `require('fastify')`; `fastify()` instance; `app.listen(...)`            |
+| `nestjs`    | `@nestjs/core`, `NestFactory.create(...)`, `@Module`/`@Controller` decorators               |
 | `pure-node` | OTel wired without a web framework above (worker, CLI, library, consumer, http.Server only) |
-| `unknown`   | insufficient or best-effort evidence (Koa, Hapi, Restify, gRPC-only…) — note in `gaps`    |
+| `unknown`   | insufficient or best-effort evidence (Koa, Hapi, Restify, gRPC-only…) — note in `gaps`      |
 
 Also resolve two runtime axes that drive the whole migration in Node:
 
@@ -170,7 +170,7 @@ automatically across `await`, resolved Promises, `queueMicrotask`, `setTimeout`,
 loss boundary; do not record it as one. The real losses are:
 
 - worker threads (`worker_threads`, `new Worker(...)`, Piscina) — separate thread,
-  ALS does not cross it;
+  `AsyncLocalStorage` does not cross it;
 - child processes / subprocess (`child_process` `spawn`/`fork`/`exec`);
 - Kafka producers/consumers (`kafkajs`, `node-rdkafka`) and other messaging libs;
 - message queues / background jobs (`amqplib` / RabbitMQ, `bull`/`bullmq`,

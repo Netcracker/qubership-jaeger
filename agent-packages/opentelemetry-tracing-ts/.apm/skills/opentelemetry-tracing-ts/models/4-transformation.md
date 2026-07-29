@@ -21,13 +21,13 @@ non-web worker/library — not "one repository = one stack" by default.
 Read `discovery-result.service.framework` and pick exactly one migration path.
 Do not emit §4.1 or §4.2 rows before this is fixed.
 
-| `service.framework` | Target instrumentation                                                                                          | Config surface              |
-|---------------------|----------------------------------------------------------------------------------------------------------------|-----------------------------|
-| `express`           | `@opentelemetry/instrumentation-http` + `-express` + SDK + OTLP proto + B3 propagator                           | env + bootstrap module      |
-| `fastify`           | `@opentelemetry/instrumentation-http` + `-fastify` + SDK + OTLP proto + B3                                      | env + bootstrap module      |
-| `nestjs`            | `@opentelemetry/instrumentation-nestjs-core` + `-http` + the underlying HTTP adapter (`-express`/`-fastify`) + SDK | env + bootstrap module      |
-| `pure-node`         | `@opentelemetry/sdk-node` (or `sdk-trace-node`) + OTLP proto exporter + B3 propagator (no web middleware)       | env + programmatic setup    |
-| `unknown`           | conservative SDK path; record assumptions in `gaps`                                                             | env                         |
+| `service.framework` | Target instrumentation                                                                                             | Config surface           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------ |
+| `express`           | `@opentelemetry/instrumentation-http` + `-express` + SDK + OTLP proto + B3 propagator                              | env + bootstrap module   |
+| `fastify`           | `@opentelemetry/instrumentation-http` + `-fastify` + SDK + OTLP proto + B3                                         | env + bootstrap module   |
+| `nestjs`            | `@opentelemetry/instrumentation-nestjs-core` + `-http` + the underlying HTTP adapter (`-express`/`-fastify`) + SDK | env + bootstrap module   |
+| `pure-node`         | `@opentelemetry/sdk-node` (or `sdk-trace-node`) + OTLP proto exporter + B3 propagator (no web middleware)          | env + programmatic setup |
+| `unknown`           | conservative SDK path; record assumptions in `gaps`                                                                | env                      |
 
 NestJS runs on Express or Fastify underneath: `-nestjs-core` alone gives
 controller/provider spans but **not** the HTTP server span — add the HTTP

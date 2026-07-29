@@ -38,7 +38,7 @@ Pass criteria:
 > by externalizing the instrumented dependencies from the bundle or switching to
 > `hand-spans` ([`../reference/build-preconditions.md`](../reference/build-preconditions.md)),
 > not by adding more instrumentation packages.
-
+>
 > **Common failure — ESM load order.** A top-level `import './tracing.js'` in an
 > ESM entry is hoisted and runs after the instrumented imports are evaluated, so
 > instrumentation attaches to nothing. Use `node --import ./tracing.mjs` to fix

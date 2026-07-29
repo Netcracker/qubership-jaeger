@@ -13,13 +13,13 @@ Step 0 (framework stack) before emitting §4.1 rows — dependency moves follow
 
 ## Framework stack → dependency path
 
-| `service.framework` | §4.1 focus                                                                        |
-|---------------------|-----------------------------------------------------------------------------------|
-| `express`           | baseline + `@opentelemetry/instrumentation-http` + `-express`                      |
-| `fastify`           | baseline + `@opentelemetry/instrumentation-http` + `-fastify`                      |
-| `nestjs`            | baseline + `-nestjs-core` + `-http` + adapter (`-express`/`-fastify`)              |
-| `pure-node`         | OTel SDK baseline modules only                                                     |
-| `unknown`           | conservative baseline; record assumptions in `gaps`                                |
+| `service.framework` | §4.1 focus                                                            |
+| ------------------- | --------------------------------------------------------------------- |
+| `express`           | baseline + `@opentelemetry/instrumentation-http` + `-express`         |
+| `fastify`           | baseline + `@opentelemetry/instrumentation-http` + `-fastify`         |
+| `nestjs`            | baseline + `-nestjs-core` + `-http` + adapter (`-express`/`-fastify`) |
+| `pure-node`         | OTel SDK baseline modules only                                        |
+| `unknown`           | conservative baseline; record assumptions in `gaps`                   |
 
 Framework and instrumentation signatures:
 [`../reference/detection-rules.md`](../reference/detection-rules.md).
