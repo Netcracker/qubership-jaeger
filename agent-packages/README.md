@@ -20,7 +20,7 @@ fixing broken distributed traces across the platform.
 | Java            | Spring Boot, Quarkus, Pure (OTel SDK)   | `opentelemetry-tracing-java`   | done    |
 | Go              | stdlib, Fiber, platform libs            | `opentelemetry-tracing-go`     | done    |
 | Python          | FastAPI, Django, Flask, Pure (OTel SDK) | `opentelemetry-tracing-python` | done    |
-| JS / TypeScript | Node, Nest, etc.                        | `opentelemetry-tracing-js`     | planned |
+| TypeScript      | Express, Fastify, NestJS, Pure (Node)   | `opentelemetry-tracing-ts`     | done    |
 
 Shared platform pieces (same for all languages):
 
@@ -40,7 +40,7 @@ qubership-jaeger/
     ├── opentelemetry-tracing-java/        # Java (Spring Boot, Quarkus, Pure)
     ├── opentelemetry-tracing-go/          # Go (stdlib, platform libs)
     ├── opentelemetry-tracing-python/      # Python (FastAPI, Django, Flask, Pure)
-    └── opentelemetry-tracing-js/          # planned
+    └── opentelemetry-tracing-ts/          # TypeScript/Node (Express, Fastify, NestJS, Pure)
 ```
 
 `opentelemetry-tracing-common` owns shared layers (capability/maturity/transformation/validation), shared schemas,
@@ -82,9 +82,9 @@ exits with "no output files". Skills are deployed by `install`, not by `compile`
 Verified against APM CLI 0.19.0.
 
 Root [`apm.yml`](../apm.yml) depends on **every** language package
-(`opentelemetry-tracing-java`, `opentelemetry-tracing-go`, `opentelemetry-tracing-python`); each of those
-declares `../opentelemetry-tracing-common`, so the shared core arrives transitively — install it separately
-and you would get it twice.
+(`opentelemetry-tracing-java`, `opentelemetry-tracing-go`, `opentelemetry-tracing-python`,
+`opentelemetry-tracing-ts`); each of those declares `../opentelemetry-tracing-common`, so the shared core
+arrives transitively — install it separately and you would get it twice.
 
 ### Which entry point to use
 
@@ -113,7 +113,7 @@ still work and remain useful when developing a single package. They are not the 
 and they leave an `apm_modules/` cache inside the package that a later root install reports as an orphaned
 package. Delete the package-local `apm_modules/` and `apm.lock.yaml` when you go back to the root install.
 
-A successful root install produces four skills (Java, go, python, common) plus one rule per package, under
+A successful root install produces five skills (Java, go, python, ts, common) plus one rule per package, under
 the paths listed in the `-t` table above.
 
 You may also see `apm.lock.yaml` and `apm_modules/` (local resolution cache); both are gitignored.

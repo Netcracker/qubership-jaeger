@@ -1,0 +1,5 @@
+# APM install artifacts (regenerate with apm install)
+.agents/
+.cursor/
+apm_modules/
+apm.lock.yaml

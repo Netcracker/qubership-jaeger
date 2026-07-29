@@ -66,6 +66,12 @@ Do **not** invent levels or match from level names alone — use this table only
 - **Level 3:** `opentelemetry-api` in dependencies but no OTLP exporter or export
   fails → **finish** wiring the OTel stack.
 - **Level 4:** Brave and OTel Java agent both present → **remove** the mixed stack.
+- **Level 4, retired-exporter case:** the only "legacy" evidence is a retired
+  **OTel-native** exporter (e.g. `@opentelemetry/exporter-jaeger`, Python's
+  `opentelemetry-exporter-jaeger*`) with no separate tracer anywhere — the matrix
+  still lands here (`hasLegacy=true`), but there is **one** tracer, not two.
+  Describe the work as **swapping the exporter package**, never as "remove the
+  second tracing stack" — that phrase is wrong when no second stack exists.
 - **Level 5:** Quarkus with `quarkus-opentelemetry` and OTLP export working, no
   Sleuth/Jaeger client → tracing is **already in good shape**.
 

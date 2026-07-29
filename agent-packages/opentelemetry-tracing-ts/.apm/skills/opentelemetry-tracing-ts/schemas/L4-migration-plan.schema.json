@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MigrationPlanRedirect",
+  "description": "Use shared schema from tracing common package.",
+  "allOf": [
+    {
+      "$ref": "../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json"
+    }
+  ]
+}

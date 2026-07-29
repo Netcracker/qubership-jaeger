@@ -1,8 +1,8 @@
 # opentelemetry-tracing-all-in-one
 
 Aggregator package: installs **all** Qubership OpenTelemetry tracing skills in one
-step — the Java, Go, and Python language packages plus the shared core they
-depend on.
+step — the Java, Go, Python, and TypeScript language packages plus the shared core
+they depend on.
 
 ## Why this package exists
 
@@ -20,6 +20,7 @@ Install one thing, cover every supported language.
 - [`opentelemetry-tracing-java`](../opentelemetry-tracing-java) — Spring Boot, Quarkus, Pure (OTel SDK)
 - [`opentelemetry-tracing-go`](../opentelemetry-tracing-go) — stdlib, platform libs
 - [`opentelemetry-tracing-python`](../opentelemetry-tracing-python) — FastAPI, Django, Flask, Pure (OTel SDK)
+- [`opentelemetry-tracing-ts`](../opentelemetry-tracing-ts) — Express, Fastify, NestJS, Pure Node (OTel SDK)
 - shared core (`opentelemetry-tracing-common`) — declared by each language
   package, so it arrives transitively and APM resolves it **once** (do not add it
   separately or you get it twice)

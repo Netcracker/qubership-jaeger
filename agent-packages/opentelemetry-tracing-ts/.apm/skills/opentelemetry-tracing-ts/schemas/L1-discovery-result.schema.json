@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qubership.org/otel-tracing-ts/L1-discovery-result.schema.json",
+  "title": "DiscoveryResult",
+  "description": "Layer 1 output for TypeScript/Node tracing discovery.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["service", "dependencyProfile", "configuration", "instrumentation", "platformContract"],
+  "properties": {
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["framework"],
+      "properties": {
+        "name": { "type": "string" },
+        "framework": { "enum": ["express", "fastify", "nestjs", "pure-node", "unknown"] },
+        "moduleSystem": { "enum": ["esm", "commonjs", "dual", "unknown"], "description": "Resolved from package.json type, tsconfig module/moduleResolution, and .mjs/.cjs extensions. Drives the instrumentation hook (CJS -r/--require vs ESM --import + loader hook)." },
+        "bundled": { "type": "boolean", "description": "True when the runtime artifact is produced by a bundler (esbuild/webpack/rollup/tsup/swc bundle). Bundling inlines require/import and can defeat monkey-patch auto-instrumentation — see reference/build-preconditions.md." }
+      }
+    },
+    "dependencyProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hasOtelApi", "hasOtelSdk", "hasExporter", "hasLegacy", "artifacts"],
+      "properties": {
+        "hasOtelApi": { "type": "boolean" },
+        "hasOtelSdk": { "type": "boolean" },
+        "hasExporter": { "type": "boolean" },
+        "hasLegacy": { "type": "boolean" },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["coordinates", "bucket"],
+            "properties": {
+              "coordinates": { "type": "string", "description": "npm package name as it appears in package.json / lockfile" },
+              "version": { "type": "string" },
+              "scope": { "enum": ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies", "transitive", "unknown"] },
+              "bucket": { "enum": ["legacy", "modern"] },
+              "technology": {
+                "enum": [
+                  "opentracing",
+                  "jaeger-client",
+                  "zipkin",
+                  "otel-api",
+                  "otel-sdk",
+                  "otel-exporter",
+                  "otel-propagator",
+                  "otel-instrumentation",
+                  "otel-auto",
+                  "other"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "export": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "exporter": { "enum": ["otlp", "zipkin", "jaeger", "none", "unknown"] },
+            "endpoint": { "type": ["string", "null"] },
+            "protocol": { "enum": ["grpc", "http/protobuf", "http/json", "udp", "unknown"], "description": "In Node the OTLP encoding follows the exporter package: exporter-trace-otlp-proto = http/protobuf (contract), exporter-trace-otlp-http = http/json, exporter-trace-otlp-grpc = grpc. OTEL_EXPORTER_OTLP_PROTOCOL only takes effect when the exporter is selected from env (NodeSDK auto-select), not when a specific exporter package is instantiated in code." },
+            "targetGuess": { "enum": ["otec", "jaeger-collector", "legacy-zipkin", "unknown"] }
+          }
+        },
+        "propagation": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Inject and extract are separate sets. On extract a CompositePropagator chains context through each member in order (a reduce), so the last member that finds a context wins; inject is a fan-out (a composite writes EVERY configured format, each to its own carrier keys). Record the effective values, resolved from the actual propagator class/env value. Critical Node pitfall: new B3Propagator() defaults to injectEncoding SINGLE_HEADER (single b3 header); b3multi (X-B3-*) requires new B3Propagator({ injectEncoding: B3InjectEncoding.MULTI_HEADER }).",
+          "properties": {
+            "inject": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] }, "description": "Formats written on outgoing calls, in composite order (each to its own carrier keys; inject order does not change which formats are emitted)." },
+            "extract": { "type": "array", "items": { "enum": ["w3c", "b3", "b3multi", "jaeger", "none", "unknown"] }, "description": "Formats accepted on incoming calls, in composite order (the last member that finds a context wins)." },
+            "configScope": { "enum": ["runtime", "unknown"], "description": "Runtime for Node — OTEL_PROPAGATORS or programmatic propagation.setGlobalPropagator; Node reads propagation from env or code, there is no build-time propagation surface." },
+            "fromFrameworkDefault": { "type": "boolean", "description": "True when inject/extract come from an SDK or instrumentation default (e.g. the SDK default W3C tracecontext+baggage) rather than explicit configuration." },
+            "components": {
+              "type": "object",
+              "additionalProperties": { "enum": ["OK", "FAILED", "unknown"] }
+            }
+          }
+        },
+        "sampling": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "configured": { "type": "boolean" },
+            "type": { "enum": ["always_on", "always_off", "probabilistic", "parentbased", "ratelimiting", "const", "unknown"] },
+            "ratio": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "consistentAcrossServices": { "enum": ["yes", "no", "unknown"] }
+          }
+        }
+      }
+    },
+    "apiUsage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["family", "symbol"],
+        "properties": {
+          "family": { "enum": ["otel", "opentracing", "zipkin", "jaeger-client", "unknown"] },
+          "symbol": { "type": "string" },
+          "file": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "apiFamilies": {
+      "type": "array",
+      "items": { "enum": ["otel", "opentracing", "zipkin", "jaeger-client"] }
+    },
+    "instrumentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["auto", "manual", "mixed", "none"] },
+        "evidence": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "asyncBoundaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type"],
+        "properties": {
+          "type": { "enum": ["kafka-producer", "kafka-consumer", "worker-thread", "child-process", "message-queue", "event-emitter", "http-client", "other"] },
+          "file": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "contextWrapper": { "type": "boolean" }
+        }
+      }
+    },
+    "platformContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "serviceName": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": { "type": ["string", "null"] },
+            "includesNamespace": { "type": "boolean" },
+            "namespaceSource": { "enum": ["downward-api", "helm", "appdeployer", "sa-file", "none", "unknown"] }
+          }
+        },
+        "samplerTier": { "enum": ["ratelimiting", "probabilistic", "const", "none", "unknown"], "description": "Which platform sampler env is wired, per the contract priority ratelimiting > probabilistic > const. The Node OTel SDK has no native rate-limiting sampler, so a wired TRACING_SAMPLER_RATELIMITING cannot be honored natively — record it as a gap and approximate with parentbased ratio." },
+        "samplerType": { "enum": ["parentbased_traceidratio", "traceidratio", "always_on", "always_off", "unknown"] },
+        "propagationStandard": { "enum": ["b3multi", "b3", "w3c", "jaeger", "none", "unknown"] },
+        "hasB3PropagatorExtension": { "type": "boolean" },
+        "endpointFilter": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "configured": { "type": "boolean" },
+            "excluded": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "logging": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "traceFieldsInPattern": { "type": "boolean" },
+            "correlationDep": { "enum": ["otel-pino-instrumentation", "otel-winston-instrumentation", "otel-bunyan-instrumentation", "custom", "none", "unknown"] }
+          }
+        },
+        "export": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocol": { "enum": ["http/protobuf", "http/json", "grpc", "unknown"] },
+            "endpointPath": { "type": ["string", "null"] },
+            "tracingHost": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "gaps": { "type": "array", "items": { "type": "string" } }
+  }
+}

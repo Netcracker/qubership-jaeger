@@ -138,12 +138,20 @@ families get there by different mechanics:
 | -------------------------------- | ---------------------------------------------------- | ----------- | ----------- |
 | Go OTel SDK | `NewCompositeTextMapPropagator` | **last** | chains the context through **all** propagators; the last one that finds anything overwrites |
 | Quarkus / Pure Java (OTel SDK) | `MultiTextMapPropagator` | **last** | same — loops the whole array, reassigning `ctx` |
+| Node.js OTel SDK | `CompositePropagator` (`@opentelemetry/core`) | **last** | `extract` is a plain `Array.reduce` — each propagator's `extract` receives the previous result as `ctx` and can overwrite it; same last-wins shape as Go/Quarkus |
 | Spring Boot, Brave bridge | `CompositePropagationFactory$CompositePropagation` | **first** | returns at the **first** extractor whose result is not `EMPTY` |
 | Spring Boot, OTel bridge | `CompositeTextMapPropagator` | **first** | breaks at the **first** extractor that changes the context |
 
 Verified by disassembly: `spring-boot-actuator-autoconfigure:3.5.11`,
 `opentelemetry-context:1.57.0`, `go.opentelemetry.io/otel@v1.43.0`
 (`propagation/propagation.go:130-141`).
+
+Node.js row is **source-verified, not disassembled** (`@opentelemetry/core`
+ships `CompositePropagator.extract` as readable TypeScript, so bytecode
+inspection adds nothing) — but pin the exact release before relying on it:
+confirm `extract` in the target repo's installed `@opentelemetry/core` is still
+the plain `reduce` shown above, the same discipline as the B3 default check
+above.
 
 Boot 4 is confirmed too: the OTel-bridge composite moved to
 `org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.CompositeTextMapPropagator`
