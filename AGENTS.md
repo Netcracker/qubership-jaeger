@@ -2,22 +2,20 @@
 
 ## Scope
 
-- This repository maintains the Qubership Jaeger Helm chart, supporting images, integration tests, and MkDocs documentation.
-- This file contains repository-wide guidance; keep component-specific guidance with the affected component.
+- This repository maintains the Qubership Helm chart for deploying Jaeger on Kubernetes and OpenShift.
+- Keep this file limited to repository-wide guidance; place component-specific rules near the affected component.
 
 ## Repository map
 
-- `charts/qubership-jaeger/` contains the chart templates, default values, and JSON schema.
-- `readiness-probe/` is the standalone Go module and container image for storage readiness checks.
-- `integration-tests/robot/` contains Robot Framework suites that run in the chart's test-runner Pod.
+- `charts/qubership-jaeger/` contains the chart, values, schema, templates, and Grafana dashboard.
+- `readiness-probe/` is a separate Go module for the storage readiness probe.
+- `integration-tests/` contains the Robot Framework image and cluster test suites.
 - `docs/` and `mkdocs.yml` define the published documentation site.
-- `agent-packages/troubleshoot-jaeger/` contains the APM troubleshooting package for Jaeger incidents.
+- `agent-packages/troubleshoot-jaeger/` contains the APM troubleshooting package.
 
 ## Commands
 
-- Test the Go module from `readiness-probe/`: `go test ./...`.
-- Build documentation after installing `requirements_mkdocs.txt`: `mkdocs build --verbose --strict`.
-- Run the documented Super-Linter command from `README.md` for changes covered by repository linting:
+- Run the repository linter from the repository root:
 
   ```bash
   docker run \
@@ -26,17 +24,31 @@
     --env-file .github/super-linter.env \
     -v ${PWD}:/tmp/lint \
     --rm \
-    ghcr.io/super-linter/super-linter:slim-$(sed -nE 's#.*uses:\s+super-linter/super-linter/slim@([^\s]+).*#\1#p' .github/workflows/super-linter.yaml)
+    ghcr.io/super-linter/super-linter:slim-v8.7.0
   ```
+
+- Lint the Helm chart from the repository root: `helm lint charts/qubership-jaeger`.
+- Test the readiness probe from `readiness-probe/`: `go test ./...`.
+- Build documentation strictly from the repository root after installing `requirements_mkdocs.txt`:
+  `mkdocs build --verbose --strict`.
+- Run cluster integration through `.github/workflows/integration-tests.yml`; it provisions Kind and required services.
+
+## Non-obvious invariant
+
+- Keep readiness-probe dependency and test work inside `readiness-probe/`; its `go.mod` defines an independent module.
 
 ## Done when
 
-- Run the applicable checks above; `.github/workflows/go-test.yaml` is the CI gate for `readiness-probe/`.
-- For chart or integration-test changes, account for the Kind-based installation test in `.github/workflows/integration-tests.yml`.
-- Report checks run and checks not run, including any required live-cluster validation.
+- Run the smallest applicable check above, then the repository linter for changes covered by Super-Linter.
+- Behavior changes include focused test coverage.
+- Documentation changes pass the strict MkDocs build.
+- Report checks run, checks not run, and any required live-cluster verification that remains.
 
 ## Context routing
 
-- Before changing chart configuration, read `docs/installation.md` and the relevant `docs/examples/` page to keep values and documented examples aligned.
-- Before changing Robot suites or their chart wiring, read `integration-tests/README.md` for test tags, prerequisites, and deployment parameters.
-- Before opening a pull request, read `CONTRIBUTING.md` for contribution requirements.
+- Before changing chart values or templates, read `docs/installation.md` and the relevant file under `docs/examples/`
+  to preserve documented configuration behavior.
+- Before changing integration tests, read `integration-tests/README.md` and
+  `.github/workflows/integration-tests.yml` for test tags, prerequisites, and the cluster execution path.
+- Before changing the troubleshooting package, read
+  `agent-packages/troubleshoot-jaeger/.apm/skills/troubleshoot-jaeger/SKILL.md` for its package-specific contract.
