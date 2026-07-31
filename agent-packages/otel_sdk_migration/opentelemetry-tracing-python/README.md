@@ -37,7 +37,7 @@ the previous artifact and emits the next:
 
 ## Local check
 
-From this package directory (`agent-packages/opentelemetry-tracing-python/`) or repository root if root `apm.yml` lists this package:
+From this package directory (`agent-packages/otel_sdk_migration/opentelemetry-tracing-python/`) or repository root if root `apm.yml` lists this package:
 
 ```shell
 apm install -t <target>

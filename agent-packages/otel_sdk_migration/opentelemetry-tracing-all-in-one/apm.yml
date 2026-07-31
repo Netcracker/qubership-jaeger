@@ -16,7 +16,7 @@ author: Qubership
 # real fix.
 dependencies:
   apm:
-    - Netcracker/qubership-jaeger/agent-packages/opentelemetry-tracing-java
-    - Netcracker/qubership-jaeger/agent-packages/opentelemetry-tracing-go
-    - Netcracker/qubership-jaeger/agent-packages/opentelemetry-tracing-python
-    - Netcracker/qubership-jaeger/agent-packages/opentelemetry-tracing-ts
+    - Netcracker/qubership-jaeger/agent-packages/otel_sdk_migration/opentelemetry-tracing-java
+    - Netcracker/qubership-jaeger/agent-packages/otel_sdk_migration/opentelemetry-tracing-go
+    - Netcracker/qubership-jaeger/agent-packages/otel_sdk_migration/opentelemetry-tracing-python
+    - Netcracker/qubership-jaeger/agent-packages/otel_sdk_migration/opentelemetry-tracing-ts

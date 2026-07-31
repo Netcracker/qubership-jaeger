@@ -23,13 +23,13 @@ The skill is orchestrated by
 [`SKILL.md`](.apm/skills/opentelemetry-tracing-ts/SKILL.md). Each layer reads the
 previous artifact and emits the next:
 
-| Layer | File | Output |
-| ------------------- | ------------------------------ | ----------------------------------------------- |
-| L1 Discovery | `models/1-discovery.md` | `discovery-result.json` |
-| L2 Capability | `models/2-capability.md` | delegated to common |
-| L3 Maturity | `models/3-maturity.md` | delegated to common |
-| L4 Transformation | `models/4-transformation.md` | shared plan + TS framework/mechanism gate |
-| L5 Validation | `models/5-validation.md` | shared tiers + TS build/runtime execution rules |
+| Layer             | File                         | Output                                          |
+| ----------------- | ---------------------------- | ----------------------------------------------- |
+| L1 Discovery      | `models/1-discovery.md`      | `discovery-result.json`                         |
+| L2 Capability     | `models/2-capability.md`     | delegated to common                             |
+| L3 Maturity       | `models/3-maturity.md`       | delegated to common                             |
+| L4 Transformation | `models/4-transformation.md` | shared plan + TS framework/mechanism gate       |
+| L5 Validation     | `models/5-validation.md`     | shared tiers + TS build/runtime execution rules |
 
 ## Supporting material
 
@@ -48,7 +48,7 @@ previous artifact and emits the next:
 
 ## Local check
 
-From this package directory (`agent-packages/opentelemetry-tracing-ts/`) or repository root if root `apm.yml` lists this package:
+From this package directory (`agent-packages/otel_sdk_migration/opentelemetry-tracing-ts/`) or repository root if root `apm.yml` lists this package:
 
 ```shell
 apm install -t <target>

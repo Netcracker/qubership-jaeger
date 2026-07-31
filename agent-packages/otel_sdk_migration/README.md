@@ -6,7 +6,7 @@ fixing broken distributed traces across the platform.
 ## Problem
 
 | Issue                                      | Skill response                           |
-|--------------------------------------------|------------------------------------------|
+| ------------------------------------------ | ---------------------------------------- |
 | Components without tracing                 | Detect stack → add OTel SDK + export     |
 | Broken context propagation                 | Mandatory propagator audit in every task |
 | Async/Kafka handlers lose context          | Async/messaging module per language      |
@@ -15,12 +15,12 @@ fixing broken distributed traces across the platform.
 
 ## Target languages and frameworks
 
-| Language        | Frameworks / stacks                     | APM package                    | Status  |
-|-----------------|-----------------------------------------|--------------------------------|---------|
-| Java            | Spring Boot, Quarkus, Pure (OTel SDK)   | `opentelemetry-tracing-java`   | done    |
-| Go              | stdlib, Fiber, platform libs            | `opentelemetry-tracing-go`     | done    |
-| Python          | FastAPI, Django, Flask, Pure (OTel SDK) | `opentelemetry-tracing-python` | done    |
-| TypeScript      | Express, Fastify, NestJS, Pure (Node)   | `opentelemetry-tracing-ts`     | done    |
+| Language   | Frameworks / stacks                     | APM package                    | Status |
+| ---------- | --------------------------------------- | ------------------------------ | ------ |
+| Java       | Spring Boot, Quarkus, Pure (OTel SDK)   | `opentelemetry-tracing-java`   | done   |
+| Go         | stdlib, Fiber, platform libs            | `opentelemetry-tracing-go`     | done   |
+| Python     | FastAPI, Django, Flask, Pure (OTel SDK) | `opentelemetry-tracing-python` | done   |
+| TypeScript | Express, Fastify, NestJS, Pure (Node)   | `opentelemetry-tracing-ts`     | done   |
 
 Shared platform pieces (same for all languages):
 
@@ -32,15 +32,16 @@ Shared platform pieces (same for all languages):
 
 ```text
 qubership-jaeger/
-├── apm.yml                            # aggregator — installs every package below
+├── apm.yml                                     # aggregator — installs every package below
 └── agent-packages/
-    ├── README.md                      # this file
-    ├── opentelemetry-tracing-all-in-one/ # aggregator — one dependency pulls every language + common
-    ├── opentelemetry-tracing-common/    # shared cross-language core
-    ├── opentelemetry-tracing-java/        # Java (Spring Boot, Quarkus, Pure)
-    ├── opentelemetry-tracing-go/          # Go (stdlib, platform libs)
-    ├── opentelemetry-tracing-python/      # Python (FastAPI, Django, Flask, Pure)
-    └── opentelemetry-tracing-ts/          # TypeScript/Node (Express, Fastify, NestJS, Pure)
+    └── otel_sdk_migration/
+        ├── README.md                           # this file
+        ├── opentelemetry-tracing-all-in-one/   # aggregator — one dependency pulls every language + common
+        ├── opentelemetry-tracing-common/       # shared cross-language core
+        ├── opentelemetry-tracing-java/         # Java (Spring Boot, Quarkus, Pure)
+        ├── opentelemetry-tracing-go/           # Go (stdlib, platform libs)
+        ├── opentelemetry-tracing-python/       # Python (FastAPI, Django, Flask, Pure)
+        └── opentelemetry-tracing-ts/           # TypeScript/Node (Express, Fastify, NestJS, Pure)
 ```
 
 `opentelemetry-tracing-common` owns shared layers (capability/maturity/transformation/validation), shared schemas,
@@ -67,10 +68,10 @@ auto-detect, and `-t` accepts a comma-separated list to deploy for several at on
 
 Where files land depends on the harness — the packages are identical, only the deployment path differs:
 
-| `-t`     | Rules                       | Skills                       |
-|----------|-----------------------------|------------------------------|
-| `claude` | `.claude/rules/`            | `.claude/skills/`            |
-| `cursor` | `.cursor/rules/*.mdc`       | `.agents/skills/`            |
+| `-t`     | Rules                 | Skills            |
+| -------- | --------------------- | ----------------- |
+| `claude` | `.claude/rules/`      | `.claude/skills/` |
+| `cursor` | `.cursor/rules/*.mdc` | `.agents/skills/` |
 
 Contributors on different agents can each run their own `-t` against the same checkout; nothing in the
 repository pins a harness, which is deliberate — the agent is a property of the developer, not of the code.
@@ -81,7 +82,7 @@ exits with "no output files". Skills are deployed by `install`, not by `compile`
 
 Verified against APM CLI 0.19.0.
 
-Root [`apm.yml`](../apm.yml) depends on **every** language package
+Root [`apm.yml`](../../apm.yml) depends on **every** language package
 (`opentelemetry-tracing-java`, `opentelemetry-tracing-go`, `opentelemetry-tracing-python`,
 `opentelemetry-tracing-ts`); each of those declares `../opentelemetry-tracing-common`, so the shared core
 arrives transitively — install it separately and you would get it twice.
@@ -89,13 +90,14 @@ arrives transitively — install it separately and you would get it twice.
 ### Which entry point to use
 
 | You want to…                                                                      | Use                                                                    |
-|-----------------------------------------------------------------------------------|------------------------------------------------------------------------|
-| Install everything from *inside this repository*                                  | root [`apm.yml`](../apm.yml)                                           |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Install everything from *inside this repository*                                  | root [`apm.yml`](../../apm.yml)                                        |
 | Reference the whole suite as **one dependency** from another repository (by path) | [`opentelemetry-tracing-all-in-one`](opentelemetry-tracing-all-in-one) |
 | Install a single, known language                                                  | that language package directly                                         |
 
 The [`opentelemetry-tracing-all-in-one`](opentelemetry-tracing-all-in-one) aggregator exists because the
-root `apm.yml` only works from *this* repository root (it uses in-repo `./agent-packages/...` paths).
+root `apm.yml` only works from *this* repository root (it uses in-repo
+`./agent-packages/otel_sdk_migration/...` paths).
 The all-in-one package uses sibling `../...` paths, so another repository can depend on the entire suite
 through a single entry — it pulls all language packages, and the shared core arrives transitively (do not
 add `opentelemetry-tracing-common` alongside it or you get it twice). See its
@@ -108,7 +110,7 @@ present, discovery (L1) identifies the stack itself and the common
 asks whether to migrate one target or all of them. A partial install turns that question into a silent
 gap — the agent simply cannot see a Go service if only the Java package is installed.
 
-Per-package installs (`apm install` from inside `agent-packages/opentelemetry-tracing-go/`, for example)
+Per-package installs (`apm install` from inside `agent-packages/otel_sdk_migration/opentelemetry-tracing-go/`, for example)
 still work and remain useful when developing a single package. They are not the way to consume the skill,
 and they leave an `apm_modules/` cache inside the package that a later root install reports as an orphaned
 package. Delete the package-local `apm_modules/` and `apm.lock.yaml` when you go back to the root install.
@@ -138,7 +140,7 @@ reads:
   → ../../opentelemetry-tracing-common/reference/platform-tracing-guide.md
 ```
 
-The trade-off is that these links do not resolve when browsing `agent-packages/` in an IDE. That is
+The trade-off is that these links do not resolve when browsing `agent-packages/otel_sdk_migration/` in an IDE. That is
 intentional: a broken link in your editor is a nuisance, while a broken link at runtime silently costs
 the agent the platform contract it was told to read first.
 

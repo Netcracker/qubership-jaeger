@@ -10,7 +10,7 @@ author: Qubership
 # which common version a language package gets: the package itself.
 dependencies:
   apm:
-    - ./agent-packages/opentelemetry-tracing-java
-    - ./agent-packages/opentelemetry-tracing-go
-    - ./agent-packages/opentelemetry-tracing-python
-    - ./agent-packages/opentelemetry-tracing-ts
+    - ./agent-packages/otel_sdk_migration/opentelemetry-tracing-java
+    - ./agent-packages/otel_sdk_migration/opentelemetry-tracing-go
+    - ./agent-packages/otel_sdk_migration/opentelemetry-tracing-python
+    - ./agent-packages/otel_sdk_migration/opentelemetry-tracing-ts

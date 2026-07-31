@@ -388,7 +388,7 @@ unless the user explicitly asks for it.
 
 - Layers: [`models/`](models/) — `1-discovery` … `5-validation`
 - Schemas: [`schemas/`](schemas/) — four JSON Schema documents
-- **Shared core package:** `agent-packages/opentelemetry-tracing-common/`
+- **Shared core package:** `agent-packages/otel_sdk_migration/opentelemetry-tracing-common/`
 - **Platform contract (read first):** shared in common
 - Decision logic: shared in common
 - Detection signatures: [`reference/detection-rules.md`](reference/detection-rules.md)

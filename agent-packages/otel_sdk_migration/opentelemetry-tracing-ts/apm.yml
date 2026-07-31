@@ -5,4 +5,4 @@ author: Qubership
 
 dependencies:
   apm:
-    - Netcracker/qubership-jaeger/agent-packages/opentelemetry-tracing-common
+    - Netcracker/qubership-jaeger/agent-packages/otel_sdk_migration/opentelemetry-tracing-common

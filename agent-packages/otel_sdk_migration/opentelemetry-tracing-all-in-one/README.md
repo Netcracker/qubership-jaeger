@@ -27,11 +27,11 @@ Install one thing, cover every supported language.
 
 ## Which entry point to use
 
-| You want to… | Use |
-| ------------------------------------------------------------------------------- | --------------------------------------- |
-| Install everything from *inside this repository* | root [`apm.yml`](../../apm.yml) |
-| Reference the whole suite as **one dependency** from another repository (or by path) | this package |
-| Install a single, known language | that language package directly |
+| You want to…                                                                         | Use                                |
+| ------------------------------------------------------------------------------------ | ---------------------------------- |
+| Install everything from *inside this repository*                                     | root [`apm.yml`](../../../apm.yml) |
+| Reference the whole suite as **one dependency** from another repository (or by path) | this package                       |
+| Install a single, known language                                                     | that language package directly     |
 
 The difference from the root `apm.yml`: the root uses in-repo paths
 (`./agent-packages/...`) and only works from the repository root; this package
