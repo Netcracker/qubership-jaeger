@@ -26,7 +26,7 @@ confident, otherwise `unknown`. First-class coverage and best-effort fallbacks:
 | `fastify`   | `import Fastify` / `require('fastify')`; `fastify()` instance; `app.listen(...)`            |
 | `nestjs`    | `@nestjs/core`, `NestFactory.create(...)`, `@Module`/`@Controller` decorators               |
 | `pure-node` | OTel wired without a web framework above (worker, CLI, library, consumer, http.Server only) |
-| `unknown`   | insufficient or best-effort evidence (Koa, Hapi, Restify, GraphQL, Next.js…) — see below     |
+| `unknown`   | insufficient or best-effort evidence (Koa, Hapi, Restify, GraphQL, Next.js…) — see below    |
 
 The enum has no value for the best-effort frameworks. When one is identified
 confidently, keep `service.framework` at `unknown` **and** record it in `gaps` as
@@ -199,13 +199,13 @@ Then classify `instrumentation.mechanism` — `mode` is shared across languages 
 collapses two different Node setups into `auto`, while
 [`../models/4-transformation.md`](4-transformation.md) Step 0b plans against three:
 
-| Evidence                                                                       | `mechanism`  |
-| ------------------------------------------------------------------------------ | ------------ |
-| `auto-instrumentations-node/register` loaded via `-r`/`--require`/`--import`   | `launcher`   |
-| `NodeSDK` / `NodeTracerProvider` + `registerInstrumentations({...})` in code    | `sdk`        |
-| Only hand-written `startActiveSpan`/`startSpan`, no instrumentation packages    | `hand-spans` |
-| No tracing setup at all                                                        | `none`       |
-| Evidence conflicts or is unreadable                                            | `unknown`    |
+| Evidence                                                                     | `mechanism`  |
+| ---------------------------------------------------------------------------- | ------------ |
+| `auto-instrumentations-node/register` loaded via `-r`/`--require`/`--import` | `launcher`   |
+| `NodeSDK` / `NodeTracerProvider` + `registerInstrumentations({...})` in code | `sdk`        |
+| Only hand-written `startActiveSpan`/`startSpan`, no instrumentation packages | `hand-spans` |
+| No tracing setup at all                                                      | `none`       |
+| Evidence conflicts or is unreadable                                          | `unknown`    |
 
 Launcher **and** programmatic `registerInstrumentations` for the same library is a
 finding, not a `mechanism` value — record `unknown` plus a `gap`, and let Step 0b

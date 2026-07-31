@@ -24,12 +24,12 @@ the repository — never hardcode them.
 SUT -> OTLP http/protobuf :4318 -> TRACING_HOST alias -> collector/query backend
 ```
 
-| Role | Dev-minimal choice |
-| ----------------------- | ------------------------------------------------------------------------------- |
-| Trace generator | Target service built from the post-L4 image in this session |
-| Receiver + storage | Backend with OTLP HTTP ingest and trace query API (e.g. Jaeger all-in-one) |
+| Role                  | Dev-minimal choice                                                            |
+| --------------------- | ----------------------------------------------------------------------------- |
+| Trace generator       | Target service built from the post-L4 image in this session                   |
+| Receiver + storage    | Backend with OTLP HTTP ingest and trace query API (e.g. Jaeger all-in-one)    |
 | Platform-shaped alias | Runtime route/service named by `TRACING_HOST` (default `nc-diagnostic-agent`) |
-| Application deps | Prerequisites from install docs (DB, secrets, volumes) |
+| Application deps      | Prerequisites from install docs (DB, secrets, volumes)                        |
 
 Wire the SUT with platform env (Layer 4 config maps the rest). Use `1.0` sampler
 **for L5 smoke only** — not production defaults:

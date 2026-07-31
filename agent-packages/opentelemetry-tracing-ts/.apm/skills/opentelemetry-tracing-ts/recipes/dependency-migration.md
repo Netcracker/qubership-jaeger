@@ -13,12 +13,12 @@ Step 0 (framework stack) before emitting §4.1 rows — dependency moves follow
 
 ## Framework stack → dependency path
 
-| `service.framework` | §4.1 focus                                                            |
-| ------------------- | --------------------------------------------------------------------- |
-| `express`           | baseline + `@opentelemetry/instrumentation-http` + `-express`         |
-| `fastify`           | baseline + `@opentelemetry/instrumentation-http` + `@fastify/otel`    |
-| `nestjs`            | baseline + `-nestjs-core` + `-http` + adapter (`-express` or `@fastify/otel`) |
-| `pure-node`         | OTel SDK baseline + `-http` when the process serves or calls HTTP     |
+| `service.framework` | §4.1 focus                                                                                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `express`           | baseline + `@opentelemetry/instrumentation-http` + `-express`                                                                                                |
+| `fastify`           | baseline + `@opentelemetry/instrumentation-http` + `@fastify/otel`                                                                                           |
+| `nestjs`            | baseline + `-nestjs-core` + `-http` + adapter (`-express` or `@fastify/otel`)                                                                                |
+| `pure-node`         | OTel SDK baseline + `-http` when the process serves or calls HTTP                                                                                            |
 | `unknown`           | if `gaps` carries `framework: <name> (best-effort)`, that framework's contrib instrumentation; otherwise conservative baseline. Record assumptions in `gaps` |
 
 Add `@opentelemetry/instrumentation-undici` to **any** of the rows above when the

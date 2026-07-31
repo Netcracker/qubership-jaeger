@@ -178,11 +178,11 @@ If no propagator is configured, the SDK default is **W3C tracecontext + baggage*
 The contract wires one of three switches, in priority order **ratelimiting >
 probabilistic > const**. Map the one that is set:
 
-| Contract switch                 | Node target                                                        | 1:1     |
-|---------------------------------|--------------------------------------------------------------------|---------|
+| Contract switch                 | Node target                                                                                             | 1:1     |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------- | ------- |
 | `TRACING_SAMPLER_RATELIMITING`  | no native Node sampler — approximate with `parentbased_traceidratio` and record the deviation in `gaps` | no      |
-| `TRACING_SAMPLER_PROBABILISTIC` | `OTEL_TRACES_SAMPLER=parentbased_traceidratio` + `OTEL_TRACES_SAMPLER_ARG=<ratio>` | yes     |
-| `TRACING_SAMPLER_CONST`         | `1` → `parentbased_always_on`, `0` → `always_off`                  | partial |
+| `TRACING_SAMPLER_PROBABILISTIC` | `OTEL_TRACES_SAMPLER=parentbased_traceidratio` + `OTEL_TRACES_SAMPLER_ARG=<ratio>`                      | yes     |
+| `TRACING_SAMPLER_CONST`         | `1` → `parentbased_always_on`, `0` → `always_off`                                                       | partial |
 
 Never leave the sampler unset and call it done: with nothing configured the SDK
 default is `parentbased_always_on`, which samples everything in production.
@@ -236,14 +236,14 @@ intermittently — the trace is created but never arrives at the backend.
 
 ## Legacy config mappings
 
-| From                        | To                                          | 1:1     |
-|-----------------------------|---------------------------------------------|---------|
-| `JAEGER_AGENT_HOST` (udp)   | `TRACING_HOST` + OTLP endpoint composition  | no      |
-| `JAEGER_AGENT_PORT` (6831)  | dropped — OTLP HTTP uses `4318`             | no      |
-| `JAEGER_ENDPOINT` (collector) | `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`      | no      |
-| `tracing.enabled`           | `TRACING_ENABLED`                           | yes     |
-| `JAEGER_SAMPLER_PARAM`      | `TRACING_SAMPLER_PROBABILISTIC` path        | partial |
-| `ZIPKIN_ENDPOINT` / hardcoded Zipkin URL | OTLP endpoint from `TRACING_HOST` | no      |
+| From                                     | To                                         | 1:1     |
+| ---------------------------------------- | ------------------------------------------ | ------- |
+| `JAEGER_AGENT_HOST` (udp)                | `TRACING_HOST` + OTLP endpoint composition | no      |
+| `JAEGER_AGENT_PORT` (6831)               | dropped — OTLP HTTP uses `4318`            | no      |
+| `JAEGER_ENDPOINT` (collector)            | `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`       | no      |
+| `tracing.enabled`                        | `TRACING_ENABLED`                          | yes     |
+| `JAEGER_SAMPLER_PARAM`                   | `TRACING_SAMPLER_PROBABILISTIC` path       | partial |
+| `ZIPKIN_ENDPOINT` / hardcoded Zipkin URL | OTLP endpoint from `TRACING_HOST`          | no      |
 
 ## Required target env shape
 

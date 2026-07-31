@@ -93,12 +93,12 @@ Record how the SUT artifact was produced in the L5 summary and in
 `validationPlan.runtime.buildProvenance`. The `source` column is the schema enum
 value to write:
 
-| Provenance | `source` | Valid for L4 tracing validation? |
-| ------------------------------------------------------------------------------------------- | --------------------- | ------------------------------------------------- |
-| Fresh **clean install + compile** + new image **in this session** | `fresh-build` | **Yes** (default for `pass`) |
-| CI image tagged to the **current** commit/branch and proven to include current L4 changes | `ci-image` | Yes, if provenance matches the diff |
-| Pre-existing local image (`:e2e`, `:local`, `:latest`) without reinstall/rebuild | `reused-local-image` | **No** — `manual`, or `fail` if runtime was exercised |
-| Public/stock image without L4 changes | `stock-image` | **No** |
+| Provenance                                                                                | `source`             | Valid for L4 tracing validation?                      |
+| ----------------------------------------------------------------------------------------- | -------------------- | ----------------------------------------------------- |
+| Fresh **clean install + compile** + new image **in this session**                         | `fresh-build`        | **Yes** (default for `pass`)                          |
+| CI image tagged to the **current** commit/branch and proven to include current L4 changes | `ci-image`           | Yes, if provenance matches the diff                   |
+| Pre-existing local image (`:e2e`, `:local`, `:latest`) without reinstall/rebuild          | `reused-local-image` | **No** — `manual`, or `fail` if runtime was exercised |
+| Public/stock image without L4 changes                                                     | `stock-image`        | **No**                                                |
 
 `buildProvenance` has no Node-specific command field (its `mavenCommand` /
 `runnerJar` are Java-only). Record the install and build commands you actually ran

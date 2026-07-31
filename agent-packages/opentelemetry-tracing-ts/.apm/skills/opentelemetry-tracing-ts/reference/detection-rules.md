@@ -10,22 +10,22 @@ framework only on confident evidence; otherwise `unknown`. Scan `.ts`, `.tsx`,
 npm package names as they appear in `package.json` / `package-lock.json` /
 `yarn.lock` / `pnpm-lock.yaml`.
 
-| Package | Bucket | Technology |
-| ------------------------------------------------------------ | -------- | ---------------------- |
-| `opentracing` | legacy | opentracing |
-| `jaeger-client` | legacy | jaeger-client |
-| `zipkin`, `zipkin-instrumentation-*`, `zipkin-transport-*` | legacy | zipkin |
-| `@opentelemetry/exporter-jaeger` (retired) | legacy | otel-exporter |
-| `@opentelemetry/exporter-zipkin` | legacy | otel-exporter |
-| `dd-trace`, `elastic-apm-node`, `newrelic` | legacy | other |
-| `@opentelemetry/api` | modern | otel-api |
-| `@opentelemetry/sdk-trace-node`, `@opentelemetry/sdk-trace-base`, `@opentelemetry/sdk-node` | modern | otel-sdk |
-| `@opentelemetry/exporter-trace-otlp-proto` | modern | otel-exporter |
-| `@opentelemetry/exporter-trace-otlp-http` | modern | otel-exporter |
-| `@opentelemetry/exporter-trace-otlp-grpc` | modern | otel-exporter |
-| `@opentelemetry/propagator-b3` | modern | otel-propagator |
-| `@opentelemetry/instrumentation`, `@opentelemetry/instrumentation-*` | modern | otel-instrumentation |
-| `@opentelemetry/auto-instrumentations-node` | modern | otel-auto |
+| Package                                                                                     | Bucket | Technology           |
+| ------------------------------------------------------------------------------------------- | ------ | -------------------- |
+| `opentracing`                                                                               | legacy | opentracing          |
+| `jaeger-client`                                                                             | legacy | jaeger-client        |
+| `zipkin`, `zipkin-instrumentation-*`, `zipkin-transport-*`                                  | legacy | zipkin               |
+| `@opentelemetry/exporter-jaeger` (retired)                                                  | legacy | otel-exporter        |
+| `@opentelemetry/exporter-zipkin`                                                            | legacy | otel-exporter        |
+| `dd-trace`, `elastic-apm-node`, `newrelic`                                                  | legacy | other                |
+| `@opentelemetry/api`                                                                        | modern | otel-api             |
+| `@opentelemetry/sdk-trace-node`, `@opentelemetry/sdk-trace-base`, `@opentelemetry/sdk-node` | modern | otel-sdk             |
+| `@opentelemetry/exporter-trace-otlp-proto`                                                  | modern | otel-exporter        |
+| `@opentelemetry/exporter-trace-otlp-http`                                                   | modern | otel-exporter        |
+| `@opentelemetry/exporter-trace-otlp-grpc`                                                   | modern | otel-exporter        |
+| `@opentelemetry/propagator-b3`                                                              | modern | otel-propagator      |
+| `@opentelemetry/instrumentation`, `@opentelemetry/instrumentation-*`                        | modern | otel-instrumentation |
+| `@opentelemetry/auto-instrumentations-node`                                                 | modern | otel-auto            |
 
 `@opentelemetry/core`, `@opentelemetry/resources`, `@opentelemetry/semantic-conventions`
 are OTel support packages — record them as `other`/`modern` context, not as the
@@ -63,11 +63,11 @@ auto-selected by `@opentelemetry/sdk-node` from env. A hardcoded
 
 ## Framework signatures
 
-| Framework | Signature |
-| ----------- | ------------------------------------------------------------------------------- |
-| `express` | `import express` / `require('express')`; `const app = express()`; `app.listen(...)` |
-| `fastify` | `import Fastify` / `require('fastify')`; `Fastify()`; `app.listen(...)` |
-| `nestjs` | `@nestjs/core`, `NestFactory.create(...)`; `@Module`/`@Controller` decorators |
+| Framework   | Signature                                                                               |
+| ----------- | --------------------------------------------------------------------------------------- |
+| `express`   | `import express` / `require('express')`; `const app = express()`; `app.listen(...)`     |
+| `fastify`   | `import Fastify` / `require('fastify')`; `Fastify()`; `app.listen(...)`                 |
+| `nestjs`    | `@nestjs/core`, `NestFactory.create(...)`; `@Module`/`@Controller` decorators           |
 | `pure-node` | OTel wiring with no web framework import (worker/CLI/consumer/`http.createServer` only) |
 
 Best-effort: Koa (`@opentelemetry/instrumentation-koa`), Hapi (`-hapi`), Restify
@@ -80,12 +80,12 @@ Mapping: [`framework-coverage.md`](framework-coverage.md).
 
 ## Runtime axes (module system + bundling)
 
-| Axis | Signature |
-| ------------------ | ------------------------------------------------------------------------------- |
-| ESM | `package.json` `"type": "module"`, `.mjs`, `tsconfig` `module: NodeNext/ESNext` + `import`/`export` |
-| CommonJS | `"type": "commonjs"` or absent, `.cjs`, `require`/`module.exports`, `tsconfig` `module: CommonJS` |
-| Dual | package exports both (`exports` conditionals), or mixed `.mjs`/`.cjs` |
-| Bundled | esbuild/webpack/rollup/tsup/`@vercel/ncc`/swc bundle config; a single `dist/index.js` deployed; `bundle: true` |
+| Axis     | Signature                                                                                                      |
+| -------- | -------------------------------------------------------------------------------------------------------------- |
+| ESM      | `package.json` `"type": "module"`, `.mjs`, `tsconfig` `module: NodeNext/ESNext` + `import`/`export`            |
+| CommonJS | `"type": "commonjs"` or absent, `.cjs`, `require`/`module.exports`, `tsconfig` `module: CommonJS`              |
+| Dual     | package exports both (`exports` conditionals), or mixed `.mjs`/`.cjs`                                          |
+| Bundled  | esbuild/webpack/rollup/tsup/`@vercel/ncc`/swc bundle config; a single `dist/index.js` deployed; `bundle: true` |
 
 Module system drives the instrumentation hook (CJS `-r` vs ESM `--import`);
 bundling drives whether monkey-patch auto-instrumentation survives.
@@ -148,13 +148,13 @@ Legacy:
 
 ## Instrumentation mode signatures
 
-| Evidence | Mode |
-| ------------------------------------------------------------- | -------- |
-| `auto-instrumentations-node/register` via `-r`/`--require`/`NODE_OPTIONS`/`--import`, no app spans | auto |
-| `registerInstrumentations({...})` / `getNodeAutoInstrumentations()`, no app spans | auto |
-| Explicit `startActiveSpan`/`startSpan` in app code | manual |
-| Both auto path and explicit spans | mixed |
-| No symbols from table | none |
+| Evidence                                                                                           | Mode   |
+| -------------------------------------------------------------------------------------------------- | ------ |
+| `auto-instrumentations-node/register` via `-r`/`--require`/`NODE_OPTIONS`/`--import`, no app spans | auto   |
+| `registerInstrumentations({...})` / `getNodeAutoInstrumentations()`, no app spans                  | auto   |
+| Explicit `startActiveSpan`/`startSpan` in app code                                                 | manual |
+| Both auto path and explicit spans                                                                  | mixed  |
+| No symbols from table                                                                              | none   |
 
 `mode` is the coarse **detected** state, shared with the other language packages.
 `instrumentation.mechanism` is the Node-specific one: `launcher` (the register/`-r`
@@ -168,14 +168,14 @@ planned in [`../models/4-transformation.md`](../models/4-transformation.md) Step
 Read from the resolved launch command — Helm `command`/`args`, Dockerfile
 `CMD`/`ENTRYPOINT`, `NODE_OPTIONS`, or `package.json` `scripts.start`:
 
-| Evidence | `hook` |
-| ------------------------------------------------------------------------------- | -------------- |
-| `-r` / `--require ./tracing.js` (CommonJS), directly or via `NODE_OPTIONS` | `require` |
-| `--import ./tracing.mjs` with no loader flag and no `register()` in the bootstrap | `import` |
-| `--experimental-loader=@opentelemetry/instrumentation/hook.mjs` **plus** `--import` | `loader+import` |
+| Evidence                                                                                                   | `hook`          |
+| ---------------------------------------------------------------------------------------------------------- | --------------- |
+| `-r` / `--require ./tracing.js` (CommonJS), directly or via `NODE_OPTIONS`                                 | `require`       |
+| `--import ./tracing.mjs` with no loader flag and no `register()` in the bootstrap                          | `import`        |
+| `--experimental-loader=@opentelemetry/instrumentation/hook.mjs` **plus** `--import`                        | `loader+import` |
 | `register('@opentelemetry/instrumentation/hook.mjs', import.meta.url)` from `node:module` in the bootstrap | `loader+import` |
-| Bootstrap imported from application code only (`import './tracing.js'` at the top of `main.ts`) | `none` |
-| Launch command not readable | `unknown` |
+| Bootstrap imported from application code only (`import './tracing.js'` at the top of `main.ts`)            | `none`          |
+| Launch command not readable                                                                                | `unknown`       |
 
 `hook: import` together with `mechanism: launcher` on an ESM service is the silent
 killer: the SDK starts first, but monkey-patch instrumentation never wraps anything
@@ -184,14 +184,14 @@ working setup.
 
 ## Async-boundary signatures
 
-| Symbol/pattern | Boundary type |
-| ------------------------------------------------------------- | --------------------------------- |
-| `worker_threads`, `new Worker(...)`, Piscina | worker-thread |
-| `child_process` `spawn`/`fork`/`exec` | child-process |
-| `kafkajs` / `node-rdkafka` produce/consume | kafka-producer / kafka-consumer |
-| `amqplib`, `bull`/`bullmq`, SQS (`@aws-sdk`), `nats` | message-queue |
-| `EventEmitter` listener detached from the emitting scope | event-emitter |
-| outbound HTTP client in a worker/consumer | http-client |
+| Symbol/pattern                                           | Boundary type                   |
+| -------------------------------------------------------- | ------------------------------- |
+| `worker_threads`, `new Worker(...)`, Piscina             | worker-thread                   |
+| `child_process` `spawn`/`fork`/`exec`                    | child-process                   |
+| `kafkajs` / `node-rdkafka` produce/consume               | kafka-producer / kafka-consumer |
+| `amqplib`, `bull`/`bullmq`, SQS (`@aws-sdk`), `nats`     | message-queue                   |
+| `EventEmitter` listener detached from the emitting scope | event-emitter                   |
+| outbound HTTP client in a worker/consumer                | http-client                     |
 
 Plain `async`/`await`, resolved Promises, `setTimeout`/`setImmediate`, and
 `queueMicrotask` propagate context via `AsyncLocalStorage` — **not** a loss
@@ -206,14 +206,14 @@ Kafka/messaging instrumentation, or manual inject/extract). A provider built fro
 Env keys alone are not enough — a programmatic sampler overrides them, and the
 platform contract fails validation when sampling stays `unknown`.
 
-| Evidence | `samplerType` |
-| ------------------------------------------------------------------------------- | -------------------------- |
-| `new ParentBasedSampler({ root: new TraceIdRatioBasedSampler(r) })` | `parentbased_traceidratio` |
+| Evidence                                                                       | `samplerType`                                      |
+| ------------------------------------------------------------------------------ | -------------------------------------------------- |
+| `new ParentBasedSampler({ root: new TraceIdRatioBasedSampler(r) })`            | `parentbased_traceidratio`                         |
 | `new ParentBasedSampler({ root: new AlwaysOnSampler() })` / `AlwaysOffSampler` | `parentbased_always_on` / `parentbased_always_off` |
-| `new TraceIdRatioBasedSampler(r)` passed directly as `sampler` | `traceidratio` |
-| `new AlwaysOnSampler()` / `new AlwaysOffSampler()` | `always_on` / `always_off` |
-| `OTEL_TRACES_SAMPLER` env value | that value verbatim |
-| No `sampler` option and no `OTEL_TRACES_SAMPLER` | `parentbased_always_on` (SDK default) |
+| `new TraceIdRatioBasedSampler(r)` passed directly as `sampler`                 | `traceidratio`                                     |
+| `new AlwaysOnSampler()` / `new AlwaysOffSampler()`                             | `always_on` / `always_off`                         |
+| `OTEL_TRACES_SAMPLER` env value                                                | that value verbatim                                |
+| No `sampler` option and no `OTEL_TRACES_SAMPLER`                               | `parentbased_always_on` (SDK default)              |
 
 The `sampler` option lives in `new NodeSDK({ sampler })` or
 `new NodeTracerProvider({ sampler })`. Record the ratio from the
@@ -225,13 +225,13 @@ put the mismatch in `gaps`.
 
 Fills `platformContract.logging`:
 
-| Evidence | `correlationDep` |
-| ---------------------------------------------------------------------- | ------------------------------ |
-| `@opentelemetry/instrumentation-pino` registered | `otel-pino-instrumentation` |
-| `@opentelemetry/instrumentation-winston` registered | `otel-winston-instrumentation` |
-| `@opentelemetry/instrumentation-bunyan` registered | `otel-bunyan-instrumentation` |
-| `trace.getActiveSpan()?.spanContext()` inside a logger formatter, pino `mixin`, or a winston format | `custom` |
-| Logger configured with no trace fields | `none` |
+| Evidence                                                                                            | `correlationDep`               |
+| --------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `@opentelemetry/instrumentation-pino` registered                                                    | `otel-pino-instrumentation`    |
+| `@opentelemetry/instrumentation-winston` registered                                                 | `otel-winston-instrumentation` |
+| `@opentelemetry/instrumentation-bunyan` registered                                                  | `otel-bunyan-instrumentation`  |
+| `trace.getActiveSpan()?.spanContext()` inside a logger formatter, pino `mixin`, or a winston format | `custom`                       |
+| Logger configured with no trace fields                                                              | `none`                         |
 
 Set `traceFieldsInPattern` from the **emitted field names**, not from the presence
 of a dependency: the OTel logging instrumentations inject `trace_id`, `span_id`,

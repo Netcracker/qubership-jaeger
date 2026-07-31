@@ -6,7 +6,7 @@ Shared plan structure, algorithm, and section numbering (§4.1–§4.5):
 Run the **TypeScript gate below before §4.1**. Then fill §4.1–§4.4 from recipes:
 
 | Section                      | Recipe                                                                                                                                        |
-|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | §4.1 `dependencyMigration`   | [`../recipes/dependency-migration.md`](../recipes/dependency-migration.md)                                                                    |
 | §4.2 `configMigration`       | [`../recipes/config-migration.md`](../recipes/config-migration.md) + [`../recipes/logging-correlation.md`](../recipes/logging-correlation.md) |
 | §4.3 `codeMigration`         | [`../recipes/code-migration.md`](../recipes/code-migration.md)                                                                                |
@@ -24,13 +24,13 @@ non-web worker/library — not "one repository = one stack" by default.
 Read `discovery-result.service.framework` and pick exactly one migration path.
 Do not emit §4.1 or §4.2 rows before this is fixed.
 
-| `service.framework` | Target instrumentation                                                                                             | Config surface           |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------ |
-| `express`           | `@opentelemetry/instrumentation-http` + `-express` + SDK + OTLP proto + B3 propagator                              | env + bootstrap module   |
-| `fastify`           | `@opentelemetry/instrumentation-http` + `@fastify/otel` + SDK + OTLP proto + B3 (**not** the deprecated `-fastify`) | env + bootstrap module   |
-| `nestjs`            | `@opentelemetry/instrumentation-nestjs-core` + `-http` + the underlying HTTP adapter (`-express`, or `@fastify/otel` on the `FastifyAdapter`) + SDK | env + bootstrap module   |
-| `pure-node`         | `@opentelemetry/sdk-node` (or `sdk-trace-node`) + OTLP proto exporter + B3 propagator, plus `-http` when the process serves or calls HTTP (no web-framework middleware) | env + programmatic setup |
-| `unknown`           | if `gaps` names a confidently identified best-effort framework, its contrib instrumentation from [`../reference/framework-coverage.md`](../reference/framework-coverage.md); otherwise the conservative SDK path. Record assumptions in `gaps` | env |
+| `service.framework` | Target instrumentation                                                                                                                                                                                                                         | Config surface           |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| `express`           | `@opentelemetry/instrumentation-http` + `-express` + SDK + OTLP proto + B3 propagator                                                                                                                                                          | env + bootstrap module   |
+| `fastify`           | `@opentelemetry/instrumentation-http` + `@fastify/otel` + SDK + OTLP proto + B3 (**not** the deprecated `-fastify`)                                                                                                                            | env + bootstrap module   |
+| `nestjs`            | `@opentelemetry/instrumentation-nestjs-core` + `-http` + the underlying HTTP adapter (`-express`, or `@fastify/otel` on the `FastifyAdapter`) + SDK                                                                                            | env + bootstrap module   |
+| `pure-node`         | `@opentelemetry/sdk-node` (or `sdk-trace-node`) + OTLP proto exporter + B3 propagator, plus `-http` when the process serves or calls HTTP (no web-framework middleware)                                                                        | env + programmatic setup |
+| `unknown`           | if `gaps` names a confidently identified best-effort framework, its contrib instrumentation from [`../reference/framework-coverage.md`](../reference/framework-coverage.md); otherwise the conservative SDK path. Record assumptions in `gaps` | env                      |
 
 NestJS runs on Express or Fastify underneath: `-nestjs-core` alone gives
 controller/provider spans but **not** the HTTP server span — add the HTTP
@@ -69,7 +69,7 @@ reject the forbidden combinations in the plan:
   `startActiveSpan`). The plan states which one it targets.
 - **`pure-node` → the launcher still applies when the process uses instrumented
   libraries.** `auto-instrumentations-node` covers messaging and data clients
-  (kafkajs, amqplib, pg, mysql, mongodb, redis/ioredis, the HTTP client), so a
+  (kafkajs, amqplib, pg, MySQL, MongoDB, redis/ioredis, the HTTP client), so a
   consumer or a worker gets those spans zero-code. The launcher adds nothing only
   when the process has no instrumented I/O at all — a CPU-bound CLI or a library.
   Target `sdk` or `hand-spans` there, and whenever the units of work themselves
