@@ -15,8 +15,9 @@ npm package names as they appear in `package.json` / `package-lock.json` /
 | `opentracing` | legacy | opentracing |
 | `jaeger-client` | legacy | jaeger-client |
 | `zipkin`, `zipkin-instrumentation-*`, `zipkin-transport-*` | legacy | zipkin |
-| `@opentelemetry/exporter-jaeger` (retired) | legacy | jaeger-client |
-| `@opentelemetry/exporter-zipkin` | legacy | zipkin |
+| `@opentelemetry/exporter-jaeger` (retired) | legacy | otel-exporter |
+| `@opentelemetry/exporter-zipkin` | legacy | otel-exporter |
+| `dd-trace`, `elastic-apm-node`, `newrelic` | legacy | other |
 | `@opentelemetry/api` | modern | otel-api |
 | `@opentelemetry/sdk-trace-node`, `@opentelemetry/sdk-trace-base`, `@opentelemetry/sdk-node` | modern | otel-sdk |
 | `@opentelemetry/exporter-trace-otlp-proto` | modern | otel-exporter |
@@ -28,7 +29,20 @@ npm package names as they appear in `package.json` / `package-lock.json` /
 
 `@opentelemetry/core`, `@opentelemetry/resources`, `@opentelemetry/semantic-conventions`
 are OTel support packages — record them as `other`/`modern` context, not as the
-exporter/propagator/SDK signal on their own.
+exporter/propagator/SDK signal on their own. `@opentelemetry/instrumentation` (the
+base library) is supporting evidence too: every `-instrumentation-*` package and the
+ESM loader hook pull it in transitively, so on its own it does not prove anything is
+instrumented.
+
+The retired `@opentelemetry/exporter-jaeger` and the off-contract
+`@opentelemetry/exporter-zipkin` are **OTel exporters in the legacy bucket**, not
+legacy tracers: the `jaeger-client` and `zipkin` technology values stay reserved for
+the client libraries themselves, so L4 does not confuse "replace the exporter" with
+"remove the tracer".
+
+A non-OTel APM agent counts as `legacy` **only when it is the tracing stack**. An
+agent installed for metrics or profiling alongside OTel tracing is not a legacy
+tracer — record it in `gaps` instead, and note the double-instrumentation risk.
 
 Aggregate flags:
 
@@ -56,10 +70,13 @@ auto-selected by `@opentelemetry/sdk-node` from env. A hardcoded
 | `nestjs` | `@nestjs/core`, `NestFactory.create(...)`; `@Module`/`@Controller` decorators |
 | `pure-node` | OTel wiring with no web framework import (worker/CLI/consumer/`http.createServer` only) |
 
-Best-effort: Koa (`@opentelemetry/instrumentation-koa`), Hapi
-(`-hapi`), Restify (`-restify`), Connect (`-connect`), gRPC (`-grpc`) — when
-confidently identified, prefer the matching contrib instrumentation; otherwise
-emit `unknown` + note. Mapping: [`framework-coverage.md`](framework-coverage.md).
+Best-effort: Koa (`@opentelemetry/instrumentation-koa`), Hapi (`-hapi`), Restify
+(`-restify`), Connect (`-connect`), gRPC (`-grpc`), GraphQL/Apollo (`-graphql`),
+Socket.IO (`-socket.io`), Next.js (own `instrumentation.ts` hook, no contrib
+package), Hono/Elysia (nothing exists). The schema enum has no value for any of
+them: keep `service.framework` at `unknown` and, when the match is confident,
+record `framework: <name> (best-effort)` in `gaps` — Step 0 reads that phrasing.
+Mapping: [`framework-coverage.md`](framework-coverage.md).
 
 ## Runtime axes (module system + bundling)
 
@@ -114,7 +131,14 @@ OTel:
 - `new B3Propagator()` (defaults to single `b3`) vs
   `new B3Propagator({ injectEncoding: B3InjectEncoding.MULTI_HEADER })` (`X-B3-*`)
 - `OTLPTraceExporter` from `@opentelemetry/exporter-trace-otlp-proto` (http/protobuf)
-- `ExpressInstrumentation` / `FastifyInstrumentation` / `NestInstrumentation` / `HttpInstrumentation`
+- `ExpressInstrumentation` / `NestInstrumentation` / `HttpInstrumentation` /
+  `UndiciInstrumentation`
+- `FastifyOtelInstrumentation` from `@fastify/otel`, registered via
+  `app.register(instr.plugin())` or `registerOnInitialization: true` (current Fastify path)
+- `FastifyInstrumentation` from `@opentelemetry/instrumentation-fastify` — the
+  **deprecated** Fastify path; record it and raise `@fastify/otel` as a gap
+- absence of `UndiciInstrumentation` in a service that calls `fetch()` — no client
+  span and no trace headers on those calls; record as a gap
 
 Legacy:
 
@@ -132,10 +156,31 @@ Legacy:
 | Both auto path and explicit spans | mixed |
 | No symbols from table | none |
 
-`mode` is the coarse **detected** state. For the **target** mechanism the
-transformation gate distinguishes `launcher` (the register/`-r` launcher) from
-`sdk` (programmatic `NodeSDK` + `registerInstrumentations`) — both surface here as
-`auto`. See [`../models/4-transformation.md`](../models/4-transformation.md) Step 0b.
+`mode` is the coarse **detected** state, shared with the other language packages.
+`instrumentation.mechanism` is the Node-specific one: `launcher` (the register/`-r`
+launcher) and `sdk` (programmatic `NodeSDK` + `registerInstrumentations`) both
+surface as `mode: auto`. Classification table:
+[`../models/1-discovery.md`](../models/1-discovery.md) §1.4; the target mechanism is
+planned in [`../models/4-transformation.md`](../models/4-transformation.md) Step 0b.
+
+### Bootstrap load hook (`instrumentation.hook`)
+
+Read from the resolved launch command — Helm `command`/`args`, Dockerfile
+`CMD`/`ENTRYPOINT`, `NODE_OPTIONS`, or `package.json` `scripts.start`:
+
+| Evidence | `hook` |
+| ------------------------------------------------------------------------------- | -------------- |
+| `-r` / `--require ./tracing.js` (CommonJS), directly or via `NODE_OPTIONS` | `require` |
+| `--import ./tracing.mjs` with no loader flag and no `register()` in the bootstrap | `import` |
+| `--experimental-loader=@opentelemetry/instrumentation/hook.mjs` **plus** `--import` | `loader+import` |
+| `register('@opentelemetry/instrumentation/hook.mjs', import.meta.url)` from `node:module` in the bootstrap | `loader+import` |
+| Bootstrap imported from application code only (`import './tracing.js'` at the top of `main.ts`) | `none` |
+| Launch command not readable | `unknown` |
+
+`hook: import` together with `mechanism: launcher` on an ESM service is the silent
+killer: the SDK starts first, but monkey-patch instrumentation never wraps anything
+because ESM `import` does not go through `require`. Record it as a `gap`, not as a
+working setup.
 
 ## Async-boundary signatures
 
@@ -155,6 +200,57 @@ explicit context propagation is visible (`context.with`/`context.bind`, OTel
 Kafka/messaging instrumentation, or manual inject/extract). A provider built from
 `BasicTracerProvider` without the Node context manager loses context even across
 `await` — record it as a setup gap.
+
+## Sampler signatures
+
+Env keys alone are not enough — a programmatic sampler overrides them, and the
+platform contract fails validation when sampling stays `unknown`.
+
+| Evidence | `samplerType` |
+| ------------------------------------------------------------------------------- | -------------------------- |
+| `new ParentBasedSampler({ root: new TraceIdRatioBasedSampler(r) })` | `parentbased_traceidratio` |
+| `new ParentBasedSampler({ root: new AlwaysOnSampler() })` / `AlwaysOffSampler` | `parentbased_always_on` / `parentbased_always_off` |
+| `new TraceIdRatioBasedSampler(r)` passed directly as `sampler` | `traceidratio` |
+| `new AlwaysOnSampler()` / `new AlwaysOffSampler()` | `always_on` / `always_off` |
+| `OTEL_TRACES_SAMPLER` env value | that value verbatim |
+| No `sampler` option and no `OTEL_TRACES_SAMPLER` | `parentbased_always_on` (SDK default) |
+
+The `sampler` option lives in `new NodeSDK({ sampler })` or
+`new NodeTracerProvider({ sampler })`. Record the ratio from the
+`TraceIdRatioBasedSampler` argument or `OTEL_TRACES_SAMPLER_ARG`. A wired
+`TRACING_SAMPLER_RATELIMITING` has no native Node equivalent — record the tier and
+put the mismatch in `gaps`.
+
+## Log-correlation signatures
+
+Fills `platformContract.logging`:
+
+| Evidence | `correlationDep` |
+| ---------------------------------------------------------------------- | ------------------------------ |
+| `@opentelemetry/instrumentation-pino` registered | `otel-pino-instrumentation` |
+| `@opentelemetry/instrumentation-winston` registered | `otel-winston-instrumentation` |
+| `@opentelemetry/instrumentation-bunyan` registered | `otel-bunyan-instrumentation` |
+| `trace.getActiveSpan()?.spanContext()` inside a logger formatter, pino `mixin`, or a winston format | `custom` |
+| Logger configured with no trace fields | `none` |
+
+Set `traceFieldsInPattern` from the **emitted field names**, not from the presence
+of a dependency: the OTel logging instrumentations inject `trace_id`, `span_id`,
+`trace_flags`, while the contract asks for `traceId` and `spanId`. A service can
+have correlation wired and still miss the contract shape — that is a finding, not a
+pass.
+
+## Endpoint-filter signatures
+
+Fills `platformContract.endpointFilter`:
+
+- `HttpInstrumentation` option `ignoreIncomingRequestHook` (current API) or
+  `ignoreIncomingPaths` (older releases) — read the paths it rejects;
+- a custom `Sampler` that returns `NOT_RECORD` for probe routes;
+- framework-level exclusion (an Express/Fastify route registered outside the
+  instrumented app, or a probe served by a separate server instance).
+
+No signature present means `configured: false` with an empty `excluded` — do not
+infer filtering from the absence of probe spans.
 
 ## Platform-contract signatures
 

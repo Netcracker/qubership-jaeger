@@ -1,10 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qubership.org/otel-tracing-ts/L4-migration-plan.schema.json",
   "title": "MigrationPlanRedirect",
-  "description": "Use shared schema from tracing common package.",
+  "description": "Redirect to the shared schema in opentelemetry-tracing-common: ../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json. The $ref uses that schema's $id so the reference also resolves in a validator; the path above is where the file lives.",
   "allOf": [
     {
-      "$ref": "../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json"
+      "$ref": "https://qubership.org/otel-tracing-core/L4-migration-plan.schema.json"
     }
   ]
 }

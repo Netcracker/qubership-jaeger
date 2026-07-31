@@ -79,7 +79,7 @@ own. Follow §Propagation of the platform guide:
   against the SDK source.
 - **Derive** the composite order yourself — do not ask the user for it. They
   state which format wins; you map that to the framework's winner end (first on
-  Spring Boot, last on Quarkus / Pure Java / Go). Record the resulting list and
+  Spring Boot, last on Quarkus / Pure Java / Go / Node.js). Record the resulting list and
   the reason in `note`, along with whether the surface is build-time or runtime.
 
 ### §4.3 `codeMigration`

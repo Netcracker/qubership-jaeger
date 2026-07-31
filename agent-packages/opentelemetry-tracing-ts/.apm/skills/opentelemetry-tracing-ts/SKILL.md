@@ -80,7 +80,8 @@ After each L1, L2, L3 artifact, post a short brief:
 
 - L1: framework stack (`service.framework`), module system (ESM/CJS) and whether
   the runtime artifact is bundled, dependency buckets, export/sampling,
-  instrumentation mode, async hotspots, platform gaps. State **propagation as two
+  instrumentation mode and mechanism plus the bootstrap load hook (`-r` /
+  `--import` / loader), async hotspots, platform gaps. State **propagation as two
   directions** in plain words — what is accepted inbound vs what is sent outbound
   — and name the source of each (explicit config, or an SDK/instrumentation
   default). "Not configured" is not "not propagating".
@@ -111,8 +112,14 @@ If user declines or environment is unknown, set runtime status to `manual`.
 Common §5.3 — execute in order:
 
 ```text
-deploy -> stand health -> log error triage -> business traffic -> tracing assertions -> pass/fail -> validation cleanup (on pass)
+deploy -> stand health -> log error triage -> business traffic -> tracing assertions -> pass/fail -> teardown
 ```
+
+Teardown has two halves with different triggers: the **runtime resources** created
+for the stand (throwaway backend, `TRACING_HOST` alias, temporary namespace) come
+down **whatever the verdict is** — see
+[`recipes/validation-stack.md`](recipes/validation-stack.md) §Teardown — while the
+**repository files** created for L5 are cleaned only on `pass` (§3.5).
 
 Recipes (common):
 
@@ -145,13 +152,15 @@ Produce:
 | Evidence-first | Every claim cites file/path/env key |
 | No semantic auto-rename | Semantic-convention renames are proposals, not automatic edits |
 | One tracing stack | Final state cannot keep legacy Zipkin/OpenTracing/Jaeger as active stack |
-| One instrumentation mechanism | Do not run the `@opentelemetry/auto-instrumentations-node/register` launcher and a programmatic `registerInstrumentations()` for the same library — double instrumentation can duplicate spans |
+| One instrumentation mechanism | Register each library once, through one path: the `@opentelemetry/auto-instrumentations-node/register` launcher, **or** `NodeSDK({ instrumentations })`, **or** a standalone `registerInstrumentations()` — never two of them for the same library, because double instrumentation can duplicate spans. `@fastify/otel` is a Fastify plugin and is never wired by the launcher at all |
+| One propagator registration | Set the propagator once, as `textMapPropagator` on the SDK. `@opentelemetry/api` refuses a duplicate global registration, so a `setGlobalPropagator()` call after `sdk.start()` returns `false`, logs `Attempted duplicate registration of API: propagation`, and silently changes nothing |
+| `fetch()` needs its own instrumentation | Node's global `fetch` is undici, not the `http` module: without `@opentelemetry/instrumentation-undici` there is no client span **and no trace headers on the wire**, so every downstream service starts a new root trace while this service's own spans look correct |
 | Load tracing first | The tracing bootstrap must initialize before any instrumented module is imported; ESM `import` hoisting or a bundler that inlines requires silently defeats monkey-patch instrumentation |
 | Correct OTLP encoding | `http/protobuf` = `@opentelemetry/exporter-trace-otlp-proto`; `-otlp-http` ships JSON, `-otlp-grpc` ships gRPC — picking the wrong package silently breaks the contract format |
 | Sampling & propagation mandatory | Validation fails if unknown or unverified |
 | Defer versions | Read versions from `package.json`/lockfile, never hardcode versions in skill text |
 | Sync docs on L4 | If L4 changes config/env/deps, update service docs in the same pass |
-| Fresh post-L4 build | Runtime pass requires post-L4 `npm ci` + typecheck/compile + image provenance |
+| Fresh post-L4 build | Runtime pass requires a post-L4 clean install (frozen when a lockfile is committed, refreshed first because L4 changed the manifest), the build check the repository actually has (`tsc` on TypeScript, the bootstrap smoke run on plain JavaScript), and image provenance |
 | End-to-end only when stand is healthy | Runtime `pass` needs stand health + log triage before Jaeger (§3.4; common L5) |
 | No Jaeger-first pass | Jaeger spans while SUT crash-loops or not Ready are not end-to-end pass — fix the stand first |
 
@@ -160,6 +169,7 @@ Produce:
 - Models: [`models/`](models/) — L4 framework/mechanism gate in [`models/4-transformation.md`](models/4-transformation.md); L5 TypeScript delta in [`models/5-validation.md`](models/5-validation.md)
 - Schemas: [`schemas/`](schemas/)
 - Detection signatures: [`reference/detection-rules.md`](reference/detection-rules.md)
+- Framework → instrumentation coverage (single source of truth): [`reference/framework-coverage.md`](reference/framework-coverage.md)
 - Build blockers: [`reference/build-preconditions.md`](reference/build-preconditions.md)
 - Runtime install discovery: [`reference/service-installation-discovery.md`](reference/service-installation-discovery.md)
 - Recipes: [`recipes/`](recipes/) — L4 apply + `fresh-build-and-image`, `validation-stack`

@@ -26,7 +26,12 @@ confident, otherwise `unknown`. First-class coverage and best-effort fallbacks:
 | `fastify`   | `import Fastify` / `require('fastify')`; `fastify()` instance; `app.listen(...)`            |
 | `nestjs`    | `@nestjs/core`, `NestFactory.create(...)`, `@Module`/`@Controller` decorators               |
 | `pure-node` | OTel wired without a web framework above (worker, CLI, library, consumer, http.Server only) |
-| `unknown`   | insufficient or best-effort evidence (Koa, Hapi, Restify, gRPC-only…) — note in `gaps`      |
+| `unknown`   | insufficient or best-effort evidence (Koa, Hapi, Restify, GraphQL, Next.js…) — see below     |
+
+The enum has no value for the best-effort frameworks. When one is identified
+confidently, keep `service.framework` at `unknown` **and** record it in `gaps` as
+`framework: <name> (best-effort)` — that exact phrasing is what the Step 0 `unknown`
+row reads to route to the matching contrib instrumentation instead of the bare SDK.
 
 Also resolve two runtime axes that drive the whole migration in Node:
 
@@ -54,7 +59,11 @@ Classify tracing artifacts into buckets (catalogue in `detection-rules.md`):
 
 - **legacy**: `opentracing`, `jaeger-client`, `zipkin` /
   `zipkin-instrumentation-*`, the retired `@opentelemetry/exporter-jaeger`,
-  and non-OTel APM agents used as the tracing stack;
+  and non-OTel APM agents used as the tracing stack (`dd-trace`,
+  `elastic-apm-node`, `newrelic`) when they **are** the tracing stack. Map
+  `@opentelemetry/exporter-jaeger` and `@opentelemetry/exporter-zipkin` to
+  `bucket: legacy`, `technology: otel-exporter` — they are retired or off-contract
+  OTel exporters, not the `jaeger-client`/`zipkin` tracers;
 - **modern**: `@opentelemetry/api`, `@opentelemetry/sdk-trace-node` /
   `@opentelemetry/sdk-trace-base` / `@opentelemetry/sdk-node`, OTLP exporters
   (`@opentelemetry/exporter-trace-otlp-proto` / `-otlp-http` / `-otlp-grpc`), the
@@ -78,14 +87,26 @@ Inspect config/env locations:
   `ConfigModule`);
 - the tracing bootstrap file (`tracing.ts`/`instrumentation.ts`/`otel.ts` or a
   `NodeSDK`/`NodeTracerProvider` setup) and any programmatic SDK wiring in
-  `.ts`/`.js`.
+  `.ts`/`.js`;
+- the **runtime launch surface** — `package.json` `scripts` (`start`, `start:prod`),
+  Dockerfile `CMD`/`ENTRYPOINT`, Helm `command`/`args`, and `NODE_OPTIONS`. This is
+  the only place the instrumentation hook is visible.
 
 Collect:
 
 - export endpoint/protocol/target guess (**and the exporter package** — the
   package name, not just the env var, determines the OTLP encoding: see below);
 - propagation **inject** and **extract** sets (separately — see below) and per-component wiring (HTTP/Kafka/async);
-- sampler type and ratio.
+- sampler type and ratio;
+- `service.entrypoint` — the resolved launch command, verbatim;
+- `instrumentation.hook` — how the bootstrap is loaded: `require` (`-r`/`--require`
+  or `NODE_OPTIONS`), `import` (ESM `--import`), `loader+import`
+  (`--experimental-loader=@opentelemetry/instrumentation/hook.mjs` **plus**
+  `--import`), `none`, or `unknown`. Record what the command **actually** contains;
+  do not infer it from `moduleSystem`. The mismatch is the finding: ESM plus a
+  launcher with `import` alone and no loader hook means monkey-patch
+  instrumentation never wraps anything, and the service exports an empty trace
+  while every dependency and env var looks correct.
 
 ### Export encoding is set by the package, not only the env var
 
@@ -127,8 +148,19 @@ surface):
   version in the repo's `package.json`, not the version cited there.
 
 If **both** `OTEL_PROPAGATORS` and a programmatic `setGlobalPropagator(...)` are
-present, the programmatic call wins (it overwrites the global after the SDK reads
-env). Record the programmatic value as the effective one and mark the env value overridden.
+present, **the first registration wins**. `@opentelemetry/api` refuses a duplicate
+global registration: the losing call returns `false` and logs
+`Attempted duplicate registration of API: propagation` through `diag`.
+`provider.register()` / `sdk.start()` registers the env-derived propagator, so:
+
+- `setGlobalPropagator(...)` **before** `register()`/`start()` — the programmatic
+  propagator is effective and `OTEL_PROPAGATORS` is ignored;
+- `setGlobalPropagator(...)` **after** it (the usual bootstrap layout) — the call is
+  **rejected** and the env value stays effective.
+
+Resolve the winner by **call order in the bootstrap file**, not by kind, and record
+the loser in `gaps`: a rejected call is dead code that reads like configuration.
+The same first-wins rule applies to `trace.setGlobalTracerProvider`.
 
 If no propagator is configured at all, the SDK default is **W3C tracecontext +
 baggage** — record `inject`/`extract` as `["w3c"]` with `fromFrameworkDefault: true`,
@@ -143,8 +175,11 @@ Find symbols across `.ts`/`.tsx`/`.js`/`.mjs`/`.cjs`:
   `propagation.setGlobalPropagator`, `registerInstrumentations`;
 - legacy: `opentracing` global tracer, `jaeger-client` `initTracer`/`new Tracer`,
   `zipkin` (`Tracer`, `zipkin-instrumentation-*`) symbols;
-- framework instrumentations (`ExpressInstrumentation`, `FastifyInstrumentation`,
-  `NestInstrumentation`, `HttpInstrumentation`) — signatures in `detection-rules.md`.
+- framework instrumentations (`ExpressInstrumentation`, `NestInstrumentation`,
+  `HttpInstrumentation`, `UndiciInstrumentation`, `FastifyOtelInstrumentation`) —
+  signatures in `detection-rules.md`. `FastifyInstrumentation` from
+  `@opentelemetry/instrumentation-fastify` is a **deprecated** stack: record it and
+  raise the replacement (`@fastify/otel`) as a gap.
 
 Record `family`, `symbol`, `file`, `line`.
 
@@ -159,6 +194,22 @@ Classify `instrumentation.mode`:
 - `manual`: explicit span creation in app code (`startActiveSpan`/`startSpan`);
 - `mixed`: both;
 - `none`: no evidence.
+
+Then classify `instrumentation.mechanism` — `mode` is shared across languages and
+collapses two different Node setups into `auto`, while
+[`../models/4-transformation.md`](4-transformation.md) Step 0b plans against three:
+
+| Evidence                                                                       | `mechanism`  |
+| ------------------------------------------------------------------------------ | ------------ |
+| `auto-instrumentations-node/register` loaded via `-r`/`--require`/`--import`   | `launcher`   |
+| `NodeSDK` / `NodeTracerProvider` + `registerInstrumentations({...})` in code    | `sdk`        |
+| Only hand-written `startActiveSpan`/`startSpan`, no instrumentation packages    | `hand-spans` |
+| No tracing setup at all                                                        | `none`       |
+| Evidence conflicts or is unreadable                                            | `unknown`    |
+
+Launcher **and** programmatic `registerInstrumentations` for the same library is a
+finding, not a `mechanism` value — record `unknown` plus a `gap`, and let Step 0b
+resolve the XOR.
 
 ## 1.5 Async-boundary discovery
 
@@ -219,7 +270,10 @@ One JSON object validated against
 
 ```json
 {
-  "service": { "name": "order-service", "framework": "express", "moduleSystem": "commonjs", "bundled": false },
+  "service": {
+    "name": "order-service", "framework": "express", "moduleSystem": "commonjs", "bundled": false,
+    "entrypoint": "node -r ./dist/tracing.js dist/main.js"
+  },
   "dependencyProfile": {
     "hasOtelApi": true, "hasOtelSdk": true, "hasExporter": true, "hasLegacy": false,
     "artifacts": [
@@ -242,7 +296,10 @@ One JSON object validated against
     { "family": "otel", "symbol": "new B3Propagator", "file": "src/tracing.ts", "line": 12 }
   ],
   "apiFamilies": ["otel"],
-  "instrumentation": { "mode": "auto", "evidence": ["registerInstrumentations in src/tracing.ts", "no hand-written spans"] },
+  "instrumentation": {
+    "mode": "auto", "mechanism": "sdk", "hook": "require",
+    "evidence": ["registerInstrumentations in src/tracing.ts", "no hand-written spans", "package.json scripts.start: node -r ./dist/tracing.js"]
+  },
   "asyncBoundaries": [
     { "type": "worker-thread", "file": "src/jobs/report.worker.ts", "line": 8, "contextWrapper": false }
   ],

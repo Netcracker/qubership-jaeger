@@ -10,12 +10,13 @@
     "service": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["framework"],
+      "required": ["framework", "moduleSystem"],
       "properties": {
         "name": { "type": "string" },
         "framework": { "enum": ["express", "fastify", "nestjs", "pure-node", "unknown"] },
         "moduleSystem": { "enum": ["esm", "commonjs", "dual", "unknown"], "description": "Resolved from package.json type, tsconfig module/moduleResolution, and .mjs/.cjs extensions. Drives the instrumentation hook (CJS -r/--require vs ESM --import + loader hook)." },
-        "bundled": { "type": "boolean", "description": "True when the runtime artifact is produced by a bundler (esbuild/webpack/rollup/tsup/swc bundle). Bundling inlines require/import and can defeat monkey-patch auto-instrumentation — see reference/build-preconditions.md." }
+        "bundled": { "type": "boolean", "description": "True when the runtime artifact is produced by a bundler (esbuild/webpack/rollup/tsup/swc bundle). Bundling inlines require/import and can defeat monkey-patch auto-instrumentation — see reference/build-preconditions.md." },
+        "entrypoint": { "type": ["string", "null"], "description": "Resolved runtime launch command, verbatim, from package.json scripts, Dockerfile CMD/ENTRYPOINT, or Helm command/args. The only place the instrumentation hook is visible." }
       }
     },
     "dependencyProfile": {
@@ -60,6 +61,7 @@
     "configuration": {
       "type": "object",
       "additionalProperties": false,
+      "required": ["export", "propagation", "sampling"],
       "properties": {
         "export": {
           "type": "object",
@@ -67,7 +69,7 @@
           "properties": {
             "exporter": { "enum": ["otlp", "zipkin", "jaeger", "none", "unknown"] },
             "endpoint": { "type": ["string", "null"] },
-            "protocol": { "enum": ["grpc", "http/protobuf", "http/json", "udp", "unknown"], "description": "In Node the OTLP encoding follows the exporter package: exporter-trace-otlp-proto = http/protobuf (contract), exporter-trace-otlp-http = http/json, exporter-trace-otlp-grpc = grpc. OTEL_EXPORTER_OTLP_PROTOCOL only takes effect when the exporter is selected from env (NodeSDK auto-select), not when a specific exporter package is instantiated in code." },
+            "protocol": { "enum": ["grpc", "http/protobuf", "http/json", "unknown"], "description": "In Node the OTLP encoding follows the exporter package: exporter-trace-otlp-proto = http/protobuf (contract), exporter-trace-otlp-http = http/json, exporter-trace-otlp-grpc = grpc. OTEL_EXPORTER_OTLP_PROTOCOL only takes effect when the exporter is selected from env (NodeSDK auto-select), not when a specific exporter package is instantiated in code." },
             "targetGuess": { "enum": ["otec", "jaeger-collector", "legacy-zipkin", "unknown"] }
           }
         },
@@ -119,9 +121,11 @@
     "instrumentation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["mode"],
+      "required": ["mode", "mechanism"],
       "properties": {
         "mode": { "enum": ["auto", "manual", "mixed", "none"] },
+        "mechanism": { "enum": ["launcher", "sdk", "hand-spans", "none", "unknown"], "description": "Node instrumentation mechanism, planned against by L4 Step 0b: launcher (auto-instrumentations-node/register), sdk (programmatic NodeSDK/registerInstrumentations), or hand-spans. Launcher and programmatic registerInstrumentations for the same library is a conflict — record unknown plus a gap." },
+        "hook": { "enum": ["require", "import", "loader+import", "none", "unknown"], "description": "How the tracing bootstrap is loaded, read from the launch command: require (-r/--require or NODE_OPTIONS), import (ESM --import), loader+import (--experimental-loader=@opentelemetry/instrumentation/hook.mjs plus --import). ESM with the launcher mechanism and import alone means monkey-patch instrumentation never wraps anything." },
         "evidence": { "type": "array", "items": { "type": "string" } }
       }
     },
@@ -130,7 +134,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["type"],
+        "required": ["type", "contextWrapper"],
         "properties": {
           "type": { "enum": ["kafka-producer", "kafka-consumer", "worker-thread", "child-process", "message-queue", "event-emitter", "http-client", "other"] },
           "file": { "type": "string" },
@@ -142,6 +146,7 @@
     "platformContract": {
       "type": "object",
       "additionalProperties": false,
+      "required": ["serviceName", "samplerTier", "propagationStandard", "endpointFilter", "logging", "export"],
       "properties": {
         "serviceName": {
           "type": "object",
@@ -153,7 +158,7 @@
           }
         },
         "samplerTier": { "enum": ["ratelimiting", "probabilistic", "const", "none", "unknown"], "description": "Which platform sampler env is wired, per the contract priority ratelimiting > probabilistic > const. The Node OTel SDK has no native rate-limiting sampler, so a wired TRACING_SAMPLER_RATELIMITING cannot be honored natively — record it as a gap and approximate with parentbased ratio." },
-        "samplerType": { "enum": ["parentbased_traceidratio", "traceidratio", "always_on", "always_off", "unknown"] },
+        "samplerType": { "enum": ["parentbased_traceidratio", "parentbased_always_on", "parentbased_always_off", "traceidratio", "always_on", "always_off", "unknown"], "description": "Resolved OTel sampler class. parentbased_always_on is the SDK default when nothing is configured — record it as such, not as always_on, which would read as ignoring the parent decision." },
         "propagationStandard": { "enum": ["b3multi", "b3", "w3c", "jaeger", "none", "unknown"] },
         "hasB3PropagatorExtension": { "type": "boolean" },
         "endpointFilter": {

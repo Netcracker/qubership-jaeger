@@ -1,10 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qubership.org/otel-tracing-ts/L2-capability-result.schema.json",
   "title": "CapabilityResultRedirect",
-  "description": "Use shared schema from tracing common package.",
+  "description": "Redirect to the shared schema in opentelemetry-tracing-common: ../../opentelemetry-tracing-common/schemas/L2-capability-result.schema.json. The $ref uses that schema's $id so the reference also resolves in a validator; the path above is where the file lives.",
   "allOf": [
     {
-      "$ref": "../../opentelemetry-tracing-common/schemas/L2-capability-result.schema.json"
+      "$ref": "https://qubership.org/otel-tracing-core/L2-capability-result.schema.json"
     }
   ]
 }
