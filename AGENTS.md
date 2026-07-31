@@ -2,53 +2,50 @@
 
 ## Scope
 
-- This repository maintains the Qubership Helm chart for deploying Jaeger on Kubernetes and OpenShift.
-- Keep this file limited to repository-wide guidance; place component-specific rules near the affected component.
+- This repository maintains the Qubership Helm chart for deploying Jaeger on Kubernetes and OpenShift, together with
+  its readiness probe, integration-test image, documentation, and troubleshooting skill.
+- This file contains repository-wide guidance; place component-specific instructions next to the affected component.
 
 ## Repository map
 
-- `charts/qubership-jaeger/` contains the chart, values, schema, templates, and Grafana dashboard.
-- `readiness-probe/` is a separate Go module for the storage readiness probe.
-- `integration-tests/` contains the Robot Framework image and cluster test suites.
-- `docs/` and `mkdocs.yml` define the published documentation site.
-- `agent-packages/troubleshoot-jaeger/` contains the APM troubleshooting package.
+- `charts/qubership-jaeger/` is the deployable chart, including defaults, schema, and Kubernetes templates.
+- `readiness-probe/` is the standalone Go module used by the chart's readiness-probe image.
+- `integration-tests/robot/` contains Robot Framework suites executed by the in-cluster test runner.
+- `agent-packages/troubleshoot-jaeger/` owns the read-only diagnostic skill and its troubleshooting catalog.
+- `docs/` and `mkdocs.yml` are the source and configuration for the published documentation.
 
 ## Commands
 
-- Run the repository linter from the repository root:
+- Readiness-probe tests: run `go test ./...` from `readiness-probe/`.
+- Documentation setup and strict build: run
+  `python -m pip install -r requirements_mkdocs.txt && mkdocs build --verbose --strict` from the repository root.
 
-  ```bash
-  docker run \
-    -e RUN_LOCAL=true \
-    -e DEFAULT_BRANCH=$(git rev-parse --abbrev-ref HEAD) \
-    --env-file .github/super-linter.env \
-    -v ${PWD}:/tmp/lint \
-    --rm \
-    ghcr.io/super-linter/super-linter:slim-v8.7.0
-  ```
+## Non-obvious invariants
 
-- Lint the Helm chart from the repository root: `helm lint charts/qubership-jaeger`.
-- Test the readiness probe from `readiness-probe/`: `go test ./...`.
-- Build documentation strictly from the repository root after installing `requirements_mkdocs.txt`:
-  `mkdocs build --verbose --strict`.
-- Run cluster integration through `.github/workflows/integration-tests.yml`; it provisions Kind and required services.
-
-## Non-obvious invariant
-
-- Keep readiness-probe dependency and test work inside `readiness-probe/`; its `go.mod` defines an independent module.
+- `docs/troubleshooting.md` is a symlink to
+  `agent-packages/troubleshoot-jaeger/.apm/skills/troubleshoot-jaeger/references/troubleshooting.md`. Edit the target,
+  preserve the symlink, and inspect the symptom index with `python3
+  agent-packages/troubleshoot-jaeger/.apm/skills/troubleshoot-jaeger/scripts/show_cases.py
+  agent-packages/troubleshoot-jaeger/.apm/skills/troubleshoot-jaeger/references/troubleshooting.md`.
+- Integration suites are designed to run inside the chart's test-runner Pod. For integration behavior, change the
+  Robot suites or their image under `integration-tests/`, then rely on `.github/workflows/integration-tests.yml` for the
+  full Kind-based installation check rather than assuming a local Robot invocation is equivalent.
+- Docker image components are declared separately in `.github/docker-dev-config.json`,
+  `.github/docker-build-config.json`, and the matrix in `.github/workflows/build.yml`. When adding, removing, or
+  relocating an image build, update every applicable declaration so development, release, and manual builds stay
+  aligned.
 
 ## Done when
 
-- Run the smallest applicable check above, then the repository linter for changes covered by Super-Linter.
-- Behavior changes include focused test coverage.
-- Documentation changes pass the strict MkDocs build.
-- Report checks run, checks not run, and any required live-cluster verification that remains.
+- `go test ./...` passes from `readiness-probe/` when the Go module changes.
+- The repository Super-Linter passes for changed source and configuration files.
+- `mkdocs build --verbose --strict` passes when documentation or MkDocs configuration changes.
+- Chart, image, or integration changes pass the applicable Docker and Kind-based GitHub Actions workflows.
+- The final response lists checks run and checks that could not be run.
 
 ## Context routing
 
-- Before changing chart values or templates, read `docs/installation.md` and the relevant file under `docs/examples/`
-  to preserve documented configuration behavior.
-- Before changing integration tests, read `integration-tests/README.md` and
-  `.github/workflows/integration-tests.yml` for test tags, prerequisites, and the cluster execution path.
-- Before changing the troubleshooting package, read
-  `agent-packages/troubleshoot-jaeger/.apm/skills/troubleshoot-jaeger/SKILL.md` for its package-specific contract.
+- Before changing chart values or templates, read `docs/installation.md` and the applicable file under `docs/examples/`
+  for the documented installation contract and supported configuration examples.
+- Before changing the troubleshooting skill or catalog, read
+  `agent-packages/troubleshoot-jaeger/.apm/skills/troubleshoot-jaeger/SKILL.md` for its evidence and safety contract.
