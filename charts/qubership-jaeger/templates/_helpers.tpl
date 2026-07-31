@@ -2,47 +2,83 @@
 
 {{/******************************************************************************************************************/}}
 {{/*
+Return the public host of the cloud, used to generate hostnames for the components
+that are exposed outside the cloud. Returns an empty string when the cloud passport
+parameter is not set, in that case nothing is exposed automatically.
+The deprecated CLOUD_PUBLIC_HOST name is still supported.
+*/}}
+{{- define "jaeger.cloudPublicHost" -}}
+{{- $global := .Values.global | default dict -}}
+{{- $publicHost := coalesce $global.CLOUD_PUBLIC_URL .Values.CLOUD_PUBLIC_URL $global.CLOUD_PUBLIC_HOST .Values.CLOUD_PUBLIC_HOST -}}
+{{- if $publicHost -}}
+{{- $publicHost -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Generate a hostname for a component as "<prefix>-<namespace>.<cloud public host>".
+Returns an empty string when the cloud public host is not set.
+Usage: include "jaeger.generatedHost" (dict "ctx" $ "prefix" "query")
+*/}}
+{{- define "jaeger.generatedHost" -}}
+{{- $ctx := .ctx -}}
+{{- $publicHost := include "jaeger.cloudPublicHost" $ctx -}}
+{{- if $publicHost -}}
+{{- printf "%s-%s.%s" .prefix ($ctx.Values.NAMESPACE | default $ctx.Release.Namespace) $publicHost -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return "true" when the component has to be exposed outside the cloud.
+The "install" flags win when they are specified explicitly, the first specified flag of
+the list is used. When none of them is specified, the component is exposed if a hostname
+is resolved, either from the parameters of the component or from the cloud public host.
+Usage: include "jaeger.exposureEnabled" (dict "flags" (list $route.install $ingress.install) "host" $host)
+*/}}
+{{- define "jaeger.exposureEnabled" -}}
+{{- $decided := "" -}}
+{{- range $flag := .flags -}}
+{{- if and (eq $decided "") (not (kindIs "invalid" $flag)) -}}
+{{- if $flag -}}
+{{- $decided = "enabled" -}}
+{{- else -}}
+{{- $decided = "disabled" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- if eq $decided "enabled" -}}
+true
+{{- else if and (eq $decided "") .host -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{/*
 Set default value for hotrod ingress host if not specify in Values.
 */}}
 {{- define "hotrod.ingress" -}}
-  {{- if not .Values.hotrod.ingress.host -}}
-      hotrod-{{ .Values.NAMESPACE | default .Release.Namespace }}.{{ .Values.CLOUD_PUBLIC_HOST }}
-  {{- else -}}
-      {{ .Values.hotrod.ingress.host | quote -}}
-  {{- end -}}
+{{- .Values.hotrod.ingress.host | default (include "jaeger.generatedHost" (dict "ctx" . "prefix" "hotrod")) -}}
 {{- end -}}
 
 {{/*
 Set default value for query ingress host if not specify in Values.
 */}}
 {{- define "query.ingress" -}}
-  {{- if not .Values.query.ingress.host -}}
-      query-{{ .Values.NAMESPACE | default .Release.Namespace }}.{{ .Values.CLOUD_PUBLIC_HOST }}
-  {{- else -}}
-      {{ .Values.query.ingress.host | quote -}}
-  {{- end -}}
+{{- .Values.query.ingress.host | default (include "jaeger.generatedHost" (dict "ctx" . "prefix" "query")) -}}
 {{- end -}}
 
 {{/*
 Set default value for hotrod route host if not specify in Values.
 */}}
 {{- define "hotrod.route" -}}
-  {{- if not .Values.hotrod.route.host -}}
-      hotrod-{{ .Values.NAMESPACE | default .Release.Namespace }}.{{ .Values.CLOUD_PUBLIC_HOST }}
-  {{- else -}}
-      {{ .Values.hotrod.route.host | quote -}}
-  {{- end -}}
+{{- .Values.hotrod.route.host | default (include "jaeger.generatedHost" (dict "ctx" . "prefix" "hotrod")) -}}
 {{- end -}}
 
 {{/*
 Set default value for query route host if not specify in Values.
 */}}
 {{- define "query.route" -}}
-  {{- if not .Values.query.route.host -}}
-      query-{{ .Values.NAMESPACE | default .Release.Namespace }}.{{ .Values.CLOUD_PUBLIC_HOST }}
-  {{- else -}}
-      {{ .Values.query.route.host | quote -}}
-  {{- end -}}
+{{- .Values.query.route.host | default (include "jaeger.generatedHost" (dict "ctx" . "prefix" "query")) -}}
 {{- end -}}
 
 {{/*
@@ -108,24 +144,19 @@ Usage: {{- include "jaeger.gatewayApi.hostnames" (dict "ctx" $ "hosts" $hosts) |
 
 {{/*
 Return the list of hostnames for the collector routes.
-Supports both the single ".host" and the list ".hosts" syntax of the matching Ingress.
-Usage: include "collector.gatewayApi.hosts" (list $ $routeSpec .Values.collector.ingress.http)
+The hostnames of the route win, then the hosts of the matching Ingress are used, both in
+the single ".host" and in the list ".hosts" syntax. When nothing is specified, a hostname
+is generated from the cloud public host, if it is set.
+Usage: include "collector.gatewayApi.hosts" (dict "ctx" $ "route" $routeSpec "ingress" .Values.collector.ingress.http "prefix" "collector")
 */}}
 {{- define "collector.gatewayApi.hosts" -}}
-{{- $ := index . 0 -}}
-{{- $routeSpec := index . 1 -}}
-{{- $ingress := index . 2 | default dict -}}
+{{- $routeSpec := .route | default dict -}}
 {{- if $routeSpec.hosts -}}
 {{- toYaml $routeSpec.hosts -}}
 {{- else -}}
 {{- $hosts := list -}}
-{{- if $ingress.host -}}
-{{- $hosts = append $hosts $ingress.host -}}
-{{- end -}}
-{{- range $ingress.hosts -}}
-{{- if .host -}}
-{{- $hosts = append $hosts .host -}}
-{{- end -}}
+{{- range $entry := include "collector.ingress.entries" (dict "ctx" .ctx "ingress" .ingress "prefix" .prefix) | fromYamlArray -}}
+{{- $hosts = append $hosts $entry.host -}}
 {{- end -}}
 {{- toYaml $hosts -}}
 {{- end -}}
@@ -154,33 +185,45 @@ Return list of hosts for Ingress.
 Support as already existing syntax with only one .host and syntax to specify list of hosts inside one Ingress
 */}}
 {{- define "collector.ingress.grpc.rules" -}}
-{{- if .Values.collector.ingress.grpc.host -}}
-- host: {{ .Values.collector.ingress.grpc.host | quote }}
+{{- range $entry := include "collector.ingress.entries" (dict "ctx" $ "ingress" $.Values.collector.ingress.grpc "prefix" "collector-grpc") | fromYamlArray }}
+- host: {{ tpl $entry.host $ | quote }}
   http:
-    paths: {{ include "collector.ingress.grpc.hostPaths" (list $ .) | nindent 6 }}
-{{- end -}}
-{{- if .Values.collector.ingress.grpc.hosts -}}
-{{- range .Values.collector.ingress.grpc.hosts }}
-- host: {{ tpl .host $ | quote }}
-  http:
-    paths: {{ include "collector.ingress.grpc.hostPaths" (list $ .) | nindent 6 }}
-{{- end -}}
+    paths: {{ include "collector.ingress.grpc.hostPaths" (list $ $entry) | trim | nindent 6 }}
 {{- end -}}
 {{- end -}}
 
 {{- define "collector.ingress.http.rules" -}}
-{{- if .Values.collector.ingress.http.host -}}
-- host: {{ .Values.collector.ingress.http.host | quote }}
+{{- range $entry := include "collector.ingress.entries" (dict "ctx" $ "ingress" $.Values.collector.ingress.http "prefix" "collector") | fromYamlArray }}
+- host: {{ tpl $entry.host $ | quote }}
   http:
-    paths: {{ include "collector.ingress.http.hostPaths" (list $ .) | nindent 6 }}
-{{- end -}}
-{{- if .Values.collector.ingress.http.hosts -}}
-{{- range .Values.collector.ingress.http.hosts }}
-- host: {{ tpl .host $ | quote }}
-  http:
-    paths: {{ include "collector.ingress.http.hostPaths" (list $ .) | nindent 6 }}
+    paths: {{ include "collector.ingress.http.hostPaths" (list $ $entry) | trim | nindent 6 }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Return the list of host entries of a collector Ingress.
+Supports both the single ".host" and the list ".hosts" syntax. When no host is specified,
+a hostname is generated from the cloud public host, if it is set.
+Usage: include "collector.ingress.entries" (dict "ctx" $ "ingress" $ingress "prefix" "collector")
+*/}}
+{{- define "collector.ingress.entries" -}}
+{{- $ingress := .ingress | default dict -}}
+{{- $entries := list -}}
+{{- if $ingress.host -}}
+{{- $entries = append $entries (dict "host" $ingress.host) -}}
+{{- end -}}
+{{- range $ingress.hosts -}}
+{{- if .host -}}
+{{- $entries = append $entries . -}}
+{{- end -}}
+{{- end -}}
+{{- if not $entries -}}
+{{- $generated := include "jaeger.generatedHost" (dict "ctx" .ctx "prefix" .prefix) -}}
+{{- if $generated -}}
+{{- $entries = append $entries (dict "host" $generated) -}}
+{{- end -}}
+{{- end -}}
+{{- toYaml $entries -}}
 {{- end -}}
 
 {{/*
@@ -226,7 +269,7 @@ Return list of paths and endpoints for one host
 {{/* Start render template in the relative content, here .Values.jaeger.collector.ingress.grpc.hosts */}}
 {{- $ := index . 0 }}
 {{- $defaultServiceName := printf "%s-collector" $.Values.jaeger.serviceName -}}
-{{- with index . 0 }}
+{{- with index . 1 }}
 {{- $pathsToApply := coalesce .paths $.Values.collector.ingress.grpc.defaultPaths -}}
 {{- range $pathsToApply }}
 - path: {{ .prefix }}

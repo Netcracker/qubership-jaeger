@@ -21,7 +21,7 @@ spec:
     kind: Service
     name: {{ .Values.jaeger.serviceName }}-query
     weight: 100
-  host: {{ include "query.route" . }}
+  host: {{ include "query.route" . | quote }}
 status:
   ingress: []
 {{- end }}

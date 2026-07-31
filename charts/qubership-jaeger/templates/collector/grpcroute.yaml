@@ -1,8 +1,10 @@
 {{- $grpcRouteSpec := .Values.collector.grpcRoute | default dict -}}
-{{- $hostnames := include "collector.gatewayApi.hosts" (list $ $grpcRouteSpec .Values.collector.ingress.grpc) | fromYamlArray -}}
+{{- $ingressSpec := .Values.collector.ingress.grpc | default dict -}}
+{{- $hostnames := include "collector.gatewayApi.hosts" (dict "ctx" $ "route" $grpcRouteSpec "ingress" $ingressSpec "prefix" "collector-grpc") | fromYamlArray -}}
 {{- $defaultRules := list (dict "backendRefs" (list (dict "name" (printf "%s-collector" $.Values.jaeger.serviceName) "port" 4317))) -}}
 {{- $rules := $grpcRouteSpec.rules | default $defaultRules -}}
-{{- $install := or ($grpcRouteSpec.install | default false) (and .Values.collector.ingress.grpc.install (include "jaeger.gatewayApi.enabled" .)) -}}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $grpcRouteSpec.install $ingressSpec.install) "host" (first $hostnames)) -}}
+{{- $install := or ($grpcRouteSpec.install | default false) (and $exposed (include "jaeger.gatewayApi.enabled" .)) -}}
 {{- if and .Values.collector.install $install (eq ($grpcRouteSpec.kind | default "HTTPRoute") "GRPCRoute") }}
 {{- $resourceName := include "collector.httpRoute.resourceName" (list $ "grpc") }}
 ---

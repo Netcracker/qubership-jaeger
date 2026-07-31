@@ -1,4 +1,7 @@
-{{- if and .Values.hotrod.install .Values.hotrod.ingress.install (include "jaeger.legacyIngress.enabled" .) }}
+{{- $ingressSpec := .Values.hotrod.ingress | default dict -}}
+{{- $host := include "hotrod.ingress" . -}}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $ingressSpec.install) "host" $host) -}}
+{{- if and .Values.hotrod.install $exposed (include "jaeger.legacyIngress.enabled" .) }}
 {{- $annotations := deepCopy (.Values.hotrod.annotations | default dict) -}}
 {{- if or .Values.hotrod.ingress.addGatewayApiAnnotation (include "jaeger.gatewayApi.enabled" .) }}
 {{- $_ := set $annotations "gateway-api-converter.netcracker.com/ignore" "true" -}}
@@ -26,7 +29,7 @@ spec:
   ingressClassName: {{ .Values.hotrod.ingress.className }}
   {{- end }}
   rules:
-    - host: {{ include "hotrod.ingress" . }}
+    - host: {{ $host | quote }}
       http:
         paths:
           - path: /

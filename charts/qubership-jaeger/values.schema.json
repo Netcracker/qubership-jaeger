@@ -1,6 +1,18 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
+    "CLOUD_PUBLIC_URL": {
+      "default": "",
+      "description": "Cloud passport parameter with the public host of the cloud.\nWhen it is set, the components that have no explicitly specified host are exposed outside the\ncloud with the generated hostname \"<component>-<namespace>.<CLOUD_PUBLIC_URL>\".\nMay also be specified as \"global.CLOUD_PUBLIC_URL\". The CLOUD_PUBLIC_HOST name is deprecated.\n",
+      "title": "CLOUD_PUBLIC_URL",
+      "type": "string"
+    },
+    "CLOUD_PUBLIC_HOST": {
+      "default": "",
+      "description": "Deprecated alias of CLOUD_PUBLIC_URL.\n",
+      "title": "CLOUD_PUBLIC_HOST",
+      "type": "string"
+    },
     "GATEWAY_SYSTEM_TYPE": {
       "default": "",
       "description": "Cloud passport parameter that defines which kind of ingress resources have to be created.\nMay contain several comma-separated values, for example \"legacy-ingress,gateway-api-default\".\nAn empty or unset value is treated as \"legacy-ingress\".\n",
@@ -518,9 +530,9 @@
                   "type": "boolean"
                 },
                 "install": {
-                  "default": false,
+                  "description": "Allow creating the Ingress. When it is not specified, the Ingress is created if a host is\nresolved and GATEWAY_SYSTEM_TYPE allows creating Ingresses.\n",
                   "title": "install",
-                  "type": "boolean"
+                  "type": ["boolean", "null"]
                 }
               },
               "title": "grpc",
@@ -578,10 +590,9 @@
                   "type": "boolean"
                 },
                 "install": {
-                  "default": false,
-                  "description": "Enables creation of ingress.",
+                  "description": "Allow creating the Ingress. When it is not specified, the Ingress is created if a host is\nresolved and GATEWAY_SYSTEM_TYPE allows creating Ingresses.\n",
                   "title": "install",
-                  "type": "boolean"
+                  "type": ["boolean", "null"]
                 }
               },
               "title": "http",
@@ -599,10 +610,9 @@
           "description": "Configuration for collector HTTPRoute resource.\n",
           "properties": {
             "install": {
-              "default": false,
-              "description": "Enable creation of HTTPRoute for collector HTTP endpoints.\n",
+              "description": "Allow creating the route even if GATEWAY_SYSTEM_TYPE does not contain \"gateway-api-default\".\nWhen it is not specified, the route is created if GATEWAY_SYSTEM_TYPE contains\n\"gateway-api-default\" and a hostname is resolved.\n",
               "title": "install",
-              "type": "boolean"
+              "type": ["boolean", "null"]
             },
             "labels": {
               "description": "Additional labels for HTTPRoute metadata.\n",
@@ -680,10 +690,9 @@
           "description": "Configuration for collector gRPC Gateway API route.\nDepending on kind, the chart renders either HTTPRoute or GRPCRoute.\n",
           "properties": {
             "install": {
-              "default": false,
-              "description": "Enable creation of Gateway API route for collector gRPC endpoint.\n",
+              "description": "Allow creating the route even if GATEWAY_SYSTEM_TYPE does not contain \"gateway-api-default\".\nWhen it is not specified, the route is created if GATEWAY_SYSTEM_TYPE contains\n\"gateway-api-default\" and a hostname is resolved.\n",
               "title": "install",
-              "type": "boolean"
+              "type": ["boolean", "null"]
             },
             "kind": {
               "default": "HTTPRoute",
@@ -2146,10 +2155,9 @@
               "type": "boolean"
             },
             "install": {
-              "default": false,
-              "description": "Allow disabling create ingress.\nType: boolean\nDefault: false\n",
+              "description": "Allow creating the Ingress. When it is not specified, the Ingress is created if a host is\nresolved and GATEWAY_SYSTEM_TYPE allows creating Ingresses.\n",
               "title": "install",
-              "type": "boolean"
+              "type": ["boolean", "null"]
             },
             "tls": {
               "description": "Configuration for ingress TLS. More info: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls\n Type: object\nDefault: {}\n",
@@ -2168,10 +2176,9 @@
           "description": "Configuration for hotrod HTTPRoute resource.\n",
           "properties": {
             "install": {
-              "default": false,
-              "description": "Enable creation of HTTPRoute for hotrod.\n",
+              "description": "Allow creating the route even if GATEWAY_SYSTEM_TYPE does not contain \"gateway-api-default\".\nWhen it is not specified, the route is created if GATEWAY_SYSTEM_TYPE contains\n\"gateway-api-default\" and a hostname is resolved.\n",
               "title": "install",
-              "type": "boolean"
+              "type": ["boolean", "null"]
             },
             "labels": {
               "description": "Additional labels for HTTPRoute metadata.\n",
@@ -2835,10 +2842,9 @@
               "type": "boolean"
             },
             "install": {
-              "default": false,
-              "description": "Allow disabling create ingress.\nType: boolean\nDefault: false\n",
+              "description": "Allow creating the Ingress. When it is not specified, the Ingress is created if a host is\nresolved and GATEWAY_SYSTEM_TYPE allows creating Ingresses.\n",
               "title": "install",
-              "type": "boolean"
+              "type": ["boolean", "null"]
             },
             "tls": {
               "description": "Configuration for ingress TLS.\nType: object\nDefault: {}\n",
@@ -2853,10 +2859,9 @@
           "description": "Configuration for query HTTPRoute resource.\n",
           "properties": {
             "install": {
-              "default": false,
-              "description": "Enable creation of HTTPRoute for query service.\n",
+              "description": "Allow creating the HTTPRoute even if GATEWAY_SYSTEM_TYPE does not contain \"gateway-api-default\".\nWhen it is not specified, the HTTPRoute is created if GATEWAY_SYSTEM_TYPE contains\n\"gateway-api-default\" and a hostname is resolved.\n",
               "title": "install",
-              "type": "boolean"
+              "type": ["boolean", "null"]
             },
             "labels": {
               "description": "Additional labels for HTTPRoute metadata.\n",

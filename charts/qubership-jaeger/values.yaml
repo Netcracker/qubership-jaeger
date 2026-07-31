@@ -1802,7 +1802,15 @@ collector:
 
   ingress:
     http:
-      install: false
+      # Allow creating the Ingress for the HTTP collector endpoints.
+      # When the parameter is not specified, the Ingress is created if a host is resolved,
+      # either from the "host"/"hosts" parameters below or from CLOUD_PUBLIC_URL, and if
+      # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
+      # Type: boolean
+      # Mandatory: no
+      # Default: not set
+      #
+      # install: true
       # Add annotation that prevents Gateway API converter from processing this Ingress.
       # Use it when HTTPRoute/GRPCRoute analogue is already configured.
       # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
@@ -1837,7 +1845,15 @@ collector:
         service:
           port: 14268
     grpc:
-      install: false
+      # Allow creating the Ingress for the gRPC collector endpoints.
+      # When the parameter is not specified, the Ingress is created if a host is resolved,
+      # either from the "host"/"hosts" parameters below or from CLOUD_PUBLIC_URL, and if
+      # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
+      # Type: boolean
+      # Mandatory: no
+      # Default: not set
+      #
+      # install: true
       # Add annotation that prevents Gateway API converter from processing this Ingress.
       # Use it when HTTPRoute/GRPCRoute analogue is already configured.
       # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
@@ -1864,13 +1880,16 @@ collector:
     tls: {}
 
   httpRoute:
-    # Allow creating HTTPRoute for the HTTP collector endpoints unconditionally.
-    # It is not necessary to enable it when GATEWAY_SYSTEM_TYPE contains "gateway-api-default",
-    # in that case the HTTPRoute is created for every enabled Ingress automatically.
+    # Allow creating the HTTPRoute for the HTTP collector endpoints even if GATEWAY_SYSTEM_TYPE does not contain
+    # "gateway-api-default". When the parameter is not specified, the HTTPRoute is created if
+    # GATEWAY_SYSTEM_TYPE contains "gateway-api-default" and a hostname is resolved, either
+    # from the parameters of the route, from the matching Ingress or from CLOUD_PUBLIC_URL.
+    # Set it to "false" to never create it.
     # Type: boolean
-    # Default: false
+    # Mandatory: no
+    # Default: not set
     #
-    install: false
+    # install: true
     labels: {}
     annotations: {}
     # List of parent Gateway references. When the list is empty, the route is attached to the
@@ -1915,13 +1934,16 @@ collector:
       service:
         port: 14268
   grpcRoute:
-    # Allow creating a route for the gRPC collector endpoints unconditionally.
-    # It is not necessary to enable it when GATEWAY_SYSTEM_TYPE contains "gateway-api-default",
-    # in that case the route is created for every enabled Ingress automatically.
+    # Allow creating the route for the gRPC collector endpoints even if GATEWAY_SYSTEM_TYPE does not contain
+    # "gateway-api-default". When the parameter is not specified, the route is created if
+    # GATEWAY_SYSTEM_TYPE contains "gateway-api-default" and a hostname is resolved, either
+    # from the parameters of the route, from the matching Ingress or from CLOUD_PUBLIC_URL.
+    # Set it to "false" to never create it.
     # Type: boolean
-    # Default: false
+    # Mandatory: no
+    # Default: not set
     #
-    install: false
+    # install: true
     # Available values: HTTPRoute, GRPCRoute
     #
     kind: HTTPRoute
@@ -2171,11 +2193,15 @@ hotrod:
   tolerations: {}
 
   ingress:
-    # Allow disabling create ingress.
+    # Allow creating the Ingress for hotrod.
+    # When the parameter is not specified, the Ingress is created if a host is resolved,
+    # either from the "host"/"hosts" parameters below or from CLOUD_PUBLIC_URL, and if
+    # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
     # Type: boolean
-    # Default: false
+    # Mandatory: no
+    # Default: not set
     #
-    install: false
+    # install: true
 
     # Add annotation that prevents Gateway API converter from processing this Ingress.
     # Use it when HTTPRoute analogue is already configured.
@@ -2226,13 +2252,16 @@ hotrod:
     host: ""
 
   httpRoute:
-    # Allow creating HTTPRoute for hotrod unconditionally.
-    # It is not necessary to enable it when GATEWAY_SYSTEM_TYPE contains "gateway-api-default",
-    # in that case the HTTPRoute is created automatically when hotrod.ingress.install is true.
+    # Allow creating the HTTPRoute for hotrod even if GATEWAY_SYSTEM_TYPE does not contain
+    # "gateway-api-default". When the parameter is not specified, the HTTPRoute is created if
+    # GATEWAY_SYSTEM_TYPE contains "gateway-api-default" and a hostname is resolved, either
+    # from the parameters of the route, from the matching Ingress or from CLOUD_PUBLIC_URL.
+    # Set it to "false" to never create it.
     # Type: boolean
-    # Default: false
+    # Mandatory: no
+    # Default: not set
     #
-    install: false
+    # install: true
     labels: {}
     annotations: {}
     # List of parent Gateway references. When the list is empty, the route is attached to the
@@ -2333,11 +2362,15 @@ query:
 
 
   ingress:
-    # Allow disabling create ingress.
+    # Allow creating the Ingress for query.
+    # When the parameter is not specified, the Ingress is created if a host is resolved,
+    # either from the "host"/"hosts" parameters below or from CLOUD_PUBLIC_URL, and if
+    # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
     # Type: boolean
-    # Default: false
+    # Mandatory: no
+    # Default: not set
     #
-    install: false
+    # install: true
 
     # Add annotation that prevents Gateway API converter from processing this Ingress.
     # Use it when HTTPRoute analogue is already configured.
@@ -2388,13 +2421,16 @@ query:
     host: ""
 
   httpRoute:
-    # Allow creating HTTPRoute for query unconditionally.
-    # It is not necessary to enable it when GATEWAY_SYSTEM_TYPE contains "gateway-api-default",
-    # in that case the HTTPRoute is created automatically when query.ingress.install is true.
+    # Allow creating the HTTPRoute for query even if GATEWAY_SYSTEM_TYPE does not contain
+    # "gateway-api-default". When the parameter is not specified, the HTTPRoute is created if
+    # GATEWAY_SYSTEM_TYPE contains "gateway-api-default" and a hostname is resolved, either
+    # from the parameters of the route, from the matching Ingress or from CLOUD_PUBLIC_URL.
+    # Set it to "false" to never create it.
     # Type: boolean
-    # Default: false
+    # Mandatory: no
+    # Default: not set
     #
-    install: false
+    # install: true
     labels: {}
     annotations: {}
     # List of parent Gateway references. When the list is empty, the route is attached to the

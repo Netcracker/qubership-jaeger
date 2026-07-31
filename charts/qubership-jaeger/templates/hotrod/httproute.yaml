@@ -1,7 +1,15 @@
 {{- $httpRouteSpec := .Values.hotrod.httpRoute | default dict -}}
-{{- $hostnames := $httpRouteSpec.hosts | default (list (include "hotrod.ingress" .)) -}}
+{{- $ingressSpec := .Values.hotrod.ingress | default dict -}}
+{{- $hostnames := $httpRouteSpec.hosts | default list -}}
+{{- if not $hostnames -}}
+{{- $host := include "hotrod.ingress" . -}}
+{{- if $host -}}
+{{- $hostnames = list $host -}}
+{{- end -}}
+{{- end -}}
 {{- $name := printf "%s-hotrod" .Values.jaeger.serviceName -}}
-{{- $install := or ($httpRouteSpec.install | default false) (and .Values.hotrod.ingress.install (include "jaeger.gatewayApi.enabled" .)) -}}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $httpRouteSpec.install $ingressSpec.install) "host" (first $hostnames)) -}}
+{{- $install := or ($httpRouteSpec.install | default false) (and $exposed (include "jaeger.gatewayApi.enabled" .)) -}}
 {{- if and .Values.hotrod.install $install }}
 ---
 apiVersion: gateway.networking.k8s.io/v1

@@ -1,7 +1,15 @@
 {{- $httpRouteSpec := .Values.query.httpRoute | default dict -}}
-{{- $hostnames := $httpRouteSpec.hosts | default (list (include "query.ingress" .)) -}}
+{{- $ingressSpec := .Values.query.ingress | default dict -}}
+{{- $hostnames := $httpRouteSpec.hosts | default list -}}
+{{- if not $hostnames -}}
+{{- $host := include "query.ingress" . -}}
+{{- if $host -}}
+{{- $hostnames = list $host -}}
+{{- end -}}
+{{- end -}}
 {{- $name := printf "%s-query" .Values.jaeger.serviceName -}}
-{{- $install := or ($httpRouteSpec.install | default false) (and .Values.query.ingress.install (include "jaeger.gatewayApi.enabled" .)) -}}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $httpRouteSpec.install $ingressSpec.install) "host" (first $hostnames)) -}}
+{{- $install := or ($httpRouteSpec.install | default false) (and $exposed (include "jaeger.gatewayApi.enabled" .)) -}}
 {{- if and .Values.query.install $install }}
 ---
 apiVersion: gateway.networking.k8s.io/v1

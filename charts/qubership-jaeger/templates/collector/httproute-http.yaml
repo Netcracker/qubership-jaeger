@@ -1,5 +1,6 @@
 {{- $httpRouteSpec := .Values.collector.httpRoute | default dict -}}
-{{- $hostnames := include "collector.gatewayApi.hosts" (list $ $httpRouteSpec .Values.collector.ingress.http) | fromYamlArray -}}
+{{- $ingressSpec := .Values.collector.ingress.http | default dict -}}
+{{- $hostnames := include "collector.gatewayApi.hosts" (dict "ctx" $ "route" $httpRouteSpec "ingress" $ingressSpec "prefix" "collector") | fromYamlArray -}}
 {{- $defaultRules := list
       (dict "prefix" "/" "service" (dict "port" 13133))
       (dict "prefix" "/zipkin" "rewritePrefix" "/" "service" (dict "port" 9411))
@@ -8,7 +9,8 @@
       (dict "prefix" "/thrift/http" "rewritePrefix" "/" "service" (dict "port" 14268))
 -}}
 {{- $rules := $httpRouteSpec.defaultPaths | default $defaultRules -}}
-{{- $install := or ($httpRouteSpec.install | default false) (and .Values.collector.ingress.http.install (include "jaeger.gatewayApi.enabled" .)) -}}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $httpRouteSpec.install $ingressSpec.install) "host" (first $hostnames)) -}}
+{{- $install := or ($httpRouteSpec.install | default false) (and $exposed (include "jaeger.gatewayApi.enabled" .)) -}}
 {{- if and .Values.collector.install $install }}
 {{- $resourceName := include "collector.httpRoute.resourceName" (list $ "http") }}
 ---
