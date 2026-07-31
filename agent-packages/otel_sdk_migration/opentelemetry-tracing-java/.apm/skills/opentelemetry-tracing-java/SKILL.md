@@ -64,13 +64,13 @@ traced to the exact field of the upstream JSON that produced it.
 
 ### Layer responsibilities
 
-| Layer             | File                                                       | Reads                  | Produces                             |
-|-------------------|------------------------------------------------------------|------------------------|--------------------------------------|
-| L1 Discovery      | [`models/1-discovery.md`](models/1-discovery.md)           | repository             | `discovery-result`                   |
-| L2 Capability     | shared in `opentelemetry-tracing-common`                 | discovery              | `capability-result`                  |
-| L3 Maturity       | shared in `opentelemetry-tracing-common`                 | discovery + capability | `maturity-result`                    |
-| L4 Transformation | shared in `opentelemetry-tracing-common`                 | all above              | `migration-plan`                     |
-| L5 Validation     | shared in `opentelemetry-tracing-common`                 | migration-plan         | `validationPlan` (in migration-plan) |
+| Layer             | File                                             | Reads                  | Produces                             |
+| ----------------- | ------------------------------------------------ | ---------------------- | ------------------------------------ |
+| L1 Discovery      | [`models/1-discovery.md`](models/1-discovery.md) | repository             | `discovery-result`                   |
+| L2 Capability     | shared in `opentelemetry-tracing-common`         | discovery              | `capability-result`                  |
+| L3 Maturity       | shared in `opentelemetry-tracing-common`         | discovery + capability | `maturity-result`                    |
+| L4 Transformation | shared in `opentelemetry-tracing-common`         | all above              | `migration-plan`                     |
+| L5 Validation     | shared in `opentelemetry-tracing-common`         | migration-plan         | `validationPlan` (in migration-plan) |
 
 ## 3. Execution order
 
@@ -244,13 +244,13 @@ runtime deploy for end-to-end.
 
 #### One build rule
 
-| When | Maven / image |
-| --- | --- |
-| Phase 1 (L1–L3) | **Forbidden** — no compile “to see if it works” |
-| After L4 completes | **Required once** — `mvn clean package` + new image tag |
-| L5 static/config checks | **No rebuild** — inspect repository + post-L4 artifact on disk |
-| L5 runtime end-to-end | **Reuse** the post-L4 artifact; **verify** provenance (§3.2.1) |
-| L4 edits after first build | **Rebuild once** — new single build replaces the prior |
+| When                       | Maven / image                                                  |
+| -------------------------- | -------------------------------------------------------------- |
+| Phase 1 (L1–L3)            | **Forbidden** — no compile “to see if it works”                |
+| After L4 completes         | **Required once** — `mvn clean package` + new image tag        |
+| L5 static/config checks    | **No rebuild** — inspect repository + post-L4 artifact on disk |
+| L5 runtime end-to-end      | **Reuse** the post-L4 artifact; **verify** provenance (§3.2.1) |
+| L4 edits after first build | **Rebuild once** — new single build replaces the prior         |
 
 **Forbidden:** running `mvn clean package` before L4; running a **second**
 full rebuild for end-to-end when the post-L4 build already succeeded and L4 files are
@@ -368,21 +368,21 @@ unless the user explicitly asks for it.
 
 ## 5. Non-negotiable rules
 
-| Rule | Reason |
-| --- | --- |
-| Platform contract is binding | Enforce common [`platform-tracing-guide.md`](../opentelemetry-tracing-common/reference/platform-tracing-guide.md): `TRACING_*`, OTLP `http/protobuf`, `b3multi`, `parentbased_traceidratio`, `${name}-${namespace}`, probe/metrics exclusion, log correlation |
-| Evidence-first | Every claim in an artifact cites a file/line or env key |
-| No semantic auto-rename | Attribute renames to semconv are **proposed**, never applied without confirmation — see common [`models/4-transformation.md`](../opentelemetry-tracing-common/models/4-transformation.md) §4.3 |
-| One tracing stack | A migration plan must end with a single active tracer; no Brave/Jaeger client layered on OTel |
-| Sampling & propagation are mandatory | The validation plan fails if either is unknown or unverified |
-| Preserve intent | Keep service names, sampling intent, and peer-compatible propagation across the migration |
-| Confirm the export target | `TRACING_HOST` default is `nc-diagnostic-agent`; confirm proxy/collector for the runtime environment — see common [`platform-tracing-guide.md`](../opentelemetry-tracing-common/reference/platform-tracing-guide.md) §Export |
-| Defer versions | Read versions from the repository's `pom.xml`/BOM, never hardcode them |
-| Spring Boot 4 OTLP starter | Parent 4.x requires `spring-boot-micrometer-tracing-opentelemetry` **and** Boot 4 `management.tracing.export.*` keys — see [`recipes/dependency-migration.md`](recipes/dependency-migration.md) |
-| Sync documentation on L4 edits | When L4 changes deps/config/Helm/env, update readme, install notes, or Helm docs — see common [`models/4-transformation.md`](../opentelemetry-tracing-common/models/4-transformation.md) §Documentation sync |
-| Fresh build before runtime | **One** `mvn clean package` + image **after L4** only — [`recipes/fresh-build-and-image.md`](recipes/fresh-build-and-image.md) |
-| End-to-end only when stand is healthy | Runtime `pass` requires stand health (§3.4) before Jaeger, log triage (§3.5), fresh build, provenance — see [`models/5-validation.md`](models/5-validation.md) |
-| No Jaeger-first pass | Spans in Jaeger while SUT crash-loops or is not Ready do not count as end-to-end pass |
+| Rule                                  | Reason                                                                                                                                                                                                                                                        |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Platform contract is binding          | Enforce common [`platform-tracing-guide.md`](../opentelemetry-tracing-common/reference/platform-tracing-guide.md): `TRACING_*`, OTLP `http/protobuf`, `b3multi`, `parentbased_traceidratio`, `${name}-${namespace}`, probe/metrics exclusion, log correlation |
+| Evidence-first                        | Every claim in an artifact cites a file/line or env key                                                                                                                                                                                                       |
+| No semantic auto-rename               | Attribute renames to semconv are **proposed**, never applied without confirmation — see common [`models/4-transformation.md`](../opentelemetry-tracing-common/models/4-transformation.md) §4.3                                                                |
+| One tracing stack                     | A migration plan must end with a single active tracer; no Brave/Jaeger client layered on OTel                                                                                                                                                                 |
+| Sampling & propagation are mandatory  | The validation plan fails if either is unknown or unverified                                                                                                                                                                                                  |
+| Preserve intent                       | Keep service names, sampling intent, and peer-compatible propagation across the migration                                                                                                                                                                     |
+| Confirm the export target             | `TRACING_HOST` default is `nc-diagnostic-agent`; confirm proxy/collector for the runtime environment — see common [`platform-tracing-guide.md`](../opentelemetry-tracing-common/reference/platform-tracing-guide.md) §Export                                  |
+| Defer versions                        | Read versions from the repository's `pom.xml`/BOM, never hardcode them                                                                                                                                                                                        |
+| Spring Boot 4 OTLP starter            | Parent 4.x requires `spring-boot-micrometer-tracing-opentelemetry` **and** Boot 4 `management.tracing.export.*` keys — see [`recipes/dependency-migration.md`](recipes/dependency-migration.md)                                                               |
+| Sync documentation on L4 edits        | When L4 changes deps/config/Helm/env, update readme, install notes, or Helm docs — see common [`models/4-transformation.md`](../opentelemetry-tracing-common/models/4-transformation.md) §Documentation sync                                                  |
+| Fresh build before runtime            | **One** `mvn clean package` + image **after L4** only — [`recipes/fresh-build-and-image.md`](recipes/fresh-build-and-image.md)                                                                                                                                |
+| End-to-end only when stand is healthy | Runtime `pass` requires stand health (§3.4) before Jaeger, log triage (§3.5), fresh build, provenance — see [`models/5-validation.md`](models/5-validation.md)                                                                                                |
+| No Jaeger-first pass                  | Spans in Jaeger while SUT crash-loops or is not Ready do not count as end-to-end pass                                                                                                                                                                         |
 
 ## 6. File index
 

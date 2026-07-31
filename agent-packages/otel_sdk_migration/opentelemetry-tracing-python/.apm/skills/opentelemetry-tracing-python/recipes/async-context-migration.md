@@ -4,7 +4,7 @@ Fixes for Layer 4 §4.4 (`asyncContextMigration`) — see common
 [`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
 §4.4.
 
-**Input:** each context-loss candidate from `discovery-result.asyncBoundaries` that remains `FAILED` in capability. 
+**Input:** each context-loss candidate from `discovery-result.asyncBoundaries` that remains `FAILED` in capability.
 **Goal:** one `trace_id` across the async boundary; downstream span is a child of the upstream span.
 
 Boundary signatures: [`../reference/detection-rules.md`](../reference/detection-rules.md)
@@ -12,13 +12,13 @@ Boundary signatures: [`../reference/detection-rules.md`](../reference/detection-
 
 ## asyncio (usually already fine)
 
-`contextvars` propagate automatically across `await` and `asyncio.create_task`, so the current OTel context 
+`contextvars` propagate automatically across `await` and `asyncio.create_task`, so the current OTel context
 follows a coroutine without extra work. Do **not** add carriers here — plain `async`/`await` is not a loss
 boundary. The loss happens when you leave the event loop (below).
 
 ## Thread pools / executors
 
-`ThreadPoolExecutor`, `loop.run_in_executor`, and raw `threading.Thread` do **not** copy 
+`ThreadPoolExecutor`, `loop.run_in_executor`, and raw `threading.Thread` do **not** copy
 `contextvars` — the OTel context is lost. Capture the context and re-attach it in the worker:
 
 ```python
@@ -39,8 +39,8 @@ executor.submit(work)
 
 ## Celery
 
-Prefer `opentelemetry-instrumentation-celery` — it injects/extracts context across the producer/worker boundary 
-automatically. When instrumenting manually, inject on publish and extract in the task before starting the 
+Prefer `opentelemetry-instrumentation-celery` — it injects/extracts context across the producer/worker boundary
+automatically. When instrumenting manually, inject on publish and extract in the task before starting the
 span, so the task span is a **child**, not a new root.
 
 ## Kafka
@@ -82,5 +82,5 @@ resp = await client.get(url, headers=headers)
 
 ## Validation
 
-After the fix, run the Layer 5 runtime scenario: trigger HTTP → produce → consume (when applicable) and 
+After the fix, run the Layer 5 runtime scenario: trigger HTTP → produce → consume (when applicable) and
 confirm a single `trace_id` with correct parent-child links in the tracing backend.

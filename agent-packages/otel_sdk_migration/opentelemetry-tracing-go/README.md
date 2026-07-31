@@ -13,10 +13,10 @@ The skill is orchestrated by
 the previous artifact and emits the next:
 
 | Layer             | File                         | Output                                          |
-|-------------------|------------------------------|-------------------------------------------------|
+| ----------------- | ---------------------------- | ----------------------------------------------- |
 | L1 Discovery      | `models/1-discovery.md`      | `discovery-result.json`                         |
-| L2 Capability     | `models/2-capability.md`     | delegated to common                           |
-| L3 Maturity       | `models/3-maturity.md`       | delegated to common                           |
+| L2 Capability     | `models/2-capability.md`     | delegated to common                             |
+| L3 Maturity       | `models/3-maturity.md`       | delegated to common                             |
 | L4 Transformation | `models/4-transformation.md` | shared plan + Go framework-stack/mechanism gate |
 | L5 Validation     | `models/5-validation.md`     | shared tiers + Go runtime execution rules       |
 

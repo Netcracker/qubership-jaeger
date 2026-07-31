@@ -42,7 +42,7 @@ Applies to every framework stack when these are the active tracing dependencies:
   `py-zipkin`, framework shims (`flask-opentracing`,
   `django-opentracing`), and the retired `opentelemetry-exporter-jaeger*`
   (when they form the active stack).
-- add: `opentelemetry-api`, `opentelemetry-sdk`, the OTLP HTTP exporter, and the B3 propagator 
+- add: `opentelemetry-api`, `opentelemetry-sdk`, the OTLP HTTP exporter, and the B3 propagator
   module (baseline below), plus the framework instrumentation package from the table above.
 
 ## Target baseline modules

@@ -106,7 +106,7 @@ Record the programmatic value as the effective one and mark the env value overri
 
 Find symbols:
 
-- OTel: `trace.get_tracer`, `tracer.start_as_current_span`, `start_span`, `trace.get_current_span`, 
+- OTel: `trace.get_tracer`, `tracer.start_as_current_span`, `start_span`, `trace.get_current_span`,
   `TracerProvider`, `set_tracer_provider`, `set_global_textmap`;
 - legacy: `opentracing.tracer`, `jaeger_client.Config`/`initialize_tracer`, `py_zipkin` symbols;
 - framework instrumentors (`FastAPIInstrumentor`, `DjangoInstrumentor`,
