@@ -14,6 +14,9 @@ metadata:
     {{- if .Values.hotrod.labels }}
       {{- toYaml .Values.hotrod.labels | nindent 4 }}
     {{- end }}
+    {{- if .Values.hotrod.ingress.labels }}
+      {{- toYaml .Values.hotrod.ingress.labels | nindent 4 }}
+    {{- end }}
   {{- if $annotations }}
   annotations:
     {{- toYaml $annotations | nindent 4 }}

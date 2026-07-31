@@ -2,7 +2,10 @@
 {{- $httpRouteSpec := $gatewayApi.grpcRoute | default dict -}}
 {{- $parentRefs := $httpRouteSpec.parentRefs | default list -}}
 {{- $hostnames := $httpRouteSpec.hosts | default list -}}
-{{- $rules := $httpRouteSpec.defaultPaths | default list -}}
+{{- $defaultRules := list
+      (dict "prefix" "/opentelemetry.proto.collector.trace.v1.TraceService/Export" "service" (dict "port" 4317))
+-}}
+{{- $rules := $httpRouteSpec.defaultPaths | default $defaultRules -}}
 {{- if and .Values.collector.install ($httpRouteSpec.install | default false) (eq ($httpRouteSpec.kind | default "HTTPRoute") "HTTPRoute") }}
 {{- $resourceName := include "collector.httpRoute.resourceName" (list $ "grpc") }}
 ---
@@ -11,11 +14,8 @@ kind: HTTPRoute
 metadata:
   name: {{ $resourceName }}
   labels:
-    name: {{ $resourceName }}
-    app.kubernetes.io/name: {{ $resourceName }}
     app.kubernetes.io/instance: {{ cat $.Values.jaeger.serviceName "-grpc-collector-" $.Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: collector
-    {{- include "jaeger.commonLabels" $ | nindent 4 }}
+    {{- include "jaeger.labels" (dict "ctx" $ "name" $resourceName "component" "collector") | nindent 4 }}
     {{- if $httpRouteSpec.labels }}
       {{- toYaml $httpRouteSpec.labels | nindent 4 }}
     {{- end }}

@@ -4,7 +4,14 @@
         "**/.git/**",
         "**/charts/*/templates/*/*.yaml",
         "**/charts/*/templates/*/*/*.yaml",
+        "**/charts/*/*/*.json",
+        "**/charts/*/values.schema.json",
+        "**/charts/*/values.yaml",
         "**/docs/examples/**",
+        "**/docs/installation.md",
+        "**/docs/observability.md",
+        "**/charts/*/templates/**/*.tpl",
+        "**/*_test.go",
         "**/agent-packages/**"
     ]
 }
