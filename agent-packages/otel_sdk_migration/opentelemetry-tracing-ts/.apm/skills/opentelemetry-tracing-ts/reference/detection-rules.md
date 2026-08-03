@@ -70,13 +70,10 @@ auto-selected by `@opentelemetry/sdk-node` from env. A hardcoded
 | `nestjs`    | `@nestjs/core`, `NestFactory.create(...)`; `@Module`/`@Controller` decorators           |
 | `pure-node` | OTel wiring with no web framework import (worker/CLI/consumer/`http.createServer` only) |
 
-Best-effort: Koa (`@opentelemetry/instrumentation-koa`), Hapi (`-hapi`), Restify
-(`-restify`), Connect (`-connect`), gRPC (`-grpc`), GraphQL/Apollo (`-graphql`),
-Socket.IO (`-socket.io`), Next.js (own `instrumentation.ts` hook, no contrib
-package), Hono/Elysia (nothing exists). The schema enum has no value for any of
-them: keep `service.framework` at `unknown` and, when the match is confident,
-record `framework: <name> (best-effort)` in `gaps` — Step 0 reads that phrasing.
-Mapping: [`framework-coverage.md`](framework-coverage.md).
+Best-effort stacks (Koa, Hapi, Restify, Connect, gRPC, GraphQL/Apollo, Socket.IO,
+Next.js, Hono/Elysia) have no enum value: detect them generically, keep
+`service.framework` at `unknown`, and take the instrumentation mapping and the
+`gaps` phrasing from [`framework-coverage.md`](framework-coverage.md).
 
 ## Runtime axes (module system + bundling)
 
@@ -217,9 +214,9 @@ platform contract fails validation when sampling stays `unknown`.
 
 The `sampler` option lives in `new NodeSDK({ sampler })` or
 `new NodeTracerProvider({ sampler })`. Record the ratio from the
-`TraceIdRatioBasedSampler` argument or `OTEL_TRACES_SAMPLER_ARG`. A wired
-`TRACING_SAMPLER_RATELIMITING` has no native Node equivalent — record the tier and
-put the mismatch in `gaps`.
+`TraceIdRatioBasedSampler` argument or `OTEL_TRACES_SAMPLER_ARG`. The platform
+sampler tier is resolved separately —
+[`../models/1-discovery.md`](../models/1-discovery.md) §1.6.
 
 ## Log-correlation signatures
 

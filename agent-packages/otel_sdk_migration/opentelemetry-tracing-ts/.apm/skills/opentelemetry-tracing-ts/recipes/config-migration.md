@@ -74,45 +74,28 @@ endpoint nobody is listening on, and the logs read like a broken collector.
 
 ## Load order (the Node config that breaks silently)
 
-Tracing setup must run before instrumented modules load. Configure the entrypoint,
-not just the code:
+The rule and the per-module-system forms:
+[`../reference/build-preconditions.md`](../reference/build-preconditions.md)
+§Load order; the loader-hook syntax to write:
+[`../models/4-transformation.md`](../models/4-transformation.md) §ESM loader hook.
+`--import` needs Node 18.19+/20.6+ — on an older major, plan the CommonJS `-r` form.
 
-- **CommonJS:** `node -r ./tracing.js dist/main.js`, or `require('./tracing')` as
-  the first statement of the entry file.
-- **ESM:** `node --import ./tracing.mjs dist/main.js` (top-level
-  `import './tracing.js'` is hoisted and runs too late) fixes load order. For the
-  `launcher`/auto-instrumentation mechanism this is **not** sufficient by itself —
-  monkey-patching wraps `require`, which ESM `import` bypasses — so the loader hook
-  has to come with it. On Node 20.6+ register it from the bootstrap with
-  `register('@opentelemetry/instrumentation/hook.mjs', import.meta.url)` from
-  `node:module`; Node warns that the older
-  `--experimental-loader=@opentelemetry/instrumentation/hook.mjs` flag may be
-  removed. Both forms are in
-  [`../models/4-transformation.md`](../models/4-transformation.md) §ESM loader hook.
-  `--import` itself needs Node 18.19+/20.6+; on an older major use the CommonJS
-  `-r` form. `hand-spans` needs only `--import`.
-- **Bundled:** externalize instrumented deps or use `hand-spans` — see
-  [`../reference/build-preconditions.md`](../reference/build-preconditions.md).
-
-This is a config/entrypoint change, not only source: update `package.json`
-`scripts.start`, the Dockerfile `CMD`/`ENTRYPOINT`, and any `NODE_OPTIONS`.
+What makes it a **config** row: the fix lands in `package.json` `scripts.start`,
+the Dockerfile `CMD`/`ENTRYPOINT`, and `NODE_OPTIONS` — not only in source. Emit a
+row for whichever of those the deploy path actually uses.
 
 ## Propagation
 
-**The migration preserves the wire format; it does not change it.** Carry the
-configured inject format across, raise a conflict with the contract as a
-**question** to the user, and on a greenfield service ask the user to pick
-`B3` / `B3_MULTI` / `W3C` / a multi-format set instead of choosing silently
-(common [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
+The migration carries the configured wire format across and never switches it on
+its own (common
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Propagation).
 
 `OTEL_PROPAGATORS` and programmatic `propagation.setGlobalPropagator` are both
-**runtime** in Node — the format stays switchable without a recompile. If **both**
-are present, **the first registration wins**: `@opentelemetry/api` rejects a
-duplicate global registration, so a `setGlobalPropagator` call placed **after**
-`provider.register()` / `sdk.start()` returns `false`, logs
-`Attempted duplicate registration of API: propagation`, and changes nothing —
-`OTEL_PROPAGATORS` stays effective. Plan the propagator on **one** surface.
+**runtime** in Node, so the format stays switchable without a recompile. Plan the
+propagator on **one** surface: with both present the first registration wins and
+the loser silently changes nothing ([`../models/1-discovery.md`](../models/1-discovery.md)
+§1.2).
 
 ### Where to set it
 
@@ -130,29 +113,19 @@ sdk.start();
 ```
 
 A standalone `propagation.setGlobalPropagator(...)` is only correct **before** the
-SDK registers (before `sdk.start()` / `provider.register()`). After it, the call is
-rejected and the plan row becomes a no-op that reads as configuration.
+SDK registers. After it, the plan row becomes a no-op that reads as configuration.
 
-### Name the class **and its options**, not just the format
-
-`new B3Propagator()` **defaults to `B3InjectEncoding.SINGLE_HEADER`** — it injects
-the **single** `b3` header. The contract `b3multi` (`X-B3-TraceId` /
-`X-B3-SpanId` / `X-B3-Sampled`) requires the multi-header option explicitly, as in
-the snippet above. The env values mirror this: `OTEL_PROPAGATORS=b3` selects the
-single-header form, `b3multi` the multi-header one.
-
-A plan row that says "b3multi" and ships a bare `new B3Propagator()` is wrong on
-the wire (single `b3`) while every end-to-end test still passes. Verify against the
+Always name the class **and its options**: a bare `new B3Propagator()` injects the
+single `b3` header, so a row that says `b3multi` and ships it is wrong on the wire
+while every end-to-end test passes. Verify the option against the
 `@opentelemetry/propagator-b3` version in `package.json`.
 
-### Composite: extract is last-wins, inject writes everything
+### Composite membership and order
 
-On **extract** `CompositePropagator` chains the context through each member in
-order (a `reduce`), so the **last** member that finds a context wins — put the
-format that should win last. On **inject** it loops every member so all formats
-are written (each to its own carrier keys); inject order does not change which
-formats are emitted. Derive membership and the winning end from the user's intent
-("B3 wins") — do not ask which end wins, and do not copy an order from another
+Which end of a composite wins on extract, and why inject is unaffected by order:
+common [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
+§Propagation. Derive membership and the winning end from the user's intent
+("B3 wins") — never ask which end wins, and never copy an order from another
 service's config.
 
 ```ts
@@ -266,15 +239,14 @@ OTEL_SERVICE_NAME=${MICROSERVICE_NAME}-${NAMESPACE}
 service has no format configured and the user chose it. An existing format is
 preserved instead — see §Propagation.
 
-The Node OTLP HTTP exporter treats the two endpoint variables differently. The
-signal-specific `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` is used **as-is** — give it
-the full traces URL including `/v1/traces` (the form above). The generic
-`OTEL_EXPORTER_OTLP_ENDPOINT` is a **base** URL — the exporter appends
-`/v1/traces` itself, so it must **not** already contain the path. Pick one form —
-putting `/v1/traces` on the generic variable produces a double `/v1/traces` path
-and silent export failure.
+Emit **one** endpoint variable, in its own form: the signal-specific
+`OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` carries the full URL including `/v1/traces`
+(above), while the generic `OTEL_EXPORTER_OTLP_ENDPOINT` is a base URL the exporter
+appends to. Writing the path on the generic one yields a double `/v1/traces` and
+silent export failure.
 
-`OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf` is honored only when the exporter is
-auto-selected from env (`@opentelemetry/sdk-node` with no explicit exporter). If
-the bootstrap does `new OTLPTraceExporter()`, import it from
-`@opentelemetry/exporter-trace-otlp-proto` so the encoding matches the contract.
+`OTEL_EXPORTER_OTLP_PROTOCOL` binds only when the exporter is auto-selected from
+env; a hardcoded `new OTLPTraceExporter()` must be imported from
+`@opentelemetry/exporter-trace-otlp-proto` instead
+([`../reference/detection-rules.md`](../reference/detection-rules.md) §OTLP
+exporter encoding).

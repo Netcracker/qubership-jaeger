@@ -67,33 +67,18 @@ Pass criteria:
   `@opentelemetry/api` peer, no duplicate `api`);
 - typecheck/compile exits 0 on TypeScript — a wrong OTel import or API drift fails
   here; on plain JavaScript the bootstrap smoke run exits 0 instead;
-- the L4 OTel packages sit in `dependencies`, not `devDependencies` — a runtime
-  stage doing `npm ci --omit=dev`, `npm prune --production`, or building with
-  `NODE_ENV=production` drops them from the image, and the symptom is identical to
-  a load-order bug: clean build, empty trace;
+- the L4 OTel packages sit in `dependencies`, not `devDependencies` — a pruning
+  runtime stage drops them and the symptom mimics a load-order bug
+  ([`validation-stack.md`](validation-stack.md) §No spans in the backend);
 - the tracing bootstrap loads first in the entrypoint (verify
   `scripts.start` / Dockerfile `CMD` / `NODE_OPTIONS` — CJS `-r`, ESM `--import`);
 - documented tests pass (or are recorded as absent in `gaps`).
 
-> **Common failure — bundled build, no spans.** If the service bundles
-> (esbuild/webpack/tsup/ncc) and keeps auto-instrumentation, the monkey-patch has
-> nothing to wrap at runtime — the build succeeds but no server span appears. Fix
-> by externalizing the instrumented dependencies from the bundle or switching to
-> `hand-spans` ([`../reference/build-preconditions.md`](../reference/build-preconditions.md)),
-> not by adding more instrumentation packages.
->
-> **Common failure — ESM load order.** A top-level `import './tracing.js'` in an
-> ESM entry is hoisted and runs after the instrumented imports are evaluated, so
-> instrumentation attaches to nothing. Use `node --import ./tracing.mjs` to fix
-> load order. If the mechanism is `launcher`/auto-instrumentation, `--import`
-> alone still leaves no spans on ESM — the loader hook has to come with it
-> (auto-instrumentation cannot monkey-patch an ESM `import` without it).
-> On Node 20.6+ prefer `register()` from `node:module` inside the bootstrap over
-> `--experimental-loader`, which Node warns may be removed — the form to plan is in
-> [`../models/4-transformation.md`](../models/4-transformation.md) §ESM loader hook.
-> `--import` itself needs Node 18.19+/20.6+; on an older major use CJS `-r` and
-> record the constraint. `hand-spans` only needs `--import`. The compile passes
-> either way; the trace is empty until both are correct.
+> **A green compile proves nothing about spans.** The two failures that pass this
+> step and still ship an empty trace are the bundler eating the monkey-patch and
+> ESM load order — both, with their fixes, in
+> [`../reference/build-preconditions.md`](../reference/build-preconditions.md)
+> §Bundling and §Load order. Neither is fixed by adding instrumentation packages.
 
 ## Step 2 — Build image
 

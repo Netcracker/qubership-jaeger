@@ -29,8 +29,8 @@ whether the tracing bootstrap loads at all.
 - build/compile command (`tsc`, `npm run build`, bundler command) and output directory;
 - **image layout** — multi-stage or single-stage, whether the runtime stage prunes dev dependencies
   (`npm ci --omit=dev`, `npm prune --production`, `NODE_ENV=production`), and which files it copies (`dist/`,
-  `node_modules/`, the tracing bootstrap). L4 OTel packages must land in `dependencies`: from `devDependencies` they
-  are pruned out of the image, and the result looks exactly like a load-order failure — clean build, empty trace;
+  `node_modules/`, the tracing bootstrap). This decides whether L4 may put OTel packages in `devDependencies`
+  (it may not — [`../recipes/validation-stack.md`](../recipes/validation-stack.md) §No spans in the backend);
 - module system (ESM/CJS) and whether the artifact is bundled;
 - the env-injection surface for `TRACING_*` and `NODE_OPTIONS` — Helm `values.yaml` keys plus the template consuming
   them, Deployment `env`/`envFrom`, ConfigMap, `.env` + `dotenv`, or a NestJS `ConfigModule` schema that rejects

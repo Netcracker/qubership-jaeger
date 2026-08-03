@@ -24,25 +24,16 @@ non-web worker/library — not "one repository = one stack" by default.
 Read `discovery-result.service.framework` and pick exactly one migration path.
 Do not emit §4.1 or §4.2 rows before this is fixed.
 
-| `service.framework` | Target instrumentation                                                                                                                                                                                                                         | Config surface           |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| `express`           | `@opentelemetry/instrumentation-http` + `-express` + SDK + OTLP proto + B3 propagator                                                                                                                                                          | env + bootstrap module   |
-| `fastify`           | `@opentelemetry/instrumentation-http` + `@fastify/otel` + SDK + OTLP proto + B3 (**not** the deprecated `-fastify`)                                                                                                                            | env + bootstrap module   |
-| `nestjs`            | `@opentelemetry/instrumentation-nestjs-core` + `-http` + the underlying HTTP adapter (`-express`, or `@fastify/otel` on the `FastifyAdapter`) + SDK                                                                                            | env + bootstrap module   |
-| `pure-node`         | `@opentelemetry/sdk-node` (or `sdk-trace-node`) + OTLP proto exporter + B3 propagator, plus `-http` when the process serves or calls HTTP (no web-framework middleware)                                                                        | env + programmatic setup |
-| `unknown`           | if `gaps` names a confidently identified best-effort framework, its contrib instrumentation from [`../reference/framework-coverage.md`](../reference/framework-coverage.md); otherwise the conservative SDK path. Record assumptions in `gaps` | env                      |
+The package set per stack — including the Fastify plugin registration, the NestJS
+adapter, and the `fetch()`/undici requirement that applies to every stack — is
+[`../reference/framework-coverage.md`](../reference/framework-coverage.md). What
+this gate adds is the **config surface** the plan must target:
 
-NestJS runs on Express or Fastify underneath: `-nestjs-core` alone gives
-controller/provider spans but **not** the HTTP server span — add the HTTP
-instrumentation and the matching adapter instrumentation.
-
-`@fastify/otel` is a Fastify **plugin**, so it is not wired by the launcher: register
-it on the app (`await app.register(instr.plugin())`) or pass
-`new FastifyOtelInstrumentation({ registerOnInitialization: true })` in the `NodeSDK`
-`instrumentations` array. A Fastify plan whose mechanism is `launcher` and that names
-no explicit registration produces HTTP spans and no route spans. Outbound `fetch()`
-also needs `@opentelemetry/instrumentation-undici` — `-http` does not cover it. See
-[`../reference/framework-coverage.md`](../reference/framework-coverage.md).
+| `service.framework`           | Config surface           |
+| ----------------------------- | ------------------------ |
+| `express`, `fastify`, `nestjs` | env + bootstrap module   |
+| `pure-node`                   | env + programmatic setup |
+| `unknown`                     | env; take the contrib instrumentation when `gaps` names a confident best-effort framework, otherwise the conservative SDK path, and record the assumption |
 
 Pull versions from the repository manifest (`package.json`/lockfile); never pin
 in the plan.
@@ -60,13 +51,9 @@ reject the forbidden combinations in the plan:
 
 - **End with one active tracing stack.** Remove Zipkin/OpenTracing/Jaeger client
   as active tracing stacks.
-- **Name the mechanism explicitly — Node has three.** `launcher` (the zero-code
-  `@opentelemetry/auto-instrumentations-node/register` loaded via `-r`/`--require`
-  or `NODE_OPTIONS`/ESM `--import`, auto-instruments every detected library at
-  startup), `sdk` (a programmatic bootstrap that constructs `NodeSDK` /
-  `NodeTracerProvider` and calls `registerInstrumentations({...})` /
-  `getNodeAutoInstrumentations()`), and `hand-spans` (spans written by hand with
-  `startActiveSpan`). The plan states which one it targets.
+- **Name the mechanism explicitly — Node has three.** `launcher`, `sdk`, and
+  `hand-spans`, defined in [`1-discovery.md`](1-discovery.md) §1.4. The plan states
+  which one it targets.
 - **`pure-node` → the launcher still applies when the process uses instrumented
   libraries.** `auto-instrumentations-node` covers messaging and data clients
   (kafkajs, amqplib, pg, MySQL, MongoDB, redis/ioredis, the HTTP client), so a
@@ -81,28 +68,16 @@ reject the forbidden combinations in the plan:
   Do **not** run the launcher *and* call `registerInstrumentations()` for the same
   library — double-registration can duplicate spans. Choose `launcher` **or** the
   programmatic `sdk` path.
-- **Load order is non-negotiable.** The tracing bootstrap must run **before** any
-  instrumented module is loaded. In **CommonJS**, `require('./tracing')` as the
-  first line (or `node -r ./tracing.js`) works. In **ESM**, a top-level
-  `import './tracing.js'` does **not** — ESM hoists all `import`s in a module, so
-  the instrumented libraries may be evaluated before the bootstrap runs; use
-  `node --import ./tracing.mjs` instead. `--import` alone fixes only the *load
-  order* (the SDK initializes first). It does **not** make the launcher's
-  monkey-patch instrumentation able to wrap ESM modules — CJS patching relies on
-  overriding `require`, which ESM `import` never goes through. For the `launcher`
-  mechanism on ESM, add `--experimental-loader=@opentelemetry/instrumentation/hook.mjs`
-  **in addition to** `--import`, not instead of it: `node
-  --experimental-loader=@opentelemetry/instrumentation/hook.mjs --import
-  ./tracing.mjs dist/main.mjs` — but see the `register()` form below, which is the
-  current one. The `hand-spans` mechanism needs only `--import` (there is nothing
-  to monkey-patch). Encode this in the plan per `service.moduleSystem` **and** the
-  chosen mechanism.
-- **Bundler defeats monkey-patching.** If `service.bundled` is true, a bundler
-  (esbuild/webpack/rollup/tsup/ncc) inlines `require`/`import`, so the
-  instrumentation packages have nothing to patch at runtime. Either externalize
-  the instrumented dependencies from the bundle (mark them external / keep them in
-  `node_modules`) or target `hand-spans`. Record the chosen resolution in the plan
-  — see [`../reference/build-preconditions.md`](../reference/build-preconditions.md).
+- **Load order is non-negotiable**, and on ESM the `launcher` mechanism needs the
+  loader hook **in addition to** `--import` — mechanics and why `--import` alone is
+  not enough: [`../reference/build-preconditions.md`](../reference/build-preconditions.md)
+  §Load order. The plan encodes the resulting entrypoint per `service.moduleSystem`
+  **and** the chosen mechanism; the current form is §ESM loader hook below.
+- **Bundler defeats monkey-patching.** When `service.bundled` is true, either
+  externalize the instrumented dependencies or target `hand-spans`, and record the
+  resolution in the plan —
+  [`../reference/build-preconditions.md`](../reference/build-preconditions.md)
+  §Bundling.
 - **Correct OTLP exporter package.** For the contract `http/protobuf` use
   `@opentelemetry/exporter-trace-otlp-proto`. `-otlp-http` (JSON) and `-otlp-grpc`
   are not the contract format — do not substitute silently.

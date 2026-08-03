@@ -49,12 +49,9 @@ if (!serviceName || !namespace) {
 `await`, and wires a `BatchSpanProcessor` around `traceExporter` for you. Sampler
 and propagator can come from `OTEL_*` env instead of code.
 
-**Set the propagator in exactly one place.** `textMapPropagator` above is that
-place. A `propagation.setGlobalPropagator(...)` call added **after** `sdk.start()`
-is **rejected** — `@opentelemetry/api` refuses a duplicate global registration, the
-call returns `false` and logs `Attempted duplicate registration of API:
-propagation`, and the SDK's propagator stays in effect. See
-[`config-migration.md`](config-migration.md) §Propagation.
+**Set the propagator in exactly one place** — `textMapPropagator` above is that
+place, and a `setGlobalPropagator(...)` added after `sdk.start()` is silently
+rejected ([`config-migration.md`](config-migration.md) §Propagation).
 
 **API version note (verify against the manifest).** The boundary is the
 `@opentelemetry/resources` major. On **2.x** the resource is built with
@@ -154,17 +151,11 @@ registerInstrumentations({
 });
 ```
 
-**Register each instrumentation once, through one path.** Either pass the array to
-`NodeSDK({ instrumentations: [...] })` **or** call `registerInstrumentations(...)`
-separately — never both for the same library, and never either of them alongside
-the `@opentelemetry/auto-instrumentations-node/register` launcher (Step 0b in
-[`../models/4-transformation.md`](../models/4-transformation.md)). Double
-registration can duplicate spans.
-
-NestJS also needs `@opentelemetry/instrumentation-nestjs-core` plus the adapter —
-`-express`, or `@fastify/otel` registered on the `FastifyAdapter` instance
-(`app.getHttpAdapter().getInstance()`), since `@opentelemetry/instrumentation-fastify`
-is deprecated and a plugin is never wired by the launcher.
+**Register each instrumentation once, through one path** — the XOR against the
+launcher and the `NodeSDK({ instrumentations })` alternative are Step 0b in
+[`../models/4-transformation.md`](../models/4-transformation.md). Per-stack package
+sets, including the NestJS adapter and the Fastify plugin:
+[`../reference/framework-coverage.md`](../reference/framework-coverage.md).
 
 ## Mechanical rewrites (may apply on confirmation)
 
@@ -192,18 +183,12 @@ These change control flow or replace a whole bootstrap, so they need a human dif
 | `new Tracer({...})` + zipkin transport | `NodeSDK` + OTLP proto exporter + OTel instrumentations                                       |
 | `opentracing.globalTracer()` use       | `trace.getTracer(name)` + `trace.getActiveSpan()`                                             |
 
-## Semantic renames (proposal-only)
-
-Attribute renames toward OpenTelemetry semantic conventions (e.g. custom
-`http_path` → `http.route`, business keys) are **never** auto-applied. List them in
-`codeMigration.semantic` and ask for confirmation (common
-[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
-§4.3).
-
 ## Guardrails
 
-- Keep one active tracing stack.
-- Preserve business/service naming intent.
+- Attribute renames toward semantic conventions (custom `http_path` → `http.route`,
+  business keys) go to `codeMigration.semantic` — never auto-applied, common
+  [`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
+  §4.3.
 - Never write secrets or unbounded payloads to span attributes.
 - Prefer `startActiveSpan` (activates the span in context) over `startSpan`
   (creates a detached span you must pass manually) unless you deliberately manage

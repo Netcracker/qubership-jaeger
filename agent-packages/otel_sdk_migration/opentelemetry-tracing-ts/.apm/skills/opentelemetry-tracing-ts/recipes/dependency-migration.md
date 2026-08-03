@@ -13,18 +13,11 @@ Step 0 (framework stack) before emitting §4.1 rows — dependency moves follow
 
 ## Framework stack → dependency path
 
-| `service.framework` | §4.1 focus                                                                                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `express`           | baseline + `@opentelemetry/instrumentation-http` + `-express`                                                                                                |
-| `fastify`           | baseline + `@opentelemetry/instrumentation-http` + `@fastify/otel`                                                                                           |
-| `nestjs`            | baseline + `-nestjs-core` + `-http` + adapter (`-express` or `@fastify/otel`)                                                                                |
-| `pure-node`         | OTel SDK baseline + `-http` when the process serves or calls HTTP                                                                                            |
-| `unknown`           | if `gaps` carries `framework: <name> (best-effort)`, that framework's contrib instrumentation; otherwise conservative baseline. Record assumptions in `gaps` |
-
-Add `@opentelemetry/instrumentation-undici` to **any** of the rows above when the
-service calls peers with global `fetch()`: Node's `fetch` is undici, not the `http`
-module, so `-http` emits no client span and injects no trace headers, and the trace
-chain ends at this service while its own spans still look correct.
+§4.1 is the **baseline below** plus the instrumentation packages the detected stack
+needs — per-stack sets, the `fetch()`/undici requirement that applies to all of
+them, and the best-effort mapping for `framework: unknown`:
+[`../reference/framework-coverage.md`](../reference/framework-coverage.md). Record
+in `gaps` whatever the `unknown` row had to assume.
 
 Add the messaging instrumentation for every `asyncBoundaries` entry the plan fixes
 in §4.4 — `@opentelemetry/instrumentation-kafkajs` for kafka producers/consumers,
@@ -35,16 +28,6 @@ hand-rolled inject/extract, so §4.1 has to bring them in
 Framework and instrumentation signatures:
 [`../reference/detection-rules.md`](../reference/detection-rules.md). Coverage and
 best-effort stacks: [`../reference/framework-coverage.md`](../reference/framework-coverage.md).
-
-## Source-of-truth constraints
-
-From the common platform contract
-([`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)):
-
-- preferred client library: OpenTelemetry SDK for Node.js;
-- framework instrumentation is allowed only if it preserves platform requirements;
-- Jaeger/OpenTracing/Zipkin client libraries are retired migration targets;
-- OTLP is the recommended export format.
 
 ## Legacy → OTel moves
 

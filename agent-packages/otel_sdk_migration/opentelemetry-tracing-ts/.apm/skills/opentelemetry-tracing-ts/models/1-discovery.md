@@ -14,36 +14,21 @@ Run sections **1.0–1.6**; emit every required JSON object. Missing evidence �
 
 ## 1.0 Framework and runtime discovery
 
-Set `service.framework` (schema enum) and optional `service.name`. Detect from
-**generic signatures** (imported web framework, HTTP server bootstrap), not from
-a fixed whitelist — classify to a first-class value only when the evidence is
-confident, otherwise `unknown`. First-class coverage and best-effort fallbacks:
+Set `service.framework` (schema enum) and optional `service.name` from
+[`../reference/detection-rules.md`](../reference/detection-rules.md) §Framework
+signatures. Classify to a first-class value only on confident evidence, otherwise
+`unknown` — best-effort handling and the `gaps` phrasing Step 0 reads:
 [`../reference/framework-coverage.md`](../reference/framework-coverage.md).
 
-| Framework   | Typical evidence                                                                            |
-| ----------- | ------------------------------------------------------------------------------------------- |
-| `express`   | `import express` / `require('express')`; `express()` app; `app.listen(...)`                 |
-| `fastify`   | `import Fastify` / `require('fastify')`; `fastify()` instance; `app.listen(...)`            |
-| `nestjs`    | `@nestjs/core`, `NestFactory.create(...)`, `@Module`/`@Controller` decorators               |
-| `pure-node` | OTel wired without a web framework above (worker, CLI, library, consumer, http.Server only) |
-| `unknown`   | insufficient or best-effort evidence (Koa, Hapi, Restify, GraphQL, Next.js…) — see below    |
+Also resolve the two runtime axes that drive the whole migration in Node
+(signatures: `detection-rules.md` §Runtime axes):
 
-The enum has no value for the best-effort frameworks. When one is identified
-confidently, keep `service.framework` at `unknown` **and** record it in `gaps` as
-`framework: <name> (best-effort)` — that exact phrasing is what the Step 0 `unknown`
-row reads to route to the matching contrib instrumentation instead of the bare SDK.
-
-Also resolve two runtime axes that drive the whole migration in Node:
-
-- **`service.moduleSystem`** — `esm` / `commonjs` / `dual` / `unknown`. Read
-  `package.json` `"type"`, `tsconfig.json` `compilerOptions.module` /
-  `moduleResolution`, and `.mjs`/`.cjs` extensions. This decides the
-  instrumentation hook (CommonJS `-r`/`--require` vs ESM `--import` + loader hook)
-  — see [`../models/4-transformation.md`](../models/4-transformation.md) Step 0b.
-- **`service.bundled`** — true when the deployed artifact is produced by a bundler
-  (esbuild/webpack/rollup/tsup/swc bundle, `ncc`, a single `dist/index.js`).
-  Bundling inlines `require`/`import` and can defeat monkey-patch
-  auto-instrumentation; record it here so L4 picks a mechanism that survives it
+- **`service.moduleSystem`** — `esm` / `commonjs` / `dual` / `unknown`. Decides the
+  instrumentation hook (CommonJS `-r`/`--require` vs ESM `--import` + loader hook),
+  planned in [`../models/4-transformation.md`](../models/4-transformation.md) Step 0b.
+- **`service.bundled`** — bundling inlines `require`/`import` and can defeat
+  monkey-patch auto-instrumentation; record it here so L4 picks a mechanism that
+  survives it
   ([`../reference/build-preconditions.md`](../reference/build-preconditions.md)).
 
 ## 1.1 Dependency discovery
@@ -55,28 +40,11 @@ Inputs:
 - lockfiles: `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `npm-shrinkwrap.json`;
 - optional `npm ls` / `pnpm why` output for transitive resolution.
 
-Classify tracing artifacts into buckets (catalogue in `detection-rules.md`):
-
-- **legacy**: `opentracing`, `jaeger-client`, `zipkin` /
-  `zipkin-instrumentation-*`, the retired `@opentelemetry/exporter-jaeger`,
-  and non-OTel APM agents used as the tracing stack (`dd-trace`,
-  `elastic-apm-node`, `newrelic`) when they **are** the tracing stack. Map
-  `@opentelemetry/exporter-jaeger` and `@opentelemetry/exporter-zipkin` to
-  `bucket: legacy`, `technology: otel-exporter` — they are retired or off-contract
-  OTel exporters, not the `jaeger-client`/`zipkin` tracers;
-- **modern**: `@opentelemetry/api`, `@opentelemetry/sdk-trace-node` /
-  `@opentelemetry/sdk-trace-base` / `@opentelemetry/sdk-node`, OTLP exporters
-  (`@opentelemetry/exporter-trace-otlp-proto` / `-otlp-http` / `-otlp-grpc`), the
-  B3 propagator (`@opentelemetry/propagator-b3`), instrumentation packages
-  (`@opentelemetry/instrumentation-*`), and the auto-instrumentation meta package
-  (`@opentelemetry/auto-instrumentations-node`).
-
-Set aggregate flags:
-
-- `hasOtelApi`
-- `hasOtelSdk`
-- `hasExporter`
-- `hasLegacy`
+Classify every tracing artifact into a bucket and set the aggregate flags
+(`hasOtelApi`, `hasOtelSdk`, `hasExporter`, `hasLegacy`) — package catalogue,
+bucket assignments, and the support-package exclusions:
+[`../reference/detection-rules.md`](../reference/detection-rules.md) §Dependency
+signatures.
 
 ## 1.2 Configuration discovery
 
@@ -99,53 +67,28 @@ Collect:
 - propagation **inject** and **extract** sets (separately — see below) and per-component wiring (HTTP/Kafka/async);
 - sampler type and ratio;
 - `service.entrypoint` — the resolved launch command, verbatim;
-- `instrumentation.hook` — how the bootstrap is loaded: `require` (`-r`/`--require`
-  or `NODE_OPTIONS`), `import` (ESM `--import`), `loader+import`
-  (`--experimental-loader=@opentelemetry/instrumentation/hook.mjs` **plus**
-  `--import`), `none`, or `unknown`. Record what the command **actually** contains;
-  do not infer it from `moduleSystem`. The mismatch is the finding: ESM plus a
-  launcher with `import` alone and no loader hook means monkey-patch
-  instrumentation never wraps anything, and the service exports an empty trace
-  while every dependency and env var looks correct.
+- `instrumentation.hook` — record what the launch command **actually** contains
+  (§1.4); never infer it from `moduleSystem`. The mismatch between the two is the
+  finding, not an inconsistency to smooth over.
 
-### Export encoding is set by the package, not only the env var
-
-In Node the OTLP encoding follows the **exporter package**:
-`@opentelemetry/exporter-trace-otlp-proto` = `http/protobuf` (contract),
-`@opentelemetry/exporter-trace-otlp-http` = `http/json`,
-`@opentelemetry/exporter-trace-otlp-grpc` = gRPC. `OTEL_EXPORTER_OTLP_PROTOCOL`
-only takes effect when the exporter is auto-selected from the environment
-(`@opentelemetry/sdk-node` with no explicit exporter). When code does
-`new OTLPTraceExporter()` imported from a specific package, that package fixes the
-encoding regardless of the env var. Record the resolved `protocol` from whichever
-wins.
+Record the resolved export `protocol` from whichever source wins — in Node the
+exporter **package** fixes the encoding and the env var only applies to an
+env-selected exporter (`detection-rules.md` §OTLP exporter encoding).
 
 ### Propagation: two sets, resolved from the actual configuration
 
-Record `propagation.inject` and `propagation.extract` separately. On **extract** a
-`CompositePropagator` chains the context through each member in order (implemented
-as a `reduce`), so the **last** member that finds a context wins — same as the Go
-and OTel-native composites in the common guide. On **inject** it fans out —
-writing **all** configured formats, each to its own carrier keys. A merged list
-hides the case where a service reads B3 and still emits only `traceparent`. Record
-the order as written; do not reorder or dedupe it. See
+Record `propagation.inject` and `propagation.extract` separately, in the order
+written — do not reorder or dedupe. Why the two directions differ, and which end of
+a composite wins on extract:
 [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
-§Propagation.
+§Propagation. Both sources are `runtime` scope in Node; there is no build-time
+propagation surface.
 
-Sources, both `runtime` scope in Node (there is no build-time propagation
-surface):
-
-- `OTEL_PROPAGATORS` env (`b3`, `b3multi`, `tracecontext`, `jaeger`, …);
-- programmatic `propagation.setGlobalPropagator(...)` — read the **class and its
-  options**, not just the presence of B3. `new B3Propagator()` **defaults to
-  `B3InjectEncoding.SINGLE_HEADER`** — it injects the **single** `b3` header;
-  `b3multi` (`X-B3-TraceId`/`X-B3-SpanId`/`X-B3-Sampled`) requires
-  `new B3Propagator({ injectEncoding: B3InjectEncoding.MULTI_HEADER })`. The env
-  value `b3` maps to single-header, `b3multi` to multi-header. Mechanism and
-  source coordinates:
-  [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
-  §Verify constructor defaults — check them against the `@opentelemetry/propagator-b3`
-  version in the repo's `package.json`, not the version cited there.
+Read the propagator **class and its options**, not just the presence of B3 — the
+constructor default is single-header `b3`, not `b3multi`
+(`detection-rules.md` §Code signatures). Verify it against the
+`@opentelemetry/propagator-b3` version in the repo's `package.json`, not against a
+version cited elsewhere: guide §Verify constructor defaults.
 
 If **both** `OTEL_PROPAGATORS` and a programmatic `setGlobalPropagator(...)` are
 present, **the first registration wins**. `@opentelemetry/api` refuses a duplicate
@@ -168,32 +111,16 @@ not `none`.
 
 ## 1.3 API discovery (AST/symbol)
 
-Find symbols across `.ts`/`.tsx`/`.js`/`.mjs`/`.cjs`:
-
-- OTel: `trace.getTracer`, `tracer.startActiveSpan`, `tracer.startSpan`,
-  `trace.getActiveSpan`, `NodeTracerProvider`, `NodeSDK`, `trace.setGlobalTracerProvider`,
-  `propagation.setGlobalPropagator`, `registerInstrumentations`;
-- legacy: `opentracing` global tracer, `jaeger-client` `initTracer`/`new Tracer`,
-  `zipkin` (`Tracer`, `zipkin-instrumentation-*`) symbols;
-- framework instrumentations (`ExpressInstrumentation`, `NestInstrumentation`,
-  `HttpInstrumentation`, `UndiciInstrumentation`, `FastifyOtelInstrumentation`) —
-  signatures in `detection-rules.md`. `FastifyInstrumentation` from
-  `@opentelemetry/instrumentation-fastify` is a **deprecated** stack: record it and
-  raise the replacement (`@fastify/otel`) as a gap.
-
-Record `family`, `symbol`, `file`, `line`.
+Scan `.ts`/`.tsx`/`.js`/`.mjs`/`.cjs` for the OTel, legacy, and framework-
+instrumentation symbols catalogued in
+[`../reference/detection-rules.md`](../reference/detection-rules.md) §Code
+signatures. Record `family`, `symbol`, `file`, `line` for each hit.
 
 ## 1.4 Instrumentation discovery
 
-Classify `instrumentation.mode`:
-
-- `auto`: no explicit spans but zero-code launcher evidence
-  (`@opentelemetry/auto-instrumentations-node/register` via `-r`/`--require` or
-  `NODE_OPTIONS`, ESM `--import`) or programmatic `registerInstrumentations({...})`
-  / `getNodeAutoInstrumentations()` calls;
-- `manual`: explicit span creation in app code (`startActiveSpan`/`startSpan`);
-- `mixed`: both;
-- `none`: no evidence.
+Classify `instrumentation.mode` (`auto` / `manual` / `mixed` / `none`) from
+`detection-rules.md` §Instrumentation mode signatures, and `instrumentation.hook`
+from §Bootstrap load hook.
 
 Then classify `instrumentation.mechanism` — `mode` is shared across languages and
 collapses two different Node setups into `auto`, while
@@ -213,53 +140,24 @@ resolve the XOR.
 
 ## 1.5 Async-boundary discovery
 
-Detect context-loss candidates. **Note:** with the Node context manager
-(`AsyncLocalStorageContextManager`, registered automatically by
-`NodeTracerProvider.register()` / `NodeSDK`), OTel context propagates
-automatically across `await`, resolved Promises, `queueMicrotask`, `setTimeout`,
-`setImmediate`, and most callback APIs — so plain `async`/`await` is **not** a
-loss boundary; do not record it as one. The real losses are:
-
-- worker threads (`worker_threads`, `new Worker(...)`, Piscina) — separate thread,
-  `AsyncLocalStorage` does not cross it;
-- child processes / subprocess (`child_process` `spawn`/`fork`/`exec`);
-- Kafka producers/consumers (`kafkajs`, `node-rdkafka`) and other messaging libs;
-- message queues / background jobs (`amqplib` / RabbitMQ, `bull`/`bullmq`,
-  `@aws-sdk` SQS, `nats`);
-- `EventEmitter` listeners that run detached from the originating async context
-  (emitted after the store scope exited);
-- outbound HTTP clients in a worker/consumer when made outside an active span.
-
-Mark `contextWrapper` true only when context is explicitly propagated (captured
-`context.with(...)` / `context.bind(...)`, OTel Kafka/messaging instrumentation,
-or manual inject/extract).
-
-**Setup pitfall (record as a boundary/gap when present):** a provider built from
-`@opentelemetry/sdk-trace-base` `BasicTracerProvider` without the Node context
-manager loses context even across a plain `await`. Prefer
-`@opentelemetry/sdk-trace-node` `NodeTracerProvider` or `NodeSDK`, which register
-the `AsyncLocalStorageContextManager`.
+Record each context-loss candidate with its boundary type and `contextWrapper`
+flag. Boundary catalogue, the `AsyncLocalStorage` exemptions (plain `async`/`await`
+is **not** a loss boundary), and the `BasicTracerProvider` setup gap:
+[`../reference/detection-rules.md`](../reference/detection-rules.md)
+§Async-boundary signatures.
 
 ## 1.6 Platform-contract discovery
 
-Collect mandatory contract evidence:
+Resolve every facet of `platformContract` from the Node signals — signature
+sources and the two Node deltas:
+[`../reference/detection-rules.md`](../reference/detection-rules.md)
+§Platform-contract signatures.
 
-- `TRACING_ENABLED`, `TRACING_HOST`, `TRACING_SAMPLER_*`;
-- **sampler tier** (`samplerTier`) — which of `TRACING_SAMPLER_RATELIMITING` /
-  `TRACING_SAMPLER_PROBABILISTIC` / `TRACING_SAMPLER_CONST` is wired, per the
-  contract priority ratelimiting > probabilistic > const. The Node OTel SDK has
-  **no native rate-limiting sampler**, so a wired `TRACING_SAMPLER_RATELIMITING`
-  cannot be honored natively — record it in `gaps` and expect a parent-based ratio
-  approximation at L4 (this is distinct from `samplerType`, the OTel sampler class);
-- OTLP `http/protobuf` path and host alias (and the exporter package that fixes
-  the encoding);
-- propagation — the injected format (contract default `b3multi`) and the
-  extracted set, resolved from the propagator class/options/env value;
-- `parentbased_traceidratio` or equivalent parent-based ratio behavior;
-- `service.name=${name}-${namespace}` and namespace source
-  (Downward API/Helm/SA file);
-- excluded probe/metrics endpoints;
-- `traceId`/`spanId` in log output.
+One field is L1's own decision: **`samplerTier`** records which of
+`TRACING_SAMPLER_RATELIMITING` / `_PROBABILISTIC` / `_CONST` is wired, by contract
+priority, and is distinct from `samplerType` (the OTel sampler class). Node has no
+native rate-limiting sampler, so a wired `TRACING_SAMPLER_RATELIMITING` goes into
+`gaps` and L4 approximates it with a parent-based ratio.
 
 For missing inspectable evidence, use `unknown` and record `gaps`.
 

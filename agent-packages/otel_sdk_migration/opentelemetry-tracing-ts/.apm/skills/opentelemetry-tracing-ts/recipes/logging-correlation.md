@@ -53,30 +53,16 @@ no record is missing them and the field names match the contract:
 
 ```ts
 import pino from 'pino';
-import { trace, isSpanContextValid } from '@opentelemetry/api';
 
-const logger = pino({
-  mixin() {
-    const ctx = trace.getActiveSpan()?.spanContext();
-    return ctx && isSpanContextValid(ctx) ? { traceId: ctx.traceId, spanId: ctx.spanId } : {};
-  },
-});
+const logger = pino({ mixin: traceFields });
 ```
 
 ## winston (format that stamps contract fields)
 
 ```ts
 import { createLogger, format, transports } from 'winston';
-import { trace, isSpanContextValid } from '@opentelemetry/api';
 
-const traceFormat = format((info) => {
-  const ctx = trace.getActiveSpan()?.spanContext();
-  if (ctx && isSpanContextValid(ctx)) {
-    info.traceId = ctx.traceId;
-    info.spanId = ctx.spanId;
-  }
-  return info; // no span → no keys, same as pino above
-});
+const traceFormat = format((info) => Object.assign(info, traceFields()));
 
 const logger = createLogger({
   format: format.combine(traceFormat(), format.json()),
@@ -122,10 +108,6 @@ formatters: {
 > gaps. The mixin/format approach above does not have this failure mode because it
 > sets the fields on *every* record. If you use the instrumentation, verify the
 > logger is created after the bootstrap and map the field names.
-
-Registering a `TracerProvider` does **not** wire log correlation by itself: spans
-reaching the backend prove export, not correlation. Always verify the fields in
-actual log output as a separate check.
 
 ## Correlation is independent of sampling
 

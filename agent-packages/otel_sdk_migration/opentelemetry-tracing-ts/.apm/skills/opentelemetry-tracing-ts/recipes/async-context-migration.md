@@ -15,24 +15,17 @@ concrete mechanism applied below.
 Boundary signatures: [`../reference/detection-rules.md`](../reference/detection-rules.md)
 § Async-boundary signatures.
 
-**Every span opened by hand must end on every path.** `startActiveSpan` does not
-end the span for you: a throw inside the callback leaks it, and the span is never
-exported. Each snippet below closes in `finally` and records the error — keep that
+Every snippet below closes the span in `finally` and records the error — keep that
 shape when applying the fix.
 
 ## await / Promises / timers (usually already fine)
 
-With the Node context manager (`AsyncLocalStorageContextManager`, registered by
-`NodeSDK` / `NodeTracerProvider.register()`), OTel context follows `await`,
-resolved Promises, `queueMicrotask`, `setTimeout`, and `setImmediate`
-automatically. Do **not** add carriers here — plain `async`/`await` is not a loss
-boundary. The loss happens when you leave the thread, the process, or the broker
-(below).
-
-**Setup check first:** if the provider is a `BasicTracerProvider` from
-`@opentelemetry/sdk-trace-base` with no context manager, even `await` loses
-context. Switch to `@opentelemetry/sdk-trace-node` / `NodeSDK` before adding
-manual carriers.
+Do **not** add carriers here: the Node context manager already carries context
+across `await`, Promises, and timers, and the one setup that breaks it is a
+`BasicTracerProvider` with no context manager — both in
+[`../reference/detection-rules.md`](../reference/detection-rules.md)
+§Async-boundary signatures. Fix that provider before adding any manual carrier.
+Real loss starts where you leave the thread, the process, or the broker.
 
 ## Worker threads
 
@@ -180,6 +173,7 @@ emitter.on('event', context.bind(context.active(), handler));
 
 ## Validation
 
-After the fix, run the Layer 5 runtime scenario: trigger HTTP → produce → consume
-(when applicable) and confirm a single `trace_id` with correct parent-child links
-in the tracing backend.
+Each fixed boundary needs traffic that actually crosses it (HTTP → produce →
+consume) and a parent-child check in the backend — a boundary the runtime never
+exercised stays `unverified`, not `pass`
+([`validation-stack.md`](validation-stack.md)).
