@@ -132,8 +132,7 @@ actual log output as a separate check.
 A span that the sampler dropped still has a valid trace ID, so the log line carries
 a `traceId` whose trace **never reaches the backend** — the OTel instrumentation
 marks this with `trace_flags: "00"` (sampled traces show `"01"`). This is correct
-behavior, not a defect: logs stay correlated with each other regardless of
-sampling.
+behavior, not a defect: logs stay correlated with each other regardless of sampling.
 
 It does constrain validation. "Find the same trace ID in the tracing backend" only
 holds for a sampled trace — which is why the L5 smoke runs at

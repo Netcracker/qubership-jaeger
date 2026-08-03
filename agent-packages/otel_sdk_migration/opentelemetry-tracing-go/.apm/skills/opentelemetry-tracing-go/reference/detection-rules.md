@@ -102,12 +102,12 @@ visible.
 
 ## Platform-contract signatures
 
-Map to mandatory checks:
+The facets and their required values are common
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md) §Mandatory
+contract — read them there, never from a copy in this file. Resolve each one from the Go signals above into
+`discovery-result.platformContract`. An absent mandatory signal resolves to `FAILED`, not `UNKNOWN`: common
+[`models/2-capability.md`](../../opentelemetry-tracing-common/models/2-capability.md) §Algorithm.
 
-- `service.name=${name}-${namespace}` or equivalent runtime construction;
-- namespace source via Downward API, Helm `.Release.Namespace`, or serviceaccount file;
-- OTLP endpoint `http://${TRACING_HOST}:4318/v1/traces` (or equivalent host+path composition);
-- propagation `b3multi` (or explicitly documented compatible format);
-- sampler uses parent-based ratio behavior in production (`parentbased_traceidratio`);
-- probe/metrics endpoint exclusions (`/health*`, `/metrics`, `/prometheus`, `/q/*`, `/actuator/*`);
-- log format includes `traceId` and `spanId`.
+Go-specific note on endpoint filtering: the exclusion list is per framework, and the Java paths in the contract
+(`/actuator/*`, `/q/*`) do not apply here. Read the routes the service actually registers — the platform
+`qubership-core-lib-go-actuator-common` health and metrics handlers, or the router's own probe paths.

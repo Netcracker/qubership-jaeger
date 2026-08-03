@@ -1,13 +1,16 @@
 # Framework coverage (TypeScript / Node)
 
-This list is the **single source of truth** for which Node frameworks are
-first-class in this package. The `service.framework` enum in
+This list is the source of truth for which Node frameworks are first-class in this
+package; the `service.framework` enum in
 [`../schemas/L1-discovery-result.schema.json`](../schemas/L1-discovery-result.schema.json)
-is this list plus `unknown`. Treat it as extensible coverage, not a hard gate —
-detection is generic (signature-based), and anything not confidently classified
-falls back to `unknown` plus the conservative SDK path. Extend the first-class set
-here (and the schema enum) when a repository shows a framework is common in
-practice.
+is this list plus `unknown`, and the two are extended together. Coverage is
+extensible, not a hard gate: detection is signature-based, and a stack that is not
+classified confidently falls back to `framework=unknown` plus the conservative SDK
+path.
+
+When a best-effort stack **is** identified confidently, prefer its matching
+instrumentation over the bare SDK and record the stack and the choice in the plan
+`gaps`, so a reviewer sees what was assumed.
 
 Signatures for each stack live in [`detection-rules.md`](detection-rules.md)
 §Framework signatures. **Confident** means a direct dependency in `package.json`
@@ -46,9 +49,9 @@ calls peers with `fetch()`.
 ## Best-effort framework stacks
 
 Detect these generically and keep `service.framework` at `unknown` — the schema enum
-has no value for them. When one **is** identified confidently, record it in `gaps` as
-`framework: <name> (best-effort)` so the Step 0 `unknown` row can route to the
-matching contrib instrumentation instead of the bare SDK:
+has no value for them. Record the identified stack in `gaps` as
+`framework: <name> (best-effort)`, so the Step 0 `unknown` row can route to the
+instrumentation named here instead of the bare SDK:
 
 - Koa → `@opentelemetry/instrumentation-koa` (+ `-http`)
 - Hapi → `@opentelemetry/instrumentation-hapi` (+ `-http`)
@@ -87,7 +90,3 @@ per-library set is not worth enumerating. Three caveats before choosing it:
 
 Subject to the Step 0b XOR and bundler guardrails in
 [`../models/4-transformation.md`](../models/4-transformation.md).
-
-Only when no matching instrumentation exists, or the framework cannot be identified
-with confidence, fall back to `framework=unknown` and the conservative SDK migration
-path plus a `gaps` note.

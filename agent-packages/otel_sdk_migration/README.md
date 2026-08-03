@@ -56,96 +56,38 @@ Install the whole program in one step from this directory
 apm install -t claude     # or: cursor, copilot, codex, gemini, opencode, windsurf
 ```
 
-**Pass `-t` — do not rely on auto-detection.** Without it APM scans for a harness marker (`.claude/`,
-`CLAUDE.md`, `.cursor/`, `.codex/`, `GEMINI.md`, …) and aborts with "No harness detected" when it finds
-none. This repository tracks **no** marker of any kind — every one of them is gitignored — so a fresh
-clone has nothing to detect and a bare `apm install` fails. It appears to work only on a checkout where
-some agent already left its directory behind, and then it silently deploys for *that* agent rather than
-yours. `-t` needs no marker and does not care what previous tooling left lying around.
-
-`apm targets` lists the supported harnesses. Resolution order is `-t` > `targets:` in `apm.yml` >
-auto-detect, and `-t` accepts a comma-separated list to deploy for several at once.
-
-Where files land depends on the harness — the packages are identical, only the deployment path differs:
-
-| `-t`     | Rules                 | Skills            |
-| -------- | --------------------- | ----------------- |
-| `claude` | `.claude/rules/`      | `.claude/skills/` |
-| `cursor` | `.cursor/rules/*.mdc` | `.agents/skills/` |
-
-Contributors on different agents can each run their own `-t` against the same checkout; nothing in the
-repository pins a harness, which is deliberate — the agent is a property of the developer, not of the code.
-
-`apm compile` is a **separate concern** and this repository does not need it: it compiles context
-primitives (agents, commands, hooks) into `AGENTS.md` / `CLAUDE.md`, and these packages ship none, so it
-exits with "no output files". Skills are deployed by `install`, not by `compile`.
-
-Verified against APM CLI 0.19.0.
-
-The aggregator [`apm.yml`](apm.yml) depends on **every** language package
-(`opentelemetry-tracing-java`, `opentelemetry-tracing-go`, `opentelemetry-tracing-python`,
-`opentelemetry-tracing-ts`); each of those declares `opentelemetry-tracing-common`, so the shared core
-arrives transitively — install it separately and you would get it twice.
+**Pass `-t`.** Auto-detection needs a harness marker (`.claude/`, `CLAUDE.md`, `.cursor/`, …) and this repository
+tracks none — they are all gitignored. A bare `apm install` therefore either aborts with "No harness detected" or
+silently deploys for whichever agent last left a directory behind. `apm targets` lists the supported values; `-t`
+accepts a comma-separated list.
 
 ### Which entry point to use
 
-| You want to…                     | Use                                 |
-| -------------------------------- | ----------------------------------- |
-| Install everything (bulk)        | the aggregator [`apm.yml`](apm.yml) |
-| Install a single, known language | that language package directly      |
+Bulk — the aggregator [`apm.yml`](apm.yml) — is the default. Whoever runs the skill often does not know which language
+the target service is written in, and a repository may hold several: with every language package present, discovery
+(L1) identifies the stack itself and the
+common [multi-language scope gate](opentelemetry-tracing-common/.apm/skills/opentelemetry-tracing-common/SKILL.md)
+asks whether to migrate one target or all of them. A single-language install trades that away — the agent cannot see a
+Go service if only the Java package is installed, and the gap is silent. Take it when the target language is already
+known and the smaller agent context is worth it.
 
-Bulk is the default: the aggregator lists every language package and installs from this directory.
-A single-language install is the deliberate exception — it deploys one discovery/detection/recipe set
-instead of four, which is the cheaper option in agent context when the target language is already known.
-Either way the shared core arrives transitively; never add `opentelemetry-tracing-common` yourself.
+Never add `opentelemetry-tracing-common` yourself: every language package declares it, so the shared core arrives
+transitively either way.
 
-Dependencies are declared as **repository references**
-(`Netcracker/qubership-jaeger/agent-packages/otel_sdk_migration/<package>`), both in the aggregator and
-between packages. APM resolves them through its cache, so an install deploys the referenced ref rather than
-whatever is uncommitted in your working tree — push a branch and pin it while a change is still in review.
+Operational notes:
 
-Prefer bulk when the target language is not certain. Whoever runs the skill often does not know which
-language the target service is written in, and a repository may hold several. With all language packages
-present, discovery (L1) identifies the stack itself and the common
-[multi-language scope gate](opentelemetry-tracing-common/.apm/skills/opentelemetry-tracing-common/SKILL.md)
-asks whether to migrate one target or all of them. That is what a single-language install trades away: the
-agent cannot see a Go service if only the Java package is installed, and the gap is silent.
-
-Per-package installs (`apm install` from inside `opentelemetry-tracing-go/`, for example) are a supported
-entry point — both for a known target language and when developing one package. They leave an
-`apm_modules/` cache inside the package that a later aggregator install reports as an orphaned package.
-Delete the package-local `apm_modules/` and `apm.lock.yaml` when you go back to the aggregator install.
-
-A successful aggregator install produces five skills (Java, Go, Python, TypeScript, common) plus one rule
-per language package, under the paths listed in the `-t` table above. `opentelemetry-tracing-common` ships
-**no** rule: it is an internal core that the language skills pull in, never a skill the agent starts from,
-so an always-on trigger for it would only cost context on every turn.
-
-You may also see `apm.lock.yaml` and `apm_modules/` (local resolution cache); both are gitignored.
-`apm_modules/` holds the packages in their **source** layout, so the cross-package links inside it do not
-resolve — see below. It is a cache, not a copy to read.
-
-Restart or reload your agent session (IDE restart, new chat, or rules refresh — per your runtime) so instructions and skills are picked up.
+- dependencies are repository references (`Netcracker/qubership-jaeger/agent-packages/otel_sdk_migration/<package>`)
+  resolved through the APM cache, so an install deploys the pushed ref rather than your working tree;
+- a per-package install leaves an `apm_modules/` cache inside that package, which a later aggregator install reports
+  as an orphaned package. Delete the package-local `apm_modules/` and `apm.lock.yaml` when going back to the
+  aggregator.
 
 ### Cross-package links target the compiled layout
 
-`apm compile` copies package files verbatim — it does **not** rewrite Markdown links. Compilation also
-flattens the tree: every package lands as a sibling under `.agents/skills/`, and the `.apm/skills/`
-segment disappears. So a link that resolves here in the source tree resolves nowhere once compiled.
+Deployment copies package files verbatim and flattens the tree: every package lands as a sibling under the harness
+skills directory, and the `.apm/skills/` segment disappears. Links are written against that deployed layout, so they
+do not resolve while browsing the source tree in an IDE. That is deliberate — a link the agent cannot follow at
+runtime silently costs it the platform contract it was told to read first.
 
-Links are therefore written against the **compiled** layout, because that is the copy the agent actually
-reads:
-
-```text
-.agents/skills/opentelemetry-tracing-java/SKILL.md
-  → ../opentelemetry-tracing-common/reference/platform-tracing-guide.md
-.agents/skills/opentelemetry-tracing-java/models/5-validation.md
-  → ../../opentelemetry-tracing-common/reference/platform-tracing-guide.md
-```
-
-The trade-off is that these links do not resolve when browsing `agent-packages/otel_sdk_migration/` in an IDE. That is
-intentional: a broken link in your editor is a nuisance, while a broken link at runtime silently costs
-the agent the platform contract it was told to read first.
-
-When adding a cross-package link, count depth from the package root (`SKILL.md` → `../`, anything in
-`models/`, `recipes/`, `reference/`, `schemas/` → `../../`) and never include `.apm/skills/` in the path.
+When adding one, count depth from the package root (`SKILL.md` → `../`, anything in `models/`, `recipes/`,
+`reference/`, `schemas/` → `../../`) and never include `.apm/skills/` in the path.

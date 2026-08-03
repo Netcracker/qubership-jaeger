@@ -1,10 +1,14 @@
 # Framework coverage (Go)
 
-This list is the **single source of truth** for which Go stacks are first-class in this package. Detection is
-signature-based, so treat the list as extensible coverage rather than a hard gate: anything not confidently classified
-falls back to `unknown` plus the conservative SDK path.
+This list is the source of truth for which Go stacks are first-class in this package; the `service.framework` enum in
+[`../schemas/L1-discovery-result.schema.json`](../schemas/L1-discovery-result.schema.json) is this list plus `unknown`,
+and the two are extended together. Coverage is extensible, not a hard gate: detection is signature-based, and a stack
+that is not classified confidently falls back to `framework=unknown` plus the conservative SDK path.
 
-First-class framework stacks, matching the `service.framework` schema enum:
+When a best-effort stack **is** identified confidently, prefer its matching contrib middleware over the bare SDK and
+record the router and the choice in the plan `gaps`, so a reviewer sees what was assumed.
+
+First-class framework stacks:
 
 - `cloudcore-fiber` — Fiber HTTP stack with the org/platform server wrapper and actuator tracing;
 - `net-http` — stdlib HTTP server and client;
@@ -12,10 +16,5 @@ First-class framework stacks, matching the `service.framework` schema enum:
 - `echo` — router middleware plus SDK and OTLP exporter;
 - `pure-go` — library, worker, or service with manual OTel SDK wiring.
 
-Best-effort stacks — any other router or middleware stack with explicit OTel middleware. Detect generically and emit
-`framework=unknown`, then name the identified router and the chosen middleware in the plan `gaps` so a reviewer can see
-what was assumed.
-
-Prefer a matching contrib middleware over the bare SDK whenever one is confidently identified. Fall back to
-`framework=unknown` with the conservative SDK path only when no middleware exists or the stack cannot be identified
-with confidence.
+Best-effort stacks — any other router or middleware stack with explicit OTel middleware. Detect generically and keep
+`framework=unknown`.

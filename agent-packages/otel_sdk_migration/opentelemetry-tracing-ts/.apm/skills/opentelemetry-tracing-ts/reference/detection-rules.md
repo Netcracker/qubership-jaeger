@@ -254,13 +254,15 @@ infer filtering from the absence of probe spans.
 
 ## Platform-contract signatures
 
-Map to mandatory checks:
+The facets and their required values are common
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md) §Mandatory
+contract — read them there, never from a copy in this file. Resolve each one from the Node signals above into
+`discovery-result.platformContract`. An absent mandatory signal resolves to `FAILED`, not `UNKNOWN`: common
+[`models/2-capability.md`](../../opentelemetry-tracing-common/models/2-capability.md) §Algorithm.
 
-- `service.name=${name}-${namespace}` or equivalent runtime construction;
-- namespace source via Downward API, Helm `.Release.Namespace`, or serviceaccount file;
-- OTLP endpoint `http://${TRACING_HOST}:4318/v1/traces` (or equivalent host+path composition);
-- exporter package `@opentelemetry/exporter-trace-otlp-proto` (http/protobuf);
-- propagation `b3multi` (or explicitly documented compatible format);
-- sampler uses parent-based ratio behavior in production (`parentbased_traceidratio`);
-- probe/metrics endpoint exclusions (`/health*`, `/metrics`, `/prometheus`, `/livez`, `/readyz`);
-- log format includes `traceId` and `spanId`.
+Two Node deltas on the contract:
+
+- `exportShape` reads the **package**, not just the endpoint: `@opentelemetry/exporter-trace-otlp-proto` satisfies the
+  contract `http/protobuf`, while `-otlp-http` sends JSON and does not;
+- endpoint filtering is per framework, and the Java paths in the contract (`/actuator/*`, `/q/*`) do not apply — the
+  signals are the ones under §Endpoint-filter signatures above.

@@ -55,6 +55,3 @@ From this package directory, or from `agent-packages/otel_sdk_migration/` when i
 ```shell
 apm install -t claude
 ```
-
-`apm compile` is a separate concern and this repository does not need it — see
-[`../README.md`](../README.md) §Installation.

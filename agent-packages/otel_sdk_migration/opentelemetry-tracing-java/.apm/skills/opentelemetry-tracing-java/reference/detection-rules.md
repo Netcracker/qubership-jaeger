@@ -124,8 +124,11 @@ canonical Eclipse Vert.x group and module artifact names from upstream docs.
 
 ## Platform-contract signatures
 
-These feed the contract checks (see common
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)).
+The facets and their required values are common
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md) §Mandatory
+contract — read them there, never from a copy in this file. Below are the Java signals that resolve them into
+`discovery-result.platformContract`. An absent mandatory signal resolves to `FAILED`, not `UNKNOWN`: common
+[`models/2-capability.md`](../../opentelemetry-tracing-common/models/2-capability.md) §Algorithm.
 
 | Signal | Maps to | Compliant when |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | -------------------------------------------------- |
@@ -136,7 +139,3 @@ These feed the contract checks (see common
 | log pattern `%X{trace_id}` / `%X{span_id}` (Spring) or `%X{traceId}` / `%X{spanId}` (Quarkus), or literal `[traceId=...][spanId=...]` | `logging.traceFieldsInPattern` | pattern carries both IDs |
 | excluded URLs include `/health*`, `/livez`, `/readiness`, `/metrics`, `/actuator*`, `/q/*` | `endpointFilter` | probe/metrics/management excluded |
 | `io.jaegertracing:*`, `io.opentracing:*` | retired libs | absent — these are end-of-life migration targets |
-
-When a contract signal is absent, mark the corresponding capability facet
-`FAILED` (it is mandatory) rather than `UNKNOWN`, unless the file that would
-carry it could not be inspected.
