@@ -65,13 +65,13 @@ Tracer tracer = openTelemetry.getTracer("service-component");
 
 ## Mechanical rewrite table
 
-| Rule ID | Before | After |
-| ---------------------------- | ------------------------------- | ---------------------------------------------------------------- |
-| `buildSpan-to-spanBuilder` | `tracer.buildSpan(n).start()` | `tracer.spanBuilder(n).startSpan()` |
-| `finish-to-end` | `span.finish()` | `span.end()` |
-| `tag-to-setAttribute` | `span.tag(k, v)` | `span.setAttribute(k, v)` |
-| `error-tag-to-status` | `Tags.ERROR.set(span, true)` | `span.setStatus(StatusCode.ERROR)` + `span.recordException(e)` |
-| `globaltracer-to-otel` | `GlobalTracer.get()` | injected `OpenTelemetry.getTracer(...)` |
+| Before                        | After                                                          |
+| ----------------------------- | -------------------------------------------------------------- |
+| `tracer.buildSpan(n).start()` | `tracer.spanBuilder(n).startSpan()`                            |
+| `span.finish()`               | `span.end()`                                                   |
+| `span.tag(k, v)`              | `span.setAttribute(k, v)`                                      |
+| `Tags.ERROR.set(span, true)`  | `span.setStatus(StatusCode.ERROR)` + `span.recordException(e)` |
+| `GlobalTracer.get()`          | injected `OpenTelemetry.getTracer(...)`                        |
 
 ## Attributes
 

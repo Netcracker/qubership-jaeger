@@ -65,13 +65,13 @@ app — pick one mechanism (Step 0b in [`../models/4-transformation.md`](../mode
 
 ## Mechanical rewrite table
 
-| Rule ID                    | Before                          | After                                                                    |
-| -------------------------- | ------------------------------- | ------------------------------------------------------------------------ |
-| `startspan-to-tracer`      | `opentracing.tracer.start_span` | `tracer.start_as_current_span(name)` (activates context — check nesting) |
-| `finish-to-end`            | `span.finish()`                 | `span.end()` (or `with` block auto-ends)                                 |
-| `set-tag-to-set-attribute` | `span.set_tag(k, v)`            | `span.set_attribute(k, v)`                                               |
-| `jaeger-client-to-otel`    | `jaeger_client.Config`          | OTel `TracerProvider` + OTLP exporter                                    |
-| `global-tracer-to-context` | `opentracing.tracer` global use | `trace.get_tracer(__name__)` + current span                              |
+| Before                          | After                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| `opentracing.tracer.start_span` | `tracer.start_as_current_span(name)` (activates context — check nesting) |
+| `span.finish()`                 | `span.end()` (or `with` block auto-ends)                                 |
+| `span.set_tag(k, v)`            | `span.set_attribute(k, v)`                                               |
+| `jaeger_client.Config`          | OTel `TracerProvider` + OTLP exporter                                    |
+| `opentracing.tracer` global use | `trace.get_tracer(__name__)` + current span                              |
 
 ## Semantic renames (proposal-only)
 

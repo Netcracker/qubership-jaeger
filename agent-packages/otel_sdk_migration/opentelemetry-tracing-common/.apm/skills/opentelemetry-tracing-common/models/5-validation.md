@@ -15,11 +15,11 @@ when the user opts in, on a running deployment (runtime).
 
 ## Validation tiers
 
-| Tier | Needs running service | Default when plan is emitted |
-| --- | --- | --- |
-| **static** | No — inspect repository manifests and sources | Run checks; record `pass` / `fail` per row |
-| **configuration** | No — inspect config bindings toward platform contract | Run checks; record `pass` / `fail` per row |
-| **runtime** | Yes — user-named environment and deploy permission | `status: manual` until install path is known and user opts in |
+| Tier | Default when the plan is emitted |
+| --- | --- |
+| **static** | Inspect repository manifests and sources; record `pass` / `fail` per row |
+| **configuration** | Inspect config bindings against the platform contract; record `pass` / `fail` per row |
+| **runtime** | `status: manual` until the install path is known, the user names an environment, and grants deploy permission |
 
 Configuration tier must enforce the platform contract from
 [`../reference/platform-tracing-guide.md`](../reference/platform-tracing-guide.md).

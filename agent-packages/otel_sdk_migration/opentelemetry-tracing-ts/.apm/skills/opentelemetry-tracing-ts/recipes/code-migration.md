@@ -170,10 +170,10 @@ is deprecated and a plugin is never wired by the launcher.
 
 Deterministic, one-to-one, no control-flow change:
 
-| Rule ID                    | Before              | After                     |
-| -------------------------- | ------------------- | ------------------------- |
-| `finish-to-end`            | `span.finish()`     | `span.end()`              |
-| `set-tag-to-set-attribute` | `span.setTag(k, v)` | `span.setAttribute(k, v)` |
+| Before              | After                     |
+| ------------------- | ------------------------- |
+| `span.finish()`     | `span.end()`              |
+| `span.setTag(k, v)` | `span.setAttribute(k, v)` |
 
 `setAttribute` accepts only `string`, `number`, `boolean`, or arrays of those. An
 OpenTracing tag holding an object, `null`, or `undefined` is dropped with a
@@ -184,13 +184,13 @@ propose an explicit serialization.
 
 These change control flow or replace a whole bootstrap, so they need a human diff:
 
-| Rule ID                    | Before                                 | After                                                                                         |
-| -------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `startspan-to-tracer`      | `opentracing…startSpan(name)`          | `tracer.startActiveSpan(name, cb)` — body moves into the callback, `end()` moves to `finally` |
-| `error-tag-to-status`      | `span.setTag('error', true)`           | `span.recordException(err)` + `span.setStatus({ code: SpanStatusCode.ERROR })`                |
-| `jaeger-client-to-otel`    | `initTracer(...)`                      | `NodeSDK` + OTLP proto exporter (whole bootstrap replaced)                                    |
-| `zipkin-to-otel`           | `new Tracer({...})` + zipkin transport | `NodeSDK` + OTLP proto exporter + OTel instrumentations                                       |
-| `global-tracer-to-context` | `opentracing.globalTracer()` use       | `trace.getTracer(name)` + `trace.getActiveSpan()`                                             |
+| Before                                 | After                                                                                         |
+| -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `opentracing…startSpan(name)`          | `tracer.startActiveSpan(name, cb)` — body moves into the callback, `end()` moves to `finally` |
+| `span.setTag('error', true)`           | `span.recordException(err)` + `span.setStatus({ code: SpanStatusCode.ERROR })`                |
+| `initTracer(...)`                      | `NodeSDK` + OTLP proto exporter (whole bootstrap replaced)                                    |
+| `new Tracer({...})` + zipkin transport | `NodeSDK` + OTLP proto exporter + OTel instrumentations                                       |
+| `opentracing.globalTracer()` use       | `trace.getTracer(name)` + `trace.getActiveSpan()`                                             |
 
 ## Semantic renames (proposal-only)
 

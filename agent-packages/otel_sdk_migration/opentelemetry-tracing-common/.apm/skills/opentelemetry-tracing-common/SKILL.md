@@ -87,7 +87,7 @@ Common owns the shared layers:
 - Shared reference: [`reference/platform-tracing-guide.md`](reference/platform-tracing-guide.md),
   [`reference/build-preconditions.md`](reference/build-preconditions.md),
   [`reference/service-installation-discovery.md`](reference/service-installation-discovery.md).
-- Shared JSON schemas — capability, maturity, migration-plan.
+- Shared JSON field lists — capability and maturity; the migration plan is tabulated in the models instead.
 
 Each language package owns the local parts:
 
