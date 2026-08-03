@@ -32,9 +32,9 @@ Shared platform pieces (same for all languages):
 
 ```text
 qubership-jaeger/
-├── apm.yml                                     # aggregator — installs every package below
 └── agent-packages/
     └── otel_sdk_migration/
+        ├── apm.yml                             # aggregator — installs every package below
         ├── README.md                           # this file
         ├── opentelemetry-tracing-common/       # shared cross-language core
         ├── opentelemetry-tracing-java/         # Java (Spring Boot, Quarkus, Pure)
@@ -49,7 +49,8 @@ detection rules, and recipes.
 
 ## Installation
 
-Install the whole program in one step from the repository root (`qubership-jaeger/`), naming your agent:
+Install the whole program in one step from this directory
+(`agent-packages/otel_sdk_migration/`), naming your agent:
 
 ```shell
 apm install -t claude     # or: cursor, copilot, codex, gemini, opencode, windsurf
@@ -81,26 +82,27 @@ exits with "no output files". Skills are deployed by `install`, not by `compile`
 
 Verified against APM CLI 0.19.0.
 
-Root [`apm.yml`](../../apm.yml) depends on **every** language package
+The aggregator [`apm.yml`](apm.yml) depends on **every** language package
 (`opentelemetry-tracing-java`, `opentelemetry-tracing-go`, `opentelemetry-tracing-python`,
-`opentelemetry-tracing-ts`); each of those declares `../opentelemetry-tracing-common`, so the shared core
+`opentelemetry-tracing-ts`); each of those declares `opentelemetry-tracing-common`, so the shared core
 arrives transitively — install it separately and you would get it twice.
 
 ### Which entry point to use
 
-| You want to…                     | Use                             |
-| -------------------------------- | ------------------------------- |
-| Install everything (bulk)        | root [`apm.yml`](../../apm.yml) |
-| Install a single, known language | that language package directly  |
+| You want to…                     | Use                                |
+| -------------------------------- | ---------------------------------- |
+| Install everything (bulk)        | the aggregator [`apm.yml`](apm.yml) |
+| Install a single, known language | that language package directly     |
 
-Bulk is the default: the root `apm.yml` lists every language package and works from this repository root.
+Bulk is the default: the aggregator lists every language package and installs from this directory.
 A single-language install is the deliberate exception — it deploys one discovery/detection/recipe set
 instead of four, which is the cheaper option in agent context when the target language is already known.
 Either way the shared core arrives transitively; never add `opentelemetry-tracing-common` yourself.
 
-All dependencies are declared as **local paths** — `./agent-packages/...` at the root, `../` between
-packages. Nothing resolves over the network, so an install always deploys the working tree you are
-looking at, not a published ref.
+Dependencies are declared as **repository references**
+(`Netcracker/qubership-jaeger/agent-packages/otel_sdk_migration/<package>`), both in the aggregator and
+between packages. APM resolves them through its cache, so an install deploys the referenced ref rather than
+whatever is uncommitted in your working tree — push a branch and pin it while a change is still in review.
 
 Prefer bulk when the target language is not certain. Whoever runs the skill often does not know which
 language the target service is written in, and a repository may hold several. With all language packages
@@ -109,13 +111,15 @@ present, discovery (L1) identifies the stack itself and the common
 asks whether to migrate one target or all of them. That is what a single-language install trades away: the
 agent cannot see a Go service if only the Java package is installed, and the gap is silent.
 
-Per-package installs (`apm install` from inside `agent-packages/otel_sdk_migration/opentelemetry-tracing-go/`, for example)
-are a supported entry point — both for a known target language and when developing one package.
-They leave an `apm_modules/` cache inside the package that a later root install reports as an orphaned
-package. Delete the package-local `apm_modules/` and `apm.lock.yaml` when you go back to the root install.
+Per-package installs (`apm install` from inside `opentelemetry-tracing-go/`, for example) are a supported
+entry point — both for a known target language and when developing one package. They leave an
+`apm_modules/` cache inside the package that a later aggregator install reports as an orphaned package.
+Delete the package-local `apm_modules/` and `apm.lock.yaml` when you go back to the aggregator install.
 
-A successful root install produces five skills (Java, Go, Python, TypeScript, common) plus one rule per package, under
-the paths listed in the `-t` table above.
+A successful aggregator install produces five skills (Java, Go, Python, TypeScript, common) plus one rule
+per language package, under the paths listed in the `-t` table above. `opentelemetry-tracing-common` ships
+**no** rule: it is an internal core that the language skills pull in, never a skill the agent starts from,
+so an always-on trigger for it would only cost context on every turn.
 
 You may also see `apm.lock.yaml` and `apm_modules/` (local resolution cache); both are gitignored.
 `apm_modules/` holds the packages in their **source** layout, so the cross-package links inside it do not

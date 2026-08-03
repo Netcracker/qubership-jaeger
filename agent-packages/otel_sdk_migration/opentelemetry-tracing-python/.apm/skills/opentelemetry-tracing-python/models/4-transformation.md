@@ -79,4 +79,4 @@ import under `--preload`. See
 [`../recipes/config-migration.md`](../recipes/config-migration.md).
 
 Validate result against
-[`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
+[`../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json`](../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json).

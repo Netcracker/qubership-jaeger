@@ -25,7 +25,7 @@ spans or needs fine control. Do not run both unless deliberately bridging.
 **Never attach `opentelemetry-javaagent` to a Quarkus service.** If install docs
 require a build the user cannot run, record the blocker in `gaps` — see
 [`../reference/build-preconditions.md`](../reference/build-preconditions.md) and
-[`../reference/service-installation-discovery.md`](../reference/service-installation-discovery.md).
+[`../../opentelemetry-tracing-common/reference/service-installation-discovery.md`](../../opentelemetry-tracing-common/reference/service-installation-discovery.md).
 
 ### Spring Boot 4 (parent `spring-boot-starter-parent` 4.x)
 

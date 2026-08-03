@@ -15,16 +15,18 @@ the previous artifact and emits the next:
 | Layer | File | Output |
 | ------------------- | ------------------------------ | ----------------------------------------------- |
 | L1 Discovery | `models/1-discovery.md` | `discovery-result.json` |
-| L2 Capability | `models/2-capability.md` | delegated to common |
-| L3 Maturity | `models/3-maturity.md` | delegated to common |
+| L2 Capability     | common `models/2-capability.md` | `capability-result`                             |
+| L3 Maturity       | common `models/3-maturity.md`   | `maturity-result`                               |
 | L4 Transformation | `models/4-transformation.md` | shared plan + Python framework/mechanism gate |
 | L5 Validation | `models/5-validation.md` | shared tiers + Python runtime execution rules |
 
 ## Supporting material
 
-- `schemas/` — `L1-discovery-result.schema.json` + redirects (`L2`–`L4`) to common schemas
-- `reference/` — local Python detection rules, framework coverage, build preconditions, service installation discovery
-- `recipes/` — dependency / config / code / async-context / logging-correlation / fresh-build-and-image / validation-stack migration recipes; shared L5 stand-health, log-error-triage, and validation-cleanup in common
+- `schemas/` — `L1-discovery-result.schema.json`; the L2–L4 schemas live in common and are linked directly
+- `reference/` — Python detection rules and framework coverage, plus the local deltas on the common
+  build-preconditions and install-discovery files
+- `recipes/` — dependency, config, code, async-context, and logging-correlation migration recipes, plus
+  `fresh-build-and-image` and the `validation-stack` delta; the shared L5 recipes live in common
 - shared core: `../opentelemetry-tracing-common/`
 
 ## Source-of-truth policy
@@ -37,9 +39,11 @@ the previous artifact and emits the next:
 
 ## Local check
 
-From this package directory (`agent-packages/otel_sdk_migration/opentelemetry-tracing-python/`) or repository root if root `apm.yml` lists this package:
+From this package directory, or from `agent-packages/otel_sdk_migration/` when installing the whole program:
 
 ```shell
-apm install -t <target>
-apm compile -t <target>
+apm install -t claude
 ```
+
+`apm compile` is a separate concern and this repository does not need it — see
+[`../README.md`](../README.md) §Installation.

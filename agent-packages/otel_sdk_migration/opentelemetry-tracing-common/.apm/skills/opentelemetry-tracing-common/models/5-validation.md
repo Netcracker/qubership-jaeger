@@ -74,7 +74,7 @@ Each `staticCheck`: `{ check, status, detail?, how? }`.
 | `scenario` | Short prose: what will be deployed and exercised |
 | `assertions` | Bullet list of tracing outcomes to verify (service name, span kind, propagation, log correlation) |
 | `manualInstruction` | Required while `status` is `manual` — what the user must provide |
-| `buildProvenance` | After language fresh-build — `source`, `matchesL4`, `detail`, optional `mavenCommand`, `imageTag`, `runnerJar`, `purgedImages` |
+| `buildProvenance` | After language fresh-build — `source`, `matchesL4`, `detail`, optional `buildCommand`, `imageTag`, `runnerArtifact`, `purgedImages` |
 | `standHealth` | After stand-health gate — `passed`, readiness/restart evidence |
 | `logErrorTriage` | After log scan — `verdict`, `e2eBlocked`, `findings`, etc. |
 

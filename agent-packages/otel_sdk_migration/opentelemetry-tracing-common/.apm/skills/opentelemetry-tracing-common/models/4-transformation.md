@@ -7,8 +7,8 @@ re-run discovery or capability analysis.
 - **Input:** `discovery-result.json`, `capability-result.json`,
   `maturity-result.json`.
 - **Output:** `migration-plan.json` → [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
-- **Language-specific edits:** recipes and framework gates in each language
-  package (Java: `opentelemetry-tracing-java` `models/4-transformation.md` Step 0).
+- **Language-specific edits:** recipes and the framework gate in each language
+  package (`models/4-transformation.md` Step 0).
 
 ## When to skip transformation edits
 
@@ -31,8 +31,8 @@ common [`SKILL.md`](../SKILL.md) § Multi-language scope gate.
 
 1. **Confirm scope** — multi-language gate when applicable; record choice.
 2. Read `maturity-result` — level, blockers, and recommended work (prose from L3).
-3. Run the language **framework gate** when present (Java Step 0 / 0b) before
-   any dependency or config row is emitted.
+3. Run the language **framework gate** (`models/4-transformation.md` Step 0 and
+   Step 0b) before any dependency or config row is emitted.
 4. Fill plan sections **§4.1–§4.4** from language recipes when migration work
    is required (levels 1–4, or Level 5 with explicit fix scope).
 5. Build **§4.5 `validationPlan`** — static and configuration tiers by default;
@@ -59,28 +59,22 @@ Flag non-1:1 mappings in `note`.
 #### Propagation rows (mandatory handling)
 
 Propagation is the one contract area a migration must **not** normalize on its
-own. Follow §Propagation of the platform guide:
+own. The decision itself was taken in the L3 brief
+([`3-maturity.md`](3-maturity.md) §Propagation format) — L4 encodes it, and never
+re-asks. If the question is still unanswered, fall back to a plan-only document
+rather than emitting a row.
 
-- **Format already configured** (L1 `propagation.inject` non-empty, or a known
-  framework default) → carry the same inject format to the target stack. Emit
-  the row as `oneToOne: true` even when the property path changes. Do **not**
-  emit a row that switches the wire format.
-- **Configured format conflicts with the contract default** → emit no switching
-  row. Ask the user in chat (which peers speak which format, who else changes),
-  and record the question and answer in plan `gaps`.
-- **Nothing configured and nothing defaulted** (maturity Level 1) → ask the user
-  to choose `B3` / `B3_MULTI` / `W3C` / a multi-format set before emitting the
-  row, suggesting the contract default. Record the choice in `note`. Do not pick
-  silently, and do not emit the row on an unanswered question — fall back to a
-  plan-only document.
-- Every propagation row must name the **concrete** target: property value, or
-  constructor plus option where the format is set in code (Go
+- Carry the decided inject format to the target stack. Emit the row as
+  `oneToOne: true` even when the property path changes, and never emit a row that
+  switches the wire format.
+- Name the **concrete** target: the property value, or the constructor plus option
+  where the format is set in code (Go
   `b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader))`, not `b3.New()`), checked
-  against the SDK source.
-- **Derive** the composite order yourself — do not ask the user for it. They
-  state which format wins; you map that to the framework's winner end (first on
-  Spring Boot, last on Quarkus / Pure Java / Go / Node.js). Record the resulting list and
-  the reason in `note`, along with whether the surface is build-time or runtime.
+  against the SDK source of the version the repository depends on.
+- Record in `note`: the resulting list, why that order, and whether the surface is
+  build-time or runtime. Composite order and the per-framework winner end come
+  from the platform guide §Propagation — the agent derives them, the user never
+  states them.
 
 ### §4.3 `codeMigration`
 
@@ -126,5 +120,5 @@ silently.
 
 After `migration-plan.json`, a short **L4 Transformation summary** in chat helps
 reviewers (prose, not raw JSON): framework path chosen, count of dependency/config
-changes, async fixes, validation scope, and blockers. Format: each language root
-skill (Java: `opentelemetry-tracing-java` `SKILL.md` Phase 2).
+changes, async fixes, validation scope, and blockers. Format: the language
+`SKILL.md` Phase 2.

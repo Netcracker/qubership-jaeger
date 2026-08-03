@@ -1,16 +1,21 @@
 # Framework coverage (Go)
 
-First-class framework stacks for this package:
+This list is the **single source of truth** for which Go stacks are first-class in this package. Detection is
+signature-based, so treat the list as extensible coverage rather than a hard gate: anything not confidently classified
+falls back to `unknown` plus the conservative SDK path.
 
-- `cloudcore-fiber` (Fiber HTTP stack with org/platform server wrapper + actuator tracing)
-- `net-http` (stdlib HTTP server/client)
-- `pure-go` (library/service with manual OTEL SDK wiring)
+First-class framework stacks, matching the `service.framework` schema enum:
 
-Best-effort framework stacks:
+- `cloudcore-fiber` — Fiber HTTP stack with the org/platform server wrapper and actuator tracing;
+- `net-http` — stdlib HTTP server and client;
+- `gin` — router middleware plus SDK and OTLP exporter;
+- `echo` — router middleware plus SDK and OTLP exporter;
+- `pure-go` — library, worker, or service with manual OTel SDK wiring.
 
-- `gin`
-- `echo`
-- other router/middleware stacks with explicit OTel middleware.
+Best-effort stacks — any other router or middleware stack with explicit OTel middleware. Detect generically and emit
+`framework=unknown`, then name the identified router and the chosen middleware in the plan `gaps` so a reviewer can see
+what was assumed.
 
-If framework stack cannot be detected with confidence, emit `framework=unknown` and
-continue with conservative SDK migration path plus `gaps` note.
+Prefer a matching contrib middleware over the bare SDK whenever one is confidently identified. Fall back to
+`framework=unknown` with the conservative SDK path only when no middleware exists or the stack cannot be identified
+with confidence.

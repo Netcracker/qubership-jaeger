@@ -130,9 +130,9 @@
                 },
                 "matchesL4": { "type": "boolean" },
                 "detail": { "type": "string" },
-                "mavenCommand": { "type": "string" },
+                "buildCommand": { "type": "string" },
                 "imageTag": { "type": "string" },
-                "runnerJar": { "type": "string" },
+                "runnerArtifact": { "type": "string" },
                 "purgedImages": {
                   "type": "array",
                   "items": { "type": "string" },

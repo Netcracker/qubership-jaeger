@@ -225,77 +225,14 @@ Collect:
 
 **Output:** the `platformContract` object (required on every `discovery-result.json`).
 
-## Output format
+## Output
 
-Emit one JSON object validated against
-[`../schemas/L1-discovery-result.schema.json`](../schemas/L1-discovery-result.schema.json):
+One `discovery-result` object in the shape of
+[`../schemas/L1-discovery-result.schema.json`](../schemas/L1-discovery-result.schema.json), including the
+required `platformContract` block. It is in-session data, not a file — common
+[`SKILL.md`](../../opentelemetry-tracing-common/SKILL.md) §Where the artifacts live.
 
-```json
-{
-  "service": { "name": "order-service", "framework": "spring-boot" },
-  "dependencyProfile": {
-    "hasOtelApi": false, "hasOtelSdk": false, "hasExporter": false, "hasLegacy": true,
-    "artifacts": [
-      {
-        "coordinates": "io.zipkin.brave:brave",
-        "version": "5.x",
-        "scope": "compile",
-        "bucket": "legacy",
-        "technology": "brave"
-      }
-    ]
-  },
-  "configuration": {
-    "export": { "exporter": "zipkin", "endpoint": "http://zipkin:9411", "protocol": "http-thrift", "targetGuess": "legacy-zipkin" },
-    "propagation": {
-      "inject": ["b3multi"],
-      "extract": ["b3multi", "w3c"],
-      "configScope": "runtime",
-      "fromFrameworkDefault": false,
-      "components": { "http": "OK", "kafka": "FAILED" }
-    },
-    "sampling": { "configured": true, "type": "probabilistic", "ratio": 1.0, "consistentAcrossServices": "unknown" }
-  },
-  "apiUsage": [
-    { "family": "brave", "symbol": "Tracing.newBuilder", "file": "src/main/java/.../TracingConfig.java", "line": 24 }
-  ],
-  "apiFamilies": ["brave"],
-  "instrumentation": { "mode": "manual", "evidence": ["brave Tracing bean", "no -javaagent"] },
-  "asyncBoundaries": [
-    { "type": "kafka-producer", "file": "src/main/java/.../OrderPublisher.java", "line": 41, "contextWrapper": false }
-  ],
-  "platformContract": {
-    "serviceName": { "value": "order-service", "includesNamespace": false, "namespaceSource": "none" },
-    "samplerTier": "none",
-    "samplerType": "unknown",
-    "propagationStandard": "b3",
-    "hasB3PropagatorExtension": false,
-    "endpointFilter": { "configured": false, "excluded": [] },
-    "logging": { "traceFieldsInPattern": false, "correlationDep": "none" },
-    "export": { "protocol": "unknown", "endpointPath": null, "tracingHost": "zipkin" }
-  },
-  "gaps": ["dependency tree not resolved (offline)"]
-}
-```
-
-## User-facing brief (mandatory)
-
-After emitting `discovery-result.json`, post an **L1 Discovery brief** in the
-agent chat (5–10 bullets). Template:
-
-```markdown
-### L1 Discovery — <service-name>
-- **Framework:** …
-- **Dependencies:** hasOtelSdk=…, hasLegacy=…, key artifacts: …
-- **Config:** export=…, propagation=…, sampling=…
-- **Instrumentation:** mode=…
-- **Async boundaries:** … (or none)
-- **Platform guide:** … (plain language only — e.g. missing trace IDs in logs;
-  wrong export endpoint — or "aligned with platform tracing guide")
-- **Gaps:** …
-```
-
-Record full contract evidence in `discovery-result.platformContract` (JSON) for
-L2 — do **not** mirror raw facet names or enum verdicts in this brief.
-
-Do not proceed to L2 until the brief is posted. Full rules: [`../SKILL.md`](../SKILL.md) §3.1.
+Then post the **L1 Discovery brief** — content and rules in common
+[`reference/user-briefs.md`](../../opentelemetry-tracing-common/reference/user-briefs.md), Java additions in
+[`../SKILL.md`](../SKILL.md) §3.1. Record full contract evidence in the artifact; do not mirror facet names or
+verdict tokens in the brief. Do not proceed to L2 until the brief is posted.

@@ -43,4 +43,4 @@ After the framework stack is chosen, validate mechanism:
   instrumentation — see `dependency-migration.md` / `code-migration.md`.
 
 Validate result against
-[`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
+[`../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json`](../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json).

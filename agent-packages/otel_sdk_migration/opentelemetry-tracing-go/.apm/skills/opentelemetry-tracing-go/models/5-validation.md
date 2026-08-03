@@ -8,7 +8,7 @@ gating, and pass/fail rules:
 Go execution details:
 
 - runtime path must be discovered first via
-  [`../reference/service-installation-discovery.md`](../reference/service-installation-discovery.md);
+  [`../../opentelemetry-tracing-common/reference/service-installation-discovery.md`](../../opentelemetry-tracing-common/reference/service-installation-discovery.md);
 - post-L4 build/image is mandatory before runtime end-to-end;
 - stand health and log triage are mandatory before tracing pass/fail.
 
@@ -23,12 +23,8 @@ Use [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md)
 
 ## Runtime order
 
-```text
-deploy -> stand health gate -> log error triage -> business traffic -> tracing assertions -> pass/fail -> validation cleanup (on pass)
-```
-
-Recipes:
-
-- [`../../opentelemetry-tracing-common/recipes/stand-health-gate.md`](../../opentelemetry-tracing-common/recipes/stand-health-gate.md)
-- [`../../opentelemetry-tracing-common/recipes/log-error-triage.md`](../../opentelemetry-tracing-common/recipes/log-error-triage.md)
-- [`../../opentelemetry-tracing-common/recipes/validation-cleanup.md`](../../opentelemetry-tracing-common/recipes/validation-cleanup.md)
+Canonical definition: common
+[`models/5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md) §5.3. The stand itself,
+the assertions, and teardown: common
+[`recipes/validation-stack.md`](../../opentelemetry-tracing-common/recipes/validation-stack.md) and the
+[language delta](../recipes/validation-stack.md).

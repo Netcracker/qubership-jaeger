@@ -101,5 +101,4 @@ Validate the result against
   `PARTIAL`, `FAILED`, `UNKNOWN`).
 - In the **L2 Capability brief**, translate contract outcomes into plain language
   (what works, what violates the platform tracing guide, with file paths). Same
-  style as L3 — no schema enums in chat. Template: language root skill (Java:
-  `opentelemetry-tracing-java` `SKILL.md` §3.1).
+  style as L3 — no schema enums in chat. Template: the language `SKILL.md` §3.1.

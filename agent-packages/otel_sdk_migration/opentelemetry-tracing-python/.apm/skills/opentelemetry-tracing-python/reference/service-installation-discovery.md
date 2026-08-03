@@ -1,42 +1,21 @@
-# Service installation discovery (Python)
+# Service installation discovery — Python delta
 
-Layer 5 runtime validation depends on how the specific Python service is installed
-and run.
+Shared steps 1–4, evidence rules, and the out-of-scope list:
+[`opentelemetry-tracing-common/reference/service-installation-discovery.md`](../../opentelemetry-tracing-common/reference/service-installation-discovery.md).
 
-## Step 1 — Find install docs
+Python adds the signals below.
 
-Search:
+## Step 1 — extra search locations
 
-- `README.md` install/deploy sections;
-- `docs/installation/**`;
-- `charts/**`, `helm/**`, `values.yaml`;
-- `Dockerfile`, `docker-compose*.yml`, `Makefile`, `Taskfile.yml`;
-- `pyproject.toml` scripts / `[project.scripts]`, `manage.py`, `gunicorn.conf.py`,
-  `uvicorn`/`gunicorn` entrypoints, `Procfile`;
-- CI workflows with integration or deploy jobs.
+- `pyproject.toml` `[project.scripts]`, `setup.py` / `setup.cfg` entry points;
+- `manage.py`, `gunicorn.conf.py`, `uvicorn` / `gunicorn` entrypoints, `Procfile`;
+- `requirements*.txt` and lock files (`poetry.lock`, `uv.lock`, `Pipfile.lock`).
 
-## Step 2 — Derive runtime path
+## Step 2 — extra capture
 
-Use the service-documented build/run flow; do not invent a parallel pipeline.
-Capture:
+- dependency install command — `pip install -r ...`, `poetry install`, or `uv sync`;
+- app-server entrypoint: uvicorn / gunicorn / uwsgi / `manage.py`, **worker count**, and whether `--preload` is set.
 
-- dependency install command (`pip install -r ...` / `poetry install` / `uv sync`);
-- image build command;
-- deploy command;
-- app server entrypoint (uvicorn/gunicorn/uwsgi/manage.py, worker count, `--preload`);
-- required dependencies/secrets;
-- test command or traffic generation method.
-
-The app-server entrypoint matters for tracing: worker model and `--preload`
-decide where the SDK must be initialized (see
-[`../recipes/config-migration.md`](../recipes/config-migration.md) fork-server note).
-
-## Step 3 — If unclear, ask user
-
-When the install path is not discoverable:
-
-1. ask where the service is usually deployed (cluster/local);
-2. ask where build credentials / private index access are provided;
-3. ask whether runtime validation is in scope now.
-
-Keep `runtime.status=manual` until clarified.
+The app-server entrypoint decides tracing correctness, not just startup. The worker model and `--preload` decide where
+the SDK must be initialized: a provider created before the fork is inherited broken by every worker. See
+[`../recipes/config-migration.md`](../recipes/config-migration.md) §Short-lived processes and the fork-server note.

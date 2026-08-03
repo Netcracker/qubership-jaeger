@@ -1,7 +1,8 @@
 # Open questions for the tracing skills (cross-language)
 
 Working list of unresolved / under-specified decisions that are **shared across
-all language packages** (Java, Go, Python). Two kinds of question live here:
+all language packages** (Java, Go, Python, TypeScript). Two kinds of question live
+here:
 
 - **general** — the decision belongs entirely to the platform contract / shared
   logic (common) and applies identically to every language;
@@ -23,7 +24,7 @@ option directly in the skill.)
   shared layers so it propagates to every language.
 - The "Decision" line is filled in as decisions are made.
 
-20 questions total (A1–I3).
+24 questions total (A1–K2).
 
 ---
 
@@ -227,5 +228,101 @@ Context is lost across manual concurrency regardless of the chosen mechanism.
 - (a) Default single-target (current service); bulk only on explicit request ✅
 - (b) Default bulk (all services)
 - (c) Always stop and ask
+
+**Decision:**
+
+---
+
+## J. Contradictions between this list and the shipped skill
+
+These are not new design questions: the skill already implements one answer while
+this list recommends another. Until each is decided, the skill text is the acting
+behavior and the ✅ below is only a proposal to change it.
+
+### J1 — Greenfield propagation: ask, or apply the contract default silently?
+
+Duplicate of **C1**, recorded here because the conflict is live. The skill
+(`models/3-maturity.md` §Propagation format, `platform-tracing-guide.md`
+§Propagation rule 3) **asks the user** and forbids L4 from emitting a propagation
+row before the answer arrives. C1 ✅ recommends the opposite: apply `b3multi`
+without a question.
+
+- (a) Keep the skill as it is — ask once per scope in the L3 brief; the format is a
+  fleet property and a silent choice is unrecoverable across peers ✅
+- (b) Apply the C1 ✅ instead: contract default silently, ask only on known peer
+  incompatibility, and rewrite both skill sections
+- (c) Ask only when the scope contains more than one service
+
+**Decision:**
+
+### J2 — Multi-language scope when the user is silent
+
+Duplicate of **I3**, same situation. The skill (common `SKILL.md` §Multi-language
+scope gate) **stops and asks**, then falls back to a plan-only document with
+`runtime.status: manual` if unanswered. I3 ✅ recommends defaulting to
+single-target instead.
+
+- (a) Keep the skill as it is — ask, and degrade to plan-only when unanswered; no
+  repository edits happen on an unanswered question either way ✅
+- (b) Apply the I3 ✅: default to the current service and rewrite the gate
+- (c) Default to single-target for edits but still report the other targets found
+
+**Decision:**
+
+### J3 — Best-effort frameworks and the `service.framework` enum
+
+Each language package documents best-effort frameworks with concrete
+instrumentation, but the `service.framework` enum can only record `unknown` for
+them, so the chosen instrumentation survives only in prose. Go additionally has
+`gin` and `echo` in its enum, which makes "best-effort" mean two different things
+across packages.
+
+- (a) Enum stays first-class-only; best-effort records as `unknown` plus the
+  identified framework and chosen instrumentation in `gaps` — uniform across
+  packages ✅
+- (b) Add every best-effort framework to each enum
+- (c) Add a separate `frameworkDetail` string field alongside the enum
+
+**Decision:**
+
+### J4 — Does an audit-only run still owe the user the L4/L5 sections?
+
+`models/4-transformation.md` says an audit-only run describes proposed changes
+without editing, while the phase gate says to stop after the L3 brief. Both are
+defensible, but they describe different deliverables for the same request.
+
+- (a) Stop after L3, and produce the plan only when the user asks for it — the L3
+  brief already names the recommended work ✅
+- (b) Always produce the full plan document, edits excluded
+- (c) Ask the user which deliverable they want after the L3 brief
+
+**Decision:**
+
+---
+
+## K. Artifacts and evidence
+
+### K1 — Do the five artifacts ever become files?
+
+The skill now states they are in-session data and must not be written to disk
+(common `SKILL.md` §Where the artifacts live). That closes the ambiguity, but not
+the question of whether a user who *asks* for files gets a documented location.
+
+- (a) On explicit request only, and outside the target repository (scratch
+  directory), so Phase 1 stays read-only ✅
+- (b) A documented path inside the repository, gitignored
+- (c) Never — always chat only
+
+**Decision:**
+
+### K2 — Schemas are never executed
+
+Nothing in CI validates an artifact against `schemas/`, so the schemas are a
+shared vocabulary the model reads rather than a contract anything enforces.
+
+- (a) Keep them as documentation of the shape, and say so in the schema
+  description so no one expects validation ✅
+- (b) Add a CI job that validates sample artifacts against the schemas
+- (c) Drop the schemas and describe the shape in the models only
 
 **Decision:**

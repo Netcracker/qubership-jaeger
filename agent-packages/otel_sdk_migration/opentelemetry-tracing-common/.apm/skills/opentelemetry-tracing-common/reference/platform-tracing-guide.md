@@ -100,9 +100,10 @@ working before.
    "fix" it. Raise it with the user as a question (which peers speak which
    format, who else must change), and record the answer in plan `gaps`.
 3. **Tracing introduced from scratch** (maturity Level 1, nothing configured) →
-   do **not** pick silently. Ask the user to choose: `B3` (single `b3` header),
-   `B3_MULTI` (`X-B3-*`), `W3C` (`traceparent`), or a multi-format set. Offer the
-   contract default as the suggestion; the choice is the user's.
+   do **not** pick silently. The choice is the user's: `B3` (single `b3` header),
+   `B3_MULTI` (`X-B3-*`), `W3C` (`traceparent`), or a multi-format set, with the
+   contract default offered as the suggestion. When and where to ask:
+   [`../models/3-maturity.md`](../models/3-maturity.md) §Propagation format.
 4. **Multi-format** is a supported answer: accept several formats inbound, and
    emit whatever the surface emits — on a single-list surface that means **all**
    configured formats go out, which is expected, not a bug. Do not build extra
@@ -142,21 +143,12 @@ families get there by different mechanics:
 | Spring Boot, Brave bridge | `CompositePropagationFactory$CompositePropagation` | **first** | returns at the **first** extractor whose result is not `EMPTY` |
 | Spring Boot, OTel bridge | `CompositeTextMapPropagator` | **first** | breaks at the **first** extractor that changes the context |
 
-Verified by disassembly: `spring-boot-actuator-autoconfigure:3.5.11`,
-`opentelemetry-context:1.57.0`, `go.opentelemetry.io/otel@v1.43.0`
-(`propagation/propagation.go:130-141`).
-
-Node.js row is **source-verified, not disassembled** (`@opentelemetry/core`
-ships `CompositePropagator.extract` as readable TypeScript, so bytecode
-inspection adds nothing) — but pin the exact release before relying on it:
-confirm `extract` in the target repo's installed `@opentelemetry/core` is still
-the plain `reduce` shown above, the same discipline as the B3 default check
-above.
-
-Boot 4 is confirmed too: the OTel-bridge composite moved to
-`org.springframework.boot.micrometer.tracing.opentelemetry.autoconfigure.CompositeTextMapPropagator`
-in `spring-boot-micrometer-tracing-opentelemetry:4.0.2`, and its `extract`
-bytecode is **identical** to Boot 3.5.11 — still first-wins.
+Verified in `spring-boot-actuator-autoconfigure:3.5.11`,
+`spring-boot-micrometer-tracing-opentelemetry:4.0.2` (Boot 4 moved the composite
+but kept first-wins), `opentelemetry-context:1.57.0`,
+`go.opentelemetry.io/otel@v1.43.0` (`propagation/propagation.go:130-141`), and
+`@opentelemetry/core`. Confirm the behavior against the version the repository
+actually depends on before relying on it.
 
 The mechanism difference matters when a **stale or duplicate** header is
 present: Boot stops at the first hit and ignores the rest, while the OTel/Go
@@ -168,18 +160,11 @@ Quarkus and on Spring Boot. The common advice "put the preferred format last" is
 true only for OTel-native composites, and an end-to-end test will not catch a
 wrong order.
 
-**List order is the agent's job, never a question for the user.** Split it:
-
-| Decision | Who |
-| --- | --- |
-| Which format(s) the service speaks, and which wins when a request carries more than one | **user** (or preserved from existing config) |
-| Which end of the list that maps to | **agent** — derive it from the table above |
-
-Asking a developer whether the winner is first or last is asking them to recite
-framework internals. Take the user's intent ("we're a B3 fleet, B3 wins"), then
-emit `[W3C, B3_MULTI]` on Quarkus and `[B3_MULTI, W3C]` on Spring Boot — two
-different lists expressing the same intent. State the resulting order and the
-reason in the plan `note` so a reviewer can check it without knowing the table.
+**List order is the agent's job, never a question for the user.** Asking a
+developer whether the winner is first or last is asking them to recite framework
+internals. Take the user's intent ("we're a B3 fleet, B3 wins"), then emit
+`[W3C, B3_MULTI]` on Quarkus and `[B3_MULTI, W3C]` on Spring Boot — two different
+lists expressing the same intent.
 
 Note this only changes behavior for requests arriving with **several** formats
 at once. With one format inbound, every order works, which is why a wrong order
@@ -226,34 +211,20 @@ like "make the propagation format switchable" is feasible at all.
 
 When the contract names a wire format, the L4 plan must name the concrete
 constructor or option that produces it, checked against the SDK source **of the
-version the repository actually depends on**. Line numbers below are pinned to
-`go.opentelemetry.io/contrib/propagators/b3@v1.42.0` (identical in `@v1.35.0`);
-re-read them for another version rather than trusting the citation.
+version the repository actually depends on**.
 
-Worked example — Go `b3.New()` with no options injects the **single** `b3`
-header, not `X-B3-*`:
+The default is routinely not what the contract wants. Two confirmed cases:
 
-- `b3_config.go:43,51,55` — `B3Unspecified = 0`, then `B3MultipleHeader = 1 << iota`
-  (**2**) and `B3SingleHeader` (**4**).
-- `b3_config.go:37` — `supports(o)` is `e&o == o`. With `e = B3Unspecified = 0`
-  this is **false for every** `o`: `0&4 != 4`, `0&2 != 2`.
-- `b3_propagator.go:84` — the single-header branch is
-  `supports(B3SingleHeader) || InjectEncoding == B3Unspecified`. `supports` is
-  false; the **`== B3Unspecified` clause** is what makes the branch fire. The
-  default writes `b3` by explicit fallback, not by bitmask.
-- `b3_propagator.go:103` — the multi branch is `supports(B3MultipleHeader)`
-  alone, with no `B3Unspecified` fallback, so `X-B3-*` is never written by
-  default.
+- Go `b3.New()` with no options injects the **single** `b3` header, never
+  `X-B3-*`. Multi-header injection requires
+  `b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader))`.
+- The same propagator extracts leniently whatever injection is configured: it
+  tries `b3` first, then falls back to the multi headers. Inject and extract do
+  not share a setting.
 
-Multi-header injection therefore requires
-`b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader))`.
-
-The same file proves the inject/extract split above:
-`b3_propagator.go:123` declares `func (propagator) Extract(...)` — an
-**unnamed receiver**, so extraction cannot read `InjectEncoding` at all. It tries
-the single `b3` header first and falls back to the multi headers
-(`:129-145`) regardless of how injection is configured. Lenient in, strict out,
-in twenty lines.
+Verified in `go.opentelemetry.io/contrib/propagators/b3@v1.42.0` (identical in
+`@v1.35.0`): `b3_config.go:37,43,51,55`, `b3_propagator.go:84,103,123,129-145`.
+Re-read them for another version rather than trusting the citation.
 
 ### Sampling
 
@@ -367,4 +338,4 @@ Before declaring runtime `pass`:
 | L3 maturity | Common `models/3-maturity.md` |
 | L4 migration | Common `models/4-transformation.md` + language `recipes/` |
 | L5 validation | Common `models/5-validation.md` + language runtime recipes |
-| Build/registry blockers | Language `reference/build-preconditions.md` |
+| Build/registry blockers | Common `reference/build-preconditions.md` + language delta |

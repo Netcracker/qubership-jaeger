@@ -53,4 +53,4 @@ End with **one** instrumentation mechanism. Never combine agent + extension on
 Quarkus.
 
 Validate the result against
-[`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
+[`../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json`](../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json).

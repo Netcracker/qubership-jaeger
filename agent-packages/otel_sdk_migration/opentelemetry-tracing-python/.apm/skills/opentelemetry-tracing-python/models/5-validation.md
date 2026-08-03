@@ -34,12 +34,8 @@ Beyond the shared runtime gates, assert:
 
 ## Runtime order
 
-```text
-deploy -> stand health gate -> log error triage -> business traffic -> tracing assertions -> pass/fail -> validation cleanup (on pass)
-```
-
-Recipes:
-
-- [`../../opentelemetry-tracing-common/recipes/stand-health-gate.md`](../../opentelemetry-tracing-common/recipes/stand-health-gate.md)
-- [`../../opentelemetry-tracing-common/recipes/log-error-triage.md`](../../opentelemetry-tracing-common/recipes/log-error-triage.md)
-- [`../../opentelemetry-tracing-common/recipes/validation-cleanup.md`](../../opentelemetry-tracing-common/recipes/validation-cleanup.md)
+Canonical definition: common
+[`models/5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md) §5.3. The stand itself,
+the assertions, and teardown: common
+[`recipes/validation-stack.md`](../../opentelemetry-tracing-common/recipes/validation-stack.md) and the
+[language delta](../recipes/validation-stack.md).

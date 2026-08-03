@@ -160,6 +160,6 @@ For missing inspectable evidence, use `unknown` and record `gaps`.
 
 ## User-facing brief (mandatory)
 
-After `discovery-result.json`, post the **L1 Discovery brief** in chat per
-[`../SKILL.md`](../SKILL.md) §3.1 (5–10 bullets: framework, dependencies, config,
-instrumentation, async boundaries, platform gaps). Do not proceed to L2 until posted.
+Post the **L1 Discovery brief** — content and rules in common
+[`reference/user-briefs.md`](../../opentelemetry-tracing-common/reference/user-briefs.md), language additions in
+[`../SKILL.md`](../SKILL.md) §3.1. Do not proceed to L2 until it is posted.

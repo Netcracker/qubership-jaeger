@@ -53,7 +53,7 @@ repository
 Layer ownership:
 
 - L1: this package (`models/1-discovery.md`, TypeScript rules and recipes)
-- L2-L5: common shared logic with TypeScript runtime execution details
+- L2–L5: common shared logic, with the TypeScript gates and runtime execution in this package
 
 ## 3. Execution order
 
@@ -76,23 +76,16 @@ families** besides TypeScript/Node, run the common
 
 ### 3.1 User-facing briefs (mandatory)
 
-After each L1, L2, L3 artifact, post a short brief:
+Content and rules for all three briefs: common
+[`reference/user-briefs.md`](../opentelemetry-tracing-common/reference/user-briefs.md).
 
-- L1: framework stack (`service.framework`), module system (ESM/CJS) and whether
-  the runtime artifact is bundled, dependency buckets, export/sampling,
-  instrumentation mode and mechanism plus the bootstrap load hook (`-r` /
-  `--import` / loader), async hotspots, platform gaps. State **propagation as two
-  directions** in plain words — what is accepted inbound vs what is sent outbound
-  — and name the source of each (explicit config, or an SDK/instrumentation
-  default). "Not configured" is not "not propagating".
-- L2: propagation verdict, span quality, export path, platform compliance. Report
-  inbound and outbound compatibility **separately** — a service can read incoming
-  traces fine and still emit a format its peers ignore, which no end-to-end test
-  will show (in Node this is the `new B3Propagator()` single-`b3` default vs the
-  contract `b3multi`).
-- L3: current level, recommended work in prose, target level (if L4 planned),
-  **migration path** (`Migration path: Level N → Level M` when L4 planned),
-  blockers.
+TypeScript adds to the L1 brief:
+
+- **framework stack** — `service.framework` from L1: Express, Fastify, NestJS, or pure Node;
+- **module system** (ESM/CJS) and whether the runtime artifact is bundled;
+- **instrumentation mechanism** and the bootstrap load hook (`-r`, `--import`, or loader) — on Node this decides
+  whether instrumentation runs at all, not just how it is configured.
+
 
 ### 3.2 Post-L4 build rule (once)
 
@@ -109,24 +102,10 @@ If user declines or environment is unknown, set runtime status to `manual`.
 
 ### 3.4 Runtime order
 
-Common §5.3 — execute in order:
+Stand, order, assertions, and teardown: common
+[`recipes/validation-stack.md`](../opentelemetry-tracing-common/recipes/validation-stack.md) and the
+[TypeScript delta](recipes/validation-stack.md). Never do a Jaeger-first pass/fail.
 
-```text
-deploy -> stand health -> log error triage -> business traffic -> tracing assertions -> pass/fail -> teardown
-```
-
-Teardown has two halves with different triggers: the **runtime resources** created
-for the stand (throwaway backend, `TRACING_HOST` alias, temporary namespace) come
-down **whatever the verdict is** — see
-[`recipes/validation-stack.md`](recipes/validation-stack.md) §Teardown — while the
-**repository files** created for L5 are cleaned only on `pass` (§3.5).
-
-Recipes (common):
-
-- [`recipes/stand-health-gate.md`](../opentelemetry-tracing-common/recipes/stand-health-gate.md)
-- [`recipes/log-error-triage.md`](../opentelemetry-tracing-common/recipes/log-error-triage.md)
-
-Never do Jaeger-first pass/fail.
 
 ### 3.5 Post-validation cleanup (mandatory after runtime `pass`)
 
@@ -137,12 +116,15 @@ When `validationPlan.runtime.status` is `pass`, run
 
 ## 4. Output contract
 
-Produce:
+The artifacts are in-session data, never files on disk — common
+[`SKILL.md`](../opentelemetry-tracing-common/SKILL.md) §Where the artifacts live.
 
-- `discovery-result.json` (TypeScript schema in this package)
-- `capability-result.json` (common schema redirect)
-- `maturity-result.json` (common schema redirect)
-- `migration-plan.json` (common schema redirect; includes `validationPlan`)
+- `discovery-result` → [`schemas/L1-discovery-result.schema.json`](schemas/L1-discovery-result.schema.json)
+- `capability-result` → common [`schemas/L2-capability-result.schema.json`](../opentelemetry-tracing-common/schemas/L2-capability-result.schema.json)
+- `maturity-result` → common [`schemas/L3-maturity-result.schema.json`](../opentelemetry-tracing-common/schemas/L3-maturity-result.schema.json)
+- `migration-plan` → common [`schemas/L4-migration-plan.schema.json`](../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json),
+  including the embedded `validationPlan`
+
 
 ## 5. Non-negotiable rules
 
@@ -166,11 +148,12 @@ Produce:
 
 ## 6. File index
 
-- Models: [`models/`](models/) — L4 framework/mechanism gate in [`models/4-transformation.md`](models/4-transformation.md); L5 TypeScript delta in [`models/5-validation.md`](models/5-validation.md)
-- Schemas: [`schemas/`](schemas/)
+- Layers: [`models/`](models/) — L1 discovery, the TypeScript L4 framework gate, and the L5 TypeScript delta
+  (L2 and L3 are common)
+- Schema: [`schemas/L1-discovery-result.schema.json`](schemas/L1-discovery-result.schema.json)
 - Detection signatures: [`reference/detection-rules.md`](reference/detection-rules.md)
-- Framework → instrumentation coverage (single source of truth): [`reference/framework-coverage.md`](reference/framework-coverage.md)
-- Build blockers: [`reference/build-preconditions.md`](reference/build-preconditions.md)
-- Runtime install discovery: [`reference/service-installation-discovery.md`](reference/service-installation-discovery.md)
-- Recipes: [`recipes/`](recipes/) — L4 apply + `fresh-build-and-image`, `validation-stack`
-- Shared L5 runtime (common): [`recipes/stand-health-gate.md`](../opentelemetry-tracing-common/recipes/stand-health-gate.md), [`recipes/log-error-triage.md`](../opentelemetry-tracing-common/recipes/log-error-triage.md), [`recipes/validation-cleanup.md`](../opentelemetry-tracing-common/recipes/validation-cleanup.md)
+- Framework coverage: [`reference/framework-coverage.md`](reference/framework-coverage.md)
+- Build blockers (TypeScript delta): [`reference/build-preconditions.md`](reference/build-preconditions.md)
+- Runtime install discovery (TypeScript delta): [`reference/service-installation-discovery.md`](reference/service-installation-discovery.md)
+- Recipes: [`recipes/`](recipes/) — L4 apply, `fresh-build-and-image`, and the `validation-stack` delta
+- Shared core: [`opentelemetry-tracing-common/SKILL.md`](../opentelemetry-tracing-common/SKILL.md)

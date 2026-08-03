@@ -5,7 +5,7 @@ service's tracing, scores its maturity, and generates an OpenTelemetry migration
 **Kafka/async context loss** and **verifies sampling and propagation** before a task is closed.
 
 Part of the multi-language tracing program — see [`../README.md`](../README.md)
-(Go, Python, JS/TS planned).
+(Go, Python, and TypeScript packages ship alongside this one).
 
 Sources in this monorepo and sibling clones:
 
@@ -21,9 +21,8 @@ Status: **draft** — language-specific Java layer aligned with common core.
 Package version lives in [`apm.yml`](apm.yml) — the manifest APM actually reads. Do not restate it here; a
 second copy only drifts.
 
-Current revision covers: Spring Boot 4 OTLP starter + export property keys; stand health gate before
-Jaeger; explicit L5 runtime order; one post-L4 Maven/image build; L3 decision matrix in common
-`3-maturity.md`.
+Current revision covers: Spring Boot 4 OTLP starter and export property keys; stand health gate before
+Jaeger; one post-L4 Maven and image build; L2–L5 logic, shared reference, and shared L5 recipes in common.
 
 ## Architecture
 
@@ -34,8 +33,8 @@ the previous artifact and emits the next:
 | Layer             | File                         | Output                                             |
 | ----------------- | ---------------------------- | -------------------------------------------------- |
 | L1 Discovery      | `models/1-discovery.md`      | `discovery-result.json`                            |
-| L2 Capability     | `models/2-capability.md`     | delegated to common                                |
-| L3 Maturity       | `models/3-maturity.md`       | delegated to common                                |
+| L2 Capability     | common `models/2-capability.md` | `capability-result`                             |
+| L3 Maturity       | common `models/3-maturity.md`   | `maturity-result`                               |
 | L4 Transformation | `models/4-transformation.md` | shared plan + Java framework-family/mechanism gate |
 | L5 Validation     | `models/5-validation.md`     | shared tiers + Java runtime execution rules        |
 
@@ -53,9 +52,11 @@ keeps shared `L2-L5`, shared schemas, and shared policy references.
 
 Supporting material:
 
-- `schemas/` — `L1-discovery-result.schema.json` + redirects (`L2`–`L4`) to common schemas
-- `reference/` — local Java detection rules, framework coverage, build preconditions + redirects to common shared references
-- `recipes/` — dependency / config / code / async-context / logging-correlation / fresh-build-and-image / validation-stack migration recipes; shared L5 stand-health, log-error-triage, and validation-cleanup in common
+- `schemas/` — `L1-discovery-result.schema.json`; the L2–L4 schemas live in common and are linked directly
+- `reference/` — Java detection rules, framework coverage, and the Quarkus platform contract, plus the local
+  deltas on the common build-preconditions file
+- `recipes/` — dependency, config, code, async-context, and logging-correlation migration recipes, plus
+  `fresh-build-and-image` and the `validation-stack` delta; the shared L5 recipes live in common
 - shared core: `../opentelemetry-tracing-common/`
 
 Examples in this package were intentionally removed. Use
@@ -64,11 +65,11 @@ and official framework documentation for reference shapes.
 
 ## Local check
 
-From the repository root:
+From this package directory, or from `agent-packages/otel_sdk_migration/` when installing the whole program:
 
 ```shell
-apm install -t <target>
-apm compile -t <target>
+apm install -t claude
 ```
 
-Use the compile target your APM setup expects. See [`../README.md`](../README.md) §Installation for target-specific outputs.
+`apm compile` is a separate concern and this repository does not need it — see
+[`../README.md`](../README.md) §Installation.

@@ -132,4 +132,4 @@ way the entrypoint changes, so the chosen form is a plan row — record it in
 Dockerfile `CMD`, or Helm `command`/`args`).
 
 Validate result against
-[`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
+[`../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json`](../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json).

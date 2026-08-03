@@ -73,9 +73,9 @@ Set `validationPlan.runtime.buildProvenance`:
 {
   "source": "fresh-build",
   "matchesL4": true,
-  "mavenCommand": "mvn --batch-mode clean package -pl ... -am -DskipTests",
+  "buildCommand": "mvn --batch-mode clean package -pl ... -am -DskipTests",
   "imageTag": "<service-image>:<session-tag>",
-  "runnerJar": "<module>/target/*-runner.jar",
+  "runnerArtifact": "<module>/target/*-runner.jar",
   "purgedImages": ["<old-tag-1>"],
   "detail": "Built in this session after L4; stale artifacts removed before build"
 }

@@ -128,13 +128,13 @@ Load/push the image into the environment the user named, using the documented fl
 ## Step 4 — Provenance record
 
 Record in `validationPlan.runtime.buildProvenance`. The schema has
-`additionalProperties: false` and **no** Node command field (`mavenCommand` and
-`runnerJar` are Java-only), so never invent one:
+`additionalProperties: false`, so never invent a field:
 
 - `source`: `fresh-build` for this recipe — `ci-image` only for a CI image proven to
   carry the current L4 diff, see
   [`../reference/build-preconditions.md`](../reference/build-preconditions.md);
 - `matchesL4`: `true` only when the image checks in Step 2 passed;
+- `buildCommand`: the install and build commands actually run;
 - `imageTag`: the session-unique tag actually deployed;
 - `purgedImages`: the stale tags removed in Step 0;
 - `detail`: the install and build commands actually run, the package manager and
