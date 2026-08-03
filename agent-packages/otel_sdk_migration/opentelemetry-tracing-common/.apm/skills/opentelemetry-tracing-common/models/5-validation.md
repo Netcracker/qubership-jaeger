@@ -7,9 +7,8 @@ when the user opts in, on a running deployment (runtime).
 - **Input:** `migration-plan.json` (including proposed L4 edits), plus Layer 1–3
   artifacts for evidence (`discovery-result.json`, `capability-result.json`,
   `maturity-result.json`).
-- **Output:** updated `validationPlan` statuses and evidence embedded in
-  `migration-plan.json` →
-  [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
+- **Output:** updated `validationPlan` statuses and evidence, embedded in the migration plan — shape in
+  §`validationPlan` structure below.
 - **Language execution:** build, deploy, stand health, log triage, and tracing
   assertions — provided by each language package's own `models/5-validation.md`
   and runtime recipes.
@@ -48,8 +47,8 @@ Status enum for every check and for `validationPlan.runtime.status`:
    and triage blockers in plan root `gaps` (prose strings with evidence).
 7. **Post-validation cleanup** — when `runtime.status` is `pass`, remove or
    revert **ephemeral** artifacts created only for L5 (see §5.4).
-8. Check the migration plan carries every field listed in
-   [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
+8. Check the migration plan carries every field in [`4-transformation.md`](4-transformation.md) §Plan sections and
+   in §`validationPlan` structure below.
 
 Static and configuration tiers **never** require a fresh build or container image.
 Do **not** set `validationPlan.runtime.status` to `pass` from static/config alone.

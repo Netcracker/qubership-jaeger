@@ -110,8 +110,10 @@ Each language package owns the local parts:
 
 - [`schemas/L2-capability-result.schema.json`](schemas/L2-capability-result.schema.json)
 - [`schemas/L3-maturity-result.schema.json`](schemas/L3-maturity-result.schema.json)
-- [`schemas/L4-migration-plan.schema.json`](schemas/L4-migration-plan.schema.json) — includes the embedded
-  `validationPlan`
+
+The migration plan has no schema file: its root fields are tabulated in
+[`models/4-transformation.md`](models/4-transformation.md) §Plan sections and the embedded `validationPlan` in
+[`models/5-validation.md`](models/5-validation.md), so a third copy would only drift.
 
 `L1-discovery-result.schema.json` lives in each language package, because the discovery shape differs per language.
 There are no per-language copies of the shared schemas — language layers link these files directly.

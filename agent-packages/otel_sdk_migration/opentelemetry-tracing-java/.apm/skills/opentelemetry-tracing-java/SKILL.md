@@ -163,8 +163,8 @@ A complete run yields one artifact per layer:
 - `discovery-result` → [`schemas/L1-discovery-result.schema.json`](schemas/L1-discovery-result.schema.json)
 - `capability-result` → common [`schemas/L2-capability-result.schema.json`](../opentelemetry-tracing-common/schemas/L2-capability-result.schema.json)
 - `maturity-result` → common [`schemas/L3-maturity-result.schema.json`](../opentelemetry-tracing-common/schemas/L3-maturity-result.schema.json)
-- `migration-plan` → common [`schemas/L4-migration-plan.schema.json`](../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json),
-  including the embedded `validationPlan`
+- `migration-plan` → common [`models/4-transformation.md`](../opentelemetry-tracing-common/models/4-transformation.md)
+  §Plan sections, including the embedded `validationPlan`
 
 ## 5. Non-negotiable rules
 

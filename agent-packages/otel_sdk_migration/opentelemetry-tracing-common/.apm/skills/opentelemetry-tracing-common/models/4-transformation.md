@@ -6,17 +6,18 @@ re-run discovery or capability analysis.
 
 - **Input:** `discovery-result.json`, `capability-result.json`,
   `maturity-result.json`.
-- **Output:** `migration-plan.json` → [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
+- **Output:** `migration-plan` — root fields in §Plan sections below, `validationPlan` in
+  [`5-validation.md`](5-validation.md).
 - **Language-specific edits:** recipes and the framework gate in each language
   package (`models/4-transformation.md` Step 0).
 
 ## When to skip transformation edits
 
-| `maturity-result.level` | Typical handling |
-| --- | --- |
-| **5** — Working OTel | Emit a **plan-only** document: `basedOnMaturityLevel: 5`, embedded `validationPlan`, optional gap fixes. No dependency/config/code/async sections unless the user asked for targeted fixes. |
-| **1–4** with audit-only scope | Stop after the L3 brief. It already names the recommended work, so do not produce a plan document unless the user asks for one — and never edit the target repository. |
-| Blockers in `maturity-result.blockers` | Record in plan `gaps`; do not apply edits that depend on missing evidence or blocked builds. |
+| `maturity-result.level`                | Typical handling                                                                                                                                                                            |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **5** — Working OTel                   | Emit a **plan-only** document: `basedOnMaturityLevel: 5`, embedded `validationPlan`, optional gap fixes. No dependency/config/code/async sections unless the user asked for targeted fixes. |
+| **1–4** with audit-only scope          | Stop after the L3 brief. It already names the recommended work, so do not produce a plan document unless the user asks for one — and never edit the target repository.                      |
+| Blockers in `maturity-result.blockers` | Record in plan `gaps`; do not apply edits that depend on missing evidence or blocked builds.                                                                                                |
 
 Set `basedOnMaturityLevel` to `maturity-result.level` on every plan.
 
@@ -38,12 +39,24 @@ common [`SKILL.md`](../SKILL.md) § Multi-language scope gate.
 5. Build **§4.5 `validationPlan`** — static and configuration tiers by default;
    runtime tier per common `models/5-validation.md` (opt-in).
 6. Record unresolved items, skipped doc sync, and build blockers in `gaps`.
-7. Check the plan carries every field listed in
-   [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
+7. Check the plan carries every field in §Plan sections, and the `validationPlan` structure from
+   [`5-validation.md`](5-validation.md).
 8. **Apply** (Phase 2 only) — edit the target repository, sync documentation (below),
    then run the language fresh-build recipe before runtime validation.
 
 ## Plan sections
+
+The plan is one object. Every field below is expected; an unresolved one goes in `gaps` rather than being dropped.
+
+| Field                   | Shape                                            | Section                                             |
+| ----------------------- | ------------------------------------------------ | --------------------------------------------------- |
+| `basedOnMaturityLevel`  | integer 1–5, copied from `maturity-result.level` | above                                               |
+| `dependencyMigration`   | `{ remove[], add[], upgrade[] }` of coordinates  | §4.1                                                |
+| `configMigration`       | array of `{ from, to, oneToOne, note? }`         | §4.2                                                |
+| `codeMigration`         | `{ mechanical[], semantic[] }`                   | §4.3                                                |
+| `asyncContextMigration` | array of `{ boundary, file?, line?, fix }`       | §4.4                                                |
+| `validationPlan`        | `{ static[], configuration[], runtime }`         | §4.5, shape in [`5-validation.md`](5-validation.md) |
+| `gaps`                  | array of prose strings with evidence             | throughout                                          |
 
 ### §4.1 `dependencyMigration`
 

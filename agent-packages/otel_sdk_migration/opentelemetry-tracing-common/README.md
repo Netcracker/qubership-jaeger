@@ -22,8 +22,8 @@ ownership split and the artifact chain.
   `reference/service-installation-discovery.md`
 - **Cross-cutting gates:** multi-language scope and the artifact-location rule (`SKILL.md`), the
   propagation-format question (`models/3-maturity.md`), post-validation cleanup (`models/5-validation.md` §5.4)
-- **Schemas:** `schemas/L2-capability-result.schema.json`, `schemas/L3-maturity-result.schema.json`,
-  `schemas/L4-migration-plan.schema.json`
+- **Schemas:** `schemas/L2-capability-result.schema.json`, `schemas/L3-maturity-result.schema.json`. The migration
+  plan has none — its fields are tabulated in `models/4-transformation.md` and `models/5-validation.md`
 
 ## Language packages implement
 
