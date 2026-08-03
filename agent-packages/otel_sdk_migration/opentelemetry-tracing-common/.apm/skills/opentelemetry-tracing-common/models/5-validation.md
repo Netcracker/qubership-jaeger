@@ -19,10 +19,7 @@ when the user opts in, on a running deployment (runtime).
 | --- | --- |
 | **static** | Inspect repository manifests and sources; record `pass` / `fail` per row |
 | **configuration** | Inspect config bindings against the platform contract; record `pass` / `fail` per row |
-| **runtime** | `status: manual` until the install path is known, the usernames an environment, and grants deploy permission |
-
-Configuration tier must enforce the platform contract from
-[`../reference/platform-tracing-guide.md`](../reference/platform-tracing-guide.md).
+| **runtime** | `status: manual` until the install path is known, the user names an environment, and grants deploy permission |
 
 Status enum for every check and for `validationPlan.runtime.status`:
 `pass`, `fail`, `manual`, `unknown` (schema `checkStatus`).
@@ -40,9 +37,7 @@ Status enum for every check and for `validationPlan.runtime.status`:
 4. **Runtime opt-in** — only after static/configuration are recorded and the
    user confirms a target environment. Follow the language install-discovery and
    fresh-build recipes before deploy.
-5. **Runtime scenario** — when opted in, execute language steps in order:
-   stand health → log-error triage → business traffic → tracing assertions →
-   verdict (see §5.3).
+5. **Runtime scenario** — when opted in, execute the §5.3 mandatory order.
 6. **Record blockers** — build/registry issues, stand failures, skipped runtime,
    and triage blockers in plan root `gaps` (prose strings with evidence).
 7. **Post-validation cleanup** — when `runtime.status` is `pass`, remove or
@@ -98,24 +93,19 @@ when discovery could not inspect the relevant file.
 
 ## §5.2 Configuration tier
 
-Verify every binding rule from
-[`../reference/platform-tracing-guide.md`](../reference/platform-tracing-guide.md)
-against proposed or actual config (post-L4):
+One row per contract facet — `exportShape`, `propagationStandard`, `sampler`,
+`serviceNameNamespace`, `endpointFilter`, `loggingCorrelation` — checked against
+proposed or actual config (post-L4). The binding rules and their required values:
+[`../reference/platform-tracing-guide.md`](../reference/platform-tracing-guide.md).
 
-- `TRACING_ENABLED`, `TRACING_HOST`, sampler precedence
-- OTLP exporter `http/protobuf` and endpoint shape
-- Propagation — **two rows, never one**: the inject format matches what peers
-  expect, and the extract set covers the peers that call in. Where the framework
-  has a default (Spring Boot produces `[W3C]` unless told otherwise), check the
-  effective value, not the presence of a key.
-- Propagation composite order puts the **intended priority format** at the
-  framework's winner end — the agent derives the end from the framework (first
-  on Spring Boot, last on Quarkus / Pure Java / Go); the user only states which
-  format should win
-- Sampler `parentbased_traceidratio` (never `always_on`)
-- `service.name=${service_name}-${namespace_name}` (resolved naming pattern)
-- Probe / metrics / management endpoints excluded from trace export
-- Mandatory `traceId` / `spanId` in logs
+Two rules belong to this tier rather than to the contract:
+
+- **Propagation is two rows, never one** — the inject format matches what peers
+  expect, and the extract set covers the peers that call in.
+- Check the **effective** value, not the presence of a key. A framework default is
+  an effective value, and composite order must put the intended priority format at
+  the framework's winner end (guide §Propagation) — the agent derives the end, the
+  user only states which format should win.
 
 Tier passes when every row is `pass`. Non-1:1 mappings from L4 should already
 be flagged in `configMigration[].note` and reflected in check `detail`.
@@ -194,30 +184,11 @@ list (probes, actuator, OpenAPI, metrics paths).
 
 ## §5.4 Post-validation cleanup (mandatory after runtime `pass`)
 
-When `validationPlan.runtime.status` is **`pass`**, remove or revert files
-created **only** for L5 runtime — not L4 service changes (source, Helm of the
-SUT, dependency manifests, or documentation synced on apply).
-
-**Ephemeral** (typical — see [`recipes/validation-cleanup.md`](../recipes/validation-cleanup.md)):
-
-- throwaway end-to-end manifests, install scripts, or compose/k8s overlays;
-- local-only Dockerfiles or build helpers used solely for validation;
-- temporary env files or copied credentials templates for the test stand.
-
-**Retain** (do not delete as cleanup):
-
-- any file that is part of the migrated service or its install path;
-- artifacts the user asked to keep for repeat validation.
-
-**Agent rules:**
-
-1. During runtime, track ephemeral paths in chat or plan `gaps` as they are
-   created.
-2. After runtime `pass`, delete or revert ephemeral files; do **not** stage
-   them for commit.
-3. Post a short **L5 Cleanup** line in chat: files removed/reverted, or
-   `none — no ephemeral artifacts`.
-4. If cleanup is skipped (user asked to retain), record reason in `gaps`.
+When `validationPlan.runtime.status` is **`pass`**, remove or revert files created
+**only** for L5 runtime — never L4 service changes (source, Helm of the SUT,
+dependency manifests, or documentation synced on apply). The ephemeral and retain
+lists, the delete steps, and the mandatory **L5 Cleanup** chat line:
+[`recipes/validation-cleanup.md`](../recipes/validation-cleanup.md).
 
 Language execution (shared recipes in this package):
 

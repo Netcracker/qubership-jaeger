@@ -33,12 +33,9 @@ previous artifact and emits the next:
 
 ## Supporting material
 
-- `schemas/` — `L1-discovery-result.schema.json`; the L2–L4 schemas live in common and are linked directly
-- `reference/` — TS/Node detection rules and framework coverage, plus the local deltas on the common
-  build-preconditions and install-discovery files
-- `recipes/` — dependency, config, code, async-context, and logging-correlation migration recipes, plus
-  `fresh-build-and-image` and the `validation-stack` delta; the shared L5 recipes live in common
-- shared core: `../opentelemetry-tracing-common/`
+The file index — schemas, detection rules, framework coverage, recipes, and which pieces come from common — is
+[`SKILL.md`](.apm/skills/opentelemetry-tracing-ts/SKILL.md) §6, the copy the agent reads and the only place they are
+listed. Shared core: [`../opentelemetry-tracing-common/`](../opentelemetry-tracing-common/).
 
 ## Source-of-truth policy
 

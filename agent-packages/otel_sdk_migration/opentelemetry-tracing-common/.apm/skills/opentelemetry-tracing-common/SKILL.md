@@ -66,20 +66,22 @@ monorepo), or **two or more independent SUTs** the user did not narrow to one ta
 4. If the user does not answer, emit a **plan-only** L4 document and keep `validationPlan.runtime.status` at `manual`.
    No repository edits.
 
-The propagation-format question is asked **once for the whole scope**, in the L3 brief — never once per service. Rules
-and timing: [`models/3-maturity.md`](models/3-maturity.md) §Propagation format. Each target then encodes the same
-decision in its own framework syntax and list order.
+The propagation-format question is asked **once for the whole scope**, in the L3 brief — never once per service:
+[`models/3-maturity.md`](models/3-maturity.md) §Propagation format.
 
 This gate is cross-language; language packages enter it from Phase 2 (language `SKILL.md` §3.0).
 
 ## Ownership split
 
-Common owns the shared layers:
+| Layer | Common model — owns | Language extension — owns |
+| --- | --- | --- |
+| L2 | [`models/2-capability.md`](models/2-capability.md) — full | none |
+| L3 | [`models/3-maturity.md`](models/3-maturity.md) — full, decision matrix and propagation-format question | none |
+| L4 | [`models/4-transformation.md`](models/4-transformation.md) — plan structure §4.1–§4.5, doc sync on apply | Step 0 framework gate, recipes, apply |
+| L5 | [`models/5-validation.md`](models/5-validation.md) — tiers, `validationPlan` shape, static and configuration checks, runtime gating | install path, fresh build, runtime execution, language deltas |
 
-- Layer 2 Capability — full.
-- Layer 3 Maturity — full, including the decision matrix and the propagation-format question.
-- Layer 4 Transformation — generic plan structure, §4.1–§4.5, documentation sync on apply.
-- Layer 5 Validation — shared tiers, `validationPlan` shape, static and configuration checks, runtime gating rules.
+Common also owns:
+
 - Shared L5 recipes: [`recipes/stand-health-gate.md`](recipes/stand-health-gate.md),
   [`recipes/log-error-triage.md`](recipes/log-error-triage.md),
   [`recipes/validation-stack.md`](recipes/validation-stack.md),
@@ -89,22 +91,9 @@ Common owns the shared layers:
   [`reference/service-installation-discovery.md`](reference/service-installation-discovery.md).
 - Shared JSON field lists — capability and maturity; the migration plan is tabulated in the models instead.
 
-Each language package owns the local parts:
-
-- Layer 1 Discovery and `L1-discovery-result.schema.json`.
-- `reference/detection-rules.md` and `reference/framework-coverage.md`.
-- Layer 4 apply — framework gate plus the dependency, config, code, and async recipes.
-- Layer 5 runtime execution — `recipes/fresh-build-and-image.md`, and the language deltas on the shared reference and
-  validation-stack files.
-
-## Shared layer files
-
-| Layer | Common model | Language extension |
-| --- | --- | --- |
-| L2 | [`models/2-capability.md`](models/2-capability.md) | none — common only |
-| L3 | [`models/3-maturity.md`](models/3-maturity.md) | none — common only |
-| L4 | [`models/4-transformation.md`](models/4-transformation.md) | Step 0 framework gate, recipes, apply |
-| L5 | [`models/5-validation.md`](models/5-validation.md) | install path, fresh build, language deltas |
+Each language package additionally owns Layer 1 Discovery with its
+`L1-discovery-result.schema.json`, `reference/detection-rules.md`, and
+`reference/framework-coverage.md`.
 
 ## Shared schemas (common)
 

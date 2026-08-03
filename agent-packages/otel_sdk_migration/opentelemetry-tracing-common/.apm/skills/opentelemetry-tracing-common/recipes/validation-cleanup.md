@@ -3,11 +3,8 @@
 Run **only** when `validationPlan.runtime.status` is `pass`. See
 [`../models/5-validation.md`](../models/5-validation.md) §5.4.
 
-## Goal
-
-Remove ephemeral artifacts created for runtime validation so they are not
-accidentally committed. **Do not** delete L4 service changes (source, Helm of the
-SUT, dependency manifests, synced readme, chart values).
+Remove the artifacts created for runtime validation so they are not accidentally
+committed. Everything the migration itself produced stays — see **Retain** below.
 
 ## Ephemeral (typical)
 
@@ -21,6 +18,7 @@ SUT, dependency manifests, synced readme, chart values).
 
 - migrated dependency manifest (`go.mod`, `pom.xml`, etc.)
 - application config, Helm templates, tracing modules (e.g. `internal/tracing/*`)
+- the tracing backend and SUT manifests that are the documented install path
 - documentation updated during L4 apply
 - files the user explicitly asked to keep for repeat validation
 
@@ -32,7 +30,4 @@ SUT, dependency manifests, synced readme, chart values).
 4. Post **L5 Cleanup** in chat: removed paths, or `none — no ephemeral artifacts`.
 5. If the user asked to retain artifacts, record `cleanup skipped — <reason>` in `gaps`.
 
-## Do not
-
-- commit ephemeral validation files unless the user explicitly requests it
-- remove tracing backend or SUT manifests that are the documented install path
+Never commit ephemeral validation files unless the user explicitly asks for them.

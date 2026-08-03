@@ -13,9 +13,8 @@ Language packages add build commands, framework env exceptions, and their own "n
 
 - the service install path is known —
   [`../reference/service-installation-discovery.md`](../reference/service-installation-discovery.md);
-- the user opted in to runtime validation and named a deploy environment with sufficient permissions;
-- Layer 4 edits are followed by the language `recipes/fresh-build-and-image.md` **before** any runtime deploy. Never
-  validate runtime on a stale image.
+- opt-in, environment, and build provenance are settled —
+  [`../models/5-validation.md`](../models/5-validation.md) §5.3 Prerequisites. Never validate runtime on a stale image.
 
 ## Minimal topology
 
@@ -23,12 +22,12 @@ Language packages add build commands, framework env exceptions, and their own "n
 SUT -> OTLP http/protobuf :4318 -> TRACING_HOST alias -> collector/query backend
 ```
 
-| Role | Dev-minimal choice |
-| --- | --- |
-| Trace generator | Target service built from the post-L4 artifact in this session |
-| Receiver + storage | Backend with OTLP HTTP ingest and a trace query API (for example Jaeger all-in-one) |
-| Platform-shaped alias | Runtime route/service named by `TRACING_HOST` (default `nc-diagnostic-agent`) |
-| Application deps | Prerequisites from install docs (DB, secrets, volumes) |
+| Role                  | Dev-minimal choice                                                                  |
+|-----------------------|-------------------------------------------------------------------------------------|
+| Trace generator       | Target service built from the post-L4 artifact in this session                      |
+| Receiver + storage    | Backend with OTLP HTTP ingest and a trace query API (for example Jaeger all-in-one) |
+| Platform-shaped alias | Runtime route/service named by `TRACING_HOST` (default `nc-diagnostic-agent`)       |
+| Application deps      | Prerequisites from install docs (DB, secrets, volumes)                              |
 
 Wire the SUT with platform env; Layer 4 config maps the rest. The `1.0` sampler is **for L5 smoke only**, never a
 production default:
@@ -56,28 +55,17 @@ TRACING_SAMPLER_PROBABILISTIC=1.0
 
 ## Runtime order
 
-Runtime `pass` requires all gates, in order:
+The gates and their order: [`../models/5-validation.md`](../models/5-validation.md) §5.3 — executed here through
+[`stand-health-gate.md`](stand-health-gate.md) and [`log-error-triage.md`](log-error-triage.md). Two things about the
+assertions themselves are specific to running the stand.
 
-1. [`stand-health-gate.md`](stand-health-gate.md) — Ready workload, stable restarts, non-empty endpoints;
-2. [`log-error-triage.md`](log-error-triage.md) — classified log errors, no `blocks-e2e`;
-3. business traffic — non-suppressed endpoint through the normal service path;
-4. tracing assertions — resolved `service.name`, **entry span**, propagation, log correlation.
-
-The entry span is the server span for an HTTP or framework service. For a worker, consumer, or CLI it is the span on
-the unit of work, carrying the producer's context as parent or link. A worker has no server span — asserting one there
-fails a correct migration.
-
-Assert propagation on the **wire headers**: a receiver that dumps incoming headers shows `b3` vs `X-B3-*` vs
-`traceparent`. Assert span hierarchy too where a mesh or sidecar is in the path. A single `trace_id` across services
-passes with the wrong inject format as well, because receivers extract leniently
-([`../models/5-validation.md`](../models/5-validation.md) §5.3).
+The **entry span** is the server span for an HTTP or framework service. For a worker, consumer, or CLI it is the span
+on the unit of work, carrying the producer's context as parent or link. A worker has no server span — asserting one
+there fails a correct migration.
 
 A parent-based sampler honors the incoming decision even at ratio `1.0`. If the traffic arrives through a gateway or
 mesh that already decided `sampled=0`, the SUT records nothing and the stand looks broken while the configuration is
 correct. Check the sampling flag on the inbound headers before chasing an export bug.
-
-**Not sufficient for pass:** spans from probe traffic alone while the SUT is `CrashLoopBackOff`, not Ready, or
-restart-prone.
 
 ## No spans in the backend — check in order
 

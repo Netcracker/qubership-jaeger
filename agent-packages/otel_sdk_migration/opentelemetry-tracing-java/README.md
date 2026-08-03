@@ -22,12 +22,10 @@ the previous artifact and emits the next:
 
 ## Supporting material
 
-- `schemas/` — `L1-discovery-result.schema.json`; the L2–L4 schemas live in common and are linked directly
-- `reference/` — Java detection rules, framework coverage, and the Quarkus platform contract, plus the local
-  deltas on the common build-preconditions file
-- `recipes/` — dependency, config, code, async-context, and logging-correlation migration recipes, plus
-  `fresh-build-and-image` and the `validation-stack` delta; the shared L5 recipes live in common
-- shared core: `../opentelemetry-tracing-common/`
+The file index — schemas, detection rules, framework coverage, the Quarkus platform contract, recipes, and which
+pieces come from common — is [`SKILL.md`](.apm/skills/opentelemetry-tracing-java/SKILL.md) §6, the copy the agent
+reads and the only place they are listed. Shared core:
+[`../opentelemetry-tracing-common/`](../opentelemetry-tracing-common/).
 
 ## Source-of-truth policy
 

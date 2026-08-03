@@ -5,28 +5,22 @@ and a recommended next step. Do not re-scan the repository.
 
 - **Input:** `discovery-result.json` and `capability-result.json`.
 - **Output:** `maturity-result.json` → [`../schemas/L3-maturity-result.schema.json`](../schemas/L3-maturity-result.schema.json).
-- **Match logic:** **Decision matrix** below only — walk rows top to bottom; first
-  match wins.
+- **Match logic:** **Decision matrix** below only — walk rows top to bottom; first match wins.
 
 ## Input mapping (matrix columns)
 
-| Matrix column | Source |
-| --- | --- |
-| OTel API | `discovery-result.dependencyProfile.hasOtelApi` |
-| OTel SDK | `discovery-result.dependencyProfile.hasOtelSdk` |
-| Exporter | `discovery-result.dependencyProfile.hasExporter` |
-| Legacy active | `discovery-result.dependencyProfile.hasLegacy` |
+| Matrix column     | Source                                                              |
+|-------------------|---------------------------------------------------------------------|
+| OTel API          | `discovery-result.dependencyProfile.hasOtelApi`                     |
+| OTel SDK          | `discovery-result.dependencyProfile.hasOtelSdk`                     |
+| Exporter          | `discovery-result.dependencyProfile.hasExporter`                    |
+| Legacy active     | `discovery-result.dependencyProfile.hasLegacy`                      |
 | Export capability | `capability-result.export.overall` → `PASS`, `PARTIAL`, or `FAILED` |
 
 When `export.overall` is `UNKNOWN`, treat export capability as unknown for matrix
-rows 5–6 and record the reason in `blockers` / `rationale` — do not guess
-`PASS` or `FAILED`.
+rows 5–6 and record the reason in `blockers` / `rationale` — do not guess `PASS` or `FAILED`.
 
 ## Decision matrix
-
-Walk rows **1 → 7**; stop at the first match. Use matched `level`, `label`, and
-`recommendedAction` in `maturity-result.json`. Use **Recommended work** in
-user-facing L3 briefs — not the `recommendedAction` slug.
 
 | # | OTel API | OTel SDK | Exporter | Legacy active | Export capability | Level | Name | `recommendedAction` (JSON only) | Description (brief) | Recommended work (brief) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -37,8 +31,6 @@ user-facing L3 briefs — not the `recommendedAction` slug.
 | 5 | yes | yes | yes | no | `FAILED` | **3** | Incomplete OTel | `complete-otel-stack` | OpenTelemetry is **partially** present but traces do not export end-to-end. | Complete the OTel stack — add or fix exporter, endpoint, sampler, and propagators until export works. |
 | 6 | yes | yes | yes | no | `PASS`/`PARTIAL` | **5** | Working OTel | `no-migration-required` | OpenTelemetry SDK and exporter are wired; export works; no legacy tracer remains. | No full migration required — optional gap fixes, contract tuning, or validation only. |
 | 7 | no | no | no | no | n/a | **1** | No tracing | `introduce-otel` | The service has no distributed tracing: no OTel SDK and no legacy tracer. | Introduce OpenTelemetry from scratch — dependencies, platform `TRACING_*` config, OTLP export, propagation, trace IDs in logs. |
-
-Do **not** invent levels or match from level names alone — use this table only.
 
 ## Algorithm
 
@@ -51,52 +43,20 @@ Do **not** invent levels or match from level names alone — use this table only
    - `blockers` — carry forward unresolved `gaps`, export `FAILED`, hybrid
      legacy+OTel, or any facet that blocks L4.
    - `confidence` — `high` when all matrix inputs are known; `medium` when export
-     is `PARTIAL` or propagation is incomplete; `low` when required inputs are
-     `UNKNOWN`.
+     is `PARTIAL` or propagation is incomplete; `low` when required inputs are `UNKNOWN`.
 4. Check the result carries every field listed in
    [`../schemas/L3-maturity-result.schema.json`](../schemas/L3-maturity-result.schema.json).
 
-### Examples (for briefs — plain language)
+### Row 1 — the retired-exporter case
 
-- **Level 1:** A new service with no tracing libraries in `pom.xml` and no trace
-  export configured → tracing must be **introduced from zero**. This is not
-  “level 2” and not “step 1→2” — Level 2 means **legacy** tracing only.
-- **Level 2:** Spring Boot still on **Spring Cloud Sleuth** → migrate from legacy
-  tracing to OpenTelemetry.
-- **Level 3:** `opentelemetry-api` in dependencies but no OTLP exporter or export
-  fails → **finish** wiring the OTel stack.
-- **Level 4:** Brave and OTel Java agent both present → **remove** the mixed stack.
-- **Level 4, retired-exporter case:** the only "legacy" evidence is a retired
-  **OTel-native** exporter (e.g. `@opentelemetry/exporter-jaeger`, Python's
-  `opentelemetry-exporter-jaeger*`) with no separate tracer anywhere — the matrix
-  still lands here (`hasLegacy=true`), but there is **one** tracer, not two.
-  Describe the work as **swapping the exporter package**, never as "remove the
-  second tracing stack" — that phrase is wrong when no second stack exists.
-- **Level 5:** Quarkus with `quarkus-opentelemetry` and OTLP export working, no
-  Sleuth/Jaeger client → tracing is **already in good shape**.
+When the only "legacy" evidence is a retired **OTel-native** exporter (for example
+`@opentelemetry/exporter-jaeger`, Python's `opentelemetry-exporter-jaeger*`) with no
+separate tracer anywhere, the matrix still lands on row 1 (`hasLegacy=true`) — but
+there is **one** tracer, not two. Describe the work as **swapping the exporter
+package**, never as "remove the second tracing stack": that phrase is wrong when no
+second stack exists.
 
-## Current level vs migration goal (user brief)
-
-The matrix produces one verdict: the **current** state. In chat, describe it
-with **level + name + one sentence** from the **Description** column.
-
-**Level 2 = legacy tracing today**, not “after we add OpenTelemetry”. Never write
-“1→2” as a migration step.
-
-When L4 implementation is planned, add a **target level** in the L3 brief only
-(not a second matrix lookup, not a schema field):
-
-- **Current level** — what the service is today (level, name, short description).
-- **Target level** — where L4 should land if it succeeds. For levels 1–4, the
-  target is usually **Level 5 — Working OTel** (OTLP export to the platform
-  collector, platform contract met, no legacy libraries).
-- **Migration path** (mandatory in chat when L4 is planned) — one line:
-  **`Migration path: Level <current> → Level <target>`** (e.g.
-  `Migration path: Level 2 → Level 5`). This is the planned transformation arc,
-  not shorthand like “1→2” (Level 2 means **legacy tracing today**, not “step
-  two of a plan”).
-
-### Propagation format
+## Propagation format
 
 **The L3 brief is the only place the propagation format is raised with the user.**
 Not the multi-language gate, not L4 — those consume the answer, they do not ask

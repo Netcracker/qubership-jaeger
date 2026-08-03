@@ -1,11 +1,9 @@
 # Layer 4 — Transformation (shared)
 
-**Goal:** produce a reviewable `migration-plan.json` from Layer 1–3 artifacts,
-then apply language-specific edits when implementation is in scope. Do not
-re-run discovery or capability analysis.
+**Goal:** produce a reviewable `migration-plan.json` from Layer 1–3 artifacts, then apply
+language-specific edits when implementation is in scope. Do not re-run discovery or capability analysis.
 
-- **Input:** `discovery-result.json`, `capability-result.json`,
-  `maturity-result.json`.
+- **Input:** `discovery-result.json`, `capability-result.json`, `maturity-result.json`.
 - **Output:** `migration-plan` — root fields in §Plan sections below, `validationPlan` in
   [`5-validation.md`](5-validation.md).
 - **Language-specific edits:** recipes and the framework gate in each language
@@ -14,23 +12,16 @@ re-run discovery or capability analysis.
 ## When to skip transformation edits
 
 | `maturity-result.level`                | Typical handling                                                                                                                                                                            |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **5** — Working OTel                   | Emit a **plan-only** document: `basedOnMaturityLevel: 5`, embedded `validationPlan`, optional gap fixes. No dependency/config/code/async sections unless the user asked for targeted fixes. |
 | **1–4** with audit-only scope          | Stop after the L3 brief. It already names the recommended work, so do not produce a plan document unless the user asks for one — and never edit the target repository.                      |
 | Blockers in `maturity-result.blockers` | Record in plan `gaps`; do not apply edits that depend on missing evidence or blocked builds.                                                                                                |
 
-Set `basedOnMaturityLevel` to `maturity-result.level` on every plan.
-
-## Step 0 — Confirm scope (before framework gate)
-
-When common **Multi-language scope gate** applies (two or more language
-families or SUTs in scope), confirm user choice **bulk vs single target** before
-any plan row or repository edit. If scope is unset, stop at plan-only output. See
-common [`SKILL.md`](../SKILL.md) § Multi-language scope gate.
-
 ## Algorithm
 
-1. **Confirm scope** — multi-language gate when applicable; record choice.
+1. **Confirm scope** — when two or more language families or SUTs are in scope,
+   settle **bulk vs single target** before any plan row or repository edit, and
+   record the choice: common [`SKILL.md`](../SKILL.md) §Multi-language scope gate.
 2. Read `maturity-result` — level, blockers, and recommended work (prose from L3).
 3. Run the language **framework gate** (`models/4-transformation.md` Step 0 and
    Step 0b) before any dependency or config row is emitted.
@@ -50,7 +41,7 @@ The plan is one object. Every field below is expected; an unresolved one goes in
 
 | Field                   | Shape                                            | Section                                             |
 | ----------------------- | ------------------------------------------------ | --------------------------------------------------- |
-| `basedOnMaturityLevel`  | integer 1–5, copied from `maturity-result.level` | above                                               |
+| `basedOnMaturityLevel`  | integer 1–5, copied from `maturity-result.level` | every plan, including plan-only                     |
 | `dependencyMigration`   | `{ remove[], add[], upgrade[] }` of coordinates  | §4.1                                                |
 | `configMigration`       | array of `{ from, to, oneToOne, note? }`         | §4.2                                                |
 | `codeMigration`         | `{ mechanical[], semantic[] }`                   | §4.3                                                |
@@ -71,11 +62,9 @@ Flag non-1:1 mappings in `note`.
 
 #### Propagation rows (mandatory handling)
 
-Propagation is the one contract area a migration must **not** normalize on its
-own. The decision itself was taken in the L3 brief
-([`3-maturity.md`](3-maturity.md) §Propagation format) — L4 encodes it, and never
-re-asks. If the question is still unanswered, fall back to a plan-only document
-rather than emitting a row.
+L4 encodes the format decided in the L3 brief
+([`3-maturity.md`](3-maturity.md) §Propagation format); it never re-asks, and it
+never normalizes the wire format on its own.
 
 - Carry the decided inject format to the target stack. Emit the row as
   `oneToOne: true` even when the property path changes, and never emit a row that
@@ -85,17 +74,12 @@ rather than emitting a row.
   `b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader))`, not `b3.New()`), checked
   against the SDK source of the version the repository depends on.
 - Record in `note`: the resulting list, why that order, and whether the surface is
-  build-time or runtime. Composite order and the per-framework winner end come
-  from the platform guide §Propagation — the agent derives them, the user never
-  states them.
+  build-time or runtime.
 
 ### §4.3 `codeMigration`
 
-- `mechanical` — deterministic API rewrites (may apply on confirmation). Examples
-  of mechanical patterns (language recipes add framework-specific detail):
-  - `span.tag(k, v)` → `span.setAttribute(k, v)`
-  - `span.finish()` → `span.end()`
-  - `buildSpan(name).start()` → `spanBuilder(name).startSpan()`
+- `mechanical` — deterministic API rewrites (may apply on confirmation); the
+  concrete rewrite tables live in the language `recipes/code-migration.md`.
 - `semantic` — attribute renames, business-key mappings, and OpenTelemetry
   semantic convention proposals only; **never auto-apply**. List candidates in
   `codeMigration.semantic` and ask for confirmation. Custom keys require explicit
@@ -138,7 +122,6 @@ If the repository has no docs surface for deployment parameters, record `documen
 
 ## User-facing summary (optional)
 
-After `migration-plan.json`, a short **L4 Transformation summary** in chat helps
-reviewers (prose, not raw JSON): framework path chosen, count of dependency/config
-changes, async fixes, validation scope, and blockers. Format: the language
-`SKILL.md` Phase 2.
+After the plan, a short prose summary in chat helps reviewers: framework path
+chosen, counts of dependency, config, and async changes, validation scope, and
+blockers. Never the raw JSON.
