@@ -15,7 +15,7 @@ re-run discovery or capability analysis.
 | `maturity-result.level` | Typical handling |
 | --- | --- |
 | **5** — Working OTel | Emit a **plan-only** document: `basedOnMaturityLevel: 5`, embedded `validationPlan`, optional gap fixes. No dependency/config/code/async sections unless the user asked for targeted fixes. |
-| **1–4** with audit-only scope | Plan sections describe proposed changes; do **not** edit the target repository until the user opts into Phase 2. |
+| **1–4** with audit-only scope | Stop after the L3 brief. It already names the recommended work, so do not produce a plan document unless the user asks for one — and never edit the target repository. |
 | Blockers in `maturity-result.blockers` | Record in plan `gaps`; do not apply edits that depend on missing evidence or blocked builds. |
 
 Set `basedOnMaturityLevel` to `maturity-result.level` on every plan.
@@ -38,7 +38,7 @@ common [`SKILL.md`](../SKILL.md) § Multi-language scope gate.
 5. Build **§4.5 `validationPlan`** — static and configuration tiers by default;
    runtime tier per common `models/5-validation.md` (opt-in).
 6. Record unresolved items, skipped doc sync, and build blockers in `gaps`.
-7. Validate against
+7. Check the plan carries every field listed in
    [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
 8. **Apply** (Phase 2 only) — edit the target repository, sync documentation (below),
    then run the language fresh-build recipe before runtime validation.
@@ -103,18 +103,25 @@ updates are an **apply-time** obligation (below), not a JSON section.
 
 ## Documentation sync (on apply)
 
-When Layer 4 edits are **applied** to the target repository (not plan-only),
-update developer-facing docs in the same change set:
+When Layer 4 edits are **applied** to the target repository (not plan-only), rewrite the affected tracing
+documentation in the same change set. **Rewrite the section, do not patch the lines that changed.** After a migration
+the surrounding prose describes a stack that no longer exists — a readme that still explains Sleuth while the table
+below it lists OTLP variables is worse than one that was never touched.
 
-- Readme or installation guide — `TRACING_*` / OTel parameters and how to
-  enable tracing.
-- Deployment config — chart values, env mapping, or equivalent for the repository's
-  install path.
-- Non-obvious framework toggles — document in comments or install notes.
+In scope for the rewrite:
 
-If the repository has no docs surface for deployment parameters, record
-`documentation sync skipped — <reason>` in plan `gaps` instead of omitting
-silently.
+- the tracing section of the readme or installation guide — what the service exports, where, how to enable it, and the
+  full `TRACING_*` / OTel parameter set with defaults;
+- deployment config docs — chart values, env mapping, or the equivalent for the repository's install path;
+- non-obvious framework toggles — in comments or install notes, especially build-time ones;
+- anything naming the retired stack: remove the legacy tracer from prose, diagrams, and examples rather than leaving it
+  beside its replacement.
+
+Out of scope: documentation about parts of the service the migration did not touch. Rewrite the tracing section, not
+the document.
+
+If the repository has no docs surface for deployment parameters, record `documentation sync skipped — <reason>` in plan
+`gaps` instead of omitting silently.
 
 ## User-facing summary (optional)
 

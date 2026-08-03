@@ -88,8 +88,9 @@ Verdict scale:
 5. **Gaps** — carry forward unresolved Layer 1 `gaps` and add any facet marked
    `UNKNOWN` because evidence was insufficient.
 
-Validate the result against
-[`../schemas/L2-capability-result.schema.json`](../schemas/L2-capability-result.schema.json).
+Check the result carries every field listed in
+[`../schemas/L2-capability-result.schema.json`](../schemas/L2-capability-result.schema.json) — nothing validates it, so
+a skipped facet surfaces only as a gap in the L2 brief.
 
 ## User-facing vs JSON (platform contract)
 

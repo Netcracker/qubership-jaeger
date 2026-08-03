@@ -131,5 +131,5 @@ way the entrypoint changes, so the chosen form is a plan row — record it in
 `configMigration` with the file that owns the command (`package.json` `scripts`,
 Dockerfile `CMD`, or Helm `command`/`args`).
 
-Validate result against
+Check the plan carries every field listed in
 [`../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json`](../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json).

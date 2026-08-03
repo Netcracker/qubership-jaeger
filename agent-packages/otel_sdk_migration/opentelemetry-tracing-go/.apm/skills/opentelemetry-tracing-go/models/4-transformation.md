@@ -42,5 +42,5 @@ After the framework stack is chosen, validate mechanism:
   `WithTracer`, …), migrate wrapper configuration first before custom
   instrumentation — see `dependency-migration.md` / `code-migration.md`.
 
-Validate result against
+Check the plan carries every field listed in
 [`../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json`](../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json).

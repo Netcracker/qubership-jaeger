@@ -80,7 +80,8 @@ declarations, static config review.
 
 **Stop after the L3 brief** unless the user asked for implementation. When they did (for example "add the OTel SDK"),
 post the three briefs and continue to Phase 2 in the **same session**, without re-running L1–L3 unless the repository
-changed. For an audit-only run, stop after Phase 1 and set `validationPlan.runtime.status` to `manual`.
+changed. An audit-only run ends at the L3 brief: it produces no migration plan, and therefore no
+`validationPlan` — write the plan only if the user asks for one.
 
 **Multi-language repository:** when discovery spans two or more language families or several SUTs, run the common
 [multi-language scope gate](../opentelemetry-tracing-common/SKILL.md) — ask **bulk vs single target** before any L4
@@ -92,7 +93,7 @@ edit. Do not proceed without an explicit choice.
 ### 3.0.1 Layer sequence
 
 1. **Discovery** — scan dependencies, config, code (AST), instrumentation mode, and async boundaries. Emit
-   `discovery-result`, conforming to [`schemas/L1-discovery-result.schema.json`](schemas/L1-discovery-result.schema.json).
+   `discovery-result` with every field listed in [`schemas/L1-discovery-result.schema.json`](schemas/L1-discovery-result.schema.json).
    Post the L1 brief. *(Phase 1)*
 2. **Capability** — derive the real capabilities from discovery evidence per common
    [`models/2-capability.md`](../opentelemetry-tracing-common/models/2-capability.md). Post the L2 brief. *(Phase 1)*

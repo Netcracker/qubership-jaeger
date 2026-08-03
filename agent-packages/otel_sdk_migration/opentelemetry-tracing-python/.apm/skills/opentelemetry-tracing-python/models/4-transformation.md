@@ -78,5 +78,5 @@ thread does not survive `fork()`. Initialize the SDK per worker (gunicorn
 import under `--preload`. See
 [`../recipes/config-migration.md`](../recipes/config-migration.md).
 
-Validate result against
+Check the plan carries every field listed in
 [`../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json`](../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json).

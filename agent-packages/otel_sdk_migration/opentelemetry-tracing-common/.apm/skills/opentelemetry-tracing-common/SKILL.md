@@ -39,16 +39,17 @@ common `models/` with local framework gates and execution recipes.
 
 ## Where the artifacts live (mandatory)
 
-The five artifacts are **in-session data, not files**. Do not write them into the target repository, and do not create
-them anywhere on disk unless the user asks for a file.
+The five artifacts are **in-session data**. They are never written to disk — not into the target repository, not into
+a scratch directory, not on request. Phase 1 is read-only, and an artifact file would break that for no benefit.
 
 - Keep each artifact in the working context and pass it to the next layer. That separability is the point: L3 can cite
   the exact L2 field that produced its verdict.
-- Show the user the prose brief (L1–L3) or the summary (L4–L5). Do not paste raw artifact JSON in chat unless the user
-  asks for JSON.
-- The JSON shape is the contract between layers, not a path. `schemas/` documents that shape so the layers agree on
-  field names; nothing validates a file on disk.
-- Phase 1 is read-only, so writing an artifact file into the target repository would break that rule for no benefit.
+- Show the user the prose brief (L1–L3) or the summary (L4–L5), never the raw JSON.
+- `schemas/` lists the fields each layer is expected to have resolved. **Nothing validates them** — there is no
+  validator in the pipeline and none is planned. Their job is to keep the briefs complete, so the user is not left
+  guessing about a facet the agent silently skipped.
+- Treat a field you cannot resolve as `unknown` plus a `gaps` entry, and say so in the brief. A missing field is a
+  finding, not a formatting error.
 
 ## Multi-language scope gate (mandatory — before Phase 2 / L4)
 

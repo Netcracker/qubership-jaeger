@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://qubership.org/otel-tracing-core/L3-maturity-result.schema.json",
   "title": "MaturityResult",
-  "description": "Layer 3 output: maturity level (1-5) and recommended action.",
+  "description": "Layer 3 output: maturity level (1-5) and recommended action. This artifact stays in the session and is never written to disk, and nothing validates it against this schema. The schema is a checklist of what the layer should have resolved, so the user-facing brief comes out complete; an unresolved field belongs in gaps, not omitted.",
   "type": "object",
   "additionalProperties": false,
   "required": ["level", "label", "recommendedAction"],

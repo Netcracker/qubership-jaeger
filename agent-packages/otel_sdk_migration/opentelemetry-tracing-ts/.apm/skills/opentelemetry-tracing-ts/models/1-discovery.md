@@ -265,7 +265,7 @@ For missing inspectable evidence, use `unknown` and record `gaps`.
 
 ## Output example
 
-One JSON object validated against
+One `discovery-result` carrying every field listed in
 [`../schemas/L1-discovery-result.schema.json`](../schemas/L1-discovery-result.schema.json):
 
 ```json

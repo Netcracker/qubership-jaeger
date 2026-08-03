@@ -48,7 +48,7 @@ Status enum for every check and for `validationPlan.runtime.status`:
    and triage blockers in plan root `gaps` (prose strings with evidence).
 7. **Post-validation cleanup** — when `runtime.status` is `pass`, remove or
    revert **ephemeral** artifacts created only for L5 (see §5.4).
-8. Validate the migration plan against
+8. Check the migration plan carries every field listed in
    [`../schemas/L4-migration-plan.schema.json`](../schemas/L4-migration-plan.schema.json).
 
 Static and configuration tiers **never** require a fresh build or container image.

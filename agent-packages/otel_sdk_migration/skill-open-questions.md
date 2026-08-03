@@ -24,7 +24,7 @@ option directly in the skill.)
   shared layers so it propagates to every language.
 - The "Decision" line is filled in as decisions are made.
 
-24 questions total (A1–K2).
+22 open questions (A1–J3); resolved ones are listed at the end.
 
 ---
 
@@ -215,14 +215,6 @@ Context is lost across manual concurrency regardless of the chosen mechanism.
 
 **Decision:**
 
-### I2 — Scope of docs sync
-
-- (a) Only install/deploy docs + Helm values where env/deps changed ✅
-- (b) Full rewrite of the tracing section
-- (c) Do not touch docs, write a changelog note
-
-**Decision:**
-
 ### I3 — Multi-language default when the user is silent
 
 - (a) Default single-target (current service); bulk only on explicit request ✅
@@ -273,56 +265,16 @@ single-target instead.
 
 Each language package documents best-effort frameworks with concrete
 instrumentation, but the `service.framework` enum can only record `unknown` for
-them, so the chosen instrumentation survives only in prose. Go additionally has
-`gin` and `echo` in its enum, which makes "best-effort" mean two different things
-across packages.
+them, so the chosen instrumentation survives only in prose and the artifact keeps
+no machine-readable trace of what was actually picked.
+
+Option (a) is already applied uniformly across the four packages — Go's `gin` and
+`echo` were promoted to first-class rather than left straddling both categories —
+so this question is whether to keep it that way.
 
 - (a) Enum stays first-class-only; best-effort records as `unknown` plus the
-  identified framework and chosen instrumentation in `gaps` — uniform across
-  packages ✅
+  identified framework and chosen instrumentation in `gaps` ✅ (current state)
 - (b) Add every best-effort framework to each enum
 - (c) Add a separate `frameworkDetail` string field alongside the enum
-
-**Decision:**
-
-### J4 — Does an audit-only run still owe the user the L4/L5 sections?
-
-`models/4-transformation.md` says an audit-only run describes proposed changes
-without editing, while the phase gate says to stop after the L3 brief. Both are
-defensible, but they describe different deliverables for the same request.
-
-- (a) Stop after L3, and produce the plan only when the user asks for it — the L3
-  brief already names the recommended work ✅
-- (b) Always produce the full plan document, edits excluded
-- (c) Ask the user which deliverable they want after the L3 brief
-
-**Decision:**
-
----
-
-## K. Artifacts and evidence
-
-### K1 — Do the five artifacts ever become files?
-
-The skill now states they are in-session data and must not be written to disk
-(common `SKILL.md` §Where the artifacts live). That closes the ambiguity, but not
-the question of whether a user who *asks* for files gets a documented location.
-
-- (a) On explicit request only, and outside the target repository (scratch
-  directory), so Phase 1 stays read-only ✅
-- (b) A documented path inside the repository, gitignored
-- (c) Never — always chat only
-
-**Decision:**
-
-### K2 — Schemas are never executed
-
-Nothing in CI validates an artifact against `schemas/`, so the schemas are a
-shared vocabulary the model reads rather than a contract anything enforces.
-
-- (a) Keep them as documentation of the shape, and say so in the schema
-  description so no one expects validation ✅
-- (b) Add a CI job that validates sample artifacts against the schemas
-- (c) Drop the schemas and describe the shape in the models only
 
 **Decision:**

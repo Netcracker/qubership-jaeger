@@ -53,7 +53,7 @@ Do **not** invent levels or match from level names alone — use this table only
    - `confidence` — `high` when all matrix inputs are known; `medium` when export
      is `PARTIAL` or propagation is incomplete; `low` when required inputs are
      `UNKNOWN`.
-4. Validate against
+4. Check the result carries every field listed in
    [`../schemas/L3-maturity-result.schema.json`](../schemas/L3-maturity-result.schema.json).
 
 ### Examples (for briefs — plain language)

@@ -52,5 +52,5 @@ record the blocker in plan `gaps` and **do not** fall back to the agent.
 End with **one** instrumentation mechanism. Never combine agent + extension on
 Quarkus.
 
-Validate the result against
+Check the plan carries every field listed in
 [`../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json`](../../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json).
