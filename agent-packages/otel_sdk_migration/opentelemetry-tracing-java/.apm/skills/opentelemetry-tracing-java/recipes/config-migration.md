@@ -27,13 +27,10 @@ Production sampling must not be 100% unless explicitly approved.
 
 ## Propagation
 
-**The migration preserves the wire format; it does not change it.** Rules and
-rationale: common
+The migration carries the configured wire format across and never switches it on
+its own (common
 [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
-§Propagation. In short: carry the configured inject format across, raise a
-conflict with the contract as a **question** to the user, and on a greenfield
-service ask the user to pick `B3` / `B3_MULTI` / `W3C` / a multi-format set
-rather than choosing silently.
+§Propagation).
 
 | From | To | Note |
 | -------------------- | ------------------------------------------------------------ | -------------------------------------------------------------- |
@@ -44,46 +41,20 @@ rather than choosing silently.
 
 ### Per-framework surfaces
 
-**Extract** order is priority, and **the winning end differs per framework** —
-the same list means opposite things on Boot and on Quarkus. The user states
-which format should win; **the agent derives the list order** from this table.
-Never ask a developer which end wins.
+Which property surface each framework uses, which end of its list wins on
+extract, and whether the surface is build-time or runtime: guide §Propagation.
+The user states which format should win; **the agent derives the list order** —
+never ask a developer which end wins.
 
-**Inject** ignores order entirely: a composite writes **every** configured
-format. On a single-list surface you cannot emit only one format without custom
-code — only Boot's `produce`/`consume` split gives that control.
+Three rows the plan must emit on Spring Boot:
 
-| Framework | Inject | Extract | Extract winner | Scope |
-| --------------- | ----------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Quarkus | `quarkus.otel.propagators` — **all** listed written | same list | **last** (`MultiTextMapPropagator`) | **build-time** — rebuild required |
-| Spring Boot 3 | `…propagation.produce` — all listed written | `.consume` | **first** (`CompositePropagationFactory$CompositePropagation` Brave bridge; `CompositeTextMapPropagator` OTel bridge) | runtime |
-| Spring Boot 4 | `…propagation.produce` — all listed written | `.consume` | **first** — `…micrometer.tracing.opentelemetry.autoconfigure.CompositeTextMapPropagator`, `extract` identical to Boot 3 | runtime |
-| Pure Java | `OTEL_PROPAGATORS` — one list, **all** written | same list | **last** (`MultiTextMapPropagator`) | runtime |
-
-Verified by disassembly: `spring-boot-actuator-autoconfigure:3.5.11`,
-`spring-boot-micrometer-tracing-opentelemetry:4.0.2`, `opentelemetry-context:1.57.0`.
-
-Do **not** set `management.tracing.propagation.type` next to `produce`/`consume`:
-it is itself a list and overrides both, silently discarding the lenient
-`consume` default.
-
-Spring Boot defaults, when neither property is set, are **asymmetric**:
-
-```yaml
-management:
-  tracing:
-    propagation:
-      consume: [W3C, B3, B3_MULTI]   # framework default
-      produce: [W3C]                 # framework default — B3 fleets break outbound
-```
-
-An unconfigured Boot service in a B3 fleet therefore looks healthy on incoming
-requests and breaks trace continuity on outgoing ones. Always set `produce`
-explicitly; do not read "no key" as "no propagation".
-
-Multi-format is a valid target: several formats on `consume`, one (or several)
-on `produce`. Nothing extra is needed around it — the assumption is that adjacent
-tooling does not overwrite an already-present context.
+- set `produce` **explicitly** — the framework default is `[W3C]` while `consume`
+  is lenient, so an unconfigured Boot service in a B3 fleet looks healthy inbound
+  and breaks every outgoing call;
+- never set `management.tracing.propagation.type` next to `produce`/`consume` —
+  it overrides both and silently discards the lenient `consume` default;
+- multi-format is a valid target (several on `consume`, one or more on `produce`)
+  and needs nothing extra around it.
 
 ## Target config shapes
 

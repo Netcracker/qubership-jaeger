@@ -182,8 +182,7 @@ A complete run yields one artifact per layer:
 | Quarkus forbids the agent | `quarkus-opentelemetry` instruments at build time; the runtime `-javaagent` double-instruments and breaks Vert.x |
 | Sync documentation on L4 edits | When L4 changes deps, config, Helm, or env, update the readme, install notes, or Helm docs in the same pass |
 | Fresh build before runtime | One `mvn clean package` plus image, after L4 only |
-| End-to-end only when the stand is healthy | Runtime `pass` requires stand health and log triage before Jaeger |
-| No Jaeger-first pass | Spans in Jaeger while the SUT crash-loops or is not Ready are not an end-to-end pass |
+| No Jaeger-first pass | Runtime `pass` requires stand health and log triage first; spans while the SUT crash-loops are not an end-to-end pass |
 
 ## 6. File index
 

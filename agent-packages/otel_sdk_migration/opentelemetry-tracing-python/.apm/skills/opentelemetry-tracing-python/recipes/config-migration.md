@@ -25,32 +25,21 @@ programmatic `Resource.create({"service.name": ...})`.
 
 ## Propagation
 
-**The migration preserves the wire format; it does not change it.** Carry the
-configured inject format across, raise a conflict with the contract as a
-**question** to the user, and on a greenfield service ask the user to pick
-`B3` / `B3_MULTI` / `W3C` / a multi-format set instead of choosing silently
-(common [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
-§Propagation).
-
-`OTEL_PROPAGATORS` and programmatic `set_global_textmap` are both **runtime** in
-Python — the format stays switchable without a rebuild. If **both** are present,
-the programmatic `set_global_textmap` wins — it overwrites the global propagator
-after SDK autoconfigure reads `OTEL_PROPAGATORS`. Treat the programmatic call as
-the source of truth and record the env value as overridden.
+The migration carries the configured wire format across and never switches it on
+its own (common
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
+§Propagation). `OTEL_PROPAGATORS` and programmatic `set_global_textmap` are both
+**runtime** in Python, and the programmatic call wins when both are present
+([`../models/1-discovery.md`](../models/1-discovery.md) §1.2) — plan the
+propagator on one surface.
 
 ### Name the class, not just the format
 
-`B3SingleFormat` (env value `b3`) injects the **single** `b3` header;
-`B3MultiFormat` (env value `b3multi`) injects `X-B3-TraceId` / `X-B3-SpanId` /
-`X-B3-Sampled`. The legacy name `B3Format` is a **deprecated alias of
-`B3MultiFormat`** — it emits `X-B3-*`, not single `b3`. Source coordinates and
-the exact header constants:
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
-§Verify constructor defaults — verify against the b3 version in the service's
-manifest.
-
-A plan row that says "b3multi" and ships `B3SingleFormat` is wrong on the wire
-while every end-to-end test still passes.
+A plan row that says `b3multi` and ships `B3SingleFormat` is wrong on the wire
+while every end-to-end test passes; the deprecated alias `B3Format` is the
+**multi** one (`../reference/detection-rules.md` §Code signatures). Verify the
+class against the b3 version in the service's manifest: guide §Verify constructor
+defaults.
 
 ```python
 # B3 multi-header (X-B3-TraceId / X-B3-SpanId) — required for b3multi
@@ -60,17 +49,13 @@ from opentelemetry.propagators.b3 import B3MultiFormat
 set_global_textmap(B3MultiFormat())
 ```
 
-### Composite: extract order matters, inject writes everything
+### Composite membership and order
 
-On **extract**, `CompositePropagator` chains the context through every member in
-order, so the **last** member that finds a context overwrites the earlier result
-— priority goes to the **last** entry. Derive the order yourself from the user's
-intent ("B3 wins") — do not ask which end wins, and do not copy an order from
-another service's config.
-
-On **inject** the composite loops every member, so both formats below are written
-to each outgoing request (each writes its own carrier keys; override only on a
-key collision). Order does not change which formats are emitted.
+Which end of a composite wins on extract, and why inject order is irrelevant:
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
+§Propagation. Derive membership and the winning end from the user's intent
+("B3 wins") — never ask which end wins, and never copy an order from another
+service's config.
 
 ```python
 # extract: accepts traceparent and X-B3-*; B3 wins when both arrive (it is last)
@@ -156,10 +141,8 @@ OTEL_SERVICE_NAME=${MICROSERVICE_NAME}-${NAMESPACE}
 service has no format configured and the user chose it. An existing format is
 preserved instead — see §Propagation.
 
-The Python OTLP HTTP exporter treats the two endpoint variables differently. The
-signal-specific `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` is used **as-is** — give it
-the full traces URL including `/v1/traces` (the form above). The generic
-`OTEL_EXPORTER_OTLP_ENDPOINT` is a **base** URL — the exporter appends
-`/v1/traces` itself, so it must **not** already contain the path. Pick one form —
-putting `/v1/traces` on the generic variable produces a double `/v1/traces` path
-and silent export failure.
+Emit **one** endpoint variable, in its own form: the signal-specific
+`OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` carries the full URL including `/v1/traces`
+(above), while the generic `OTEL_EXPORTER_OTLP_ENDPOINT` is a base URL the
+exporter appends to. Writing the path on the generic one yields a double
+`/v1/traces` and silent export failure.

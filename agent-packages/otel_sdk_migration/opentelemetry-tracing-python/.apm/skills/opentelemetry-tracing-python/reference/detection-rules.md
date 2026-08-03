@@ -56,7 +56,8 @@ Platform-level keys (from the common platform contract):
 
 OTel keys:
 
-- `OTEL_EXPORTER_OTLP_ENDPOINT`
+- `OTEL_EXPORTER_OTLP_ENDPOINT` (base URL — the exporter appends `/v1/traces`)
+- `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` (used as-is — must include `/v1/traces`)
 - `OTEL_EXPORTER_OTLP_PROTOCOL` (`http/protobuf` expected)
 - `OTEL_PROPAGATORS` (contract default `b3multi`; runtime scope — drives inject
   and extract; an already-configured format is preserved, not replaced)

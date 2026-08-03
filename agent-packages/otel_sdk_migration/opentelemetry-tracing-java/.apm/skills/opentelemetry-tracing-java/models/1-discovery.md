@@ -20,13 +20,8 @@ Answer: *which tracing libraries are present, and in what role?*
 `gradle.lockfile`, `dependencies` blocks, and — when resolvable — the full
 dependency tree (`mvn dependency:tree`, `gradle dependencies`).
 
-Framework detection baseline:
-
-- first-class: Spring Boot, Quarkus, Pure Java
-- best-effort: Micronaut, Helidon, Vert.x, Jakarta EE/Servlet containers, Dropwizard
-
-For best-effort frameworks, detect with generic OTel signatures and emit
-`framework="unknown"` + evidence notes if a confident classification is not possible.
+First-class and best-effort framework families, and the `unknown` fallback:
+[`../reference/framework-coverage.md`](../reference/framework-coverage.md).
 
 **Algorithm:**
 
@@ -35,25 +30,13 @@ For best-effort frameworks, detect with generic OTel signatures and emit
    transitive coverage `partial` and record it under `gaps`.
 3. For each tracing-related artifact capture: `groupId:artifactId`,
    `version` (or "managed"), and `scope` (compile/runtime/test/provided).
-4. Classify each against the catalogue in `detection-rules.md`.
+4. Classify each into its bucket and set the aggregate flags — catalogue and
+   bucket assignments:
+   [`../reference/detection-rules.md`](../reference/detection-rules.md)
+   §Dependency signatures.
 
-**Classification buckets:**
-
-- **Legacy** — Brave (`io.zipkin.brave:*`), Zipkin reporter
-  (`io.zipkin.reporter2:*`), Jaeger client (`io.jaegertracing:*`),
-  OpenTracing (`io.opentracing:*`), Spring Cloud Sleuth
-  (`org.springframework.cloud:spring-cloud-starter-sleuth`).
-- **Modern** — OpenTelemetry API (`io.opentelemetry:opentelemetry-api`),
-  SDK (`opentelemetry-sdk`), exporters (`opentelemetry-exporter-otlp`,
-  `-zipkin`), Micrometer Tracing bridge
-  (`io.micrometer:micrometer-tracing-bridge-otel`), Spring Boot OTel starter
-  (`org.springframework.boot:spring-boot-micrometer-tracing-opentelemetry` /
-  `spring-boot-starter-opentelemetry`), Quarkus OTel
-  (`io.quarkus:quarkus-opentelemetry`).
-
-**Output:** the `dependencyProfile` object — one entry per tracing
-artifact with its bucket, plus aggregate booleans (`hasOtelApi`,
-`hasOtelSdk`, `hasExporter`, `hasLegacy`).
+**Output:** the `dependencyProfile` object — one entry per tracing artifact with
+its bucket, plus the aggregate booleans.
 
 ## 1.2 Configuration discovery
 
@@ -64,53 +47,30 @@ profile variants, environment variables in `Dockerfile`/compose, JVM args
 (`JAVA_TOOL_OPTIONS`, `-D...`), Helm `values.yaml`, k8s `Deployment`/
 `StatefulSet` env, ConfigMaps.
 
-Split the findings into three concerns:
+Split the findings into three concerns. The keys to read for each are
+[`../reference/detection-rules.md`](../reference/detection-rules.md)
+§Configuration key signatures, which also carries the `configScope` each surface
+implies (Quarkus propagators are build-time; Boot and Pure Java are runtime).
 
 ### Export configuration
 
-Determine: exporter type (OTLP / Zipkin / Jaeger / none), endpoint, protocol
-(gRPC / http-protobuf / thrift), and whether it points at OTeC or the Jaeger
-collector (cross-check [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md) §Export).
-Keys to read: `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`,
-`otel.exporter.otlp.*`, `management.zipkin.tracing.endpoint`,
-`quarkus.otel.exporter.otlp.endpoint`, and platform `TRACING_HOST`.
+Determine exporter type (OTLP / Zipkin / Jaeger / none), endpoint, protocol, and
+whether it points at the platform proxy or straight at a collector — cross-check
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
+§Export.
 
 ### Context-propagation configuration
 
-Record the wire format(s) as **two separate sets** — `inject` (written outbound)
-and `extract` (accepted inbound). Extract is a race — several formats tried,
-order decides the winner; inject is a fan-out — a composite writes **every**
-configured format. One merged list hides the common defect where a service reads
-B3 and still emits only `traceparent`. See
+Record the wire formats as **two separate sets** — `inject` and `extract` — in the
+order written, and note the framework's winner end. Why the directions differ and
+which end wins per stack:
 [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
 §Propagation.
 
-Formats to look for:
-
-- **W3C Trace Context** — `traceparent` / `tracestate`
-  (`OTEL_PROPAGATORS=tracecontext`, `management.tracing.propagation.type=w3c`).
-- **B3 single** — one `b3` header (`OTEL_PROPAGATORS=b3`).
-- **B3 multi** — `X-B3-TraceId` / `X-B3-SpanId` (`OTEL_PROPAGATORS=b3multi`,
-  `management.tracing.propagation.type=b3` / `B3_MULTI`).
-
-Keys per surface, with the `configScope` each implies:
-
-| Surface           | Keys                                                                                                                          | `configScope`                               |
-|-------------------|-------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|
-| Pure Java / agent | `OTEL_PROPAGATORS` (one list, drives both sets)                                                                               | `runtime`                                   |
-| Quarkus           | `quarkus.otel.propagators`                                                                                                    | **`build-time`** — a change needs a rebuild |
-| Spring Boot       | `management.tracing.propagation.produce` (inject) / `.consume` (extract); legacy single `management.tracing.propagation.type` | `runtime`                                   |
-
 **Record the effective default when no key is present** and set
-`propagation.fromFrameworkDefault: true`. Spring Boot defaults to
-`consume = [W3C, B3, B3_MULTI]` and `produce = [W3C]` — an unconfigured Boot
-service therefore accepts B3 inbound and emits W3C-only outbound, which is
-silently incompatible with a B3 fleet on outgoing calls. Do not record "not
-configured" as "no propagation".
-
-Where several formats are listed, record `injectOrder`/`extractOrder` as written
-and note the framework's winner end (**first** on Spring Boot, **last** on
-Quarkus / Pure Java) — the same list means opposite priorities across stacks.
+`propagation.fromFrameworkDefault: true` — an unconfigured Spring Boot service
+still injects and extracts (guide §Framework defaults are asymmetric). "Not
+configured" is never "no propagation".
 
 Then record per-component support as `OK` / `FAILED` / `unknown` (the
 detailed verdict is Layer 2; here just note which components are wired):
@@ -122,11 +82,8 @@ Kafka: FAILED   (no header inject/extract found)
 
 ### Sampling configuration
 
-Determine: is a sampler configured, its type (always_on / always_off /
-traceidratio / parentbased_*), its ratio, and whether the ratio is consistent
-across services you can see. Keys: `OTEL_TRACES_SAMPLER`,
-`OTEL_TRACES_SAMPLER_ARG`, `management.tracing.sampling.probability`,
-`quarkus.otel.traces.sampler*`, platform `TRACING_SAMPLER_PROBABILISTIC`.
+Determine whether a sampler is configured, its type and ratio, and whether the
+ratio is consistent across the services in view.
 
 **Output:** the `configuration` object (`export`, `propagation`, `sampling`).
 
@@ -138,20 +95,10 @@ Answer: *how is the tracing API used in code?*
 parsing; fall back to symbol search when AST tooling is unavailable, and
 record the degraded mode under `gaps`.
 
-**Search for:**
-
-- Tracer creation — `GlobalOpenTelemetry.getTracer`, `openTelemetry.getTracer`,
-  `GlobalTracer.get` (OpenTracing), `Tracing.newBuilder` (Brave).
-- Span creation / lifecycle — `spanBuilder(...)`, `startSpan()`, `makeCurrent()`,
-  `end()`; OpenTracing `buildSpan().start()`, `.finish()`.
-- Context extraction / injection — `TextMapPropagator.extract/inject`,
-  `tracer.extract/inject` (OpenTracing), Brave `Extractor/Injector`.
-- Attributes / tags — `setAttribute(...)`, OpenTracing/Brave `tag(...)`.
-- Exception recording — `recordException(...)`, `setStatus(StatusCode.ERROR)`,
-  OpenTracing error tag (`Tags.ERROR`).
-
-For each finding record API family (`otel` / `opentracing` / `brave`), symbol,
-file, and line.
+Search for the OTel, OpenTracing, and Brave symbols catalogued in
+[`../reference/detection-rules.md`](../reference/detection-rules.md) §Code (AST)
+symbol signatures. For each finding record API family (`otel` / `opentracing` /
+`brave`), symbol, file, and line.
 
 **Output:** the `apiUsage` array plus `apiFamilies` summary.
 
@@ -159,15 +106,9 @@ file, and line.
 
 Answer: *how is instrumentation produced — automatically, manually, or both?*
 
-**Classification (`instrumentation.mode` values):**
-
-- `auto` — `-javaagent:opentelemetry-javaagent.jar`, `opentelemetry-javaagent`
-  on the image/`JAVA_TOOL_OPTIONS`, OTel instrumentation starter modules, **and**
-  no manual span creation in app code.
-- `manual` — explicit `GlobalOpenTelemetry.getTracer()` / `spanBuilder()` /
-  `span.end()` in app code, no agent.
-- `mixed` — agent **and** manual span creation both present.
-- `none` — no automatic instrumentation evidence and no manual span API usage.
+Classify `instrumentation.mode` (`auto` / `manual` / `mixed` / `none`) from
+[`../reference/detection-rules.md`](../reference/detection-rules.md)
+§Instrumentation-mode signatures.
 
 **Inputs:** Dockerfile / entrypoint, `JAVA_TOOL_OPTIONS`, k8s env, build
 files (instrumentation starters), plus the `apiUsage` result from 1.3.
@@ -179,19 +120,10 @@ evidence that justified it.
 
 Answer: *where can context be lost?*
 
-**Search for (Java):**
-
-- **Kafka** — `KafkaProducer`, `ProducerRecord`, `@KafkaListener`,
-  `ConsumerRecord`, Spring `KafkaTemplate`, Quarkus Reactive Messaging
-  `@Incoming`/`@Outgoing`.
-- **ExecutorService / thread pools** — `ExecutorService`, `submit(`, `execute(`.
-- **CompletableFuture** — `CompletableFuture.supplyAsync`, `thenApplyAsync`.
-- **Reactor** — `Mono`, `Flux`, `publishOn`, `subscribeOn`, `contextWrite`.
-- **Quarkus Reactive Messaging** — Mutiny `Uni`/`Multi` handoffs.
-
-For each, record the boundary type, file/line, and whether any context-propagation wrapper is present nearby
-(`Context.taskWrapping`, `ContextSnapshot`, OTel Kafka instrumentation). Absence ⇒ candidate context-loss point for
-Layer 2.
+Boundary catalogue and the context-wrapper rule:
+[`../reference/detection-rules.md`](../reference/detection-rules.md)
+§Async-boundary signatures. For each hit record the boundary type, file/line, and
+`contextWrapper`.
 
 **Output:** the `asyncBoundaries` array.
 
@@ -203,25 +135,11 @@ platform — collect them so Layers 2 and 5 can verify them. Source of truth:
 signatures in [`../reference/detection-rules.md`](../reference/detection-rules.md)
 (§Platform-contract signatures).
 
-Collect:
-
-- **service.name namespace** — does `otel.service.name` /
-  `quarkus.application.name` resolve to `${name}-${namespace}`, and is the
-  namespace injected (Downward API / Helm / SA file)?
-- **Sampler tier** — which of `TRACING_SAMPLER_RATELIMITING` /
-  `_PROBABILISTIC` / `_CONST` is wired, and is the OTel sampler
-  `parentbased_traceidratio` (not `always_on`)?
-- **Propagation standard** — which format is **injected** (contract default
-  `b3multi`), which formats are **extracted**, and is
-  `opentelemetry-extension-trace-propagators` present? Record the effective
-  value including framework defaults, not just explicit keys.
-- **Endpoint filtering** — are probe/metrics/management URLs excluded?
-- **Logging correlation** — is `traceId`/`spanId` in the log pattern, and is
-  the MDC dependency (`opentelemetry-log4j-context-data-*` /
-  `opentelemetry-logback-mdc-*`) present? (CloudCore libs may supply this.)
-- **Export shape** — OTLP `http/protobuf` to
-  `http://${TRACING_HOST}:4318/v1/traces`; `TRACING_HOST` default
-  `nc-diagnostic-agent`.
+Resolve every facet from the Java signals in the §Platform-contract signatures
+table. Two readings are L1's own: record the **sampler tier** (which of the three
+`TRACING_SAMPLER_*` switches is wired) separately from the OTel sampler class, and
+record propagation as the **effective** value including framework defaults, not
+just explicit keys.
 
 **Output:** the `platformContract` object (required on every `discovery-result.json`).
 

@@ -93,10 +93,6 @@ def add_trace_ids(logger, method, event_dict):
     return event_dict
 ```
 
-Registering a `TracerProvider` does **not** wire log correlation by itself: spans
-reaching the backend prove export, not correlation. Always verify the fields in
-actual log output as a separate check.
-
 ## Validate
 
 - generate request under active span;

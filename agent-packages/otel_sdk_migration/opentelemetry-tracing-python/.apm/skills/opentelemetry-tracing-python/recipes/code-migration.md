@@ -73,15 +73,10 @@ app — pick one mechanism (Step 0b in [`../models/4-transformation.md`](../mode
 | `jaeger_client.Config`          | OTel `TracerProvider` + OTLP exporter                                    |
 | `opentracing.tracer` global use | `trace.get_tracer(__name__)` + current span                              |
 
-## Semantic renames (proposal-only)
-
-Attribute renames toward OpenTelemetry semantic conventions (e.g. custom `http_path` → `http.route`,
-business keys) are **never** auto-applied. List them in `codeMigration.semantic` and ask for confirmation (common
-[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
-§4.3).
-
 ## Guardrails
 
-- Keep one active tracing stack.
-- Preserve business/service naming intent.
+- Attribute renames toward semantic conventions (custom `http_path` → `http.route`,
+  business keys) go to `codeMigration.semantic` — never auto-applied, common
+  [`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
+  §4.3.
 - Never write secrets or unbounded payloads to span attributes.

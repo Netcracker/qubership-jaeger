@@ -22,13 +22,17 @@ default.
 Read `discovery-result.service.framework` and pick exactly one migration path.
 Do not emit §4.1 or §4.2 rows before this is fixed.
 
-| `service.framework` | Target instrumentation                                                           | Config surface                  |
-|---------------------|----------------------------------------------------------------------------------|---------------------------------|
-| `fastapi`           | `opentelemetry-instrumentation-fastapi` (ASGI) + SDK + OTLP HTTP + B3 propagator | env + programmatic/instrumentor |
-| `django`            | `opentelemetry-instrumentation-django` (WSGI/ASGI) + SDK + OTLP HTTP + B3        | env + `settings.py`             |
-| `flask`             | `opentelemetry-instrumentation-flask` (WSGI) + SDK + OTLP HTTP + B3              | env + app-factory instrument    |
-| `pure-python`       | `opentelemetry-sdk` + OTLP HTTP exporter + B3 propagator (no web middleware)     | env + programmatic setup        |
-| `unknown`           | conservative SDK path; record assumptions in `gaps`                              | env                             |
+The instrumentor per stack, and the best-effort mapping for `unknown`, are
+[`../reference/framework-coverage.md`](../reference/framework-coverage.md). What
+this gate adds is the **config surface** the plan must target:
+
+| `service.framework` | Config surface                  |
+|---------------------|---------------------------------|
+| `fastapi`           | env + programmatic/instrumentor |
+| `django`            | env + `settings.py`             |
+| `flask`             | env + app-factory instrument    |
+| `pure-python`       | env + programmatic setup        |
+| `unknown`           | env; record the assumption in `gaps` |
 
 Pull versions from the repository manifest (`requirements.txt`/`pyproject.toml`); never
 pin in the plan.
@@ -70,13 +74,11 @@ reject the forbidden combinations in the plan:
 - **Preserve the platform contract** (`TRACING_*`, OTLP, propagation, sampling)
   regardless of mechanism.
 
-Fork-server pitfall (record as risk in the plan, verify at runtime): under
-gunicorn/uvicorn with pre-forked workers or `--preload`, a `BatchSpanProcessor`
-started at import time lives in the master process and its background export
-thread does not survive `fork()`. Initialize the SDK per worker (gunicorn
-`post_fork` hook, or the framework instrumentor at app startup), not at module
-import under `--preload`. See
-[`../recipes/config-migration.md`](../recipes/config-migration.md).
+Fork-server pitfall (record as a risk in the plan, verify at runtime): under
+gunicorn/uvicorn with pre-forked workers, where the SDK is initialized decides
+whether the workers export at all —
+[`../recipes/config-migration.md`](../recipes/config-migration.md)
+§Fork-server initialization.
 
 Check the plan carries every field in common
 [`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md) §Plan sections.

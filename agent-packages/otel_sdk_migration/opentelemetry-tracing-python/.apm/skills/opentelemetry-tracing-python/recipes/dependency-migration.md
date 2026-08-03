@@ -13,26 +13,10 @@ Step 0 (framework stack) before emitting §4.1 rows — dependency moves follow
 
 ## Framework stack → dependency path
 
-| `service.framework` | §4.1 focus                                                    |
-|---------------------|---------------------------------------------------------------|
-| `fastapi`           | baseline + `opentelemetry-instrumentation-fastapi` (ASGI)     |
-| `django`            | baseline + `opentelemetry-instrumentation-django` (WSGI/ASGI) |
-| `flask`             | baseline + `opentelemetry-instrumentation-flask` (WSGI)       |
-| `pure-python`       | OTel SDK baseline modules only                                |
-| `unknown`           | conservative baseline; record assumptions in `gaps`           |
-
-Framework and instrumentation signatures:
-[`../reference/detection-rules.md`](../reference/detection-rules.md).
-
-## Source-of-truth constraints
-
-From the common platform contract
-([`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)):
-
-- preferred client library: OpenTelemetry SDK for Python;
-- framework instrumentation is allowed only if it preserves platform requirements;
-- Jaeger/OpenTracing/py_zipkin client libraries are retired migration targets;
-- OTLP is the recommended export format.
+§4.1 is the **baseline below** plus the instrumentor the detected stack needs —
+per-stack instrumentors and the best-effort mapping for `framework: unknown`:
+[`../reference/framework-coverage.md`](../reference/framework-coverage.md).
+Record in `gaps` whatever the `unknown` row had to assume.
 
 ## Legacy → OTel moves
 

@@ -12,9 +12,10 @@ Boundary signatures: [`../reference/detection-rules.md`](../reference/detection-
 
 ## asyncio (usually already fine)
 
-`contextvars` propagate automatically across `await` and `asyncio.create_task`, so the current OTel context
-follows a coroutine without extra work. Do **not** add carriers here — plain `async`/`await` is not a loss
-boundary. The loss happens when you leave the event loop (below).
+Do **not** add carriers here: `contextvars` already carry the OTel context across
+`await` and `asyncio.create_task`
+([`../reference/detection-rules.md`](../reference/detection-rules.md)
+§Async-boundary signatures). Real loss starts where you leave the event loop.
 
 ## Thread pools / executors
 
@@ -82,5 +83,7 @@ resp = await client.get(url, headers=headers)
 
 ## Validation
 
-After the fix, run the Layer 5 runtime scenario: trigger HTTP → produce → consume (when applicable) and
-confirm a single `trace_id` with correct parent-child links in the tracing backend.
+Each fixed boundary needs traffic that actually crosses it (HTTP → produce →
+consume) and a parent-child check in the backend — a boundary the runtime never
+exercised stays `unverified`, not `pass`
+([`validation-stack.md`](validation-stack.md)).
