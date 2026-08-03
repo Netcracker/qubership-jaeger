@@ -77,6 +77,8 @@ in one place; do not mix it with `WithEndpoint`/`WithURLPath`.
 
 ## Guardrails
 
-- Keep one active tracing stack.
-- Preserve business/service naming intent.
+- Attribute renames toward semantic conventions go to `codeMigration.semantic` —
+  never auto-applied, common
+  [`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
+  §4.3.
 - Never write secrets or unbounded payloads to span attributes.

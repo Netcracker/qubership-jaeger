@@ -22,16 +22,6 @@ Step 0 (framework stack) before emitting §4.1 rows — dependency moves follow
 Wrapper and router detection signatures:
 [`reference/detection-rules.md`](../reference/detection-rules.md).
 
-## Source-of-truth constraints
-
-From the common platform contract
-([`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)):
-
-- preferred client library: OpenTelemetry SDK for Go;
-- wrappers are allowed only if they preserve platform requirements;
-- Jaeger/OpenTracing client libraries are retired migration targets;
-- OTLP is the recommended export format.
-
 ## Legacy → OTel moves
 
 ### Zipkin/OpenTracing/Jaeger client stacks

@@ -22,47 +22,32 @@ resource attributes.
 
 ## Propagation
 
-**The migration preserves the wire format; it does not change it.** Carry the
-configured inject format across, raise a conflict with the contract as a
-**question** to the user, and on a greenfield service ask the user to pick
-`B3` / `B3_MULTI` / `W3C` / a multi-format set instead of choosing silently
-(common
+The migration carries the configured wire format across and never switches it on
+its own (common
 [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
-§Propagation).
-
-`OTEL_PROPAGATORS` and programmatic setup are both **runtime** in Go — the
-format stays switchable without a rebuild.
+§Propagation). `OTEL_PROPAGATORS` and programmatic setup are both **runtime** in
+Go — the format stays switchable without a rebuild.
 
 ### Name the constructor option, not just the format
 
-`b3.New()` with no options injects the **single** `b3` header, not `X-B3-*` —
-the default fires an explicit `InjectEncoding == B3Unspecified` fallback that
-writes `b3`, while the `X-B3-*` branch has no such fallback. Source coordinates
-and the exact mechanism:
-[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
-§Verify constructor defaults — verify against the b3 version in the service's
-`go.mod`.
-
-A plan row that says "b3multi" and ships `b3.New()` is wrong on the wire while
-every end-to-end test still passes.
+A bare `b3.New()` injects the single `b3` header, not `X-B3-*`, so a plan row
+that says `b3multi` and ships it is wrong on the wire while every end-to-end test
+passes. Verify the option against the b3 version in the service's `go.mod`: guide
+§Verify constructor defaults.
 
 ```go
 // B3 multi-header (X-B3-TraceId / X-B3-SpanId) — required for b3multi
 otel.SetTextMapPropagator(b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader)))
 ```
 
-### Composite: extract order matters, inject writes everything
+### Composite membership and order
 
-On **extract**, `propagation.NewCompositeTextMapPropagator` gives priority to the
-**last** entry — it chains `ctx` through every member, so the last one that finds
-a context overwrites the earlier result (`propagation/propagation.go:136-141` in
-`go.opentelemetry.io/otel@v1.43.0`). That is the opposite of Spring Boot. Derive
-the order yourself from the user's intent ("B3 wins") — do not ask which end
-wins, and do not copy a list from a Java service.
-
-On **inject** the composite loops every member (`:130-134`), so both formats
-below are written to each outgoing request. Order does not apply, and there is
-no way to emit only one without a custom `TextMapPropagator`.
+Which end of a Go composite wins on extract, and why inject order is irrelevant:
+[`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
+§Propagation. Derive membership and the winning end from the user's intent
+("B3 wins") — never ask which end wins, and never copy a list from a Java
+service. There is no way to emit only one format from a composite without a
+custom `TextMapPropagator`.
 
 ```go
 // extract: accepts traceparent and X-B3-*; B3 wins when both arrive (it is last)
@@ -91,7 +76,7 @@ assumption is that adjacent tooling does not overwrite an existing context.
 TRACING_ENABLED=true|false
 TRACING_HOST=nc-diagnostic-agent
 TRACING_SAMPLER_PROBABILISTIC=0.01
-OTEL_EXPORTER_OTLP_ENDPOINT=http://${TRACING_HOST}:4318/v1/traces
+OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://${TRACING_HOST}:4318/v1/traces
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_PROPAGATORS=b3multi
 OTEL_TRACES_SAMPLER=parentbased_traceidratio
@@ -102,6 +87,12 @@ OTEL_SERVICE_NAME=${MICROSERVICE_NAME}-${NAMESPACE}
 `OTEL_PROPAGATORS=b3multi` above is the **contract default**, used only when the
 service has no format configured and the user chose it. An existing format is
 preserved instead — see §Propagation.
+
+Emit **one** endpoint variable, in its own form: the signal-specific
+`OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` carries the full URL including `/v1/traces`
+(above), while the generic `OTEL_EXPORTER_OTLP_ENDPOINT` is a base URL that
+`otlptracehttp` appends `/v1/traces` to. Writing the path on the generic one
+yields a double `/v1/traces` and silent export failure.
 
 For wrapper-based services, mapped runtime behavior can be implemented through
 wrapper options, but final behavior must match this shape.

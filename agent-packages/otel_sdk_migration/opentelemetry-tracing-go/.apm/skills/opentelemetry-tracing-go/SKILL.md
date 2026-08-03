@@ -133,8 +133,7 @@ The artifacts are in-session data, never files on disk — common
 | Defer versions | Read versions from `go.mod`, never hardcode versions in skill text |
 | Sync docs on L4 | If L4 changes config/env/deps, update service docs in the same pass |
 | Fresh post-L4 build | Runtime pass requires post-L4 build + image provenance |
-| End-to-end only when stand is healthy | Runtime `pass` needs stand health + log triage before Jaeger (§3.4; common L5) |
-| No Jaeger-first pass | Jaeger spans while SUT crash-loops or not Ready are not end-to-end pass — fix the stand first |
+| No Jaeger-first pass | Runtime `pass` needs stand health and log triage first; spans while the SUT crash-loops are not an end-to-end pass (§3.4) |
 
 ## 6. File index
 

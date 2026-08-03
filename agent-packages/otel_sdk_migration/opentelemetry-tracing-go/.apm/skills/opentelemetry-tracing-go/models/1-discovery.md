@@ -31,17 +31,11 @@ Inputs:
 - `go.mod`, `go.sum`, `vendor/`, workspace files;
 - optional `go list -m all` or equivalent dependency graph command.
 
-Classify tracing artifacts into buckets:
-
-- **legacy**: `openzipkin/zipkin-go`, `opentracing/opentracing-go`, `jaeger-client-go`, vendor/platform Zipkin tracer wrappers (catalogue in `detection-rules.md`);
-- **modern**: `go.opentelemetry.io/otel*`, OTLP exporters, B3 propagator module.
-
-Set aggregate flags:
-
-- `hasOtelApi`
-- `hasOtelSdk`
-- `hasExporter`
-- `hasLegacy`
+Classify every tracing artifact into a bucket and set the aggregate flags
+(`hasOtelApi`, `hasOtelSdk`, `hasExporter`, `hasLegacy`) — module catalogue and
+bucket assignments:
+[`../reference/detection-rules.md`](../reference/detection-rules.md) §Dependency
+signatures.
 
 ## 1.2 Configuration discovery
 
@@ -60,76 +54,43 @@ Collect:
 
 ### Propagation: two sets, resolved from the actual constructor
 
-Record `propagation.inject` and `propagation.extract` separately: the SDK
-extracts as a race (several formats tried, **last** wins in Go) but injects as a
-fan-out — `compositeTextMapPropagator.Inject` loops every member, so **all**
-configured formats are written. A merged list hides the case where a service
-reads B3 and still emits only `traceparent`. See
+Record `propagation.inject` and `propagation.extract` separately, in the order
+written — do not normalize it against another stack's convention. Why the two
+directions differ and which end of a Go composite wins on extract:
 [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
-§Propagation.
+§Propagation. Both sources are `runtime` scope in Go: `OTEL_PROPAGATORS` and
+programmatic `otel.SetTextMapPropagator(...)`.
 
-Sources, both `runtime` scope in Go:
-
-- `OTEL_PROPAGATORS` env (`b3`, `b3multi`, `tracecontext`, …);
-- programmatic `otel.SetTextMapPropagator(...)` — read the **options**, not the
-  constructor name. `b3.New()` with no options injects the **single** `b3`
-  header, not `X-B3-*`. `X-B3-*` requires
-  `b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader))`. Mechanism and source
-  coordinates:
-  [`platform-tracing-guide.md`](../../opentelemetry-tracing-common/reference/platform-tracing-guide.md)
-  §Verify constructor defaults — check them against the b3 version in `go.mod`,
-  not the version cited there.
-
-With `propagation.NewCompositeTextMapPropagator(...)` the **last** entry wins.
-That is the opposite of Spring Boot — record the order as written, do not
-normalize it against another stack's convention.
+Read the propagator **options**, not the constructor name — a bare `b3.New()`
+injects the single `b3` header, not `X-B3-*`
+(`detection-rules.md` §Code signatures). Verify it against the b3 version in
+`go.mod`, not against a version cited elsewhere: guide §Verify constructor
+defaults.
 
 ## 1.3 API discovery (AST/symbol)
 
-Find symbols:
-
-- OTel: `otel.Tracer`, `tracer.Start`, `trace.SpanFromContext`,
-  `propagation.TextMapPropagator`, `otel.SetTracerProvider`;
-- legacy: Zipkin/OpenTracing/Jaeger client symbols;
-- vendor/platform tracing wrappers (e.g. `NewZipkinTracer`, `WithTracer(...)`) —
-  signatures in `detection-rules.md`;
-
-Record `family`, `symbol`, `file`, `line`.
+Scan Go sources for the OTel, legacy, and platform-wrapper symbols catalogued in
+[`../reference/detection-rules.md`](../reference/detection-rules.md) §Code
+signatures. Record `family`, `symbol`, `file`, `line` for each hit.
 
 ## 1.4 Instrumentation discovery
 
-Classify `instrumentation.mode`:
-
-- `auto`: no explicit spans but framework/wrapper auto instrumentation evidence;
-- `manual`: explicit span creation in app code;
-- `mixed`: both;
-- `none`: no evidence.
+Classify `instrumentation.mode` (`auto` / `manual` / `mixed` / `none`) from
+`detection-rules.md` §Instrumentation mode signatures.
 
 ## 1.5 Async-boundary discovery
 
-Detect context-loss candidates:
-
-- goroutines (`go func(...)`), worker pools/channels;
-- Kafka producers/consumers (`segmentio/kafka-go`, Sarama, other messaging libs in `go.mod`);
-- async HTTP clients and callback-style execution.
-
-Mark `contextWrapper` true only when context is explicitly propagated.
+Record each context-loss candidate with its boundary type, and set
+`contextWrapper` true only when context is explicitly propagated. Boundary
+catalogue: [`../reference/detection-rules.md`](../reference/detection-rules.md)
+§Async-boundary signatures.
 
 ## 1.6 Platform-contract discovery
 
-Collect mandatory contract evidence:
-
-- `TRACING_ENABLED`, `TRACING_HOST`, `TRACING_SAMPLER_*`;
-- OTLP `http/protobuf` path and host alias;
-- propagation — the injected format (contract default `b3multi`) and the
-  extracted set, resolved from constructor options;
-- `parentbased_traceidratio` or equivalent parent-based ratio behavior;
-- `service.name=${name}-${namespace}` and namespace source
-  (Downward API/Helm/SA file);
-- excluded probe/metrics endpoints;
-- `traceId`/`spanId` in log output.
-
-For missing inspectable evidence, use `unknown` and record `gaps`.
+Resolve every facet of `platformContract` from the Go signals:
+[`../reference/detection-rules.md`](../reference/detection-rules.md)
+§Platform-contract signatures. For missing inspectable evidence, use `unknown`
+and record `gaps`.
 
 ## User-facing brief (mandatory)
 

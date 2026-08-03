@@ -5,26 +5,12 @@ gating, and pass/fail rules:
 
 [`opentelemetry-tracing-common/models/5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md).
 
-Go execution details:
+Go execution is assembled from the files below; this layer only routes to them.
 
-- runtime path must be discovered first via
-  [`../../opentelemetry-tracing-common/reference/service-installation-discovery.md`](../../opentelemetry-tracing-common/reference/service-installation-discovery.md);
-- post-L4 build/image is mandatory before runtime end-to-end;
-- stand health and log triage are mandatory before tracing pass/fail.
-
-## Fresh build gate (once after L4)
-
-Use [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md):
-
-1. purge stale build outputs and stale SUT images;
-2. run one post-L4 Go build/test command from service docs;
-3. build image with session-unique tag;
-4. deploy only that image (or documented CI image proving it contains current L4).
-
-## Runtime order
-
-Canonical definition: common
-[`models/5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md) §5.3. The stand itself,
-the assertions, and teardown: common
-[`recipes/validation-stack.md`](../../opentelemetry-tracing-common/recipes/validation-stack.md) and the
-[language delta](../recipes/validation-stack.md).
+| Concern | Where |
+| --- | --- |
+| Runtime path and install commands | common [`reference/service-installation-discovery.md`](../../opentelemetry-tracing-common/reference/service-installation-discovery.md) |
+| What counts as the build check | [`../reference/build-preconditions.md`](../reference/build-preconditions.md) |
+| The one post-L4 build and image | [`../recipes/fresh-build-and-image.md`](../recipes/fresh-build-and-image.md) |
+| Stand, traffic, assertions, teardown, "no spans" diagnosis | [`../recipes/validation-stack.md`](../recipes/validation-stack.md) |
+| Runtime order and pass/fail gates | common [`models/5-validation.md`](../../opentelemetry-tracing-common/models/5-validation.md) §5.3 |

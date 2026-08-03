@@ -59,6 +59,7 @@ resp, err := httpClient.Do(req)
 
 ## Validation
 
-After the fix, run the Layer 5 runtime scenario: trigger HTTP → produce →
-consume (when applicable) and confirm a single `trace_id` with correct
-parent-child links in the tracing backend.
+Each fixed boundary needs traffic that actually crosses it (HTTP → produce →
+consume) and a parent-child check in the backend — a boundary the runtime never
+exercised stays `unverified`, not `pass`
+([`validation-stack.md`](validation-stack.md)).
