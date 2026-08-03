@@ -15,12 +15,12 @@ fixing broken distributed traces across the platform.
 
 ## Target languages and frameworks
 
-| Language   | Frameworks / stacks                     | APM package                    | Status |
-| ---------- | --------------------------------------- | ------------------------------ | ------ |
-| Java       | Spring Boot, Quarkus, Pure (OTel SDK)   | `opentelemetry-tracing-java`   | done   |
-| Go         | stdlib, Fiber, platform libs            | `opentelemetry-tracing-go`     | done   |
-| Python     | FastAPI, Django, Flask, Pure (OTel SDK) | `opentelemetry-tracing-python` | done   |
-| TypeScript | Express, Fastify, NestJS, Pure (Node)   | `opentelemetry-tracing-ts`     | done   |
+| Language   | Frameworks / stacks                     | APM package                    |
+| ---------- | --------------------------------------- | ------------------------------ |
+| Java       | Spring Boot, Quarkus, Pure (OTel SDK)   | `opentelemetry-tracing-java`   |
+| Go         | stdlib, Fiber, platform libs            | `opentelemetry-tracing-go`     |
+| Python     | FastAPI, Django, Flask, Pure (OTel SDK) | `opentelemetry-tracing-python` |
+| TypeScript | Express, Fastify, NestJS, Pure (Node)   | `opentelemetry-tracing-ts`     |
 
 Shared platform pieces (same for all languages):
 
@@ -36,7 +36,6 @@ qubership-jaeger/
 └── agent-packages/
     └── otel_sdk_migration/
         ├── README.md                           # this file
-        ├── opentelemetry-tracing-all-in-one/   # aggregator — one dependency pulls every language + common
         ├── opentelemetry-tracing-common/       # shared cross-language core
         ├── opentelemetry-tracing-java/         # Java (Spring Boot, Quarkus, Pure)
         ├── opentelemetry-tracing-go/           # Go (stdlib, platform libs)
@@ -89,33 +88,33 @@ arrives transitively — install it separately and you would get it twice.
 
 ### Which entry point to use
 
-| You want to…                                                                      | Use                                                                    |
-| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Install everything from *inside this repository*                                  | root [`apm.yml`](../../apm.yml)                                        |
-| Reference the whole suite as **one dependency** from another repository (by path) | [`opentelemetry-tracing-all-in-one`](opentelemetry-tracing-all-in-one) |
-| Install a single, known language                                                  | that language package directly                                         |
+| You want to…                     | Use                             |
+| -------------------------------- | ------------------------------- |
+| Install everything (bulk)        | root [`apm.yml`](../../apm.yml) |
+| Install a single, known language | that language package directly  |
 
-The [`opentelemetry-tracing-all-in-one`](opentelemetry-tracing-all-in-one) aggregator exists because the
-root `apm.yml` only works from *this* repository root (it uses in-repo
-`./agent-packages/otel_sdk_migration/...` paths).
-The all-in-one package uses sibling `../...` paths, so another repository can depend on the entire suite
-through a single entry — it pulls all language packages, and the shared core arrives transitively (do not
-add `opentelemetry-tracing-common` alongside it or you get it twice). See its
-[Readme](opentelemetry-tracing-all-in-one/README.md).
+Bulk is the default: the root `apm.yml` lists every language package and works from this repository root.
+A single-language install is the deliberate exception — it deploys one discovery/detection/recipe set
+instead of four, which is the cheaper option in agent context when the target language is already known.
+Either way the shared core arrives transitively; never add `opentelemetry-tracing-common` yourself.
 
-Installing everything is deliberate, not convenience. Whoever runs the skill often does not know which
+All dependencies are declared as **local paths** — `./agent-packages/...` at the root, `../` between
+packages. Nothing resolves over the network, so an install always deploys the working tree you are
+looking at, not a published ref.
+
+Prefer bulk when the target language is not certain. Whoever runs the skill often does not know which
 language the target service is written in, and a repository may hold several. With all language packages
 present, discovery (L1) identifies the stack itself and the common
 [multi-language scope gate](opentelemetry-tracing-common/.apm/skills/opentelemetry-tracing-common/SKILL.md)
-asks whether to migrate one target or all of them. A partial install turns that question into a silent
-gap — the agent simply cannot see a Go service if only the Java package is installed.
+asks whether to migrate one target or all of them. That is what a single-language install trades away: the
+agent cannot see a Go service if only the Java package is installed, and the gap is silent.
 
 Per-package installs (`apm install` from inside `agent-packages/otel_sdk_migration/opentelemetry-tracing-go/`, for example)
-still work and remain useful when developing a single package. They are not the way to consume the skill,
-and they leave an `apm_modules/` cache inside the package that a later root install reports as an orphaned
+are a supported entry point — both for a known target language and when developing one package.
+They leave an `apm_modules/` cache inside the package that a later root install reports as an orphaned
 package. Delete the package-local `apm_modules/` and `apm.lock.yaml` when you go back to the root install.
 
-A successful root install produces five skills (Java, go, python, ts, common) plus one rule per package, under
+A successful root install produces five skills (Java, Go, Python, TypeScript, common) plus one rule per package, under
 the paths listed in the `-t` table above.
 
 You may also see `apm.lock.yaml` and `apm_modules/` (local resolution cache); both are gitignored.
