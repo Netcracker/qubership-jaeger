@@ -24,7 +24,7 @@ fails on authentication (401/403, or a download denied):
 
 Distinguish **auth failure** (401/403, access denied) from **slow resolve** (download
 or dependency resolution in progress, no error yet). Do not encode host-OS assumptions:
-before recording the blocker, check that the build runtime can reach the credential 
+before recording the blocker, check that the build runtime can reach the credential
 source the repository owner expects (settings file, token injection, CI secret, wrapper).
 
 ## Smoke vs validation

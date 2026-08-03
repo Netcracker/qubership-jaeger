@@ -75,7 +75,7 @@ Consequence for configuration surfaces: **a single list cannot express "extract 
 
 So `OTEL_PROPAGATORS=b3multi,tracecontext` emits **both** `X-B3-*` and `traceparent` on every
 outgoing call. That is usually harmless (peers read what they know) but it is not "inject one"
-— say so in the plan rather than implying a choice was made. Only Spring Boot's split lists 
+— say so in the plan rather than implying a choice was made. Only Spring Boot's split lists
 give real inject/extract asymmetry without custom code.
 
 #### Changing the wire format is out of scope for a migration
@@ -281,7 +281,7 @@ these rules.
 | Framework/logging wrappers            | Allowed only if log contract above still holds; confirm output before stacking layers      |
 
 Collector/exporter unavailability semantics (SDK defaults): spans buffer in memory in the batch
-processor queue (default `maxQueueSize` 2048); when the queue is full new spans are **dropped**, 
+processor queue (default `maxQueueSize` 2048); when the queue is full new spans are **dropped**,
 never persisted to disk; memory and GC pressure can grow while the endpoint is down. All limits
 are configurable — record buffering/drop risk instead of asserting data loss cannot happen.
 

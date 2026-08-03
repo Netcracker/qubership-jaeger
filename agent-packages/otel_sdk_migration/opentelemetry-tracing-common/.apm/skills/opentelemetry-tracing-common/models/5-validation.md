@@ -19,7 +19,7 @@ when the user opts in, on a running deployment (runtime).
 | --- | --- |
 | **static** | Inspect repository manifests and sources; record `pass` / `fail` per row |
 | **configuration** | Inspect config bindings against the platform contract; record `pass` / `fail` per row |
-| **runtime** | `status: manual` until the install path is known, the user names an environment, and grants deploy permission |
+| **runtime** | `status: manual` until the install path is known, the user has named a target environment, and deploy permission is granted |
 
 Status enum for every check and for `validationPlan.runtime.status`:
 `pass`, `fail`, `manual`, `unknown` (schema `checkStatus`).

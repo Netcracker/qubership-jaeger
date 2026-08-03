@@ -2,7 +2,7 @@
 
 After [`stand-health-gate.md`](stand-health-gate.md) passes and **before**
 Jaeger queries or setting `validationPlan.runtime.status` to `pass`, scan workload logs
-and classify every distinct `ERROR`/`FATAL` (or OTel export failure) line. Do not 
+and classify every distinct `ERROR`/`FATAL` (or OTel export failure) line. Do not
 ignore log noise — **explicitly** state whether errors are stale, benign, or blocking.
 
 Skip only when the runtime tier is `manual` (no cluster deploy). This step is not

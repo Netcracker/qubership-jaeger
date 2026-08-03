@@ -32,7 +32,7 @@ this gate adds is the **config surface** the plan must target:
 | `django`            | env + `settings.py`             |
 | `flask`             | env + app-factory instrument    |
 | `pure-python`       | env + programmatic setup        |
-| `unknown`           | env; record the assumption in `gaps` |
+| `unknown`           | env; assumption in `gaps`       |
 
 Pull versions from the repository manifest (`requirements.txt`/`pyproject.toml`); never
 pin in the plan.

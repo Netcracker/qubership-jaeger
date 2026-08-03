@@ -21,10 +21,10 @@ Verdict scale:
    bullet per `capability-result.propagation` field:
    - `http`: from `propagation.components.http` when present; else infer from the
      HTTP-capable stack (framework + export config).
-   - `kafka`: required when any `kafka-producer` / `kafka-consumer` boundary exists; `FAILED` when 
+   - `kafka`: required when any `kafka-producer` / `kafka-consumer` boundary exists; `FAILED` when
      the boundary exists and `contextWrapper` is false or the component signal is `FAILED`.
    - `async`: required when executor/reactor/future boundaries exist; same wrapper rule as Kafka.
-   - `injectFormat`: `PASS` when `propagation.inject` matches the format peers expect, 
+   - `injectFormat`: `PASS` when `propagation.inject` matches the format peers expect,
      `FAILED` when it does not, `UNKNOWN` when discovery could not resolve it.
      An empty `inject` set is not silence — judge the framework default recorded in L1.
    - `extractFormats`: judge `propagation.extract` against the peers that call in.

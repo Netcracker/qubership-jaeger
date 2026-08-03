@@ -29,11 +29,15 @@ adapter, and the `fetch()`/undici requirement that applies to every stack — is
 [`../reference/framework-coverage.md`](../reference/framework-coverage.md). What
 this gate adds is the **config surface** the plan must target:
 
-| `service.framework`           | Config surface           |
-| ----------------------------- | ------------------------ |
+| `service.framework`            | Config surface           |
+|--------------------------------|--------------------------|
 | `express`, `fastify`, `nestjs` | env + bootstrap module   |
-| `pure-node`                   | env + programmatic setup |
-| `unknown`                     | env; take the contrib instrumentation when `gaps` names a confident best-effort framework, otherwise the conservative SDK path, and record the assumption |
+| `pure-node`                    | env + programmatic setup |
+| `unknown`                      | env                      |
+
+On `unknown`, take the contrib instrumentation when `gaps` names a confidently
+identified best-effort stack, otherwise the conservative SDK path — and record
+the assumption.
 
 Pull versions from the repository manifest (`package.json`/lockfile); never pin
 in the plan.
