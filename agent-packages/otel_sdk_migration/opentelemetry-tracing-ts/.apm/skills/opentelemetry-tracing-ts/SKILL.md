@@ -86,7 +86,6 @@ TypeScript adds to the L1 brief:
 - **instrumentation mechanism** and the bootstrap load hook (`-r`, `--import`, or loader) — on Node this decides
   whether instrumentation runs at all, not just how it is configured.
 
-
 ### 3.2 Post-L4 build rule (once)
 
 When L4 edits exist:
@@ -106,7 +105,6 @@ Stand, order, assertions, and teardown: common
 [`recipes/validation-stack.md`](../opentelemetry-tracing-common/recipes/validation-stack.md) and the
 [TypeScript delta](recipes/validation-stack.md). Never do a Jaeger-first pass/fail.
 
-
 ### 3.5 Post-validation cleanup (mandatory after runtime `pass`)
 
 When `validationPlan.runtime.status` is `pass`, run
@@ -124,7 +122,6 @@ The artifacts are in-session data, never files on disk — common
 - `maturity-result` → common [`schemas/L3-maturity-result.schema.json`](../opentelemetry-tracing-common/schemas/L3-maturity-result.schema.json)
 - `migration-plan` → common [`schemas/L4-migration-plan.schema.json`](../opentelemetry-tracing-common/schemas/L4-migration-plan.schema.json),
   including the embedded `validationPlan`
-
 
 ## 5. Non-negotiable rules
 

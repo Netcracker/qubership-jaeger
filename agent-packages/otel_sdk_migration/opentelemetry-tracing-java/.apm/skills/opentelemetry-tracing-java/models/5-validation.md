@@ -28,7 +28,7 @@ edits.
 
 Ask only after the install path is documented or confirmed, and only if runtime validation is still wanted:
 
-1. **Where does the service run?** The user names a concrete environment with deploy permissions — never assume one.
+1. **Where does the service run?** The user must name a concrete environment with deploy permissions — never assume one.
 2. **Tracing backend** — an existing collector or Jaeger, or the throwaway stand from common
    [`recipes/validation-stack.md`](../../opentelemetry-tracing-common/recipes/validation-stack.md) and the
    [Java delta](../recipes/validation-stack.md).

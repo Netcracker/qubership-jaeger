@@ -89,10 +89,10 @@ arrives transitively — install it separately and you would get it twice.
 
 ### Which entry point to use
 
-| You want to…                     | Use                                |
-| -------------------------------- | ---------------------------------- |
+| You want to…                     | Use                                 |
+| -------------------------------- | ----------------------------------- |
 | Install everything (bulk)        | the aggregator [`apm.yml`](apm.yml) |
-| Install a single, known language | that language package directly     |
+| Install a single, known language | that language package directly      |
 
 Bulk is the default: the aggregator lists every language package and installs from this directory.
 A single-language install is the deliberate exception — it deploys one discovery/detection/recipe set

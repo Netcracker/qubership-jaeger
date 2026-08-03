@@ -30,13 +30,13 @@ The skill is an analysis pipeline orchestrated by
 [`SKILL.md`](.apm/skills/opentelemetry-tracing-java/SKILL.md). Each layer reads
 the previous artifact and emits the next:
 
-| Layer             | File                         | Output                                             |
-| ----------------- | ---------------------------- | -------------------------------------------------- |
-| L1 Discovery      | `models/1-discovery.md`      | `discovery-result.json`                            |
-| L2 Capability     | common `models/2-capability.md` | `capability-result`                             |
-| L3 Maturity       | common `models/3-maturity.md`   | `maturity-result`                               |
-| L4 Transformation | `models/4-transformation.md` | shared plan + Java framework-family/mechanism gate |
-| L5 Validation     | `models/5-validation.md`     | shared tiers + Java runtime execution rules        |
+| Layer             | File                            | Output                                             |
+| ----------------- | ------------------------------- | -------------------------------------------------- |
+| L1 Discovery      | `models/1-discovery.md`         | `discovery-result`                                 |
+| L2 Capability     | common `models/2-capability.md` | `capability-result`                                |
+| L3 Maturity       | common `models/3-maturity.md`   | `maturity-result`                                  |
+| L4 Transformation | `models/4-transformation.md`    | shared plan + Java framework-family/mechanism gate |
+| L5 Validation     | `models/5-validation.md`        | shared tiers + Java runtime execution rules        |
 
 ## Naming convention (L1-L5)
 

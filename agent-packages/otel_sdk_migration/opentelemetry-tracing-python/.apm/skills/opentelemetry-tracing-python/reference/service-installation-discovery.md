@@ -9,7 +9,7 @@ Python adds the signals below.
 
 - `pyproject.toml` `[project.scripts]`, `setup.py` / `setup.cfg` entry points;
 - `manage.py`, `gunicorn.conf.py`, `uvicorn` / `gunicorn` entrypoints, `Procfile`;
-- `requirements*.txt` and lock files (`poetry.lock`, `uv.lock`, `Pipfile.lock`).
+- `requirements*.txt` and lockfiles (`poetry.lock`, `uv.lock`, `Pipfile.lock`).
 
 ## Step 2 — extra capture
 

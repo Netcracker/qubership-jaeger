@@ -12,13 +12,13 @@ The skill is orchestrated by
 [`SKILL.md`](.apm/skills/opentelemetry-tracing-python/SKILL.md). Each layer reads
 the previous artifact and emits the next:
 
-| Layer | File | Output |
-| ------------------- | ------------------------------ | ----------------------------------------------- |
-| L1 Discovery | `models/1-discovery.md` | `discovery-result.json` |
-| L2 Capability     | common `models/2-capability.md` | `capability-result`                             |
-| L3 Maturity       | common `models/3-maturity.md`   | `maturity-result`                               |
-| L4 Transformation | `models/4-transformation.md` | shared plan + Python framework/mechanism gate |
-| L5 Validation | `models/5-validation.md` | shared tiers + Python runtime execution rules |
+| Layer             | File                            | Output                                        |
+| ----------------- | ------------------------------- | --------------------------------------------- |
+| L1 Discovery      | `models/1-discovery.md`         | `discovery-result`                            |
+| L2 Capability     | common `models/2-capability.md` | `capability-result`                           |
+| L3 Maturity       | common `models/3-maturity.md`   | `maturity-result`                             |
+| L4 Transformation | `models/4-transformation.md`    | shared plan + Python framework/mechanism gate |
+| L5 Validation     | `models/5-validation.md`        | shared tiers + Python runtime execution rules |
 
 ## Supporting material
 
