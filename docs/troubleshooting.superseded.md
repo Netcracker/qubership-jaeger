@@ -79,7 +79,8 @@ If services support migration to new Kubernetes the correct way to upgrade it is
 
 Helm doesn't allow a resource to be owned by more than one deployment. During jaeger upgrade it's possible you create
 resources that already existed and created outside of Helm. In such cases you may see error related to labels and
-annotation validation.
+annotation validation. For more details please refer
+[article](https://stackoverflow.com/questions/62964532/helm-not-creating-the-resources)
 
 **Solution**
 

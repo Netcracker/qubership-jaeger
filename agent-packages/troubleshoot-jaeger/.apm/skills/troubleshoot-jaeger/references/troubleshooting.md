@@ -106,6 +106,7 @@ labels and annotations that mark it as belonging to this release.
 
 **Sources:**
 
+* [Helm not creating the resources — Stack Overflow](https://stackoverflow.com/questions/62964532)
 * [Adopt resources into a release — helm/helm#7649](https://github.com/helm/helm/pull/7649)
 
 ### Helm install fails with `Invalid duration format`
