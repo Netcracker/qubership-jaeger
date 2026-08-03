@@ -19,7 +19,7 @@ when the user opts in, on a running deployment (runtime).
 | --- | --- |
 | **static** | Inspect repository manifests and sources; record `pass` / `fail` per row |
 | **configuration** | Inspect config bindings against the platform contract; record `pass` / `fail` per row |
-| **runtime** | `status: manual` until the install path is known, the user names an environment, and grants deploy permission |
+| **runtime** | `status: manual` until the install path is known, the usernames an environment, and grants deploy permission |
 
 Configuration tier must enforce the platform contract from
 [`../reference/platform-tracing-guide.md`](../reference/platform-tracing-guide.md).
