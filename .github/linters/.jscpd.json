@@ -11,6 +11,7 @@
         "**/docs/installation.md",
         "**/docs/observability.md",
         "**/charts/*/templates/**/*.tpl",
-        "**/*_test.go"
+        "**/*_test.go",
+        "**/agent-packages/**"
     ]
 }

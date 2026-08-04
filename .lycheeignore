@@ -1,0 +1,7 @@
+# Cross-package skill links target the compiled layout, where packages are siblings
+# and the ".apm/skills" segment is gone. They never resolve in the source tree.
+opentelemetry-tracing-[a-z0-9-]+/\.apm/skills/opentelemetry-tracing-common/
+
+# Stack Overflow answers 403 to automated requests (bot protection), so a live link
+# is indistinguishable from a dead one here.
+https://stackoverflow\.com/
