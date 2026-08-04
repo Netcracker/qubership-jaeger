@@ -1,0 +1,108 @@
+---
+name: opentelemetry-tracing-common
+description: Shared internal core for the OpenTelemetry tracing language packages (opentelemetry-tracing-java, opentelemetry-tracing-go, opentelemetry-tracing-python, opentelemetry-tracing-ts) — holds the cross-language capability, maturity, transformation, and validation layers plus the platform tracing contract. Do not start a tracing task here; this package has no discovery layer and no phase gates, so entering it directly skips the analysis a migration depends on. For any actual service work, start from the language package matching the repository and let it pull these layers in. Read this file directly only when editing the shared layers themselves, or when a language package sends you here.
+---
+
+# OpenTelemetry tracing common (shared core)
+
+This package is the **shared core** pulled in by the language tracing skills
+(`opentelemetry-tracing-java`, `opentelemetry-tracing-go`, `opentelemetry-tracing-python`,
+`opentelemetry-tracing-ts`). **Start from the language `SKILL.md`** for end-to-end pipeline execution, phase gates, and
+user briefs. Use this file for cross-language layer rules, schemas, and the platform contract.
+
+**Read first:** [`reference/platform-tracing-guide.md`](reference/platform-tracing-guide.md) — mandatory binding rules
+for configuration and validation tiers.
+
+## Pipeline (cross-language)
+
+```text
+repository
+   │
+   ▼
+[L1] Discovery        ──► discovery-result      (language package)
+   │
+   ▼
+[L2] Capability       ──► capability-result     (common models/2)
+   │
+   ▼
+[L3] Maturity         ──► maturity-result       (common models/3)
+   │
+   ▼
+[L4] Transformation   ──► migration-plan        (common models/4 + language apply)
+   │
+   ▼
+[L5] Validation       ──► validationPlan        (embedded in migration-plan; common models/5 + language runtime)
+```
+
+Each layer reads upstream artifacts only — not the raw repository again (except L1). Language packages extend the
+common `models/` with local framework gates and execution recipes.
+
+## Where the artifacts live (mandatory)
+
+The five artifacts are **in-session data**. They are never written to disk — not into the target repository, not into
+a scratch directory, not on request. Phase 1 is read-only, and an artifact file would break that for no benefit.
+
+- Keep each artifact in the working context and pass it to the next layer. That separability is the point: L3 can cite
+  the exact L2 field that produced its verdict.
+- Show the user the prose brief (L1–L3) or the summary (L4–L5), never the raw JSON.
+- `schemas/` lists the fields each layer is expected to have resolved. **Nothing validates them** — there is no
+  validator in the pipeline and none is planned. Their job is to keep the briefs complete, so the user is not left
+  guessing about a facet the agent silently skipped.
+- Treat a field you cannot resolve as `unknown` plus a `gaps` entry, and say so in the brief. A missing field is a
+  finding, not a formatting error.
+
+## Multi-language scope gate (mandatory — before Phase 2 / L4)
+
+When discovery finds **two or more language families** in tracing scope (for example Java and Go services in the same
+monorepo), or **two or more independent SUTs** the user did not narrow to one target:
+
+1. **Stop after the L3 brief** — do not start Phase 2 until scope is explicit.
+2. **Ask the user** which mode applies:
+   - **Bulk** — migrate and validate every discovered language target in one session, with an ordered plan per target.
+   - **Single** — the user picks one language family or one named service; L4–L5 apply only to that choice until the
+     user expands scope.
+3. Record the choice in chat and in the migration plan `gaps` or `validationPlan.runtime.scenario` (for example
+   `scope: single — Go mesh-api only`).
+4. If the user does not answer, emit a **plan-only** L4 document and keep `validationPlan.runtime.status` at `manual`.
+   No repository edits.
+
+The propagation-format question is asked **once for the whole scope**, in the L3 brief — never once per service:
+[`models/3-maturity.md`](models/3-maturity.md) §Propagation format.
+
+This gate is cross-language; language packages enter it from Phase 2 (language `SKILL.md` §3.0).
+
+## Ownership split
+
+| Layer | Common model — owns | Language extension — owns |
+| --- | --- | --- |
+| L2 | [`models/2-capability.md`](models/2-capability.md) — full | none |
+| L3 | [`models/3-maturity.md`](models/3-maturity.md) — full, decision matrix and propagation-format question | none |
+| L4 | [`models/4-transformation.md`](models/4-transformation.md) — plan structure §4.1–§4.5, doc sync on apply | Step 0 framework gate, recipes, apply |
+| L5 | [`models/5-validation.md`](models/5-validation.md) — tiers, `validationPlan` shape, static and configuration checks, runtime gating | install path, fresh build, runtime execution, language deltas |
+
+Common also owns:
+
+- Shared L5 recipes: [`recipes/stand-health-gate.md`](recipes/stand-health-gate.md),
+  [`recipes/log-error-triage.md`](recipes/log-error-triage.md),
+  [`recipes/validation-stack.md`](recipes/validation-stack.md),
+  [`recipes/validation-cleanup.md`](recipes/validation-cleanup.md).
+- Shared reference: [`reference/platform-tracing-guide.md`](reference/platform-tracing-guide.md),
+  [`reference/build-preconditions.md`](reference/build-preconditions.md),
+  [`reference/service-installation-discovery.md`](reference/service-installation-discovery.md).
+- Shared JSON field lists — capability and maturity; the migration plan is tabulated in the models instead.
+
+Each language package additionally owns Layer 1 Discovery with its
+`L1-discovery-result.schema.json`, `reference/detection-rules.md`, and
+`reference/framework-coverage.md`.
+
+## Shared schemas (common)
+
+- [`schemas/L2-capability-result.schema.json`](schemas/L2-capability-result.schema.json)
+- [`schemas/L3-maturity-result.schema.json`](schemas/L3-maturity-result.schema.json)
+
+The migration plan has no schema file: its root fields are tabulated in
+[`models/4-transformation.md`](models/4-transformation.md) §Plan sections and the embedded `validationPlan` in
+[`models/5-validation.md`](models/5-validation.md), so a third copy would only drift.
+
+`L1-discovery-result.schema.json` lives in each language package, because the discovery shape differs per language.
+There are no per-language copies of the shared schemas — language layers link these files directly.
