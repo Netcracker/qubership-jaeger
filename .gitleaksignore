@@ -1,0 +1,4 @@
+# Commented-out placeholder ("-----BEGIN RSA PRIVATE KEY----- / ... certificate content ... / -----END ...")
+# in the TLS section of the initial commit's docs/installation.md. Not a real key; the block was
+# later replaced with a "<PEM-encoded private key>" placeholder.
+aa10f4ba0e7ea806b8d8536633999a3ec95c8c2e:docs/installation.md:private-key:626

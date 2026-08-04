@@ -15,7 +15,7 @@ metadata:
     {{- toYaml .Values.hotrod.annotations | nindent 4 }}
   {{- end }}
 spec:
-  host: {{ include "hotrod.route" . }}
+  host: {{ include "hotrod.route" . | quote }}
   port:
     targetPort: http
   to:

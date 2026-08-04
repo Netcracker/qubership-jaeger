@@ -1,9 +1,16 @@
-{{- $gatewayApi := .Values.query.gatewayApi | default dict -}}
-{{- $httpRouteSpec := $gatewayApi.httpRoute | default dict -}}
-{{- $parentRefs := $httpRouteSpec.parentRefs | default list -}}
+{{- $httpRouteSpec := .Values.query.httpRoute | default dict -}}
+{{- $ingressSpec := .Values.query.ingress | default dict -}}
 {{- $hostnames := $httpRouteSpec.hosts | default list -}}
+{{- if not $hostnames -}}
+{{- $host := include "query.ingress" . -}}
+{{- if $host -}}
+{{- $hostnames = list $host -}}
+{{- end -}}
+{{- end -}}
 {{- $name := printf "%s-query" .Values.jaeger.serviceName -}}
-{{- if and .Values.query.install ($httpRouteSpec.install | default false) }}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $httpRouteSpec.install $ingressSpec.install) "host" (first $hostnames)) -}}
+{{- $install := or ($httpRouteSpec.install | default false) (and $exposed (include "jaeger.gatewayApi.enabled" .)) -}}
+{{- if and .Values.query.install $install }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -20,15 +27,11 @@ metadata:
     {{- toYaml $httpRouteSpec.annotations | nindent 4 }}
   {{- end }}
 spec:
-  {{- with $parentRefs }}
   parentRefs:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- include "jaeger.gatewayApi.parentRefs" (dict "ctx" $ "parentRefs" $httpRouteSpec.parentRefs) | nindent 4 }}
   {{- if $hostnames }}
   hostnames:
-    {{- range $hostname := $hostnames }}
-    - {{ tpl $hostname $ | quote }}
-    {{- end }}
+    {{- include "jaeger.gatewayApi.hostnames" (dict "ctx" $ "hosts" $hostnames) | nindent 4 }}
   {{- end }}
   rules:
     - matches:
@@ -36,6 +39,5 @@ spec:
             type: PathPrefix
             value: "/"
       backendRefs:
-        - name: {{ $name }}
-          port: 16686
+        {{- include "jaeger.gatewayApi.backendRef" (dict "name" $name "port" 16686) | nindent 8 }}
 {{- end }}

@@ -1,6 +1,36 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
+    "CLOUD_PUBLIC_URL": {
+      "default": "",
+      "description": "Cloud passport parameter with the public host of the cloud.\nWhen it is set, the components that have no explicitly specified host are exposed outside the\ncloud with the generated hostname \"<component>-<namespace>.<CLOUD_PUBLIC_URL>\".\nMay also be specified as \"global.CLOUD_PUBLIC_URL\". The CLOUD_PUBLIC_HOST name is deprecated.\n",
+      "title": "CLOUD_PUBLIC_URL",
+      "type": "string"
+    },
+    "CLOUD_PUBLIC_HOST": {
+      "default": "",
+      "description": "Deprecated alias of CLOUD_PUBLIC_URL.\n",
+      "title": "CLOUD_PUBLIC_HOST",
+      "type": "string"
+    },
+    "GATEWAY_SYSTEM_TYPE": {
+      "default": "",
+      "description": "Cloud passport parameter that defines which kind of ingress resources have to be created.\nMay contain several comma-separated values, for example \"legacy-ingress,gateway-api-default\".\nAn empty or unset value is treated as \"legacy-ingress\".\n",
+      "title": "GATEWAY_SYSTEM_TYPE",
+      "type": "string"
+    },
+    "GATEWAY_SYSTEM_NAME": {
+      "default": "default-external-gateway",
+      "description": "Name of the shared external Gateway the created routes are attached to.\nUsed only when the route does not specify its own parentRefs.\n",
+      "title": "GATEWAY_SYSTEM_NAME",
+      "type": "string"
+    },
+    "GATEWAY_SYSTEM_NAMESPACE": {
+      "default": "gateway-system",
+      "description": "Namespace of the shared external Gateway the created routes are attached to.\nUsed only when the route does not specify its own parentRefs.\n",
+      "title": "GATEWAY_SYSTEM_NAMESPACE",
+      "type": "string"
+    },
     "cassandraSchemaJob": {
       "properties": {
         "allowedAuthenticators": {
@@ -29,9 +59,7 @@
             }
           },
           "title": "containerSecurityContext",
-          "type": "object",
-          "deprecated": true,
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n"
+          "type": "object"
         },
         "createKeyspace": {
           "default": true,
@@ -47,10 +75,9 @@
         },
         "enablePreHook": {
           "default": false,
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\nType: boolean\nDefault: false\n",
+          "description": "Enable schema initialization before deployment using Helm pre-hook.\nSince the Jaeger v2.x collector and/or query services can initialize the schema without the Job.\nKeep for compatibility with the previous versions.\n\nType: boolean\nDefault: false\n",
           "title": "enablePreHook",
-          "type": "boolean",
-          "deprecated": true
+          "type": "boolean"
         },
         "existingSecret": {
           "default": "",
@@ -59,45 +86,35 @@
           "type": "string"
         },
         "extraEnv": {
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
-          "items": {},
+          "description": "Cassandra schema job related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
+          "items": {
+          },
           "title": "extraEnv",
-          "type": "array",
-          "deprecated": true
+          "type": "array"
         },
         "host": {
           "description": "This is the host used to connect to Cassandra.\nType: string\nDefault: \"cassandra.cassandra.svc\"\n",
           "title": "host",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
+          "anyOf": [{"type": "string"},{"type": "null"}]
         },
         "image": {
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
+          "description": "The image for cassandra schema job container.\nType: string\nDefault: \"jaegertracing/jaeger-cassandra-schema:1.76.0\"\n",
           "title": "image",
-          "type": "string",
-          "deprecated": true
+          "type": "string"
         },
         "imagePullPolicy": {
           "default": "IfNotPresent",
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
+          "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
           "title": "imagePullPolicy",
-          "type": "string",
-          "deprecated": true
+          "type": "string"
         },
         "imagePullSecrets": {
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
+          "description": "A secret name with secret for pulling images from private registry.\nDefault: []\n",
           "items": {
             "type": "string"
           },
           "title": "imagePullSecrets",
-          "type": "array",
-          "deprecated": true
+          "type": "array"
         },
         "keyspace": {
           "default": "jaeger",
@@ -111,16 +128,14 @@
           "type": "object"
         },
         "mode": {
-          "deprecated": true,
           "default": "test",
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\nType: string\nDefault: test\n",
+          "description": "Parameter specifies the Cassandra mode, `prod` or `test`.\nType: string\nDefault: test\n",
           "title": "mode",
           "type": "string"
         },
         "name": {
-          "deprecated": true,
           "default": "cassandra-schema-job",
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
+          "description": "A name of a microservice to deploy with.\nThis name will be used as name of the microservice job and in labels.\n",
           "title": "name",
           "type": "string"
         },
@@ -142,8 +157,7 @@
           "type": "string"
         },
         "resources": {
-          "deprecated": true,
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
+          "description": "The resources describe compute resource requests and limits for single container.\nRef: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\nType: object\nMandatory: no\n",
           "properties": {
             "limits": {
               "properties": {
@@ -182,7 +196,7 @@
           "type": "object"
         },
         "securityContext": {
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\n",
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
           "properties": {
             "runAsUser": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
@@ -203,7 +217,7 @@
               "description": "The seccomp profile for the container.\n Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Mandatory: no",
               "properties": {
                 "type": {
-                  "type": "string"
+                  "type":"string"
                 }
               },
               "title": "seccompProfile",
@@ -211,8 +225,7 @@
             }
           },
           "title": "securityContext",
-          "type": "object",
-          "deprecated": true
+          "type": "object"
         },
         "tls": {
           "properties": {
@@ -232,8 +245,7 @@
               "type": "string"
             },
             "cqlshrc": {
-              "deprecated": true,
-              "description": "Deprecated: no longer used. Previously configured cqlsh SSL settings for the removed Cassandra schema pre-hook Job. Kept for backward compatibility with existing values files.\n",
+              "description": "Allow to override path to certificates which cqlsh in cassandraSchemaJob job will use to connect to Cassandra.\nMandatory field when using SSL connection to Cassandra. Ignored if the existingSecret is specified.\nType: multiline string\nDefault: see below\n",
               "title": "cqlshrc",
               "type": "string"
             },
@@ -275,9 +287,8 @@
           "type": "object"
         },
         "ttlSecondsAfterFinished": {
-          "deprecated": true,
           "default": 0,
-          "description": "Deprecated: no longer used. Cassandra schema is initialized by collector/query on startup (Jaeger v2.x). Kept for backward compatibility with existing values files.\nType: int\nDefault: 0\n",
+          "description": "Allow to set time to life (TTL) for TTL controller. TTL controller cleans up the Job, it will delete the Job\ncascadingly, i.e. delete its dependent objects, such as Pods, together with the Job.\nUseful to set a value other than 0 if you want to see job logs.\nType: int\nDefault: 0\n",
           "title": "ttlSecondsAfterFinished",
           "type": "integer"
         },
@@ -294,26 +305,7 @@
     "collector": {
       "properties": {
         "affinity": {
-          "default": {
-            "podAntiAffinity": {
-              "requiredDuringSchedulingIgnoredDuringExecution": [
-                {
-                  "labelSelector": {
-                    "matchExpressions": [
-                      {
-                        "key": "app.kubernetes.io/name",
-                        "operator": "In",
-                        "values": [
-                          "jaeger-collector"
-                        ]
-                      }
-                    ]
-                  },
-                  "topologyKey": "kubernetes.io/hostname"
-                }
-              ]
-            }
-          },
+          "default": {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [{"labelSelector": {"matchExpressions": [{"key": "app.kubernetes.io/name", "operator": "In", "values": ["jaeger-collector"]}]}, "topologyKey": "kubernetes.io/hostname"}]}},
           "description": "The pod's scheduling constraints\nMore info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core\nType: object\nMandatory: no\nDefault: see below\n",
           "title": "affinity",
           "type": "object"
@@ -325,7 +317,8 @@
         },
         "cmdlineParams": {
           "description": "Collector related cmd line opts to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {},
+          "items": {
+          },
           "title": "cmdlineParams",
           "type": "array"
         },
@@ -473,7 +466,8 @@
         },
         "extraEnv": {
           "description": "Collector related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {},
+          "items": {
+          },
           "title": "extraEnv",
           "type": "array"
         },
@@ -490,7 +484,8 @@
         },
         "imagePullSecrets": {
           "description": "A secret with secret for pulling images from private registry.\nDefault: []\n",
-          "items": {},
+          "items": {
+          },
           "title": "imagePullSecrets",
           "type": "array"
         },
@@ -499,20 +494,7 @@
             "grpc": {
               "properties": {
                 "defaultPaths": {
-                  "default": [
-                    {
-                      "prefix": "/otel/grpc",
-                      "service": {
-                        "port": 4317
-                      }
-                    },
-                    {
-                      "prefix": "/thrift/grpc",
-                      "service": {
-                        "port": 14250
-                      }
-                    }
-                  ],
+                  "default": [{"prefix": "/otel/grpc","service":{"port": 4317}},{"prefix": "/thrift/grpc","service":{"port": 14250}}],
                   "items": {
                     "type": "object",
                     "properties": {
@@ -536,14 +518,21 @@
                   "type": "array"
                 },
                 "hosts": {
-                  "items": {},
+                  "items": {
+                  },
                   "title": "hosts",
                   "type": "array"
                 },
-                "install": {
+                "addGatewayApiAnnotation": {
                   "default": false,
-                  "title": "install",
+                  "description": "Add the \"gateway-api-converter.netcracker.com/ignore\" annotation that prevents the Gateway API converter\nfrom processing this Ingress.\nThe annotation is added automatically when GATEWAY_SYSTEM_TYPE contains \"gateway-api-default\".\nType: boolean\nDefault: false\n",
+                  "title": "addGatewayApiAnnotation",
                   "type": "boolean"
+                },
+                "install": {
+                  "description": "Allow creating the Ingress. When it is not specified, the Ingress is created if a host is\nresolved and GATEWAY_SYSTEM_TYPE allows creating Ingresses.\n",
+                  "title": "install",
+                  "type": ["boolean", "null"]
                 }
               },
               "title": "grpc",
@@ -552,38 +541,7 @@
             "http": {
               "properties": {
                 "defaultPaths": {
-                  "default": [
-                    {
-                      "prefix": "/",
-                      "service": {
-                        "port": 13133
-                      }
-                    },
-                    {
-                      "prefix": "/zipkin",
-                      "service": {
-                        "port": 9411
-                      }
-                    },
-                    {
-                      "prefix": "/otlp/http",
-                      "service": {
-                        "port": 4318
-                      }
-                    },
-                    {
-                      "prefix": "/thrift/tchannel",
-                      "service": {
-                        "port": 14250
-                      }
-                    },
-                    {
-                      "prefix": "/thrift/http",
-                      "service": {
-                        "port": 14268
-                      }
-                    }
-                  ],
+                  "default":[{"prefix":"/","service":{"port":13133}},{"prefix":"/zipkin","service":{"port":9411}},{"prefix":"/otlp/http","service":{"port":4318}} ,{"prefix":"/thrift/tchannel","service":{"port":14250}},{"prefix":"/thrift/http","service":{"port":14268}}],
                   "items": {
                     "type": "object",
                     "properties": {
@@ -609,16 +567,32 @@
                 "hosts": {
                   "description": "A list of FQDN hosts to access jaeger outside the cloud.",
                   "items": {
-                    "type": "string"
+                    "type": "object",
+                    "properties": {
+                      "host": {
+                        "type": "string"
+                      },
+                      "paths": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
                   },
                   "title": "hosts",
                   "type": "array"
                 },
-                "install": {
+                "addGatewayApiAnnotation": {
                   "default": false,
-                  "description": "Enables creation of ingress.",
-                  "title": "install",
+                  "description": "Add the \"gateway-api-converter.netcracker.com/ignore\" annotation that prevents the Gateway API converter\nfrom processing this Ingress.\nThe annotation is added automatically when GATEWAY_SYSTEM_TYPE contains \"gateway-api-default\".\nType: boolean\nDefault: false\n",
+                  "title": "addGatewayApiAnnotation",
                   "type": "boolean"
+                },
+                "install": {
+                  "description": "Allow creating the Ingress. When it is not specified, the Ingress is created if a host is\nresolved and GATEWAY_SYSTEM_TYPE allows creating Ingresses.\n",
+                  "title": "install",
+                  "type": ["boolean", "null"]
                 }
               },
               "title": "http",
@@ -632,238 +606,223 @@
           "title": "ingress",
           "type": "object"
         },
-        "gatewayApi": {
-          "description": "Gateway API configuration for collector routes.\nUse this section to configure HTTPRoute and GRPCRoute resources.\n",
+        "httpRoute": {
+          "description": "Configuration for collector HTTPRoute resource.\n",
           "properties": {
-            "httpRoute": {
-              "description": "Configuration for collector HTTPRoute resource.\n",
-              "properties": {
-                "install": {
-                  "default": false,
-                  "description": "Enable creation of HTTPRoute for collector HTTP endpoints.\n",
-                  "title": "install",
-                  "type": "boolean"
-                },
-                "labels": {
-                  "description": "Additional labels for HTTPRoute metadata.\n",
-                  "title": "labels",
-                  "type": "object"
-                },
-                "annotations": {
-                  "description": "Additional annotations for HTTPRoute metadata.\n",
-                  "title": "annotations",
-                  "type": "object"
-                },
-                "parentRefs": {
-                  "description": "List of parent Gateway references to attach the route to.\n",
-                  "items": {
-                    "description": "Reference to a parent Gateway resource.\n",
-                    "properties": {
-                      "name": {
-                        "description": "Name of the parent Gateway resource.\n",
-                        "type": "string"
-                      },
-                      "namespace": {
-                        "description": "Namespace of the parent Gateway resource.\n",
-                        "type": "string"
-                      },
-                      "sectionName": {
-                        "description": "Optional listener name on the parent Gateway.\n",
-                        "type": "string"
-                      },
-                      "kind": {
-                        "description": "Kind of the parent resource, usually Gateway.\n",
-                        "type": "string"
-                      },
-                      "group": {
-                        "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "title": "parentRefs",
-                  "type": "array"
-                },
-                "hosts": {
-                  "description": "List of hostnames for the HTTPRoute.\n",
-                  "items": {
-                    "type": "string"
-                  },
-                  "title": "hosts",
-                  "type": "array"
-                },
-                "defaultPaths": {
-                  "description": "Default HTTP path rules rendered into HTTPRoute.spec.rules.\n",
-                  "items": {
-                    "properties": {
-                      "prefix": {
-                        "type": "string"
-                      },
-                      "rewritePrefix": {
-                        "type": "string"
-                      },
-                      "service": {
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          },
-                          "port": {
-                            "type": "integer"
-                          }
-                        },
-                        "type": "object"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "title": "defaultPaths",
-                  "type": "array"
-                }
-              },
-              "title": "httpRoute",
+            "install": {
+              "description": "Allow creating the route even if GATEWAY_SYSTEM_TYPE does not contain \"gateway-api-default\".\nWhen it is not specified, the route is created if GATEWAY_SYSTEM_TYPE contains\n\"gateway-api-default\" and a hostname is resolved.\n",
+              "title": "install",
+              "type": ["boolean", "null"]
+            },
+            "labels": {
+              "description": "Additional labels for HTTPRoute metadata.\n",
+              "title": "labels",
               "type": "object"
             },
-            "grpcRoute": {
-              "description": "Configuration for collector gRPC Gateway API route.\nDepending on kind, the chart renders either HTTPRoute or GRPCRoute.\n",
-              "properties": {
-                "install": {
-                  "default": false,
-                  "description": "Enable creation of Gateway API route for collector gRPC endpoint.\n",
-                  "title": "install",
-                  "type": "boolean"
-                },
-                "kind": {
-                  "default": "HTTPRoute",
-                  "enum": [
-                    "HTTPRoute",
-                    "GRPCRoute"
-                  ],
-                  "description": "Gateway API resource kind to render for gRPC traffic.\n",
-                  "title": "kind",
-                  "type": "string"
-                },
-                "labels": {
-                  "description": "Additional labels for route metadata.\n",
-                  "title": "labels",
-                  "type": "object"
-                },
-                "annotations": {
-                  "description": "Additional annotations for route metadata.\n",
-                  "title": "annotations",
-                  "type": "object"
-                },
-                "parentRefs": {
-                  "description": "List of parent Gateway references to attach the route to.\n",
-                  "items": {
-                    "description": "Reference to a parent Gateway resource.\n",
-                    "properties": {
-                      "name": {
-                        "description": "Name of the parent Gateway resource.\n",
-                        "type": "string"
-                      },
-                      "namespace": {
-                        "description": "Namespace of the parent Gateway resource.\n",
-                        "type": "string"
-                      },
-                      "sectionName": {
-                        "description": "Optional listener name on the parent Gateway.\n",
-                        "type": "string"
-                      },
-                      "kind": {
-                        "description": "Kind of the parent resource, usually Gateway.\n",
-                        "type": "string"
-                      },
-                      "group": {
-                        "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "title": "parentRefs",
-                  "type": "array"
-                },
-                "hosts": {
-                  "description": "List of hostnames for the route.\n",
-                  "items": {
+            "annotations": {
+              "description": "Additional annotations for HTTPRoute metadata.\n",
+              "title": "annotations",
+              "type": "object"
+            },
+            "parentRefs": {
+              "description": "List of parent Gateway references to attach the route to.\n",
+              "items": {
+                "description": "Reference to a parent Gateway resource.\n",
+                "properties": {
+                  "name": {
+                    "description": "Name of the parent Gateway resource.\n",
                     "type": "string"
                   },
-                  "title": "hosts",
-                  "type": "array"
-                },
-                "defaultPaths": {
-                  "description": "Default path rules used when kind is HTTPRoute.\n",
-                  "items": {
-                    "description": "Single HTTPRoute path rule.\n",
-                    "properties": {
-                      "prefix": {
-                        "description": "Path prefix to match.\n",
-                        "type": "string"
-                      },
-                      "service": {
-                        "description": "Backend service configuration for the matched path.\n",
-                        "properties": {
-                          "name": {
-                            "description": "Optional backend service name. If omitted, the chart uses the default collector service.\n",
-                            "type": "string"
-                          },
-                          "port": {
-                            "description": "Backend service port.\n",
-                            "type": "integer"
-                          }
-                        },
-                        "type": "object"
-                      }
-                    },
-                    "type": "object"
+                  "namespace": {
+                    "description": "Namespace of the parent Gateway resource.\n",
+                    "type": "string"
                   },
-                  "title": "defaultPaths",
-                  "type": "array"
-                },
-                "rules": {
-                  "description": "Explicit GRPCRoute rules used when kind is GRPCRoute.\n",
-                  "items": {
-                    "description": "Single GRPCRoute rule.\n",
-                    "properties": {
-                      "matches": {
-                        "description": "List of gRPC match conditions for the rule.\n",
-                        "items": {
-                          "description": "Single gRPC match condition.\n",
-                          "type": "object"
-                        },
-                        "type": "array"
-                      },
-                      "backendRefs": {
-                        "description": "List of backend references for the matched gRPC traffic.\n",
-                        "items": {
-                          "description": "Single backend reference.\n",
-                          "properties": {
-                            "name": {
-                              "description": "Backend service name.\n",
-                              "type": "string"
-                            },
-                            "port": {
-                              "description": "Backend service port.\n",
-                              "type": "integer"
-                            }
-                          },
-                          "type": "object"
-                        },
-                        "type": "array"
-                      }
-                    },
-                    "type": "object"
+                  "sectionName": {
+                    "description": "Optional listener name on the parent Gateway.\n",
+                    "type": "string"
                   },
-                  "title": "rules",
-                  "type": "array"
-                }
+                  "kind": {
+                    "description": "Kind of the parent resource, usually Gateway.\n",
+                    "type": "string"
+                  },
+                  "group": {
+                    "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
               },
-              "title": "grpcRoute",
-              "type": "object"
+              "title": "parentRefs",
+              "type": "array"
+            },
+            "hosts": {
+              "description": "List of hostnames for the HTTPRoute.\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "hosts",
+              "type": "array"
+            },
+            "defaultPaths": {
+              "description": "Default HTTP path rules rendered into HTTPRoute.spec.rules.\n",
+              "items": {
+                "properties": {
+                  "prefix": { "type": "string" },
+                  "rewritePrefix": { "type": "string" },
+                  "service": {
+                    "properties": {
+                      "name": { "type": "string" },
+                      "port": { "type": "integer" },
+                      "weight": { "type": "integer" }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "title": "defaultPaths",
+              "type": "array"
             }
           },
-          "title": "gatewayApi",
+          "title": "httpRoute",
+          "type": "object"
+        },
+        "grpcRoute": {
+          "description": "Configuration for collector gRPC Gateway API route.\nDepending on kind, the chart renders either HTTPRoute or GRPCRoute.\n",
+          "properties": {
+            "install": {
+              "description": "Allow creating the route even if GATEWAY_SYSTEM_TYPE does not contain \"gateway-api-default\".\nWhen it is not specified, the route is created if GATEWAY_SYSTEM_TYPE contains\n\"gateway-api-default\" and a hostname is resolved.\n",
+              "title": "install",
+              "type": ["boolean", "null"]
+            },
+            "kind": {
+              "default": "HTTPRoute",
+              "enum": ["HTTPRoute", "GRPCRoute"],
+              "description": "Gateway API resource kind to render for gRPC traffic.\n",
+              "title": "kind",
+              "type": "string"
+            },
+            "labels": {
+              "description": "Additional labels for route metadata.\n",
+              "title": "labels",
+              "type": "object"
+            },
+            "annotations": {
+              "description": "Additional annotations for route metadata.\n",
+              "title": "annotations",
+              "type": "object"
+            },
+            "parentRefs": {
+              "description": "List of parent Gateway references to attach the route to.\n",
+              "items": {
+                "description": "Reference to a parent Gateway resource.\n",
+                "properties": {
+                  "name": {
+                    "description": "Name of the parent Gateway resource.\n",
+                    "type": "string"
+                  },
+                  "namespace": {
+                    "description": "Namespace of the parent Gateway resource.\n",
+                    "type": "string"
+                  },
+                  "sectionName": {
+                    "description": "Optional listener name on the parent Gateway.\n",
+                    "type": "string"
+                  },
+                  "kind": {
+                    "description": "Kind of the parent resource, usually Gateway.\n",
+                    "type": "string"
+                  },
+                  "group": {
+                    "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "title": "parentRefs",
+              "type": "array"
+            },
+            "hosts": {
+              "description": "List of hostnames for the route.\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "hosts",
+              "type": "array"
+            },
+            "defaultPaths": {
+              "description": "Default path rules used when kind is HTTPRoute.\n",
+              "items": {
+                "description": "Single HTTPRoute path rule.\n",
+                "properties": {
+                  "prefix": {
+                    "description": "Path prefix to match.\n",
+                    "type": "string"
+                  },
+                  "service": {
+                    "description": "Backend service configuration for the matched path.\n",
+                    "properties": {
+                      "name": {
+                        "description": "Optional backend service name. If omitted, the chart uses the default collector service.\n",
+                        "type": "string"
+                      },
+                      "port": {
+                        "description": "Backend service port.\n",
+                        "type": "integer"
+                      },
+                      "weight": {
+                        "description": "Weight of the backend in the route rule. Defaults to 1.\n",
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "title": "defaultPaths",
+              "type": "array"
+            },
+            "rules": {
+              "description": "Explicit GRPCRoute rules used when kind is GRPCRoute.\n",
+              "items": {
+                "description": "Single GRPCRoute rule.\n",
+                "properties": {
+                  "matches": {
+                    "description": "List of gRPC match conditions for the rule.\n",
+                    "items": {
+                      "description": "Single gRPC match condition.\n",
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "backendRefs": {
+                    "description": "List of backend references for the matched gRPC traffic.\n",
+                    "items": {
+                      "description": "Single backend reference.\n",
+                      "properties": {
+                        "name": {
+                          "description": "Backend service name.\n",
+                          "type": "string"
+                        },
+                        "port": {
+                          "description": "Backend service port.\n",
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "title": "rules",
+              "type": "array"
+            }
+          },
+          "title": "grpcRoute",
           "type": "object"
         },
         "install": {
@@ -1139,7 +1098,7 @@
         "tlsConfig": {
           "description": "TLS configuration for collector.\n",
           "properties": {
-            "createSecret": {
+            "createSecret":{
               "description": "Use createSecret section to create secret with already known content of TLS certificates.\n Do not use createSecret if you use generateCerts\n Will be ignored if existingSecret is already specified.",
               "properties": {
                 "ca": {
@@ -1463,8 +1422,8 @@
                   "description": "Private key for Elasticsearch TLS connection.\nMandatory field when using SSL connection to OpenSearch.\nIgnored if the existingSecret is specified.\nType: string\nDefault: \"\"\n",
                   "title": "key",
                   "type": "string"
-                }
-              },
+              }
+            },
               "title": "tls",
               "type": "object"
             },
@@ -1492,7 +1451,8 @@
         },
         "extraEnv": {
           "description": "Elasticsearch related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {},
+          "items": {
+          },
           "title": "extraEnv",
           "type": "array"
         },
@@ -1510,7 +1470,7 @@
               "type": "string"
             },
             "containerSecurityContext": {
-              "properties": {
+              "properties":{
                 "allowPrivilegeEscalation": {
                   "default": false,
                   "description": "Controls whether a process can gain more privileges than its parent process.\nThis bool directly controls whether the 'no_new_privs' flag gets set on the container process.\nType: bool\nMandatory: no",
@@ -1528,19 +1488,22 @@
             },
             "extraConfigmapMounts": {
               "description": "Specify extra configMap mounts for indexCleaner.\nType: array\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "extraConfigmapMounts",
               "type": "array"
             },
             "extraEnv": {
               "description": "indexCleaner related extra env vars to be configured on the concerned components.\nType: array\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "extraEnv",
               "type": "array"
             },
             "extraSecretMounts": {
               "description": "Specify extra secret mounts for indexCleaner.\nType: array\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "extraSecretMounts",
               "type": "array"
             },
@@ -1558,17 +1521,14 @@
             "imagePullPolicy": {
               "default": "IfNotPresent",
               "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available values : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: IfNotPresent\n",
-              "enum": [
-                "IfNotPresent",
-                "Always",
-                "Never"
-              ],
+              "enum": ["IfNotPresent", "Always", "Never"],
               "title": "imagePullPolicy",
               "type": "string"
             },
             "imagePullSecrets": {
               "description": "The secrets to be used for pulling the image from private docker registry.\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "imagePullSecrets",
               "type": "array"
             },
@@ -1737,19 +1697,22 @@
             },
             "extraConfigmapMounts": {
               "description": "Specify extra configMap mounts for lookback.\nType: object\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "extraConfigmapMounts",
               "type": "array"
             },
             "extraEnv": {
               "description": "lookback related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "extraEnv",
               "type": "array"
             },
             "extraSecretMounts": {
               "description": "Specify extra secret mounts for lookback.\nType: object\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "extraSecretMounts",
               "type": "array"
             },
@@ -1767,7 +1730,8 @@
             },
             "imagePullSecrets": {
               "description": "A secret name with secret for pulling images from private registry.\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "imagePullSecrets",
               "type": "array"
             },
@@ -1867,11 +1831,7 @@
                     "type": {
                       "description": "Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'",
                       "type": "string",
-                      "enum": [
-                        "RuntimeDefault",
-                        "Unconfined",
-                        "Localhost"
-                      ]
+                      "enum": ["RuntimeDefault", "Unconfined", "Localhost"]
                     }
                   },
                   "title": "seccompProfile",
@@ -1935,19 +1895,22 @@
             },
             "extraConfigmapMounts": {
               "description": "Specify extra configMap mounts for rollover.\nType: object\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "extraConfigmapMounts",
               "type": "array"
             },
             "extraEnv": {
               "description": "rollover related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "extraEnv",
               "type": "array"
             },
             "extraSecretMounts": {
               "description": "Specify extra secret mounts for rollover.\nType: object\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "extraSecretMounts",
               "type": "array"
             },
@@ -1970,7 +1933,8 @@
             },
             "imagePullSecrets": {
               "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
-              "items": {},
+              "items": {
+              },
               "title": "imagePullSecrets",
               "type": "array"
             },
@@ -1978,7 +1942,8 @@
               "properties": {
                 "extraEnv": {
                   "description": "rollover init related extra env vars to be configured on the concerned components.\nType: array\nDefault: []\n",
-                  "items": {},
+                  "items": {
+                  },
                   "title": "extraEnv",
                   "type": "array"
                 },
@@ -2170,7 +2135,8 @@
         },
         "imagePullSecrets": {
           "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
-          "items": {},
+          "items": {
+          },
           "title": "imagePullSecrets",
           "type": "array"
         },
@@ -2187,11 +2153,16 @@
               "title": "host",
               "type": "string"
             },
-            "install": {
+            "addGatewayApiAnnotation": {
               "default": false,
-              "description": "Allow disabling create ingress.\nType: boolean\nDefault: false\n",
-              "title": "install",
+              "description": "Add the \"gateway-api-converter.netcracker.com/ignore\" annotation that prevents the Gateway API converter\nfrom processing this Ingress.\nThe annotation is added automatically when GATEWAY_SYSTEM_TYPE contains \"gateway-api-default\".\nType: boolean\nDefault: false\n",
+              "title": "addGatewayApiAnnotation",
               "type": "boolean"
+            },
+            "install": {
+              "description": "Allow creating the Ingress. When it is not specified, the Ingress is created if a host is\nresolved and GATEWAY_SYSTEM_TYPE allows creating Ingresses.\n",
+              "title": "install",
+              "type": ["boolean", "null"]
             },
             "tls": {
               "description": "Configuration for ingress TLS. More info: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls\n Type: object\nDefault: {}\n",
@@ -2206,73 +2177,65 @@
           "title": "ingress",
           "type": "object"
         },
-        "gatewayApi": {
-          "description": "Gateway API configuration for hotrod routes.\n",
+        "httpRoute": {
+          "description": "Configuration for hotrod HTTPRoute resource.\n",
           "properties": {
-            "httpRoute": {
-              "description": "Configuration for hotrod HTTPRoute resource.\n",
-              "properties": {
-                "install": {
-                  "default": false,
-                  "description": "Enable creation of HTTPRoute for hotrod.\n",
-                  "title": "install",
-                  "type": "boolean"
-                },
-                "labels": {
-                  "description": "Additional labels for HTTPRoute metadata.\n",
-                  "title": "labels",
-                  "type": "object"
-                },
-                "annotations": {
-                  "description": "Additional annotations for HTTPRoute metadata.\n",
-                  "title": "annotations",
-                  "type": "object"
-                },
-                "parentRefs": {
-                  "description": "List of parent Gateway references to attach the route to.\n",
-                  "items": {
-                    "description": "Reference to a parent Gateway resource.\n",
-                    "properties": {
-                      "name": {
-                        "description": "Name of the parent Gateway resource.\n",
-                        "type": "string"
-                      },
-                      "namespace": {
-                        "description": "Namespace of the parent Gateway resource.\n",
-                        "type": "string"
-                      },
-                      "sectionName": {
-                        "description": "Optional listener name on the parent Gateway.\n",
-                        "type": "string"
-                      },
-                      "kind": {
-                        "description": "Kind of the parent resource, usually Gateway.\n",
-                        "type": "string"
-                      },
-                      "group": {
-                        "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "title": "parentRefs",
-                  "type": "array"
-                },
-                "hosts": {
-                  "description": "List of hostnames for the HTTPRoute.\n",
-                  "items": {
+            "install": {
+              "description": "Allow creating the route even if GATEWAY_SYSTEM_TYPE does not contain \"gateway-api-default\".\nWhen it is not specified, the route is created if GATEWAY_SYSTEM_TYPE contains\n\"gateway-api-default\" and a hostname is resolved.\n",
+              "title": "install",
+              "type": ["boolean", "null"]
+            },
+            "labels": {
+              "description": "Additional labels for HTTPRoute metadata.\n",
+              "title": "labels",
+              "type": "object"
+            },
+            "annotations": {
+              "description": "Additional annotations for HTTPRoute metadata.\n",
+              "title": "annotations",
+              "type": "object"
+            },
+            "parentRefs": {
+              "description": "List of parent Gateway references to attach the route to.\n",
+              "items": {
+                "description": "Reference to a parent Gateway resource.\n",
+                "properties": {
+                  "name": {
+                    "description": "Name of the parent Gateway resource.\n",
                     "type": "string"
                   },
-                  "title": "hosts",
-                  "type": "array"
-                }
+                  "namespace": {
+                    "description": "Namespace of the parent Gateway resource.\n",
+                    "type": "string"
+                  },
+                  "sectionName": {
+                    "description": "Optional listener name on the parent Gateway.\n",
+                    "type": "string"
+                  },
+                  "kind": {
+                    "description": "Kind of the parent resource, usually Gateway.\n",
+                    "type": "string"
+                  },
+                  "group": {
+                    "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
               },
-              "title": "httpRoute",
-              "type": "object"
+              "title": "parentRefs",
+              "type": "array"
+            },
+            "hosts": {
+              "description": "List of hostnames for the HTTPRoute.\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "hosts",
+              "type": "array"
             }
           },
-          "title": "gatewayApi",
+          "title": "httpRoute",
           "type": "object"
         },
         "install": {
@@ -2570,7 +2533,7 @@
         "statusWriting": {
           "properties": {
             "customResourcePath": {
-              "description": "Defines a path where test results will be stored. The path should be in format: '<apiVersion>/{namespace_name}/{resource_type}/{deployment_name}'. Can be extracted from the selflink of the resource.",
+              "description": "Defines a path where test results will be stored. The path should be in format: '<apiVersion>/{namespace_name}/{resource_type}/{deployment_name}'. Can be extracted from the selflink of the resource." ,
               "title": "customResourcePath",
               "type": "string"
             },
@@ -2657,11 +2620,8 @@
           "description": "Settings for basic authentication.\n",
           "properties": {
             "users": {
-              "default": [
-                "YWRtaW46YWRtaW4=",
-                "dGVzdDp0ZXN0"
-              ],
-              "description": "List of login:password in base64.\nFor example\n  admin:admin -> YWRtaW46YWRtaW4=\n  test:test -> dGVzdDp0ZXN0\nDefault: no\n",
+              "default": ["YWRtaW46YWRtaW4=", "dGVzdDp0ZXN0"],
+              "description": "List of login:password in base64.\nFor example\n  admin:admin -\u003e YWRtaW46YWRtaW4=\n  test:test -\u003e dGVzdDp0ZXN0\nDefault: no\n",
               "items": {
                 "type": "string"
               },
@@ -2689,7 +2649,7 @@
           "title": "containerSecurityContext",
           "type": "object"
         },
-        "image": {
+        "image":{
           "default": "envoyproxy/envoy:v1.35.2",
           "description": "The image of envoy proxy container.\nType: string\nDefault: \"envoyproxy/envoy:v1.35.2\"\n",
           "title": "image",
@@ -2791,10 +2751,7 @@
         "type": {
           "default": "basic",
           "description": "Authentication type to be used\nAvailable values - \"basic\" and \"oauth2\"\nType: string\nMandatory: no\nDefault: \"basic\"\n",
-          "enum": [
-            "basic",
-            "oauth2"
-          ],
+          "enum": ["basic", "oauth2"],
           "title": "type",
           "type": "string"
         }
@@ -2805,26 +2762,7 @@
     "query": {
       "properties": {
         "affinity": {
-          "default": {
-            "podAntiAffinity": {
-              "requiredDuringSchedulingIgnoredDuringExecution": [
-                {
-                  "labelSelector": {
-                    "matchExpressions": [
-                      {
-                        "key": "app.kubernetes.io/name",
-                        "operator": "In",
-                        "values": [
-                          "jaeger-query"
-                        ]
-                      }
-                    ]
-                  },
-                  "topologyKey": "kubernetes.io/hostname"
-                }
-              ]
-            }
-          },
+          "default": {"podAntiAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": [{"labelSelector": {"matchExpressions": [{"key": "app.kubernetes.io/name", "operator": "In", "values": ["jaeger-query"]}]}, "topologyKey": "kubernetes.io/hostname"}]}},
           "description": "If specified, the pod's scheduling constraints\nMore info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core\nType: object\nMandatory: no\nDefault: see below\n",
           "title": "affinity",
           "type": "object"
@@ -2842,20 +2780,13 @@
         },
         "cmdlineParams": {
           "description": "Query related cmd line opts to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {},
+          "items": {
+          },
           "title": "cmdlineParams",
           "type": "array"
         },
         "config": {
-          "default": {
-            "service": {
-              "telemetry": {
-                "logs": {
-                  "level": "info"
-                }
-              }
-            }
-          },
+          "default":{"service":{"telemetry":{"logs":{"level":"info"}}}},
           "description": "Jaeger query config, contains only several options to configure, other part of parameters take from\ncassandraSchemaJob and elasticsearch sections",
           "title": "config",
           "type": "object"
@@ -2876,14 +2807,15 @@
           "title": "containerSecurityContext",
           "type": "object"
         },
-        "customConfig": {
+        "customConfig":{
           "description": "Custom config for the query.\n Allows to override the default config and specify a full custom config for the query",
           "type": "object",
           "title": "customConfig"
         },
         "extraEnv": {
           "description": "Query related extra env vars to be configured on the concerned components.\nType: object\nDefault: []\n",
-          "items": {},
+          "items": {
+          },
           "title": "extraEnv",
           "type": "array"
         },
@@ -2895,7 +2827,8 @@
         },
         "imagePullSecrets": {
           "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
-          "items": {},
+          "items": {
+          },
           "title": "imagePullSecrets",
           "type": "array"
         },
@@ -2907,11 +2840,16 @@
               "title": "host",
               "type": "string"
             },
-            "install": {
+            "addGatewayApiAnnotation": {
               "default": false,
-              "description": "Allow disabling create ingress.\nType: boolean\nDefault: false\n",
-              "title": "install",
+              "description": "Add the \"gateway-api-converter.netcracker.com/ignore\" annotation that prevents the Gateway API converter\nfrom processing this Ingress.\nThe annotation is added automatically when GATEWAY_SYSTEM_TYPE contains \"gateway-api-default\".\nType: boolean\nDefault: false\n",
+              "title": "addGatewayApiAnnotation",
               "type": "boolean"
+            },
+            "install": {
+              "description": "Allow creating the Ingress. When it is not specified, the Ingress is created if a host is\nresolved and GATEWAY_SYSTEM_TYPE allows creating Ingresses.\n",
+              "title": "install",
+              "type": ["boolean", "null"]
             },
             "tls": {
               "description": "Configuration for ingress TLS.\nType: object\nDefault: {}\n",
@@ -2922,73 +2860,65 @@
           "title": "ingress",
           "type": "object"
         },
-        "gatewayApi": {
-          "description": "Gateway API configuration for query routes.\n",
+        "httpRoute": {
+          "description": "Configuration for query HTTPRoute resource.\n",
           "properties": {
-            "httpRoute": {
-              "description": "Configuration for query HTTPRoute resource.\n",
-              "properties": {
-                "install": {
-                  "default": false,
-                  "description": "Enable creation of HTTPRoute for query service.\n",
-                  "title": "install",
-                  "type": "boolean"
-                },
-                "labels": {
-                  "description": "Additional labels for HTTPRoute metadata.\n",
-                  "title": "labels",
-                  "type": "object"
-                },
-                "annotations": {
-                  "description": "Additional annotations for HTTPRoute metadata.\n",
-                  "title": "annotations",
-                  "type": "object"
-                },
-                "parentRefs": {
-                  "description": "List of parent Gateway references to attach the route to.\n",
-                  "items": {
-                    "description": "Reference to a parent Gateway resource.\n",
-                    "properties": {
-                      "name": {
-                        "description": "Name of the parent Gateway resource.\n",
-                        "type": "string"
-                      },
-                      "namespace": {
-                        "description": "Namespace of the parent Gateway resource.\n",
-                        "type": "string"
-                      },
-                      "sectionName": {
-                        "description": "Optional listener name on the parent Gateway.\n",
-                        "type": "string"
-                      },
-                      "kind": {
-                        "description": "Kind of the parent resource, usually Gateway.\n",
-                        "type": "string"
-                      },
-                      "group": {
-                        "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "title": "parentRefs",
-                  "type": "array"
-                },
-                "hosts": {
-                  "description": "List of hostnames for the HTTPRoute.\n",
-                  "items": {
+            "install": {
+              "description": "Allow creating the HTTPRoute even if GATEWAY_SYSTEM_TYPE does not contain \"gateway-api-default\".\nWhen it is not specified, the HTTPRoute is created if GATEWAY_SYSTEM_TYPE contains\n\"gateway-api-default\" and a hostname is resolved.\n",
+              "title": "install",
+              "type": ["boolean", "null"]
+            },
+            "labels": {
+              "description": "Additional labels for HTTPRoute metadata.\n",
+              "title": "labels",
+              "type": "object"
+            },
+            "annotations": {
+              "description": "Additional annotations for HTTPRoute metadata.\n",
+              "title": "annotations",
+              "type": "object"
+            },
+            "parentRefs": {
+              "description": "List of parent Gateway references to attach the route to.\n",
+              "items": {
+                "description": "Reference to a parent Gateway resource.\n",
+                "properties": {
+                  "name": {
+                    "description": "Name of the parent Gateway resource.\n",
                     "type": "string"
                   },
-                  "title": "hosts",
-                  "type": "array"
-                }
+                  "namespace": {
+                    "description": "Namespace of the parent Gateway resource.\n",
+                    "type": "string"
+                  },
+                  "sectionName": {
+                    "description": "Optional listener name on the parent Gateway.\n",
+                    "type": "string"
+                  },
+                  "kind": {
+                    "description": "Kind of the parent resource, usually Gateway.\n",
+                    "type": "string"
+                  },
+                  "group": {
+                    "description": "API group of the parent resource, usually gateway.networking.k8s.io.\n",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
               },
-              "title": "httpRoute",
-              "type": "object"
+              "title": "parentRefs",
+              "type": "array"
+            },
+            "hosts": {
+              "description": "List of hostnames for the HTTPRoute.\n",
+              "items": {
+                "type": "string"
+              },
+              "title": "hosts",
+              "type": "array"
             }
           },
-          "title": "gatewayApi",
+          "title": "httpRoute",
           "type": "object"
         },
         "install": {
@@ -3367,7 +3297,8 @@
         },
         "imagePullSecrets": {
           "description": "Only pods which provide own keys can access the private registry.\nDefault: []\n",
-          "items": {},
+          "items": {
+          },
           "title": "imagePullSecrets",
           "type": "array"
         },

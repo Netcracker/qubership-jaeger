@@ -3,6 +3,34 @@
 # Declare variables to be passed into your templates.
 # yamllint disable rule:comments-indentation
 
+# Cloud passport parameter that defines which kind of ingress resources have to be created.
+# May contain several comma-separated values, for example "legacy-ingress,gateway-api-default":
+#   * legacy-ingress      - create Ingress resources
+#   * gateway-api-default - create Gateway API resources (HTTPRoute/GRPCRoute) and add the
+#                           "gateway-api-converter.netcracker.com/ignore" annotation to Ingresses
+# An empty or unset value is treated as "legacy-ingress".
+# Type: string
+# Mandatory: no
+# Default: ""
+#
+# GATEWAY_SYSTEM_TYPE: ""
+
+# Name of the shared external Gateway the created routes are attached to.
+# Used only when the route does not specify its own "httpRoute/grpcRoute.parentRefs".
+# Type: string
+# Mandatory: no
+# Default: "default-external-gateway"
+#
+# GATEWAY_SYSTEM_NAME: "default-external-gateway"
+
+# Namespace of the shared external Gateway the created routes are attached to.
+# Used only when the route does not specify its own "httpRoute/grpcRoute.parentRefs".
+# Type: string
+# Mandatory: no
+# Default: "gateway-system"
+#
+# GATEWAY_SYSTEM_NAMESPACE: "gateway-system"
+
 jaeger:
   # Name of jaeger service.
   # Type: string
@@ -1644,9 +1672,18 @@ collector:
 
   ingress:
     http:
-      install: false
+      # Allow creating the Ingress for the HTTP collector endpoints.
+      # When the parameter is not specified, the Ingress is created if a host is resolved,
+      # either from the "host"/"hosts" parameters below or from CLOUD_PUBLIC_URL, and if
+      # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
+      # Type: boolean
+      # Mandatory: no
+      # Default: not set
+      #
+      # install: true
       # Add annotation that prevents Gateway API converter from processing this Ingress.
       # Use it when HTTPRoute/GRPCRoute analogue is already configured.
+      # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
       # Type: boolean
       # Default: false
       #
@@ -1678,9 +1715,18 @@ collector:
         service:
           port: 14268
     grpc:
-      install: false
+      # Allow creating the Ingress for the gRPC collector endpoints.
+      # When the parameter is not specified, the Ingress is created if a host is resolved,
+      # either from the "host"/"hosts" parameters below or from CLOUD_PUBLIC_URL, and if
+      # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
+      # Type: boolean
+      # Mandatory: no
+      # Default: not set
+      #
+      # install: true
       # Add annotation that prevents Gateway API converter from processing this Ingress.
       # Use it when HTTPRoute/GRPCRoute analogue is already configured.
+      # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
       # Type: boolean
       # Default: false
       #
@@ -1703,84 +1749,115 @@ collector:
           port: 14250
     tls: {}
 
-  gatewayApi:
-    httpRoute:
-      install: false
-      labels: {}
-      annotations: {}
-      parentRefs: []
-      # Format:
-      # - name: <gateway_name>
-      #   namespace: <gateway_namespace>
-      #   sectionName: <listener_name>
-      #   kind: Gateway
-      #   group: gateway.networking.k8s.io
-      hosts: []
-      defaultPaths:
-      # Format:
-      # - prefix: <endpoint>
-      #   rewritePrefix: <replacement_prefix>
-      #   service:
-      #     name: <service_name>
-      #     port: <port_number>
-      - prefix: /
-        service:
-          # name: jaeger-collector
-          port: 13133
-      - prefix: /zipkin
-        rewritePrefix: /
-        service:
-          port: 9411
-      - prefix: /otlp/http
-        rewritePrefix: /
-        service:
-          port: 4318
-      - prefix: /thrift/tchannel
-        rewritePrefix: /
-        service:
-          port: 14250
-      - prefix: /thrift/http
-        rewritePrefix: /
-        service:
-          port: 14268
-    grpcRoute:
-      install: false
-      # Available values: HTTPRoute, GRPCRoute
-      #
-      kind: HTTPRoute
-      labels: {}
-      annotations: {}
-      parentRefs: []
-      # Format:
-      # - name: <gateway_name>
-      #   namespace: <gateway_namespace>
-      #   sectionName: <listener_name>
-      #   kind: Gateway
-      #   group: gateway.networking.k8s.io
-      hosts: []
-      defaultPaths:
-      # Format:
-      # - prefix: <grpc_method_path>
-      #   service:
-      #     name: <service_name>
-      #     port: <port_number>
-      - prefix: /opentelemetry.proto.collector.trace.v1.TraceService/Export
-        service:
-          port: 4317
-      # Rules for native GRPCRoute rendering.
-      # Use this section when kind is set to GRPCRoute.
-      # If the list is empty, the chart creates a default rule that routes all
-      # matched gRPC requests to <serviceName>-collector:4317.
-      #
-      # Format:
-      # - matches:
-      #   - method:
-      #       service: opentelemetry.proto.collector.trace.v1.TraceService
-      #       method: Export
-      #   backendRefs:
-      #   - name: jaeger-collector
-      #     port: 4317
-      rules: []
+  httpRoute:
+    # Allow creating the HTTPRoute for the HTTP collector endpoints even if GATEWAY_SYSTEM_TYPE does not contain
+    # "gateway-api-default". When the parameter is not specified, the HTTPRoute is created if
+    # GATEWAY_SYSTEM_TYPE contains "gateway-api-default" and a hostname is resolved, either
+    # from the parameters of the route, from the matching Ingress or from CLOUD_PUBLIC_URL.
+    # Set it to "false" to never create it.
+    # Type: boolean
+    # Mandatory: no
+    # Default: not set
+    #
+    # install: true
+    labels: {}
+    annotations: {}
+    # List of parent Gateway references. When the list is empty, the route is attached to the
+    # shared external Gateway resolved from GATEWAY_SYSTEM_NAME and GATEWAY_SYSTEM_NAMESPACE.
+    #
+    parentRefs: []
+    # Format:
+    # - name: <gateway_name>
+    #   namespace: <gateway_namespace>
+    #   sectionName: <listener_name>
+    #   kind: Gateway
+    #   group: gateway.networking.k8s.io
+    # List of hostnames for the route. When the list is empty, the hosts of the HTTP collector
+    # Ingress (collector.ingress.http.host and collector.ingress.http.hosts) are used.
+    #
+    hosts: []
+    defaultPaths:
+    # Format:
+    # - prefix: <endpoint>
+    #   rewritePrefix: <replacement_prefix>
+    #   service:
+    #     name: <service_name>
+    #     port: <port_number>
+    #     weight: <backend_weight>, 1 by default
+    - prefix: /
+      service:
+        # name: jaeger-collector
+        port: 13133
+    - prefix: /zipkin
+      rewritePrefix: /
+      service:
+        port: 9411
+    - prefix: /otlp/http
+      rewritePrefix: /
+      service:
+        port: 4318
+    - prefix: /thrift/tchannel
+      rewritePrefix: /
+      service:
+        port: 14250
+    - prefix: /thrift/http
+      rewritePrefix: /
+      service:
+        port: 14268
+  grpcRoute:
+    # Allow creating the route for the gRPC collector endpoints even if GATEWAY_SYSTEM_TYPE does not contain
+    # "gateway-api-default". When the parameter is not specified, the route is created if
+    # GATEWAY_SYSTEM_TYPE contains "gateway-api-default" and a hostname is resolved, either
+    # from the parameters of the route, from the matching Ingress or from CLOUD_PUBLIC_URL.
+    # Set it to "false" to never create it.
+    # Type: boolean
+    # Mandatory: no
+    # Default: not set
+    #
+    # install: true
+    # Available values: HTTPRoute, GRPCRoute
+    #
+    kind: HTTPRoute
+    labels: {}
+    annotations: {}
+    # List of parent Gateway references. When the list is empty, the route is attached to the
+    # shared external Gateway resolved from GATEWAY_SYSTEM_NAME and GATEWAY_SYSTEM_NAMESPACE.
+    #
+    parentRefs: []
+    # Format:
+    # - name: <gateway_name>
+    #   namespace: <gateway_namespace>
+    #   sectionName: <listener_name>
+    #   kind: Gateway
+    #   group: gateway.networking.k8s.io
+    # List of hostnames for the route. When the list is empty, the hosts of the gRPC collector
+    # Ingress (collector.ingress.grpc.host and collector.ingress.grpc.hosts) are used.
+    #
+    hosts: []
+    defaultPaths:
+    # Format:
+    # - prefix: <grpc_method_path>
+    #   service:
+    #     name: <service_name>
+    #     port: <port_number>
+    #     weight: <backend_weight>, 1 by default
+    - prefix: /opentelemetry.proto.collector.trace.v1.TraceService/Export
+      service:
+        port: 4317
+    # Rules for native GRPCRoute rendering.
+    # Use this section when kind is set to GRPCRoute.
+    # If the list is empty, the chart creates a default rule that routes all
+    # matched gRPC requests to <serviceName>-collector:4317.
+    #
+    # Format:
+    # - matches:
+    #   - method:
+    #       service: opentelemetry.proto.collector.trace.v1.TraceService
+    #       method: Export
+    #   backendRefs:
+    #   - name: jaeger-collector
+    #     port: 4317
+    rules: []
 
 
   # Jaeger collector config, contains only several options to configure, other part of parameters take from
@@ -1988,14 +2065,19 @@ hotrod:
   tolerations: {}
 
   ingress:
-    # Allow disabling create ingress.
+    # Allow creating the Ingress for hotrod.
+    # When the parameter is not specified, the Ingress is created if a host is resolved,
+    # either from the "host"/"hosts" parameters below or from CLOUD_PUBLIC_URL, and if
+    # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
     # Type: boolean
-    # Default: false
+    # Mandatory: no
+    # Default: not set
     #
-    install: false
+    # install: true
 
     # Add annotation that prevents Gateway API converter from processing this Ingress.
     # Use it when HTTPRoute analogue is already configured.
+    # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
     # Type: boolean
     # Default: false
     #
@@ -2041,19 +2123,33 @@ hotrod:
     #
     host: ""
 
-  gatewayApi:
-    httpRoute:
-      install: false
-      labels: {}
-      annotations: {}
-      parentRefs: []
-      # Format:
-      # - name: <gateway_name>
-      #   namespace: <gateway_namespace>
-      #   sectionName: <listener_name> (optional)
-      #   kind: Gateway
-      #   group: gateway.networking.k8s.io
-      hosts: []
+  httpRoute:
+    # Allow creating the HTTPRoute for hotrod even if GATEWAY_SYSTEM_TYPE does not contain
+    # "gateway-api-default". When the parameter is not specified, the HTTPRoute is created if
+    # GATEWAY_SYSTEM_TYPE contains "gateway-api-default" and a hostname is resolved, either
+    # from the parameters of the route, from the matching Ingress or from CLOUD_PUBLIC_URL.
+    # Set it to "false" to never create it.
+    # Type: boolean
+    # Mandatory: no
+    # Default: not set
+    #
+    # install: true
+    labels: {}
+    annotations: {}
+    # List of parent Gateway references. When the list is empty, the route is attached to the
+    # shared external Gateway resolved from GATEWAY_SYSTEM_NAME and GATEWAY_SYSTEM_NAMESPACE.
+    #
+    parentRefs: []
+    # Format:
+    # - name: <gateway_name>
+    #   namespace: <gateway_namespace>
+    #   sectionName: <listener_name> (optional)
+    #   kind: Gateway
+    #   group: gateway.networking.k8s.io
+    # List of hostnames for the route. When the list is empty, the host of the hotrod Ingress
+    # (hotrod.ingress.host) is used.
+    #
+    hosts: []
 
   # Specify port for hotrod service.
   # Type: integer
@@ -2138,14 +2234,19 @@ query:
 
 
   ingress:
-    # Allow disabling create ingress.
+    # Allow creating the Ingress for query.
+    # When the parameter is not specified, the Ingress is created if a host is resolved,
+    # either from the "host"/"hosts" parameters below or from CLOUD_PUBLIC_URL, and if
+    # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
     # Type: boolean
-    # Default: false
+    # Mandatory: no
+    # Default: not set
     #
-    install: false
+    # install: true
 
     # Add annotation that prevents Gateway API converter from processing this Ingress.
     # Use it when HTTPRoute analogue is already configured.
+    # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
     # Type: boolean
     # Default: false
     #
@@ -2191,19 +2292,33 @@ query:
     #
     host: ""
 
-  gatewayApi:
-    httpRoute:
-      install: false
-      labels: {}
-      annotations: {}
-      parentRefs: []
-      # Format:
-      # - name: <gateway_name>
-      #   namespace: <gateway_namespace>
-      #   sectionName: <listener_name> (optional)
-      #   kind: Gateway
-      #   group: gateway.networking.k8s.io
-      hosts: []
+  httpRoute:
+    # Allow creating the HTTPRoute for query even if GATEWAY_SYSTEM_TYPE does not contain
+    # "gateway-api-default". When the parameter is not specified, the HTTPRoute is created if
+    # GATEWAY_SYSTEM_TYPE contains "gateway-api-default" and a hostname is resolved, either
+    # from the parameters of the route, from the matching Ingress or from CLOUD_PUBLIC_URL.
+    # Set it to "false" to never create it.
+    # Type: boolean
+    # Mandatory: no
+    # Default: not set
+    #
+    # install: true
+    labels: {}
+    annotations: {}
+    # List of parent Gateway references. When the list is empty, the route is attached to the
+    # shared external Gateway resolved from GATEWAY_SYSTEM_NAME and GATEWAY_SYSTEM_NAMESPACE.
+    #
+    parentRefs: []
+    # Format:
+    # - name: <gateway_name>
+    #   namespace: <gateway_namespace>
+    #   sectionName: <listener_name> (optional)
+    #   kind: Gateway
+    #   group: gateway.networking.k8s.io
+    # List of hostnames for the route. When the list is empty, the host of the query Ingress
+    # (query.ingress.host) is used.
+    #
+    hosts: []
 
   # Query related cmd line opts to be configured on the concerned components.
   # Type: object

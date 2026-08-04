@@ -34,7 +34,6 @@ Configure connection settings and credentials under `cassandraSchemaJob` (host, 
 are **deprecated**. They remain in the values schema for backward compatibility with existing values files, but the
 chart no longer uses them.
 
-
 #### OpenSearch/Elasticsearch
 
 **Note:** This section applies only to cases when OpenSearch/Elasticsearch is used as a store.
@@ -51,7 +50,6 @@ Supported Elasticsearch versions:
 * 7.x
 * 6.x
 * 5.x
-
 
 ### Kubernetes
 
@@ -93,14 +91,15 @@ At the pod level, `runAsNonRoot: true` and `seccompProfile.type: "RuntimeDefault
 At the container level, `allowPrivilegeEscalation: false` and `capabilities.drop: - ALL` will be added automatically.
 It is recommended not to override these values because Kubernetes `restricted`` PSS expects these values.
 
-
 ### Azure
 
-| Azure Managed Service                                                                           | Jaeger support  |
-| ----------------------------------------------------------------------------------------------- | --------------- |
+<!-- markdownlint-disable line-length table-column-style -->
+| Azure Managed Service                                                                           | Jaeger support |
+| ----------------------------------------------------------------------------------------------- | -------------- |
 | [Azure CosmosDB (Cassandra)](https://azure.microsoft.com/en-in/products/cosmos-db)              | ❌ Not Support  |
 | [Azure Cassandra](https://azure.microsoft.com/en-in/products/managed-instance-apache-cassandra) | ❔ Not Verified |
-| Azure OpenSearch                                                                                | - N/A           |
+| Azure OpenSearch                                                                                | - N/A          |
+<!-- markdownlint-enable line-length table-column-style -->
 
 We almost didn't verify Jaeger working with Azure managed services. But we know about some GitHub issues related
 to supporting Azure managed services. So we know that Jaeger doesn't support Azure CosmosDB now. GitHub issue
@@ -108,13 +107,14 @@ to supporting Azure managed services. So we know that Jaeger doesn't support Azu
 
 There is no Azure managed OpenSearch. You can find only custom solutions in the Azure marketplace from other vendors.
 
-
 ### AWS
 
+<!-- markdownlint-disable line-length table-column-style -->
 | AWS Managed Service       | Jaeger support |
 | ------------------------- | -------------- |
-| AWS Keyspaces (Cassandra) | ❌ Not Support |
-| AWS OpenSearch            | ✅ Support     |
+| AWS Keyspaces (Cassandra) | ❌ Not Support  |
+| AWS OpenSearch            | ✅ Support      |
+<!-- markdownlint-enable line-length table-column-style -->
 
 Jaeger doesn't support AWS Keyspaces because Keyspaces doesn't allow to creation of frozen structures and custom
 structures. GitHub issue
@@ -133,7 +133,6 @@ But Jaeger supports AWS OpenSearch as a managed service. Recommendation for AWS 
   * c5.large.search
   * c4.large.search
 
-
 ### Google
 
 | Google Managed Service | Jaeger support |
@@ -143,7 +142,6 @@ But Jaeger supports AWS OpenSearch as a managed service. Recommendation for AWS 
 
 Google has no officially managed Cassandra, OpenSearch or Elasticsearch. You can find only custom solutions
 in the Google marketplace from other vendors.
-
 
 ## Best practices and recommendations
 
@@ -234,16 +232,108 @@ And disk space usage will be:
 
 Support matrix Jaeger as third-party:
 
-| Connection                 | Support TLS    |
-| -------------------------- | -------------- |
+<!-- markdownlint-disable line-length table-column-style -->
+| Connection                 | Support TLS   |
+| -------------------------- | ------------- |
 | Client to Collector        | ✅ Support     |
 | Collector/Query to Storage | ✅ Support     |
 | Browser to UI              | ❌ Not Support |
-
+<!-- markdownlint-enable line-length table-column-style -->
 
 ## Parameters
 
 This section describes parameters that can be used to deploy Jaeger and its components in the Cloud.
+
+### Gateway system
+
+These are top-level (cloud passport) parameters that define how Jaeger endpoints are exposed outside the cloud.
+They are usually injected by the deployer, so in most cases they should not be specified manually.
+
+<!-- markdownlint-disable line-length -->
+| Parameter                  | Type   | Mandatory | Default value              | Description                                                                                                                         |
+| -------------------------- | ------ | --------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `CLOUD_PUBLIC_URL`         | string | no        | `""`                       | Public host of the cloud. When it is set, the components without an explicitly specified host are exposed with a generated hostname |
+| `GATEWAY_SYSTEM_TYPE`      | string | no        | `""`                       | Comma-separated list of the ingress kinds to create: `legacy-ingress`, `gateway-api-default` or both. Empty means `legacy-ingress`  |
+| `GATEWAY_SYSTEM_NAME`      | string | no        | `default-external-gateway` | Name of the shared external Gateway the created routes are attached to. Used only if the route has no own `parentRefs`              |
+| `GATEWAY_SYSTEM_NAMESPACE` | string | no        | `gateway-system`           | Namespace of the shared external Gateway the created routes are attached to. Used only if the route has no own `parentRefs`         |
+<!-- markdownlint-enable line-length -->
+
+`CLOUD_PUBLIC_URL` may also be specified as `global.CLOUD_PUBLIC_URL`. The `CLOUD_PUBLIC_HOST` name is
+still supported as a deprecated alias of `CLOUD_PUBLIC_URL`.
+
+#### Which hostname is used
+
+The hostname of every exposed component is resolved in the following order:
+
+1. The hostname specified in the route: `httpRoute.hosts` or `grpcRoute.hosts`.
+2. The host specified in the matching Ingress: `ingress.host` or `ingress.hosts[].host`
+   (`ingress.http.*` and `ingress.grpc.*` for the collector).
+3. The generated hostname `<component>-<namespace>.<CLOUD_PUBLIC_URL>`, used only when nothing is
+   specified explicitly.
+
+The generated hostnames are `query-<namespace>`, `hotrod-<namespace>`, `collector-<namespace>` for the
+HTTP collector endpoints and `collector-grpc-<namespace>` for the gRPC collector endpoints. The namespace
+is taken from the `NAMESPACE` parameter, if it is set, otherwise from the release namespace.
+
+#### Which resources are created
+
+A component is exposed when its `install` parameter is set to `true`, or when it is not specified at all
+and a hostname is resolved by the rules above. Setting `install: false` explicitly always disables the
+resource, even if `CLOUD_PUBLIC_URL` is set.
+
+`GATEWAY_SYSTEM_TYPE` then selects which kind of resources is created for the exposed components. It may
+contain several values at the same time, which allows migrating an environment from Ingress to Gateway API
+without downtime:
+
+* `legacy-ingress` (or an empty value) - only `Ingress` resources are created.
+* `gateway-api-default` - only `HTTPRoute` (or `GRPCRoute`) resources are created. Ingress parameters,
+  including `ingress.host`, are still used, so an environment that is migrated to the Gateway API keeps its
+  hostnames without any change of the values.
+* `legacy-ingress,gateway-api-default` - both resources are created. Ingresses additionally get the
+  `gateway-api-converter.netcracker.com/ignore: "true"` annotation, so that the Gateway API converter does not
+  convert them once more, and ArgoCD skips their health check.
+
+Routes can still be created independently of `GATEWAY_SYSTEM_TYPE` with the per-component
+`httpRoute.install: true`/`grpcRoute.install: true` parameters described below.
+
+#### ArgoCD and the fields defaulted by the API server
+
+The Gateway API CRDs default several fields of a route, and ArgoCD reports a resource as permanently
+`OutOfSync` when a defaulted field is missing in the manifest. The chart therefore always renders those
+fields explicitly, so a created route is in sync right away:
+
+* `parentRefs[].group` and `parentRefs[].kind`, also for the references specified in the values.
+* `backendRefs[].group`, `backendRefs[].kind` and `backendRefs[].weight`.
+* `matches[].path.type` and `matches[].path.value` of the generated rules, and `matches[].method.type`
+  and `matches[].headers[].type` of the rules specified in `grpcRoute.rules`.
+
+Advanced filters that are passed through as is in `grpcRoute.rules`, such as `requestMirror` or
+`sessionPersistence`, are not normalized. Specify the fields that the CRD defaults explicitly
+(`requestMirror.backendRef.group`/`kind`, `requestMirror.fraction.denominator`, `sessionPersistence.type`,
+`sessionPersistence.cookieConfig.lifetimeType`) if you use them together with ArgoCD.
+
+Ingresses have a similar problem that the chart cannot solve: when the cluster has a default `IngressClass`,
+the API server writes `spec.ingressClassName` into every Ingress that does not specify it, and ArgoCD reports
+the difference. Set `ingress.className` explicitly to avoid it.
+
+Example of a deployment where all components are exposed with generated hostnames through the Gateway API only,
+without any per-component parameter:
+
+```yaml
+CLOUD_PUBLIC_URL: cloud.test.org
+GATEWAY_SYSTEM_TYPE: gateway-api-default
+```
+
+Example of an environment that is migrated to the Gateway API and keeps the hostname it used for the Ingress:
+
+```yaml
+GATEWAY_SYSTEM_TYPE: gateway-api-default
+
+query:
+  ingress:
+    install: true
+    host: jaeger.test.org
+```
 
 ### Jaeger
 
@@ -279,7 +369,6 @@ jaeger:
   prometheusMonitoring: true
   prometheusMonitoringDashboard: true
 ```
-
 
 ### Collector
 
@@ -380,7 +469,6 @@ collector:
     example.label/key: example-label-value
 ```
 
-
 #### Ingress
 
 This section describes Ingress configuration for `jaeger-collector`.
@@ -398,30 +486,30 @@ collector:
 ```
 
 <!-- markdownlint-disable line-length -->
-| Parameter                           | Type    | Mandatory | Default value | Description                                                                                                                                                                      |
-| ----------------------------------- | ------- | --------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `http.install`                      | boolean | no        | `false`       | Install the HTTP ingress                                                                                                                                                         |
-| `http.addGatewayApiAnnotation`      | boolean | no        | `false`       | Add `gateway-api-converter.netcracker.com/ignore: "true"` annotation to HTTP collector Ingress when HTTPRoute analogue is configured                                             |
-| `http.annotations`                  | map     | no        | `-`           | Annotations for HTTP collector Ingress                                                                                                                                           |
-| `http.labels`                       | map     | no        | `-`           | Labels for HTTP collector Ingress                                                                                                                                                |
-| `http.host`                         | string  | no        | `-`           | DNS name of HTTP Ingress host that should be created. If specified, ingress rules cannot be customized. Rules are auto-populated to cover all supported protocols.               |
-| `http.hosts`                        | array   | no        | `-`           | List of hosts                                                                                                                                                                    |
-| `http.hosts[].host`                 | string  | no        | `-`           | DNS name of HTTP Ingress host that should be created                                                                                                                             |
-| `http.hosts[].paths`                | array   | no        | `-`           | List of paths and endpoints in HTTP Ingress                                                                                                                                      |
-| `http.hosts[].paths[].prefix`       | string  | no        | `-`           | Endpoint path that will listen and handle by Ingress controller (for example: `/`, `/zipkin`)                                                                                    |
-| `http.hosts[].paths[].service.name` | string  | no        | `-`           | Service name to which will route requests from declared in this section endpoint, by default will use `{{ .jaeger.serviceName }}-collector` (usually will be `jaeger-collector`) |
-| `http.hosts[].paths[].service.port` | integer | no        | `-`           | Service port to which will route requests from declared in this section endpoint                                                                                                 |
-| `grpc.install`                      | boolean | no        | `false`       | Install the gRPC ingress                                                                                                                                                         |
-| `grpc.addGatewayApiAnnotation`      | boolean | no        | `false`       | Add `gateway-api-converter.netcracker.com/ignore: "true"` annotation to gRPC collector Ingress when HTTPRoute or GRPCRoute analogue is configured                                |
-| `grpc.annotations`                  | map     | no        | `-`           | Annotations for gRPC collector Ingress                                                                                                                                           |
-| `grpc.labels`                       | map     | no        | `-`           | Labels for gRPC collector Ingress                                                                                                                                                |
-| `grpc.host`                         | string  | no        | `-`           | DNS name of gRPC Ingress host that should be created. If specified, ingress rules cannot be customized. Rules are auto-populated to cover all supported protocols.               |
-| `grpc.hosts`                        | array   | no        | `-`           | List of hosts                                                                                                                                                                    |
-| `grpc.hosts[].host`                 | string  | no        | `-`           | DNS name of gRPC Ingress host that should be created                                                                                                                             |
-| `grpc.hosts[].paths`                | array   | no        | `-`           | List of paths and endpoints in gRPC Ingress                                                                                                                                      |
-| `grpc.hosts[].paths[].prefix`       | string  | no        | `-`           | Endpoint path that will listen and handle by Ingress controller (for example: `/`, `/zipkin`)                                                                                    |
-| `grpc.hosts[].paths[].service.name` | string  | no        | `-`           | Service name to which will route requests from declared in this section endpoint, by default will use `{{ .jaeger.serviceName }}-collector` (usually will be `jaeger-collector`) |
-| `grpc.hosts[].paths[].service.port` | integer | no        | `-`           | Service port to which will route requests from declared in this section endpoint                                                                                                 |
+| Parameter                           | Type    | Mandatory | Default value | Description                                                                                                                                                                                                                                                                |
+| ----------------------------------- | ------- | --------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `http.install`                      | boolean | no        | `-`           | Allow creating the Ingress. When it is not specified, the Ingress is created if a host is resolved (see [Gateway system](#gateway-system)) and `GATEWAY_SYSTEM_TYPE` allows creating Ingresses                                                                             |
+| `http.addGatewayApiAnnotation`      | boolean | no        | `false`       | Add `gateway-api-converter.netcracker.com/ignore: "true"` annotation to HTTP collector Ingress when HTTPRoute analogue is configured. Added automatically when `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default`                                                        |
+| `http.annotations`                  | map     | no        | `-`           | Annotations for HTTP collector Ingress                                                                                                                                                                                                                                     |
+| `http.labels`                       | map     | no        | `-`           | Labels for HTTP collector Ingress                                                                                                                                                                                                                                          |
+| `http.host`                         | string  | no        | `-`           | DNS name of HTTP Ingress host that should be created. If specified, ingress rules cannot be customized. Rules are auto-populated to cover all supported protocols. If nothing is specified, the generated hostname `collector-<namespace>.<CLOUD_PUBLIC_URL>` is used      |
+| `http.hosts`                        | array   | no        | `-`           | List of hosts                                                                                                                                                                                                                                                              |
+| `http.hosts[].host`                 | string  | no        | `-`           | DNS name of HTTP Ingress host that should be created                                                                                                                                                                                                                       |
+| `http.hosts[].paths`                | array   | no        | `-`           | List of paths and endpoints in HTTP Ingress                                                                                                                                                                                                                                |
+| `http.hosts[].paths[].prefix`       | string  | no        | `-`           | Endpoint path that will listen and handle by Ingress controller (for example: `/`, `/zipkin`)                                                                                                                                                                              |
+| `http.hosts[].paths[].service.name` | string  | no        | `-`           | Service name to which will route requests from declared in this section endpoint, by default will use `{{ .jaeger.serviceName }}-collector` (usually will be `jaeger-collector`)                                                                                           |
+| `http.hosts[].paths[].service.port` | integer | no        | `-`           | Service port to which will route requests from declared in this section endpoint                                                                                                                                                                                           |
+| `grpc.install`                      | boolean | no        | `-`           | Allow creating the Ingress. When it is not specified, the Ingress is created if a host is resolved (see [Gateway system](#gateway-system)) and `GATEWAY_SYSTEM_TYPE` allows creating Ingresses                                                                             |
+| `grpc.addGatewayApiAnnotation`      | boolean | no        | `false`       | Add `gateway-api-converter.netcracker.com/ignore: "true"` annotation to gRPC collector Ingress when HTTPRoute or GRPCRoute analogue is configured. Added automatically when `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default`                                           |
+| `grpc.annotations`                  | map     | no        | `-`           | Annotations for gRPC collector Ingress                                                                                                                                                                                                                                     |
+| `grpc.labels`                       | map     | no        | `-`           | Labels for gRPC collector Ingress                                                                                                                                                                                                                                          |
+| `grpc.host`                         | string  | no        | `-`           | DNS name of gRPC Ingress host that should be created. If specified, ingress rules cannot be customized. Rules are auto-populated to cover all supported protocols. If nothing is specified, the generated hostname `collector-grpc-<namespace>.<CLOUD_PUBLIC_URL>` is used |
+| `grpc.hosts`                        | array   | no        | `-`           | List of hosts                                                                                                                                                                                                                                                              |
+| `grpc.hosts[].host`                 | string  | no        | `-`           | DNS name of gRPC Ingress host that should be created                                                                                                                                                                                                                       |
+| `grpc.hosts[].paths`                | array   | no        | `-`           | List of paths and endpoints in gRPC Ingress                                                                                                                                                                                                                                |
+| `grpc.hosts[].paths[].prefix`       | string  | no        | `-`           | Endpoint path that will listen and handle by Ingress controller (for example: `/`, `/zipkin`)                                                                                                                                                                              |
+| `grpc.hosts[].paths[].service.name` | string  | no        | `-`           | Service name to which will route requests from declared in this section endpoint, by default will use `{{ .jaeger.serviceName }}-collector` (usually will be `jaeger-collector`)                                                                                           |
+| `grpc.hosts[].paths[].service.port` | integer | no        | `-`           | Service port to which will route requests from declared in this section endpoint                                                                                                                                                                                           |
 <!-- markdownlint-enable line-length -->
 
 Example:
@@ -490,55 +578,59 @@ collector:
                 port: 14268
 ```
 
-
 #### Gateway API
 
 This section describes Gateway API route configuration for `jaeger-collector`.
 
+Routes are created for the enabled collector Ingresses automatically when `GATEWAY_SYSTEM_TYPE` contains
+`gateway-api-default`, see [Gateway system](#gateway-system). The parameters below are needed only to enable routes
+explicitly or to override the Gateway, the hostnames or the path rules resolved by default.
+
 The chart can create routes for collector HTTP endpoints and collector gRPC endpoints. Collector gRPC endpoints can be
 exposed either with `HTTPRoute` or with native `GRPCRoute`, depending on the value of
-`collector.gatewayApi.grpcRoute.kind`.
+`collector.grpcRoute.kind`.
 
 TLS termination is configured on the Gateway listener. To bind a route to a specific listener, use
 `parentRefs[].sectionName`. More info in [Attaching to gateways](https://gateway-api.sigs.k8s.io/reference/api-types/httproute/#attaching-to-gateways).
 
 ```yaml
 collector:
-  gatewayApi:
-    httpRoute:
-      install: true
-    grpcRoute:
-      install: true
-      kind: GRPCRoute
+  httpRoute:
+    install: true
+  grpcRoute:
+    install: true
+    kind: GRPCRoute
 ```
 
 <!-- markdownlint-disable line-length -->
-| Parameter                                | Type    | Mandatory | Default value | Description                                                                                                                                                                                                  |
-| ---------------------------------------- | ------- | --------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `httpRoute.install`                      | boolean | no        | `false`       | Install collector HTTPRoute for HTTP-based collector endpoints                                                                                                                                               |
-| `httpRoute.labels`                       | map     | no        | `{}`          | Labels for collector HTTPRoute                                                                                                                                                                               |
-| `httpRoute.annotations`                  | map     | no        | `{}`          | Annotations for collector HTTPRoute                                                                                                                                                                          |
-| `httpRoute.parentRefs`                   | array   | no        | `[]`          | Gateway API parent references. Usually points to a Gateway and optionally to a listener via `sectionName`                                                                                                    |
-| `httpRoute.parentRefs[].name`            | string  | yes       | `-`           | Gateway name                                                                                                                                                                                                 |
-| `httpRoute.parentRefs[].namespace`       | string  | no        | `-`           | Gateway namespace                                                                                                                                                                                            |
-| `httpRoute.parentRefs[].sectionName`     | string  | no        | `-`           | Gateway listener name                                                                                                                                                                                        |
-| `httpRoute.hosts`                        | array   | no        | `[]`          | List of hostnames for HTTPRoute                                                                                                                                                                              |
-| `httpRoute.defaultPaths`                 | array   | no        | see values    | List of HTTP path rules for collector endpoints                                                                                                                                                              |
-| `httpRoute.defaultPaths[].prefix`        | string  | yes       | `-`           | Path prefix matched by HTTPRoute, for example `/zipkin` or `/otlp/http`                                                                                                                                      |
-| `httpRoute.defaultPaths[].rewritePrefix` | string  | no        | `-`           | Replacement prefix for Gateway API `URLRewrite` filter. For example, `/otlp/http/v1/traces` can be rewritten to `/v1/traces` with value `/`                                                                  |
-| `httpRoute.defaultPaths[].service.name`  | string  | no        | `-`           | Backend service name. By default, `{{ .Values.jaeger.serviceName }}-collector` is used                                                                                                                       |
-| `httpRoute.defaultPaths[].service.port`  | integer | yes       | `-`           | Backend service port                                                                                                                                                                                         |
-| `grpcRoute.install`                      | boolean | no        | `false`       | Install collector route for gRPC-based collector endpoints                                                                                                                                                   |
-| `grpcRoute.kind`                         | string  | no        | `HTTPRoute`   | Route kind for collector gRPC endpoints. Available values: `HTTPRoute`, `GRPCRoute`                                                                                                                          |
-| `grpcRoute.labels`                       | map     | no        | `{}`          | Labels for collector gRPC route                                                                                                                                                                              |
-| `grpcRoute.annotations`                  | map     | no        | `{}`          | Annotations for collector gRPC route                                                                                                                                                                         |
-| `grpcRoute.parentRefs`                   | array   | no        | `[]`          | Gateway API parent references. Usually points to a Gateway and optionally to a listener via `sectionName`                                                                                                    |
-| `grpcRoute.hosts`                        | array   | no        | `[]`          | List of hostnames for collector gRPC route                                                                                                                                                                   |
-| `grpcRoute.defaultPaths`                 | array   | no        | see values    | List of path rules used only when `grpcRoute.kind` is `HTTPRoute`                                                                                                                                            |
-| `grpcRoute.defaultPaths[].prefix`        | string  | yes       | `-`           | gRPC HTTP/2 `:path` prefix matched by HTTPRoute, for example `/opentelemetry.proto.collector.trace.v1.TraceService/Export`                                                                                   |
-| `grpcRoute.defaultPaths[].service.name`  | string  | no        | `-`           | Backend service name. By default, `{{ .Values.jaeger.serviceName }}-collector` is used                                                                                                                       |
-| `grpcRoute.defaultPaths[].service.port`  | integer | yes       | `-`           | Backend service port                                                                                                                                                                                         |
-| `grpcRoute.rules`                        | array   | no        | `[]`          | Native GRPCRoute rules used only when `grpcRoute.kind` is `GRPCRoute`. If empty, the chart creates a default rule that routes all matched gRPC requests to `{{ .Values.jaeger.serviceName }}-collector:4317` |
+| Parameter                                 | Type    | Mandatory | Default value | Description                                                                                                                                                                                                                                                 |
+| ----------------------------------------- | ------- | --------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `httpRoute.install`                       | boolean | no        | `-`           | Allow creating the route even if `GATEWAY_SYSTEM_TYPE` does not contain `gateway-api-default`. When it is not specified, the route is created if `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default` and a hostname is resolved                            |
+| `httpRoute.labels`                        | map     | no        | `{}`          | Labels for collector HTTPRoute                                                                                                                                                                                                                              |
+| `httpRoute.annotations`                   | map     | no        | `{}`          | Annotations for collector HTTPRoute                                                                                                                                                                                                                         |
+| `httpRoute.parentRefs`                    | array   | no        | `[]`          | Gateway API parent references. Usually points to a Gateway and optionally to a listener via `sectionName`. If empty, the Gateway from `GATEWAY_SYSTEM_NAME` and `GATEWAY_SYSTEM_NAMESPACE` is used                                                          |
+| `httpRoute.parentRefs[].name`             | string  | yes       | `-`           | Gateway name                                                                                                                                                                                                                                                |
+| `httpRoute.parentRefs[].namespace`        | string  | no        | `-`           | Gateway namespace                                                                                                                                                                                                                                           |
+| `httpRoute.parentRefs[].sectionName`      | string  | no        | `-`           | Gateway listener name                                                                                                                                                                                                                                       |
+| `httpRoute.hosts`                         | array   | no        | `[]`          | List of hostnames for HTTPRoute. If empty, the hosts of the HTTP collector Ingress (`ingress.http.host`, `ingress.http.hosts`) are used. If nothing is specified, the generated hostname `collector-<namespace>.<CLOUD_PUBLIC_URL>` is used                 |
+| `httpRoute.defaultPaths`                  | array   | no        | see values    | List of HTTP path rules for collector endpoints                                                                                                                                                                                                             |
+| `httpRoute.defaultPaths[].prefix`         | string  | yes       | `-`           | Path prefix matched by HTTPRoute, for example `/zipkin` or `/otlp/http`                                                                                                                                                                                     |
+| `httpRoute.defaultPaths[].rewritePrefix`  | string  | no        | `-`           | Replacement prefix for Gateway API `URLRewrite` filter. For example, `/otlp/http/v1/traces` can be rewritten to `/v1/traces` with value `/`                                                                                                                 |
+| `httpRoute.defaultPaths[].service.name`   | string  | no        | `-`           | Backend service name. By default, `{{ .Values.jaeger.serviceName }}-collector` is used                                                                                                                                                                      |
+| `httpRoute.defaultPaths[].service.port`   | integer | yes       | `-`           | Backend service port                                                                                                                                                                                                                                        |
+| `httpRoute.defaultPaths[].service.weight` | integer | no        | `1`           | Weight of the backend in the rule. Always rendered explicitly, because the API server defaults it                                                                                                                                                           |
+| `grpcRoute.install`                       | boolean | no        | `-`           | Allow creating the route even if `GATEWAY_SYSTEM_TYPE` does not contain `gateway-api-default`. When it is not specified, the route is created if `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default` and a hostname is resolved                            |
+| `grpcRoute.kind`                          | string  | no        | `HTTPRoute`   | Route kind for collector gRPC endpoints. Available values: `HTTPRoute`, `GRPCRoute`                                                                                                                                                                         |
+| `grpcRoute.labels`                        | map     | no        | `{}`          | Labels for collector gRPC route                                                                                                                                                                                                                             |
+| `grpcRoute.annotations`                   | map     | no        | `{}`          | Annotations for collector gRPC route                                                                                                                                                                                                                        |
+| `grpcRoute.parentRefs`                    | array   | no        | `[]`          | Gateway API parent references. Usually points to a Gateway and optionally to a listener via `sectionName`. If empty, the Gateway from `GATEWAY_SYSTEM_NAME` and `GATEWAY_SYSTEM_NAMESPACE` is used                                                          |
+| `grpcRoute.hosts`                         | array   | no        | `[]`          | List of hostnames for collector gRPC route. If empty, the hosts of the gRPC collector Ingress (`ingress.grpc.host`, `ingress.grpc.hosts`) are used. If nothing is specified, the generated hostname `collector-grpc-<namespace>.<CLOUD_PUBLIC_URL>` is used |
+| `grpcRoute.defaultPaths`                  | array   | no        | see values    | List of path rules used only when `grpcRoute.kind` is `HTTPRoute`                                                                                                                                                                                           |
+| `grpcRoute.defaultPaths[].prefix`         | string  | yes       | `-`           | gRPC HTTP/2 `:path` prefix matched by HTTPRoute, for example `/opentelemetry.proto.collector.trace.v1.TraceService/Export`                                                                                                                                  |
+| `grpcRoute.defaultPaths[].service.name`   | string  | no        | `-`           | Backend service name. By default, `{{ .Values.jaeger.serviceName }}-collector` is used                                                                                                                                                                      |
+| `grpcRoute.defaultPaths[].service.port`   | integer | yes       | `-`           | Backend service port                                                                                                                                                                                                                                        |
+| `grpcRoute.defaultPaths[].service.weight` | integer | no        | `1`           | Weight of the backend in the rule. Always rendered explicitly, because the API server defaults it                                                                                                                                                           |
+| `grpcRoute.rules`                         | array   | no        | `[]`          | Native GRPCRoute rules used only when `grpcRoute.kind` is `GRPCRoute`. If empty, the chart creates a default rule that routes all matched gRPC requests to `{{ .Values.jaeger.serviceName }}-collector:4317`                                                |
 <!-- markdownlint-enable line-length -->
 
 When collector gRPC endpoints are exposed through `HTTPRoute`, `defaultPaths[].prefix` must match the real gRPC
@@ -553,25 +645,24 @@ Example:
 
 ```yaml
 collector:
-  gatewayApi:
-    httpRoute:
-      install: true
-      hosts:
-        - jaeger-collector-http.test.org
-      parentRefs:
-        - name: gateway
-          namespace: istio-system
-          sectionName: default
+  httpRoute:
+    install: true
+    hosts:
+      - jaeger-collector-http.test.org
+    parentRefs:
+      - name: gateway
+        namespace: istio-system
+        sectionName: default
 
-    grpcRoute:
-      install: true
-      kind: GRPCRoute
-      hosts:
-        - jaeger-collector-grpc.test.org
-      parentRefs:
-        - name: gateway
-          namespace: istio-system
-          sectionName: default
+  grpcRoute:
+    install: true
+    kind: GRPCRoute
+    hosts:
+      - jaeger-collector-grpc.test.org
+    parentRefs:
+      - name: gateway
+        namespace: istio-system
+        sectionName: default
 ```
 
 #### TLSConfig
@@ -674,7 +765,6 @@ collector:
       minVersion: 1.2
 ```
 
-
 ### Query
 
 `jaeger-query` is a service that exposes the APIs for retrieving traces from storage and hosts a Web UI for searching
@@ -689,31 +779,31 @@ query:
 ```
 
 <!-- markdownlint-disable line-length -->
-| Parameter                          | Type                                                                                                                          | Mandatory | Default value                                                                | Description                                                                                                                         |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `install`                          | boolean                                                                                                                       | no        | true                                                                         | Allows enabling/disabling creating query deployment                                                                                 |
-| `image`                            | string                                                                                                                        | no        | -                                                                            | Docker image to use for a query container                                                                                           |
-| `imagePullPolicy`                  | string                                                                                                                        | no        | IfNotPresent                                                                 | `imagePullPolicy` for a container and the tag of the image affects when the kubelet attempts to pull (download) the specified image |
-| `imagePullSecrets`                 | object                                                                                                                        | no        | []                                                                           | Keys to access the private registry                                                                                                 |
-| `cmdlineParams`                    | object                                                                                                                        | no        | []                                                                           | Query-related cmd line opts to be configured on the concerned components                                                            |
-| `extraEnv`                         | object                                                                                                                        | no        | []                                                                           | Query-related extra env vars to be configured on the concerned components                                                           |
-| `config`                           | boolean                                                                                                                       | no        | false                                                                        | Enabling/disabling creating query UI config                                                                                         |
-| `ingress.install`                  | boolean                                                                                                                       | no        | false                                                                        | Enabling/disabling creating query ingress                                                                                           |
-| `ingress.addGatewayApiAnnotation`  | boolean                                                                                                                       | no        | false                                                                        | Add `gateway-api-converter.netcracker.com/ignore: "true"` annotation to query Ingress when HTTPRoute analogue is configured         |
-| `ingress.host`                     | string                                                                                                                        | no        | -                                                                            | FQDN of the ingress host                                                                                                            |
-| `route.install`                    | boolean                                                                                                                       | no        | false                                                                        | Enabling/disabling creating query route                                                                                             |
-| `route.host`                       | string                                                                                                                        | no        | -                                                                            | FQDN of the route host                                                                                                              |
-| `gatewayApi.httpRoute.install`     | boolean                                                                                                                       | no        | false                                                                        | Enabling/disabling creating query HTTPRoute                                                                                         |
-| `gatewayApi.httpRoute.labels`      | map                                                                                                                           | no        | {}                                                                           | Labels for query HTTPRoute                                                                                                          |
-| `gatewayApi.httpRoute.annotations` | map                                                                                                                           | no        | {}                                                                           | Annotations for query HTTPRoute                                                                                                     |
-| `gatewayApi.httpRoute.parentRefs`  | array                                                                                                                         | no        | []                                                                           | Gateway API parent references. Usually points to a Gateway and optionally to a listener via `sectionName`                           |
-| `gatewayApi.httpRoute.hosts`       | array                                                                                                                         | no        | []                                                                           | List of hostnames for query HTTPRoute                                                                                               |
-| `resources`                        | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 200m, memory: 256Mi}}` | Describes computing resource requests and limits for single Pods                                                                    |
-| `securityContext`                  | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                           | Describes pod-level security attributes                                                                                             |
-| `containerSecurityContext`         | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                           | Holds container-level security attributes                                                                                           |
-| `priorityClassName`                | string                                                                                                                        | no        | `-`                                                                          | PriorityClassName assigned to the Pods to prevent them from evicting                                                                |
-| `labels`                           | map                                                                                                                           | no        | {}                                                                           | Labels for query                                                                                                                    |
-| `annotations`                      | map                                                                                                                           | no        | {}                                                                           | Annotations for query                                                                                                               |
+| Parameter                         | Type                                                                                                                          | Mandatory | Default value                                                                | Description                                                                                                                                                                                                                      |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `install`                         | boolean                                                                                                                       | no        | true                                                                         | Allows enabling/disabling creating query deployment                                                                                                                                                                              |
+| `image`                           | string                                                                                                                        | no        | -                                                                            | Docker image to use for a query container                                                                                                                                                                                        |
+| `imagePullPolicy`                 | string                                                                                                                        | no        | IfNotPresent                                                                 | `imagePullPolicy` for a container and the tag of the image affects when the kubelet attempts to pull (download) the specified image                                                                                              |
+| `imagePullSecrets`                | object                                                                                                                        | no        | []                                                                           | Keys to access the private registry                                                                                                                                                                                              |
+| `cmdlineParams`                   | object                                                                                                                        | no        | []                                                                           | Query-related cmd line opts to be configured on the concerned components                                                                                                                                                         |
+| `extraEnv`                        | object                                                                                                                        | no        | []                                                                           | Query-related extra env vars to be configured on the concerned components                                                                                                                                                        |
+| `config`                          | boolean                                                                                                                       | no        | false                                                                        | Enabling/disabling creating query UI config                                                                                                                                                                                      |
+| `ingress.install`                 | boolean                                                                                                                       | no        | -                                                                            | Allow creating the Ingress. When it is not specified, the Ingress is created if a host is resolved (see [Gateway system](#gateway-system)) and `GATEWAY_SYSTEM_TYPE` allows creating Ingresses                                   |
+| `ingress.addGatewayApiAnnotation` | boolean                                                                                                                       | no        | false                                                                        | Add `gateway-api-converter.netcracker.com/ignore: "true"` annotation to query Ingress when HTTPRoute analogue is configured. Added automatically when `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default`                       |
+| `ingress.host`                    | string                                                                                                                        | no        | -                                                                            | FQDN of the ingress host. If nothing is specified, the generated hostname `query-<namespace>.<CLOUD_PUBLIC_URL>` is used                                                                                                         |
+| `route.install`                   | boolean                                                                                                                       | no        | false                                                                        | Enabling/disabling creating query route                                                                                                                                                                                          |
+| `route.host`                      | string                                                                                                                        | no        | -                                                                            | FQDN of the route host                                                                                                                                                                                                           |
+| `httpRoute.install`               | boolean                                                                                                                       | no        | -                                                                            | Allow creating the route even if `GATEWAY_SYSTEM_TYPE` does not contain `gateway-api-default`. When it is not specified, the route is created if `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default` and a hostname is resolved |
+| `httpRoute.labels`                | map                                                                                                                           | no        | {}                                                                           | Labels for query HTTPRoute                                                                                                                                                                                                       |
+| `httpRoute.annotations`           | map                                                                                                                           | no        | {}                                                                           | Annotations for query HTTPRoute                                                                                                                                                                                                  |
+| `httpRoute.parentRefs`            | array                                                                                                                         | no        | []                                                                           | Gateway API parent references. If empty, the Gateway from `GATEWAY_SYSTEM_NAME` and `GATEWAY_SYSTEM_NAMESPACE` is used                                                                                                           |
+| `httpRoute.hosts`                 | array                                                                                                                         | no        | []                                                                           | List of hostnames for query HTTPRoute. If empty, `ingress.host` is used. If nothing is specified, the generated hostname `query-<namespace>.<CLOUD_PUBLIC_URL>` is used                                                          |
+| `resources`                       | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 200m, memory: 256Mi}}` | Describes computing resource requests and limits for single Pods                                                                                                                                                                 |
+| `securityContext`                 | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                           | Describes pod-level security attributes                                                                                                                                                                                          |
+| `containerSecurityContext`        | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                           | Holds container-level security attributes                                                                                                                                                                                        |
+| `priorityClassName`               | string                                                                                                                        | no        | `-`                                                                          | PriorityClassName assigned to the Pods to prevent them from evicting                                                                                                                                                             |
+| `labels`                          | map                                                                                                                           | no        | {}                                                                           | Labels for query                                                                                                                                                                                                                 |
+| `annotations`                     | map                                                                                                                           | no        | {}                                                                           | Annotations for query                                                                                                                                                                                                            |
 <!-- markdownlint-enable line-length -->
 
 **Note:** It's just an example of a parameter's format, not recommended parameters.
@@ -748,14 +838,13 @@ query:
     install: false
     host: query.cloud.test.org
 
-  gatewayApi:
-    httpRoute:
-      install: false
-      hosts:
-        - query.cloud.test.org
-      parentRefs:
-        - name: gateway
-          namespace: istio-system
+  httpRoute:
+    install: false
+    hosts:
+      - query.cloud.test.org
+    parentRefs:
+      - name: gateway
+        namespace: istio-system
 
   resources:
     requests:
@@ -781,7 +870,6 @@ query:
   labels:
     example.label/key: example-label-value
 ```
-
 
 ### Readiness probe
 
@@ -836,7 +924,6 @@ readinessProbe:
       memory: 50Mi
 ```
 
-
 ### Cassandra
 
 **Note:** Since Jaeger release `1.57.x`, `cassandraSchemaJob.install` parameter has been removed.
@@ -848,7 +935,8 @@ unless you rely on deprecated pre-hook parameters in an older values file.
 You must set correct TTL values during first deploy! If you didn't do it, please read the
 [Maintenance: Change Cassandra TTL](maintenance.md#change-cassandra-ttl).
 
-**Warning!** Since Jaeger release `2.x`, `cassandraSchemaJob.ttl` parameters (`trace` and `dependencies`) must be set with a suitable unit (`s` - seconds, `m` - minutes, `h` - hours).
+**Warning!** Since Jaeger release `2.x`, `cassandraSchemaJob.ttl` parameters (`trace` and `dependencies`) must be
+set with a suitable unit (`s` - seconds, `m` - minutes, `h` - hours).
 
 ```yaml
 cassandraSchemaJob:
@@ -944,7 +1032,6 @@ cassandraSchemaJob:
     example.annotation/key: example-annotation-value
 ```
 
-
 ### Elasticsearch
 
 All parameters in the table below should be specified under the key:
@@ -1015,7 +1102,6 @@ elasticsearch:
       # Insecure and strongly doesn't recommended for production
       insecureSkipVerify: true
 ```
-
 
 #### Index Cleaner
 
@@ -1120,7 +1206,6 @@ elasticsearch:
       effect: NoSchedule
     priorityClassName: priority-class
 ```
-
 
 #### Rollover
 
@@ -1245,7 +1330,6 @@ elasticsearch:
     priorityClassName: priority-class
 ```
 
-
 #### Lookback
 
 It's a part of [Elasticsearch Rollover](#rollover) to remove old indices from read aliases.
@@ -1354,7 +1438,6 @@ elasticsearch:
     priorityClassName: priority-class
 ```
 
-
 ### Proxy
 
 All parameters in the table below should be specified under the key:
@@ -1426,7 +1509,6 @@ proxy:
         - ALL
 ```
 
-
 ### Hotrod
 
 `jaeger-hotrod` is a test service that allows to generate of some traces to verify Jaeger's work.
@@ -1440,35 +1522,35 @@ hotrod:
 ```
 
 <!-- markdownlint-disable line-length -->
-| Parameter                          | Type                                                                                                                          | Mandatory | Default value                                                                | Description                                                                                                                             |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `install`                          | boolean                                                                                                                       | no        | false                                                                        | Enabling or disabling creating hotrod deployment                                                                                        |
-| `image`                            | string                                                                                                                        | no        | -                                                                            | The Docker image to use for a hotrod container                                                                                          |
-| `name`                             | string                                                                                                                        | no        | hotrod                                                                       | The name of a microservice to deploy with                                                                                               |
-| `imagePullPolicy`                  | string                                                                                                                        | no        | IfNotPresent                                                                 | The `imagePullPolicy` for a container and the tag of the image affects when the kubelet attempts to pull (download) the specified image |
-| `imagePullSecrets`                 | object                                                                                                                        | no        | []                                                                           | Keys to access the private registry                                                                                                     |
-| `labels`                           | map                                                                                                                           | no        | {}                                                                           | Map of string keys and values that can be used to organize and categorize (scope and select) objects                                    |
-| `annotations`                      | map                                                                                                                           | no        | {}                                                                           | An unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata         |
-| `otelExporter.host`                | integer                                                                                                                       | no        | -                                                                            | The host used to connect to Open Telemetry Exporter                                                                                     |
-| `otelExporter.port`                | integer                                                                                                                       | no        | 14268                                                                        | The port used to connect to Open Telemetry Exporter                                                                                     |
-| `nodeSelector`                     | map                                                                                                                           | no        | {}                                                                           | Defining which Nodes the Pods are scheduled on                                                                                          |
-| `tolerations`                      | [core/v1.Toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core)                 | no        | {}                                                                           | The pods to schedule onto nodes with matching taints                                                                                    |
-| `ingress.install`                  | boolean                                                                                                                       | no        | false                                                                        | Enabling or disabling creating a `hotrod` ingress                                                                                       |
-| `ingress.addGatewayApiAnnotation`  | boolean                                                                                                                       | no        | false                                                                        | Add `gateway-api-converter.netcracker.com/ignore: "true"` annotation to hotrod Ingress when HTTPRoute analogue is configured            |
-| `ingress.host`                     | string                                                                                                                        | no        | -                                                                            | The FQDN of the ingress host                                                                                                            |
-| `ingress.tls`                      | object                                                                                                                        | no        | {}                                                                           | TLS configuration for hotrod ingress                                                                                                    |
-| `route.install`                    | boolean                                                                                                                       | no        | false                                                                        | Enabling or disabling creating a `hotrod` route                                                                                         |
-| `route.host`                       | string                                                                                                                        | no        | 0                                                                            | The FQDN of the route host                                                                                                              |
-| `gatewayApi.httpRoute.install`     | boolean                                                                                                                       | no        | false                                                                        | Enabling or disabling creating a `hotrod` HTTPRoute                                                                                     |
-| `gatewayApi.httpRoute.labels`      | map                                                                                                                           | no        | {}                                                                           | Labels for hotrod HTTPRoute                                                                                                             |
-| `gatewayApi.httpRoute.annotations` | map                                                                                                                           | no        | {}                                                                           | Annotations for hotrod HTTPRoute                                                                                                        |
-| `gatewayApi.httpRoute.parentRefs`  | array                                                                                                                         | no        | []                                                                           | Gateway API parent references. Usually points to a Gateway and optionally to a listener via `sectionName`                               |
-| `gatewayApi.httpRoute.hosts`       | array                                                                                                                         | no        | []                                                                           | List of hostnames for hotrod HTTPRoute                                                                                                  |
-| `service.port`                     | integer                                                                                                                       | no        | 80                                                                           | The port for hotrod service                                                                                                             |
-| `resources`                        | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 100m, memory: 128Mi}}` | Computing resource requests and limits for single Pods                                                                                  |
-| `securityContext`                  | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                           | Holds pod-level security attributes                                                                                                     |
-| `containerSecurityContext`         | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                           | Holds container-level security attributes                                                                                               |
-| `priorityClassName`                | string                                                                                                                        | no        | `-`                                                                          | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                   |
+| Parameter                         | Type                                                                                                                          | Mandatory | Default value                                                                | Description                                                                                                                                                                                                                      |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `install`                         | boolean                                                                                                                       | no        | false                                                                        | Enabling or disabling creating hotrod deployment                                                                                                                                                                                 |
+| `image`                           | string                                                                                                                        | no        | -                                                                            | The Docker image to use for a hotrod container                                                                                                                                                                                   |
+| `name`                            | string                                                                                                                        | no        | hotrod                                                                       | The name of a microservice to deploy with                                                                                                                                                                                        |
+| `imagePullPolicy`                 | string                                                                                                                        | no        | IfNotPresent                                                                 | The `imagePullPolicy` for a container and the tag of the image affects when the kubelet attempts to pull (download) the specified image                                                                                          |
+| `imagePullSecrets`                | object                                                                                                                        | no        | []                                                                           | Keys to access the private registry                                                                                                                                                                                              |
+| `labels`                          | map                                                                                                                           | no        | {}                                                                           | Map of string keys and values that can be used to organize and categorize (scope and select) objects                                                                                                                             |
+| `annotations`                     | map                                                                                                                           | no        | {}                                                                           | An unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata                                                                                                  |
+| `otelExporter.host`               | integer                                                                                                                       | no        | -                                                                            | The host used to connect to Open Telemetry Exporter                                                                                                                                                                              |
+| `otelExporter.port`               | integer                                                                                                                       | no        | 14268                                                                        | The port used to connect to Open Telemetry Exporter                                                                                                                                                                              |
+| `nodeSelector`                    | map                                                                                                                           | no        | {}                                                                           | Defining which Nodes the Pods are scheduled on                                                                                                                                                                                   |
+| `tolerations`                     | [core/v1.Toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core)                 | no        | {}                                                                           | The pods to schedule onto nodes with matching taints                                                                                                                                                                             |
+| `ingress.install`                 | boolean                                                                                                                       | no        | -                                                                            | Allow creating the Ingress. When it is not specified, the Ingress is created if a host is resolved (see [Gateway system](#gateway-system)) and `GATEWAY_SYSTEM_TYPE` allows creating Ingresses                                   |
+| `ingress.addGatewayApiAnnotation` | boolean                                                                                                                       | no        | false                                                                        | Add `gateway-api-converter.netcracker.com/ignore: "true"` annotation to hotrod Ingress when HTTPRoute analogue is configured. Added automatically when `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default`                      |
+| `ingress.host`                    | string                                                                                                                        | no        | -                                                                            | The FQDN of the ingress host. If nothing is specified, the generated hostname `hotrod-<namespace>.<CLOUD_PUBLIC_URL>` is used                                                                                                    |
+| `ingress.tls`                     | object                                                                                                                        | no        | {}                                                                           | TLS configuration for hotrod ingress                                                                                                                                                                                             |
+| `route.install`                   | boolean                                                                                                                       | no        | false                                                                        | Enabling or disabling creating a `hotrod` route                                                                                                                                                                                  |
+| `route.host`                      | string                                                                                                                        | no        | 0                                                                            | The FQDN of the route host                                                                                                                                                                                                       |
+| `httpRoute.install`               | boolean                                                                                                                       | no        | -                                                                            | Allow creating the route even if `GATEWAY_SYSTEM_TYPE` does not contain `gateway-api-default`. When it is not specified, the route is created if `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default` and a hostname is resolved |
+| `httpRoute.labels`                | map                                                                                                                           | no        | {}                                                                           | Labels for hotrod HTTPRoute                                                                                                                                                                                                      |
+| `httpRoute.annotations`           | map                                                                                                                           | no        | {}                                                                           | Annotations for hotrod HTTPRoute                                                                                                                                                                                                 |
+| `httpRoute.parentRefs`            | array                                                                                                                         | no        | []                                                                           | Gateway API parent references. If empty, the Gateway from `GATEWAY_SYSTEM_NAME` and `GATEWAY_SYSTEM_NAMESPACE` is used                                                                                                           |
+| `httpRoute.hosts`                 | array                                                                                                                         | no        | []                                                                           | List of hostnames for hotrod HTTPRoute. If empty, `ingress.host` is used. If nothing is specified, the generated hostname `hotrod-<namespace>.<CLOUD_PUBLIC_URL>` is used                                                        |
+| `service.port`                    | integer                                                                                                                       | no        | 80                                                                           | The port for hotrod service                                                                                                                                                                                                      |
+| `resources`                       | object                                                                                                                        | no        | `{requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: 100m, memory: 128Mi}}` | Computing resource requests and limits for single Pods                                                                                                                                                                           |
+| `securityContext`                 | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                           | Holds pod-level security attributes                                                                                                                                                                                              |
+| `containerSecurityContext`        | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                           | Holds container-level security attributes                                                                                                                                                                                        |
+| `priorityClassName`               | string                                                                                                                        | no        | `-`                                                                          | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                                                                                                            |
 <!-- markdownlint-enable line-length -->
 
 Examples:
@@ -1503,14 +1585,13 @@ hotrod:
     install: false
     host: hotrod.cloud.test.org
 
-  gatewayApi:
-    httpRoute:
-      install: false
-      hosts:
-        - hotrod.cloud.test.org
-      parentRefs:
-        - name: gateway
-          namespace: istio-system
+  httpRoute:
+    install: false
+    hosts:
+      - hotrod.cloud.test.org
+    parentRefs:
+      - name: gateway
+        namespace: istio-system
 
   resources:
     limits:
@@ -1540,7 +1621,6 @@ hotrod:
       effect: NoSchedule
   priorityClassName: priority-class
 ```
-
 
 ### Integration Tests
 
@@ -1619,7 +1699,6 @@ integrationTests:
   priorityClassName: priority-class
 ```
 
-
 ### Status Provisioner
 
 `statusProvisioner` is a service that is used to write integration tests results into a job.
@@ -1678,7 +1757,6 @@ statusProvisioner:
   priorityClassName: priority-class
 ```
 
-
 ## Installation
 
 This section describes how to install Jaeger to the Kubernetes.
@@ -1712,7 +1790,6 @@ elasticsearch:
     image: jaegertracing/jaeger-es-rollover:1.62.0
 ```
 
-
 ### On-prem
 
 This section contains examples of deployment parameters to deploy on-premise Clouds.
@@ -1742,7 +1819,6 @@ collector:
   replicas: 2
 ```
 
-
 #### Non-HA scheme
 
 The minimal template for the Non-HA scheme is as follows:
@@ -1766,12 +1842,9 @@ collector:
   install: true
 ```
 
-
-
 ## Post Deploy Checks
 
 There are some options to check after deploy that Jaeger deployed and working correctly.
-
 
 ### Smoke test
 
@@ -1875,7 +1948,6 @@ To find it in UI you need:
 * Select `gateway` in the dropdown list of the "Service" parameter
 * Click "Find Traces"
 * Check that traces collected and available
-
 
 ## Frequently Asked Questions
 

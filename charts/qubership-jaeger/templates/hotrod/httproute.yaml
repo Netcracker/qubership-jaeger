@@ -1,9 +1,16 @@
-{{- $gatewayApi := .Values.hotrod.gatewayApi | default dict -}}
-{{- $httpRouteSpec := $gatewayApi.httpRoute | default dict -}}
-{{- $parentRefs := $httpRouteSpec.parentRefs | default list -}}
+{{- $httpRouteSpec := .Values.hotrod.httpRoute | default dict -}}
+{{- $ingressSpec := .Values.hotrod.ingress | default dict -}}
 {{- $hostnames := $httpRouteSpec.hosts | default list -}}
+{{- if not $hostnames -}}
+{{- $host := include "hotrod.ingress" . -}}
+{{- if $host -}}
+{{- $hostnames = list $host -}}
+{{- end -}}
+{{- end -}}
 {{- $name := printf "%s-hotrod" .Values.jaeger.serviceName -}}
-{{- if and .Values.hotrod.install ($httpRouteSpec.install | default false) }}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $httpRouteSpec.install $ingressSpec.install) "host" (first $hostnames)) -}}
+{{- $install := or ($httpRouteSpec.install | default false) (and $exposed (include "jaeger.gatewayApi.enabled" .)) -}}
+{{- if and .Values.hotrod.install $install }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -20,15 +27,11 @@ metadata:
     {{- toYaml $httpRouteSpec.annotations | nindent 4 }}
   {{- end }}
 spec:
-  {{- with $parentRefs }}
   parentRefs:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- include "jaeger.gatewayApi.parentRefs" (dict "ctx" $ "parentRefs" $httpRouteSpec.parentRefs) | nindent 4 }}
   {{- if $hostnames }}
   hostnames:
-    {{- range $hostname := $hostnames }}
-    - {{ tpl $hostname $ | quote }}
-    {{- end }}
+    {{- include "jaeger.gatewayApi.hostnames" (dict "ctx" $ "hosts" $hostnames) | nindent 4 }}
   {{- end }}
   rules:
     - matches:
@@ -36,6 +39,5 @@ spec:
             type: PathPrefix
             value: "/"
       backendRefs:
-        - name: {{ .Values.jaeger.serviceName }}-hotrod
-          port: {{ .Values.hotrod.service.port }}
+        {{- include "jaeger.gatewayApi.backendRef" (dict "name" (printf "%s-hotrod" .Values.jaeger.serviceName) "port" .Values.hotrod.service.port) | nindent 8 }}
 {{- end }}

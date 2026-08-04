@@ -1,10 +1,11 @@
-{{- $gatewayApi := .Values.collector.gatewayApi | default dict -}}
-{{- $grpcRouteSpec := $gatewayApi.grpcRoute | default dict -}}
-{{- $parentRefs := $grpcRouteSpec.parentRefs | default list -}}
-{{- $hostnames := $grpcRouteSpec.hosts | default list -}}
+{{- $grpcRouteSpec := .Values.collector.grpcRoute | default dict -}}
+{{- $ingressSpec := .Values.collector.ingress.grpc | default dict -}}
+{{- $hostnames := include "collector.gatewayApi.hosts" (dict "ctx" $ "route" $grpcRouteSpec "ingress" $ingressSpec "prefix" "collector-grpc") | fromYamlArray -}}
 {{- $defaultRules := list (dict "backendRefs" (list (dict "name" (printf "%s-collector" $.Values.jaeger.serviceName) "port" 4317))) -}}
 {{- $rules := $grpcRouteSpec.rules | default $defaultRules -}}
-{{- if and .Values.collector.install ($grpcRouteSpec.install | default false) (eq ($grpcRouteSpec.kind | default "HTTPRoute") "GRPCRoute") }}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $grpcRouteSpec.install $ingressSpec.install) "host" (first $hostnames)) -}}
+{{- $install := or ($grpcRouteSpec.install | default false) (and $exposed (include "jaeger.gatewayApi.enabled" .)) -}}
+{{- if and .Values.collector.install $install (eq ($grpcRouteSpec.kind | default "HTTPRoute") "GRPCRoute") }}
 {{- $resourceName := include "collector.httpRoute.resourceName" (list $ "grpc") }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -22,16 +23,12 @@ metadata:
     {{- toYaml $grpcRouteSpec.annotations | nindent 4 }}
   {{- end }}
 spec:
-  {{- with $parentRefs }}
   parentRefs:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- include "jaeger.gatewayApi.parentRefs" (dict "ctx" $ "parentRefs" $grpcRouteSpec.parentRefs) | nindent 4 }}
   {{- if $hostnames }}
   hostnames:
-    {{- range $hostname := $hostnames }}
-    - {{ tpl $hostname $ | quote }}
-    {{- end }}
+    {{- include "jaeger.gatewayApi.hostnames" (dict "ctx" $ "hosts" $hostnames) | nindent 4 }}
   {{- end }}
   rules:
-    {{- toYaml $rules | nindent 4 }}
+    {{- include "jaeger.gatewayApi.rules" (dict "rules" $rules) | nindent 4 }}
 {{- end }}
