@@ -22,7 +22,6 @@ Check the following:
 
 View the errors from the Cassandra logs if they exist.
 
-
 ### no matches for kind "Ingress" in version "networking.k8s.io/v1beta1"
 
 We are using Helm to deploy Jaeger. Helm tracks all resources that it created in special secrets with names:
@@ -71,15 +70,13 @@ If services support migration to new Kubernetes the correct way to upgrade it is
 1. Before upgrading Kubernetes, need to upgrade the Service to the new version which can work in the new Kubernetes
 2. Only after it upgrades Kubernetes to the new version
 
-
 ### Labels and Annotations validation error
 
 Helm doesn't allow a resource to be owned by more than one deployment. During jaeger upgrade it's possible you create
 resources that already existed and created outside of Helm. In such cases you may see error related to labels and
-annotation validation. For more details please refer
-[article](https://stackoverflow.com/questions/62964532/helm-not-creating-the-resources)
+annotation validation.
 
-**Solution**
+**Solution:**
 
 To add and use correct values for following labels and annotations:
 
@@ -92,7 +89,6 @@ annotations:
 ```
 
 This solution is proposed in [document](https://github.com/helm/helm/pull/7649)
-
 
 ## Runtime Issues
 
@@ -161,7 +157,6 @@ query:
     - name: CASSANDRA_RECONNECT_INTERVAL
       value: 2m
 ```
-
 
 #### connection: no route to host
 
@@ -245,7 +240,6 @@ cassandraSchemaJob:
   host: cassandra-lb.<namespace>.svc
 ```
 
-
 ### Error reading `<name>` from storage: table `<name>` does not exist
 
 For this error, you usually can see in `collector` and `query` pods logs as follows:
@@ -285,7 +279,6 @@ just remove or disable two nodes in the cluster. It may lead to data loss (and t
 In this case, you have to use Cassandra `nodetool` to remove some nodes from the Cassandra cluster and re-balance
 data on nodes.
 
-
 ### Ingress fails with 502 Bad Gateway error
 
 When Jaeger UI is opened via Ingress URL, it is possible that it shows `502 Bad Gateway` error.
@@ -312,4 +305,3 @@ query:
   annotations:
     nginx.ingress.kubernetes.io/proxy-buffer-size: 256k
 ```
-
