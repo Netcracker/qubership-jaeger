@@ -70,30 +70,7 @@ spec:
           args:
             {{- template "collector.args" . }}
           env:
-            {{- /* Section with Cassandra environment variables */}}
-            {{- if eq .Values.jaeger.storage.type "cassandra" }}
-            - name: CASSANDRA_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "cassandraSchemaJob.secretName" . }}
-                  key: username
-            - name: CASSANDRA_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "cassandraSchemaJob.secretName" . }}
-                  key: password
-            {{- /* Section with Elasticsearch/OpenSearch environment variables */}}
-            {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
-            - name: ES_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.elasticsearch.existingSecret | default "jaeger-elasticsearch" }}
-                  key: username
-            - name: ES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.elasticsearch.existingSecret | default "jaeger-elasticsearch" }}
-                  key: password
+            {{- if eq .Values.jaeger.storage.type "elasticsearch" }}
             {{- range $key, $value := .Values.elasticsearch.env }}
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
@@ -101,9 +78,9 @@ spec:
             {{- with .Values.elasticsearch.extraEnv }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
+            {{- end }}
             {{- with .Values.collector.extraEnv }}
               {{- toYaml . | nindent 12 }}
-            {{- end }}
             {{- end }}
           {{- if .Values.readinessProbe.install }}
           livenessProbe:
@@ -230,10 +207,10 @@ spec:
               - key: sampling
                 path: sampling.json
         - name: collector-config
-          configMap:
-            name: {{ .Values.jaeger.serviceName }}-collector-configuration
+          secret:
+            secretName: {{ include "collector.runtimeConfig.secretName" . }}
             items:
-              - key: config.yaml
+              - key: {{ include "collector.runtimeConfig.key" . }}
                 path: config.yaml
             defaultMode: 420
         {{- include "jaeger.certificateVolumes" . | nindent 8 }}

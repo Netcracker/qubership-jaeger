@@ -28,12 +28,13 @@ Library    Process
 Library    OperatingSystem
 Library    Collections
 Library    ../libs/metrics_helper.py
+Library    ../libs/runtime_config_helper.py
 
 *** Keywords ***
-Get ConfigMap Content
-    [Arguments]  ${configmap_name}  ${namespace}
-    ${configmap} =  Get Config Map  ${configmap_name}  ${namespace}
-    ${config_content} =  Evaluate  $configmap.data['config.yaml']
+Get Collector Runtime Config Content
+    [Arguments]  ${secret_name}  ${namespace}
+    ${secret} =  Get Secret  ${secret_name}  ${namespace}
+    ${config_content} =  Config Yaml From Secret  ${secret}
     RETURN  ${config_content}
 
 Check Memory Limiter In Pipeline
@@ -412,9 +413,9 @@ Generate Load
 *** Test Cases ***
 Memory Limiter Is Configured
     [Tags]  memory_limiter
-    [Documentation]  Verify that memory limiter is configured in the collector ConfigMap
-    ${configmap_name} =  Set Variable  ${JAEGER_SERVICE_NAME}-collector-configuration
-    ${config_content} =  Get ConfigMap Content  ${configmap_name}  ${JAEGER_NAMESPACE}
+    [Documentation]  Verify that memory limiter is configured in the collector runtime Secret (config.yaml)
+    ${runtime_secret_name} =  Set Variable  ${JAEGER_SERVICE_NAME}-collector-configuration
+    ${config_content} =  Get Collector Runtime Config Content  ${runtime_secret_name}  ${JAEGER_NAMESPACE}
     Check Memory Limiter In Pipeline  ${config_content}
     Check Memory Limiter Settings  ${config_content}
     Log To Console  ✓ Memory limiter is configured correctly
@@ -422,8 +423,8 @@ Memory Limiter Is Configured
 Memory Limiter Settings Are Valid
     [Tags]  memory_limiter
     [Documentation]  Verify memory limiter settings are within expected ranges
-    ${configmap_name} =  Set Variable  ${JAEGER_SERVICE_NAME}-collector-configuration
-    ${config_content} =  Get ConfigMap Content  ${configmap_name}  ${JAEGER_NAMESPACE}
+    ${runtime_secret_name} =  Set Variable  ${JAEGER_SERVICE_NAME}-collector-configuration
+    ${config_content} =  Get Collector Runtime Config Content  ${runtime_secret_name}  ${JAEGER_NAMESPACE}
     Should Contain  ${config_content}  memory_limiter:
     # Extract and validate settings (basic check)
     ${has_limit} =  Run Keyword And Return Status  Should Match Regexp  ${config_content}  limit_mib:\\s*\\d+
