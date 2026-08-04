@@ -39,6 +39,5 @@ spec:
             type: PathPrefix
             value: "/"
       backendRefs:
-        - name: {{ $name }}
-          port: 16686
+        {{- include "jaeger.gatewayApi.backendRef" (dict "name" $name "port" 16686) | nindent 8 }}
 {{- end }}

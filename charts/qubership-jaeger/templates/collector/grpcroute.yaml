@@ -30,5 +30,5 @@ spec:
     {{- include "jaeger.gatewayApi.hostnames" (dict "ctx" $ "hosts" $hostnames) | nindent 4 }}
   {{- end }}
   rules:
-    {{- toYaml $rules | nindent 4 }}
+    {{- include "jaeger.gatewayApi.rules" (dict "rules" $rules) | nindent 4 }}
 {{- end }}

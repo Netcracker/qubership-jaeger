@@ -672,7 +672,8 @@
                   "service": {
                     "properties": {
                       "name": { "type": "string" },
-                      "port": { "type": "integer" }
+                      "port": { "type": "integer" },
+                      "weight": { "type": "integer" }
                     },
                     "type": "object"
                   }
@@ -768,6 +769,10 @@
                       },
                       "port": {
                         "description": "Backend service port.\n",
+                        "type": "integer"
+                      },
+                      "weight": {
+                        "description": "Weight of the backend in the route rule. Defaults to 1.\n",
                         "type": "integer"
                       }
                     },

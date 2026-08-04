@@ -113,7 +113,14 @@ Usage: {{- include "jaeger.gatewayApi.parentRefs" (dict "ctx" $ "parentRefs" $sp
 {{- define "jaeger.gatewayApi.parentRefs" -}}
 {{- $ctx := .ctx -}}
 {{- if .parentRefs -}}
-{{- toYaml .parentRefs -}}
+{{- $refs := list -}}
+{{- range $ref := .parentRefs -}}
+{{- $new := deepCopy $ref -}}
+{{- $_ := set $new "group" ($ref.group | default "gateway.networking.k8s.io") -}}
+{{- $_ := set $new "kind" ($ref.kind | default "Gateway") -}}
+{{- $refs = append $refs $new -}}
+{{- end -}}
+{{- toYaml $refs -}}
 {{- else if $ctx.Values.PEER_NAMESPACE -}}
 - group: gateway.networking.k8s.io
   kind: Gateway
@@ -125,6 +132,69 @@ Usage: {{- include "jaeger.gatewayApi.parentRefs" (dict "ctx" $ "parentRefs" $sp
   name: {{ $ctx.Values.GATEWAY_SYSTEM_NAME | default "default-external-gateway" }}
   namespace: {{ $ctx.Values.GATEWAY_SYSTEM_NAMESPACE | default "gateway-system" }}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Render one backendRef of a route.
+The "group", "kind" and "weight" fields are defaulted by the API server, so they are always
+rendered explicitly, otherwise the resource is permanently out of sync in ArgoCD.
+Usage: {{- include "jaeger.gatewayApi.backendRef" (dict "name" $name "port" $port "weight" $weight) | nindent 4 }}
+*/}}
+{{- define "jaeger.gatewayApi.backendRef" -}}
+- group: {{ .group | default "" | quote }}
+  kind: {{ .kind | default "Service" }}
+  name: {{ .name }}
+  port: {{ .port }}
+  weight: {{ if kindIs "invalid" .weight }}1{{ else }}{{ .weight }}{{ end }}
+{{- end -}}
+
+{{/*
+Render a list of route rules specified as is in the values, with the backendRefs normalized
+to contain the fields defaulted by the API server.
+Usage: {{- include "jaeger.gatewayApi.rules" (dict "rules" $rules) | nindent 4 }}
+*/}}
+{{- define "jaeger.gatewayApi.rules" -}}
+{{- $rules := list -}}
+{{- range $rule := .rules -}}
+{{- $newRule := deepCopy $rule -}}
+{{- if $rule.matches -}}
+{{- $matches := list -}}
+{{- range $match := $rule.matches -}}
+{{- $newMatch := deepCopy $match -}}
+{{- if $match.method -}}
+{{- $method := deepCopy $match.method -}}
+{{- $_ := set $method "type" ($match.method.type | default "Exact") -}}
+{{- $_ := set $newMatch "method" $method -}}
+{{- end -}}
+{{- if $match.headers -}}
+{{- $headers := list -}}
+{{- range $header := $match.headers -}}
+{{- $newHeader := deepCopy $header -}}
+{{- $_ := set $newHeader "type" ($header.type | default "Exact") -}}
+{{- $headers = append $headers $newHeader -}}
+{{- end -}}
+{{- $_ := set $newMatch "headers" $headers -}}
+{{- end -}}
+{{- $matches = append $matches $newMatch -}}
+{{- end -}}
+{{- $_ := set $newRule "matches" $matches -}}
+{{- end -}}
+{{- if $rule.backendRefs -}}
+{{- $refs := list -}}
+{{- range $ref := $rule.backendRefs -}}
+{{- $new := deepCopy $ref -}}
+{{- $_ := set $new "group" ($ref.group | default "") -}}
+{{- $_ := set $new "kind" ($ref.kind | default "Service") -}}
+{{- if kindIs "invalid" $ref.weight -}}
+{{- $_ := set $new "weight" 1 -}}
+{{- end -}}
+{{- $refs = append $refs $new -}}
+{{- end -}}
+{{- $_ := set $newRule "backendRefs" $refs -}}
+{{- end -}}
+{{- $rules = append $rules $newRule -}}
+{{- end -}}
+{{- toYaml $rules -}}
 {{- end -}}
 
 {{/*
@@ -256,8 +326,7 @@ Render shared HTTPRoute rules.
           replacePrefixMatch: {{ .rewritePrefix | quote }}
   {{- end }}
   backendRefs:
-    - name: {{ coalesce .service.name $defaultServiceName }}
-      port: {{ .service.port }}
+    {{- include "jaeger.gatewayApi.backendRef" (dict "name" (coalesce .service.name $defaultServiceName) "port" .service.port "weight" .service.weight) | nindent 4 }}
 {{- end -}}
 {{- end -}}
 

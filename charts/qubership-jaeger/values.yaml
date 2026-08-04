@@ -1913,6 +1913,7 @@ collector:
     #   service:
     #     name: <service_name>
     #     port: <port_number>
+    #     weight: <backend_weight>, 1 by default
     - prefix: /
       service:
         # name: jaeger-collector
@@ -1969,6 +1970,7 @@ collector:
     #   service:
     #     name: <service_name>
     #     port: <port_number>
+    #     weight: <backend_weight>, 1 by default
     - prefix: /opentelemetry.proto.collector.trace.v1.TraceService/Export
       service:
         port: 4317

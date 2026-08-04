@@ -39,6 +39,5 @@ spec:
             type: PathPrefix
             value: "/"
       backendRefs:
-        - name: {{ .Values.jaeger.serviceName }}-hotrod
-          port: {{ .Values.hotrod.service.port }}
+        {{- include "jaeger.gatewayApi.backendRef" (dict "name" (printf "%s-hotrod" .Values.jaeger.serviceName) "port" .Values.hotrod.service.port) | nindent 8 }}
 {{- end }}

@@ -311,6 +311,26 @@ without downtime:
 Routes can still be created independently of `GATEWAY_SYSTEM_TYPE` with the per-component
 `httpRoute.install: true`/`grpcRoute.install: true` parameters described below.
 
+#### ArgoCD and the fields defaulted by the API server
+
+The Gateway API CRDs default several fields of a route, and ArgoCD reports a resource as permanently
+`OutOfSync` when a defaulted field is missing in the manifest. The chart therefore always renders those
+fields explicitly, so a created route is in sync right away:
+
+* `parentRefs[].group` and `parentRefs[].kind`, also for the references specified in the values.
+* `backendRefs[].group`, `backendRefs[].kind` and `backendRefs[].weight`.
+* `matches[].path.type` and `matches[].path.value` of the generated rules, and `matches[].method.type`
+  and `matches[].headers[].type` of the rules specified in `grpcRoute.rules`.
+
+Advanced filters that are passed through as is in `grpcRoute.rules`, such as `requestMirror` or
+`sessionPersistence`, are not normalized. Specify the fields that the CRD defaults explicitly
+(`requestMirror.backendRef.group`/`kind`, `requestMirror.fraction.denominator`, `sessionPersistence.type`,
+`sessionPersistence.cookieConfig.lifetimeType`) if you use them together with ArgoCD.
+
+Ingresses have a similar problem that the chart cannot solve: when the cluster has a default `IngressClass`,
+the API server writes `spec.ingressClassName` into every Ingress that does not specify it, and ArgoCD reports
+the difference. Set `ingress.className` explicitly to avoid it.
+
 Example of a deployment where all components are exposed with generated hostnames through the Gateway API only,
 without any per-component parameter:
 
@@ -613,6 +633,7 @@ collector:
 | `httpRoute.defaultPaths[].rewritePrefix` | string  | no        | `-`           | Replacement prefix for Gateway API `URLRewrite` filter. For example, `/otlp/http/v1/traces` can be rewritten to `/v1/traces` with value `/`                                                                                                                 |
 | `httpRoute.defaultPaths[].service.name`  | string  | no        | `-`           | Backend service name. By default, `{{ .Values.jaeger.serviceName }}-collector` is used                                                                                                                                                                      |
 | `httpRoute.defaultPaths[].service.port`  | integer | yes       | `-`           | Backend service port                                                                                                                                                                                                                                        |
+| `httpRoute.defaultPaths[].service.weight` | integer | no        | `1`           | Weight of the backend in the rule. Always rendered explicitly, because the API server defaults it                                                                                                                                                            |
 | `grpcRoute.install`                      | boolean | no        | `-`           | Allow creating the route even if `GATEWAY_SYSTEM_TYPE` does not contain `gateway-api-default`. When it is not specified, the route is created if `GATEWAY_SYSTEM_TYPE` contains `gateway-api-default` and a hostname is resolved                            |
 | `grpcRoute.kind`                         | string  | no        | `HTTPRoute`   | Route kind for collector gRPC endpoints. Available values: `HTTPRoute`, `GRPCRoute`                                                                                                                                                                         |
 | `grpcRoute.labels`                       | map     | no        | `{}`          | Labels for collector gRPC route                                                                                                                                                                                                                             |
@@ -623,6 +644,7 @@ collector:
 | `grpcRoute.defaultPaths[].prefix`        | string  | yes       | `-`           | gRPC HTTP/2 `:path` prefix matched by HTTPRoute, for example `/opentelemetry.proto.collector.trace.v1.TraceService/Export`                                                                                                                                  |
 | `grpcRoute.defaultPaths[].service.name`  | string  | no        | `-`           | Backend service name. By default, `{{ .Values.jaeger.serviceName }}-collector` is used                                                                                                                                                                      |
 | `grpcRoute.defaultPaths[].service.port`  | integer | yes       | `-`           | Backend service port                                                                                                                                                                                                                                        |
+| `grpcRoute.defaultPaths[].service.weight` | integer | no        | `1`           | Weight of the backend in the rule. Always rendered explicitly, because the API server defaults it                                                                                                                                                            |
 | `grpcRoute.rules`                        | array   | no        | `[]`          | Native GRPCRoute rules used only when `grpcRoute.kind` is `GRPCRoute`. If empty, the chart creates a default rule that routes all matched gRPC requests to `{{ .Values.jaeger.serviceName }}-collector:4317`                                                |
 <!-- markdownlint-enable line-length -->
 
