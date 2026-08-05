@@ -21,7 +21,6 @@ metadata:
       {{- toYaml .Values.query.ingress.labels | nindent 4 }}
     {{- end }}
   annotations:
-    nginx.ingress.kubernetes.io/proxy-buffer-size: 256k
     {{- if $annotations }}
     {{- toYaml $annotations | nindent 4 }}
     {{- end }}
