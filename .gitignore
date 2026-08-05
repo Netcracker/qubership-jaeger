@@ -19,3 +19,6 @@ apm.lock.yaml
 
 # IDE
 .idea/
+
+# Locally installed tooling (make helm-docs)
+bin/
