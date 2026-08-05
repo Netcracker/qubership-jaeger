@@ -998,9 +998,9 @@
             "limits": {
               "properties": {
                 "cpu": {
-                  "default": 1,
+                  "default": "1000m",
                   "title": "cpu",
-                  "type": "integer"
+                  "type": "string"
                 },
                 "memory": {
                   "default": "512Mi",
