@@ -1611,7 +1611,7 @@ collector:
   #
   resources:
     limits:
-      cpu: 1
+      cpu: 1000m
       memory: 512Mi
     requests:
       cpu: 100m
@@ -1678,9 +1678,10 @@ collector:
       # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
       # Type: boolean
       # Mandatory: no
-      # Default: not set
+      # Default: false
       #
-      # install: true
+      install: false
+
       # Add annotation that prevents Gateway API converter from processing this Ingress.
       # Use it when HTTPRoute/GRPCRoute analogue is already configured.
       # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
@@ -1721,9 +1722,10 @@ collector:
       # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
       # Type: boolean
       # Mandatory: no
-      # Default: not set
+      # Default: false
       #
-      # install: true
+      install: false
+
       # Add annotation that prevents Gateway API converter from processing this Ingress.
       # Use it when HTTPRoute/GRPCRoute analogue is already configured.
       # The annotation is added automatically when GATEWAY_SYSTEM_TYPE contains "gateway-api-default".
@@ -1757,9 +1759,10 @@ collector:
     # Set it to "false" to never create it.
     # Type: boolean
     # Mandatory: no
-    # Default: not set
+    # Default: false
     #
-    # install: true
+    install: false
+
     labels: {}
     annotations: {}
     # List of parent Gateway references. When the list is empty, the route is attached to the
@@ -1812,9 +1815,10 @@ collector:
     # Set it to "false" to never create it.
     # Type: boolean
     # Mandatory: no
-    # Default: not set
+    # Default: false
     #
-    # install: true
+    install: false
+
     # Available values: HTTPRoute, GRPCRoute
     #
     kind: HTTPRoute
@@ -1858,7 +1862,6 @@ collector:
     #   - name: jaeger-collector
     #     port: 4317
     rules: []
-
 
   # Jaeger collector config, contains only several options to configure, other part of parameters take from
   # cassandraSchemaJob and elasticsearch sections
