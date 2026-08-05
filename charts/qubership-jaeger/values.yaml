@@ -1611,7 +1611,7 @@ collector:
   #
   resources:
     limits:
-      cpu: 1
+      cpu: 1000m
       memory: 512Mi
     requests:
       cpu: 100m
