@@ -20,10 +20,10 @@ metadata:
     {{- if .Values.query.ingress.labels }}
       {{- toYaml .Values.query.ingress.labels | nindent 4 }}
     {{- end }}
+  {{- if $annotations }}
   annotations:
-    {{- if $annotations }}
     {{- toYaml $annotations | nindent 4 }}
-    {{- end }}
+  {{- end }}
 spec:
   {{- if .Values.query.ingress.className }}
   ingressClassName: {{ .Values.query.ingress.className }}

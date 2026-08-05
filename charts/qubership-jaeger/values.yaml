@@ -1678,7 +1678,7 @@ collector:
       # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
       # Type: boolean
       # Mandatory: no
-      # Default: not set
+      # Default: false
       #
       install: false
 
@@ -1722,7 +1722,7 @@ collector:
       # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
       # Type: boolean
       # Mandatory: no
-      # Default: not set
+      # Default: false
       #
       install: false
 
@@ -1759,7 +1759,7 @@ collector:
     # Set it to "false" to never create it.
     # Type: boolean
     # Mandatory: no
-    # Default: not set
+    # Default: false
     #
     install: false
 
@@ -1815,7 +1815,7 @@ collector:
     # Set it to "false" to never create it.
     # Type: boolean
     # Mandatory: no
-    # Default: not set
+    # Default: false
     #
     install: false
 
