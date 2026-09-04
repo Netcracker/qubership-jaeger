@@ -864,7 +864,7 @@ collector:
   # -- The resources describe to compute resource requests and limits for single Pods. Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   resources:
     limits:
-      cpu: 1
+      cpu: 1000m
       memory: 512Mi
     requests:
       cpu: 100m
@@ -907,7 +907,7 @@ collector:
       # When the parameter is not specified, the Ingress is created if a host is resolved,
       # either from the "host"/"hosts" parameters below or from CLOUD_PUBLIC_URL, and if
       # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
-      # install: true
+      install: false
 
       # -- Add annotation that prevents Gateway API converter from processing this Ingress.
       # Use it when HTTPRoute/GRPCRoute analogue is already configured.
@@ -952,7 +952,7 @@ collector:
       # When the parameter is not specified, the Ingress is created if a host is resolved,
       # either from the "host"/"hosts" parameters below or from CLOUD_PUBLIC_URL, and if
       # GATEWAY_SYSTEM_TYPE allows creating Ingresses. Set it to "false" to never create it.
-      # install: true
+      install: false
 
       # -- Add annotation that prevents Gateway API converter from processing this Ingress.
       # Use it when HTTPRoute/GRPCRoute analogue is already configured.
@@ -987,12 +987,12 @@ collector:
   # -- HTTPRoute configuration.
   # @default -- see the rows below
   httpRoute:
-    # Allow creating the HTTPRoute for the HTTP collector endpoints even if GATEWAY_SYSTEM_TYPE does not contain
+    # -- Allow creating the HTTPRoute for the HTTP collector endpoints even if GATEWAY_SYSTEM_TYPE does not contain
     # "gateway-api-default". When the parameter is not specified, the HTTPRoute is created if
     # GATEWAY_SYSTEM_TYPE contains "gateway-api-default" and a hostname is resolved, either
     # from the parameters of the route, from the matching Ingress or from CLOUD_PUBLIC_URL.
     # Set it to "false" to never create it.
-    # install: true
+    install: false
 
     # -- Labels for the HTTPRoute.
     labels: {}
@@ -1052,7 +1052,7 @@ collector:
     # GATEWAY_SYSTEM_TYPE contains "gateway-api-default" and a hostname is resolved, either
     # from the parameters of the route, from the matching Ingress or from CLOUD_PUBLIC_URL.
     # Set it to "false" to never create it.
-    # install: true
+    install: false
 
     # -- Available values: HTTPRoute, GRPCRoute
     kind: HTTPRoute

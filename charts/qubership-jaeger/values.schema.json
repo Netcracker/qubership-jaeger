@@ -164,7 +164,7 @@
                 "cpu": {
                   "default": "500m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "256Mi",
@@ -180,7 +180,7 @@
                 "cpu": {
                   "default": "50m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "50Mi",
@@ -998,9 +998,9 @@
             "limits": {
               "properties": {
                 "cpu": {
-                  "default": 1,
+                  "default": "1000m",
                   "title": "cpu",
-                  "type": "integer"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "512Mi",
@@ -1016,7 +1016,7 @@
                 "cpu": {
                   "default": "100m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "100Mi",
@@ -1573,7 +1573,7 @@
                     "cpu": {
                       "default": "100m",
                       "title": "cpu",
-                      "type": "string"
+                      "type": ["integer", "string"]
                     },
                     "memory": {
                       "default": "128Mi",
@@ -1589,7 +1589,7 @@
                     "cpu": {
                       "default": "100m",
                       "title": "cpu",
-                      "type": "string"
+                      "type": ["integer", "string"]
                     },
                     "memory": {
                       "default": "128Mi",
@@ -1770,7 +1770,7 @@
                     "cpu": {
                       "default": "100m",
                       "title": "cpu",
-                      "type": "string"
+                      "type": ["integer", "string"]
                     },
                     "memory": {
                       "default": "128Mi",
@@ -1786,7 +1786,7 @@
                     "cpu": {
                       "default": "100m",
                       "title": "cpu",
-                      "type": "string"
+                      "type": ["integer", "string"]
                     },
                     "memory": {
                       "default": "128Mi",
@@ -1998,7 +1998,7 @@
                     "cpu": {
                       "default": "100m",
                       "title": "cpu",
-                      "type": "string"
+                      "type": ["integer", "string"]
                     },
                     "memory": {
                       "default": "128Mi",
@@ -2014,7 +2014,7 @@
                     "cpu": {
                       "default": "100m",
                       "title": "cpu",
-                      "type": "string"
+                      "type": ["integer", "string"]
                     },
                     "memory": {
                       "default": "128Mi",
@@ -2291,7 +2291,7 @@
                 "cpu": {
                   "default": "100m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "128Mi",
@@ -2307,7 +2307,7 @@
                 "cpu": {
                   "default": "100m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "128Mi",
@@ -2442,7 +2442,7 @@
                 "cpu": {
                   "default": "300m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "256Mi",
@@ -2458,7 +2458,7 @@
                 "cpu": {
                   "default": "50m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "64Mi",
@@ -2712,7 +2712,7 @@
                 "cpu": {
                   "default": "100m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "200Mi",
@@ -2728,7 +2728,7 @@
                 "cpu": {
                   "default": "50m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "100Mi",
@@ -2957,7 +2957,7 @@
                 "cpu": {
                   "default": "200m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "256Mi",
@@ -2973,7 +2973,7 @@
                 "cpu": {
                   "default": "100m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "128Mi",
@@ -3116,7 +3116,7 @@
                 "cpu": {
                   "default": "50m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "50Mi",
@@ -3132,7 +3132,7 @@
                 "cpu": {
                   "default": "50m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "50Mi",
@@ -3312,7 +3312,7 @@
                     "cpu": {
                       "default": "100m",
                       "title": "cpu",
-                      "type": "string"
+                      "type": ["integer", "string"]
                     },
                     "memory": {
                       "default": "128Mi",
@@ -3328,7 +3328,7 @@
                     "cpu": {
                       "default": "10m",
                       "title": "cpu",
-                      "type": "string"
+                      "type": ["integer", "string"]
                     },
                     "memory": {
                       "default": "128Mi",
@@ -3382,7 +3382,7 @@
                 "cpu": {
                   "default": "500m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "1Gi",
@@ -3398,7 +3398,7 @@
                 "cpu": {
                   "default": "100m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "100Mi",
@@ -3535,7 +3535,7 @@
                 "cpu": {
                   "default": "100m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "100Mi",
@@ -3551,7 +3551,7 @@
                 "cpu": {
                   "default": "50m",
                   "title": "cpu",
-                  "type": "string"
+                  "type": ["integer", "string"]
                 },
                 "memory": {
                   "default": "50Mi",

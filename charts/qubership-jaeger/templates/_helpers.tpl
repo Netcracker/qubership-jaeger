@@ -1588,6 +1588,26 @@ Generate list of args for collector
 {{- end -}}
 
 {{/*
+Generate list of env variables for collector.
+Returns an empty string when there is nothing to render, so the caller can omit
+the "env:" key entirely instead of emitting an empty section.
+*/}}
+{{- define "collector.env" -}}
+{{- if eq .Values.jaeger.storage.type "elasticsearch" }}
+  {{- range $key, $value := .Values.elasticsearch.env }}
+- name: {{ $key | quote }}
+  value: {{ $value | quote }}
+  {{- end }}
+  {{- with .Values.elasticsearch.extraEnv }}
+    {{- toYaml . | nindent 0 }}
+  {{- end }}
+{{- end }}
+{{- with .Values.collector.extraEnv }}
+  {{- toYaml . | nindent 0 }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Generate certificate volumes for TLS configuration
 */}}
 {{- define "jaeger.certificateVolumes" -}}

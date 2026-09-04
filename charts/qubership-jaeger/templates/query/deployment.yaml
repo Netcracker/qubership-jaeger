@@ -136,10 +136,12 @@ spec:
             - name: ui-config
               mountPath: /etc/config
               readOnly: true
-            - name: query-config
+            - name: query-runtime-config
               mountPath: /conf
               readOnly: true
-            {{- include "jaeger.certificateVolumeMounts" . | nindent 12 }}
+            {{- with (include "jaeger.certificateVolumeMounts" . | trim) }}
+            {{- . | nindent 12 }}
+            {{- end }}
         {{- if .Values.proxy.install }}
         - name: proxy
           image: {{ include "proxy.image" . }}
@@ -228,8 +230,10 @@ spec:
             {{- toYaml .Values.readinessProbe.resources | nindent 12 }}
           securityContext:
             {{- include "readinessProbe.containerSecurityContext" . }}
+          {{- with (include "jaeger.certificateVolumeMounts" . | trim) }}
           volumeMounts:
-            {{- include "jaeger.certificateVolumeMounts" . | nindent 12 }}
+            {{- . | nindent 12 }}
+          {{- end }}
         {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
@@ -242,7 +246,7 @@ spec:
           configMap:
             name: {{ .Values.jaeger.serviceName }}-ui-configuration
             defaultMode: 420
-        - name: query-config
+        - name: query-runtime-config
           secret:
             secretName: {{ include "query.runtimeConfig.secretName" . }}
             items:
@@ -261,7 +265,9 @@ spec:
             defaultMode: 420
           {{- end }}
         {{- end }}
-        {{- include "jaeger.certificateVolumes" . | nindent 8 }}
+        {{- with (include "jaeger.certificateVolumes" . | trim) }}
+        {{- . | nindent 8 }}
+        {{- end }}
       {{- if .Values.query.affinity }}
       affinity:
         {{- toYaml .Values.query.affinity | nindent 8 }}

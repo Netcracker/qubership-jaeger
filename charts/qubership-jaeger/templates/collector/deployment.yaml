@@ -69,19 +69,10 @@ spec:
           imagePullPolicy: {{ .Values.collector.imagePullPolicy }}
           args:
             {{- template "collector.args" . }}
+          {{- with (include "collector.env" . | trim) }}
           env:
-            {{- if eq .Values.jaeger.storage.type "elasticsearch" }}
-            {{- range $key, $value := .Values.elasticsearch.env }}
-            - name: {{ $key | quote }}
-              value: {{ $value | quote }}
-            {{- end }}
-            {{- with .Values.elasticsearch.extraEnv }}
-              {{- toYaml . | nindent 12 }}
-            {{- end }}
-            {{- end }}
-            {{- with .Values.collector.extraEnv }}
-              {{- toYaml . | nindent 12 }}
-            {{- end }}
+            {{- . | nindent 12 }}
+          {{- end }}
           {{- if .Values.readinessProbe.install }}
           livenessProbe:
             failureThreshold: 3
@@ -153,10 +144,12 @@ spec:
             - name: sampling-config
               mountPath: /etc/jaeger/sampling
               readOnly: true
-            - name: collector-config
+            - name: collector-runtime-config
               mountPath: /conf
               readOnly: true
-            {{- include "jaeger.certificateVolumeMounts" . | nindent 12 }}
+            {{- with (include "jaeger.certificateVolumeMounts" . | trim) }}
+            {{- . | nindent 12 }}
+            {{- end }}
         {{- if .Values.readinessProbe.install }}
         - name: probe
           image: {{ template "readiness-probe.image" . }}
@@ -191,8 +184,10 @@ spec:
             {{- toYaml .Values.readinessProbe.resources | nindent 12 }}
           securityContext:
             {{- include "readinessProbe.containerSecurityContext" . }}
+          {{- with (include "jaeger.certificateVolumeMounts" . | trim) }}
           volumeMounts:
-            {{- include "jaeger.certificateVolumeMounts" . | nindent 12 }}
+            {{- . | nindent 12 }}
+          {{- end }}
         {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
@@ -206,14 +201,16 @@ spec:
             items:
               - key: sampling
                 path: sampling.json
-        - name: collector-config
+        - name: collector-runtime-config
           secret:
             secretName: {{ include "collector.runtimeConfig.secretName" . }}
             items:
               - key: {{ include "collector.runtimeConfig.key" . }}
                 path: config.yaml
             defaultMode: 420
-        {{- include "jaeger.certificateVolumes" . | nindent 8 }}
+        {{- with (include "jaeger.certificateVolumes" . | trim) }}
+        {{- . | nindent 8 }}
+        {{- end }}
       {{- if .Values.collector.affinity }}
       affinity:
         {{- toYaml .Values.collector.affinity | nindent 8 }}
