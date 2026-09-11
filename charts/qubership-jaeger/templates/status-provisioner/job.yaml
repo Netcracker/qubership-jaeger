@@ -26,7 +26,7 @@ spec:
         {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "jaeger-integration-tests") | nindent 8 }}
     spec:
       securityContext:
-        {{- include "statusProvisioner.securityContext" . }}
+        {{- include "jaeger.hardenedPodSecurityContext" (list .Values.statusProvisioner.securityContext .) | nindent 8 }}
       restartPolicy: Never
       serviceAccountName: integration-tests-status-provisioner
       {{- if .Values.statusProvisioner.priorityClassName }}
@@ -73,11 +73,16 @@ spec:
             value: "Successful"
           {{- end }}
         volumeMounts:
+          - name: tmp
+            mountPath: /tmp
           - name: robot-storage
             mountPath: /opt/robot/target
         securityContext:
-          {{- include "statusProvisioner.containerSecurityContext" . }}
+          {{- include "jaeger.hardenedContainerSecurityContext" .Values.statusProvisioner.containerSecurityContext | nindent 10 }}
       volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
         - name: robot-storage
           emptyDir: {}
       nodeSelector: {}

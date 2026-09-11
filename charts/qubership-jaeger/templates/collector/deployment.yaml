@@ -58,7 +58,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        {{- include "collector.securityContext" . }}
+        {{- include "jaeger.hardenedPodSecurityContext" (list .Values.collector.securityContext .) | nindent 8 }}
       {{- if .Values.collector.priorityClassName }}
       priorityClassName: {{ .Values.collector.priorityClassName }}
       {{- end }}
@@ -137,10 +137,12 @@ spec:
           resources:
             {{- toYaml .Values.collector.resources | nindent 12 }}
           securityContext:
-            {{- include "collector.containerSecurityContext" . }}
+            {{- include "jaeger.hardenedContainerSecurityContext" .Values.collector.containerSecurityContext | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
             - name: sampling-config
               mountPath: /etc/jaeger/sampling
               readOnly: true
@@ -183,9 +185,11 @@ spec:
           resources:
             {{- toYaml .Values.readinessProbe.resources | nindent 12 }}
           securityContext:
-            {{- include "readinessProbe.containerSecurityContext" . }}
-          {{- with (include "jaeger.certificateVolumeMounts" . | trim) }}
+            {{- include "jaeger.hardenedContainerSecurityContext" .Values.readinessProbe.containerSecurityContext | nindent 12 }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          {{- with (include "jaeger.certificateVolumeMounts" . | trim) }}
             {{- . | nindent 12 }}
           {{- end }}
         {{- end }}
@@ -194,6 +198,9 @@ spec:
       schedulerName: default-scheduler
       terminationGracePeriodSeconds: 30
       volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
         - name: sampling-config
           configMap:
             name: {{ .Values.jaeger.serviceName }}-sampling-configuration

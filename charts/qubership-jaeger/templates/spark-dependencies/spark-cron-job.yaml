@@ -48,8 +48,11 @@ spec:
           {{- end }}
           restartPolicy: {{ .Values.spark.restartPolicy | default "OnFailure" }}
           serviceAccount: spark-dependencies-sa
-          {{- if or .Values.cassandraSchemaJob.tls.enabled .Values.elasticsearch.client.tls.enabled }}
           volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 100Mi
+          {{- if or .Values.cassandraSchemaJob.tls.enabled .Values.elasticsearch.client.tls.enabled }}
             - name: truststore-dir
               emptyDir: {}
             {{- if eq .Values.jaeger.storage.type "cassandra" }}
@@ -161,20 +164,20 @@ spec:
                     secretKeyRef:
                       name: {{ .Values.spark.trustStoreSecretName }}
                       key: password
+              {{- end }}
               volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+              {{- if or .Values.cassandraSchemaJob.tls.enabled .Values.elasticsearch.client.tls.enabled }}
                 - name: truststore-dir
                   mountPath: /truststore
               {{- end }}
               resources:
                 {{- toYaml .Values.spark.resources | nindent 16 }}
-              {{- if .Values.spark.containerSecurityContext }}
               securityContext:
-              {{- toYaml .Values.spark.containerSecurityContext | nindent 14 }}
-              {{- end }}
-          {{- if .Values.spark.securityContext }}
+                {{- include "jaeger.hardenedContainerSecurityContext" .Values.spark.containerSecurityContext | nindent 16 }}
           securityContext:
-          {{- toYaml .Values.spark.securityContext | nindent 10 }}
-          {{- end }}
+            {{- include "jaeger.hardenedPodSecurityContext" (list .Values.spark.securityContext .) | nindent 12 }}
           {{- if .Values.spark.affinity }}
           affinity:
             {{- toYaml .Values.spark.affinity | nindent 14 }}

@@ -34,7 +34,7 @@ spec:
         {{- end }}
     spec:
       securityContext:
-        {{- include "hotrod.securityContext" . }}
+        {{- include "jaeger.hardenedPodSecurityContext" (list .Values.hotrod.securityContext .) | nindent 8 }}
       serviceAccountName: {{ .Values.jaeger.serviceName }}-hotrod
       {{- with .Values.hotrod.imagePullSecrets }}
       imagePullSecrets:
@@ -70,7 +70,14 @@ spec:
           resources:
             {{- toYaml .Values.hotrod.resources | nindent 12 }}
           securityContext:
-            {{- include "hotrod.containerSecurityContext" . }}
+            {{- include "jaeger.hardenedContainerSecurityContext" .Values.hotrod.containerSecurityContext | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
       {{- if .Values.hotrod.affinity }}
       affinity:
         {{- toYaml .Values.hotrod.affinity | nindent 8 }}

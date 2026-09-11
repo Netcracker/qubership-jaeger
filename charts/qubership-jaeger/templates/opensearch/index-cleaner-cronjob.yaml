@@ -40,7 +40,7 @@ spec:
         spec:
           serviceAccountName: {{ .Values.jaeger.serviceName }}-index-cleaner
           securityContext:
-            {{- include "elasticsearch.indexCleaner.securityContext" . }}
+            {{- include "jaeger.hardenedPodSecurityContext" (list .Values.elasticsearch.indexCleaner.securityContext .) | nindent 12 }}
           {{- with .Values.elasticsearch.indexCleaner.imagePullSecrets }}
           imagePullSecrets:
             {{- toYaml . | nindent 12 }}
@@ -89,8 +89,10 @@ spec:
             resources:
               {{- toYaml .Values.elasticsearch.indexCleaner.resources | nindent 14 }}
             securityContext:
-              {{- include "elasticsearch.indexCleaner.containerSecurityContext" . }}
+              {{- include "jaeger.hardenedContainerSecurityContext" .Values.elasticsearch.indexCleaner.containerSecurityContext | nindent 14 }}
             volumeMounts:
+              - name: tmp
+                mountPath: /tmp
             {{- include "jaeger.opensearchCertificateVolumeMounts" . | nindent 12 }}
             {{- range .Values.elasticsearch.indexCleaner.extraConfigmapMounts }}
               - name: {{ .name }}
@@ -118,6 +120,9 @@ spec:
             {{- toYaml .Values.elasticsearch.indexCleaner.tolerations | nindent 12 }}
           {{- end }}
           volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 100Mi
           {{- include "jaeger.opensearchCertificateVolumes" . | nindent 10 }}
           {{- range .Values.elasticsearch.indexCleaner.extraConfigmapMounts }}
             - name: {{ .name }}

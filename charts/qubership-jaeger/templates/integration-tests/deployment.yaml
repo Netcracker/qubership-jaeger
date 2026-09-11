@@ -33,7 +33,7 @@ spec:
         app.kubernetes.io/technology: python
     spec:
       securityContext:
-        {{- include "integrationTests.securityContext" . }}
+        {{- include "jaeger.hardenedPodSecurityContext" (list .Values.integrationTests.securityContext .) | nindent 8 }}
       serviceAccountName: {{ .Values.integrationTests.serviceAccount.name }}
       {{- if .Values.integrationTests.affinity }}
       affinity:
@@ -49,6 +49,8 @@ spec:
             - containerPort: 8080
               protocol: TCP
           env:
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
             - name: TAGS
               value: {{ .Values.integrationTests.tags }}
             - name: JAEGER_NAMESPACE
@@ -73,13 +75,18 @@ spec:
               value: {{ include "integrationTests.customResourcePath" . }}
           resources: {{ toYaml .Values.integrationTests.resources | nindent 12 }}
           securityContext:
-            {{- include "integrationTests.containerSecurityContext" . }}
+            {{- include "jaeger.hardenedContainerSecurityContext" .Values.integrationTests.containerSecurityContext | nindent 12 }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
             - name: output
               mountPath: /opt/robot/output
           terminationMessagePath: /dev/termination-log
           imagePullPolicy: Always
       volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
         - name: output
           emptyDir: {}
 {{- end }}
