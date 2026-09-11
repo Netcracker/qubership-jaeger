@@ -1,0 +1,36 @@
+---
+name: Chart Docs Check
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'charts/qubership-jaeger/Chart.yaml'
+      - 'charts/qubership-jaeger/values.yaml'
+      - 'charts/qubership-jaeger/README.md'
+      - 'charts/qubership-jaeger/README.md.gotmpl'
+      - 'Makefile'
+      - '.github/workflows/docs-check.yaml'
+  workflow_dispatch: null
+
+permissions:
+  contents: read
+
+jobs:
+  docs-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Cache the pinned helm-docs binary
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: bin
+          key: helm-docs-${{ runner.os }}-${{ hashFiles('Makefile') }}
+
+      - name: Check that the generated chart README is up to date
+        run: make docs-check

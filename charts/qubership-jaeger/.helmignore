@@ -20,3 +20,5 @@
 .idea/
 *.tmproj
 .vscode/
+# helm-docs template (see Makefile target 'docs')
+README.md.gotmpl
