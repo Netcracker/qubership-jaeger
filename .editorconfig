@@ -25,6 +25,10 @@ trim_trailing_whitespace = false
 indent_size = 4
 indent_style = tab
 
+[{Makefile,*.mk}]
+# make requires recipe lines to start with a tab
+indent_style = tab
+
 [Dockerfile]
 indent_size = 4
 
