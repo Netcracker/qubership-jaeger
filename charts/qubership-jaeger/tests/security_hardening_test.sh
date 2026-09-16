@@ -171,6 +171,7 @@ assert_count '^[[:space:]]+readOnlyRootFilesystem: true$' 13
 assert_count '^[[:space:]]+- ALL$' 13
 assert_count '^[[:space:]]+mountPath: /tmp$' 13
 assert_count '^[[:space:]]+sizeLimit: 100Mi$' 10
+assert_count '^[[:space:]]+- name: PYTHONDONTWRITEBYTECODE$' 2
 assert_regular_containers_hardened "${rendered_file}"
 
 if grep -Eq 'hostNetwork: true|hostPID: true|hostIPC: true|hostPath:' "${rendered_file}"; then
@@ -222,7 +223,7 @@ assert_render_fails \
     "securityContext.runAsNonRoot must be true when security hardening is enabled" \
     --set collector.securityContext.runAsNonRoot=false
 assert_render_fails \
-    "securityContext.seccompProfile.type must be RuntimeDefault when security hardening is enabled" \
+    "value must be 'RuntimeDefault'" \
     --set collector.securityContext.seccompProfile.type=Unconfined
 assert_render_fails \
     "containerSecurityContext.allowPrivilegeEscalation must be false when security hardening is enabled" \
@@ -230,6 +231,9 @@ assert_render_fails \
 assert_render_fails \
     "containerSecurityContext.readOnlyRootFilesystem must be true when security hardening is enabled" \
     --set collector.containerSecurityContext.readOnlyRootFilesystem=false
+assert_render_fails \
+    "containerSecurityContext.seccompProfile.type must be RuntimeDefault when security hardening is enabled" \
+    --set collector.containerSecurityContext.seccompProfile.type=Unconfined
 assert_render_fails \
     "containerSecurityContext.capabilities.drop must contain ALL when security hardening is enabled" \
     --set 'collector.containerSecurityContext.capabilities.drop[0]=NET_RAW'

@@ -38,6 +38,8 @@ spec:
         imagePullPolicy: Always
         resources: {{ toYaml .Values.statusProvisioner.resources | nindent 10 }}
         env:
+          - name: PYTHONDONTWRITEBYTECODE
+            value: "1"
           - name: NAMESPACE
             valueFrom:
               fieldRef:

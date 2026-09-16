@@ -225,12 +225,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container.\n Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
               "properties": {
                 "type": {
-                  "type":"string"
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
                 }
               },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -1098,7 +1104,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container.\n Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -1640,7 +1657,18 @@
                   "type": "boolean"
                 },
                 "seccompProfile": {
-                  "description": "The seccomp profile for the container.\nType: object\nMandatory: no\n",
+                  "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no\n",
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "RuntimeDefault"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
                   "title": "seccompProfile",
                   "type": "object"
                 }
@@ -1689,7 +1717,7 @@
               "type": "string"
             },
             "containerSecurityContext": {
-              "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
               "properties": {
                 "allowPrivilegeEscalation": {
                   "default": false,
@@ -1837,14 +1865,18 @@
                   "type": "boolean"
                 },
                 "seccompProfile": {
-                  "description": "The seccomp profile for the container. Defines secure computing mode.\nIt is not possible to apply a seccomp profile to a Pod or container running with privileged: true set in the container's securityContext.\nPrivileged containers always run as Unconfined.\nType: object\nMandatory: no",
+                  "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
                   "properties": {
                     "type": {
-                      "description": "Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'",
-                      "type": "string",
-                      "enum": ["RuntimeDefault", "Unconfined", "Localhost"]
+                      "enum": [
+                        "RuntimeDefault"
+                      ],
+                      "type": "string"
                     }
                   },
+                  "required": [
+                    "type"
+                  ],
                   "title": "seccompProfile",
                   "type": "object"
                 }
@@ -1887,7 +1919,7 @@
               "type": "string"
             },
             "containerSecurityContext": {
-              "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
               "properties": {
                 "allowPrivilegeEscalation": {
                   "default": false,
@@ -2065,12 +2097,18 @@
                   "title": "runAsNonRoot"
                 },
                 "seccompProfile": {
-                  "description": "The seccomp profile for the pod.\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no",
+                  "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
                   "properties": {
                     "type": {
+                      "enum": [
+                        "RuntimeDefault"
+                      ],
                       "type": "string"
                     }
                   },
+                  "required": [
+                    "type"
+                  ],
                   "type": "object",
                   "title": "seccompProfile"
                 }
@@ -2116,7 +2154,7 @@
           "type": "object"
         },
         "containerSecurityContext": {
-          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
           "properties": {
             "allowPrivilegeEscalation": {
               "default": false,
@@ -2370,7 +2408,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -2402,7 +2451,7 @@
     "integrationTests": {
       "properties": {
         "containerSecurityContext": {
-          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfileType: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
           "properties": {
             "allowPrivilegeEscalation": {
               "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Type: bool\n Mandatory: no",
@@ -2503,7 +2552,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -2755,7 +2815,7 @@
           "type": "object"
         },
         "securityContext": {
-          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 1000",
+          "description": "Deprecated. Ignored by the chart because the proxy runs as a sidecar in the query pod. Configure query.securityContext instead.\nType: object\nMandatory: no",
           "title": "securityContext",
           "type": "object"
         },
@@ -2803,7 +2863,7 @@
           "type": "object"
         },
         "containerSecurityContext": {
-          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfileType: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
           "properties": {
             "allowPrivilegeEscalation": {
               "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
@@ -3036,7 +3096,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -3250,7 +3321,7 @@
           "type": "string"
         },
         "containerSecurityContext": {
-          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
           "properties": {
             "allowPrivilegeEscalation": {
               "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
@@ -3449,7 +3520,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -3492,7 +3574,7 @@
     "statusProvisioner": {
       "properties": {
         "containerSecurityContext": {
-          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfileType: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
           "properties": {
             "allowPrivilegeEscalation": {
               "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
@@ -3596,7 +3678,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }

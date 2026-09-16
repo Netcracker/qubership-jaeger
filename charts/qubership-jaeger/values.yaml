@@ -169,15 +169,6 @@ proxy:
       cpu: 50m
       memory: 100Mi
 
-  # SecurityContext holds pod-level security attributes.
-  # The parameters are required if a Pod Security Policy is enabled
-  #  for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.
-  # Type: object
-  # Mandatory: no
-  # Default:
-  #    securityContext:
-  #      runAsUser: 1000
-
   containerSecurityContext: {}
     # Controls whether a process can gain more privileges than its parent process.
     # This bool directly controls whether the 'no_new_privs' flag gets set on the container process.

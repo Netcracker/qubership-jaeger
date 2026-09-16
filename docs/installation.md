@@ -95,7 +95,8 @@ security context fields remain configurable.
 On Kubernetes, the chart defaults `runAsUser`, `runAsGroup`, and `fsGroup` to `1000`. Explicit user and group values
 take precedence. On OpenShift, the chart omits these defaults so that Security Context Constraints can assign them.
 The chart detects OpenShift through the cluster API unless `PAAS_PLATFORM` provides an explicit platform override.
-Existing init containers are outside the security hardening scope and retain their existing security contexts.
+Existing init containers do not receive container-level hardening settings. They still inherit the pod-level
+security context, including `runAsNonRoot` and the platform-specific user and group settings.
 
 ### Azure
 
@@ -1490,9 +1491,10 @@ proxy:
 | `oauth2.idpAddress`            | string                                                                                                                        | no        | -                                                                           | The address for this socket                                                                                       |
 | `oauth2.idpPort`               | string                                                                                                                        | no        | 80                                                                          | The listeners will bind to the port                                                                               |
 | `resources`                    | object                                                                                                                        | no        | `{requests: {cpu: 50m, memory: 100Mi}, limits: {cpu: 100m, memory: 200Mi}}` | Describes computing resource requests and limits for single Pods                                                  |
-| `securityContext`              | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                          | Describes pod-level security attributes                                                                           |
 | `containerSecurityContext`     | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                          | Holds container-level security attributes                                                                         |
 <!-- markdownlint-enable line-length -->
+
+The proxy runs as a sidecar in the query pod. Configure pod-level settings through `query.securityContext`.
 
 Examples:
 
@@ -1523,13 +1525,6 @@ proxy:
     limits:
       cpu: 100m
       memory: 200Mi
-  securityContext:
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
-    runAsNonRoot: true
-    seccompProfile:
-      type: RuntimeDefault
   containerSecurityContext:
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
