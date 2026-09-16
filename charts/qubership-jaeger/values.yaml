@@ -31,6 +31,15 @@
 #
 # GATEWAY_SYSTEM_NAMESPACE: "gateway-system"
 
+# Platform override used for pod user and group defaults.
+# Leave empty to detect OpenShift through the cluster API. Kubernetes workloads use UID/GID 1000 by default,
+# while OpenShift assigns IDs through its Security Context Constraints.
+# Available values: "", "KUBERNETES", "OPENSHIFT"
+# Type: string
+# Mandatory: no
+# Default: ""
+PAAS_PLATFORM: ""
+
 jaeger:
   # Name of jaeger service.
   # Type: string
@@ -167,7 +176,7 @@ proxy:
   # Mandatory: no
   # Default:
   #    securityContext:
-  #      runAsUser: 2000
+  #      runAsUser: 1000
 
   containerSecurityContext: {}
     # Controls whether a process can gain more privileges than its parent process.
@@ -465,7 +474,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # runAsUser: 2000
+      # runAsUser: 1000
 
       # A special supplemental group that applies to all containers in a pod.
       # Some volume types allow the Kubelet to change the ownership of that volume
@@ -477,7 +486,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # fsGroup: 2000
+      # fsGroup: 1000
 
       # Set mandatory flag to run as non root user
       # Type: bool
@@ -654,7 +663,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # runAsUser: 2000
+      # runAsUser: 1000
 
       # A special supplemental group that applies to all containers in a pod.
       # Some volume types allow the Kubelet to change the ownership of that volume
@@ -666,7 +675,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # fsGroup: 2000
+      # fsGroup: 1000
 
       # Set mandatory flag to run as non root user
       # Type: bool
@@ -869,7 +878,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # runAsUser: 2000
+      # runAsUser: 1000
 
       # A special supplemental group that applies to all containers in a pod.
       # Some volume types allow the Kubelet to change the ownership of that volume
@@ -881,7 +890,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # fsGroup: 2000
+      # fsGroup: 1000
 
       # Set mandatory flag to run as non root user
       # Type: bool
@@ -1530,7 +1539,7 @@ collector:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -1542,7 +1551,7 @@ collector:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -1984,7 +1993,7 @@ hotrod:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -1996,7 +2005,7 @@ hotrod:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -2347,7 +2356,7 @@ query:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -2359,7 +2368,7 @@ query:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -2499,7 +2508,7 @@ integrationTests:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -2511,7 +2520,7 @@ integrationTests:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -2572,7 +2581,7 @@ statusProvisioner:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -2584,7 +2593,7 @@ statusProvisioner:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -2866,7 +2875,7 @@ spark:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -2878,7 +2887,7 @@ spark:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool

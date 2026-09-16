@@ -97,7 +97,7 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
-          {{- include "jaeger.opensearchCertificateVolumeMounts" (merge (dict "prehook" true) .) | nindent 10 }}
+          {{- include "jaeger.opensearchCertificateVolumeMounts" (merge (dict "prehook" true) .) | nindent 12 }}
           {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
@@ -114,7 +114,7 @@ spec:
         - name: tmp
           emptyDir:
             sizeLimit: 100Mi
-      {{- include "jaeger.opensearchCertificateVolumes" (merge (dict "prehook" true) .) | nindent 6 }}
+      {{- include "jaeger.opensearchCertificateVolumes" (merge (dict "prehook" true) .) | nindent 8 }}
       {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
         - name: {{ .name }}
           configMap:

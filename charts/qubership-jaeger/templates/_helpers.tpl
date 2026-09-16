@@ -944,10 +944,23 @@ Return mandatory security settings merged with a container's custom context.
 */}}
 {{- define "jaeger.hardenedContainerSecurityContext" -}}
   {{- $context := deepCopy (default dict .) -}}
+  {{- if and (hasKey $context "allowPrivilegeEscalation") (ne (get $context "allowPrivilegeEscalation" | toString) "false") -}}
+    {{- fail "containerSecurityContext.allowPrivilegeEscalation must be false when security hardening is enabled" -}}
+  {{- end -}}
+  {{- if and (hasKey $context "readOnlyRootFilesystem") (ne (get $context "readOnlyRootFilesystem" | toString) "true") -}}
+    {{- fail "containerSecurityContext.readOnlyRootFilesystem must be true when security hardening is enabled" -}}
+  {{- end -}}
+  {{- $capabilities := deepCopy (default dict (get $context "capabilities")) -}}
+  {{- if hasKey $capabilities "drop" -}}
+    {{- $drop := get $capabilities "drop" -}}
+    {{- if or (not (kindIs "slice" $drop)) (not (has "ALL" $drop)) -}}
+      {{- fail "containerSecurityContext.capabilities.drop must contain ALL when security hardening is enabled" -}}
+    {{- end -}}
+  {{- else -}}
+    {{- $_ := set $capabilities "drop" (list "ALL") -}}
+  {{- end -}}
   {{- $_ := set $context "allowPrivilegeEscalation" false -}}
   {{- $_ := set $context "readOnlyRootFilesystem" true -}}
-  {{- $capabilities := deepCopy (default dict (get $context "capabilities")) -}}
-  {{- $_ := set $capabilities "drop" (list "ALL") -}}
   {{- $_ := set $context "capabilities" $capabilities -}}
   {{- toYaml $context -}}
 {{- end -}}
@@ -958,14 +971,34 @@ Return mandatory pod security settings merged with a pod's custom context.
 {{- define "jaeger.hardenedPodSecurityContext" -}}
   {{- $context := deepCopy (default dict (index . 0)) -}}
   {{- $root := index . 1 -}}
+  {{- if and (hasKey $context "runAsNonRoot") (ne (get $context "runAsNonRoot" | toString) "true") -}}
+    {{- fail "securityContext.runAsNonRoot must be true when security hardening is enabled" -}}
+  {{- end -}}
+  {{- if hasKey $context "seccompProfile" -}}
+    {{- $seccompProfile := get $context "seccompProfile" -}}
+    {{- if or (not (kindIs "map" $seccompProfile)) (ne (default "" (get $seccompProfile "type")) "RuntimeDefault") -}}
+      {{- fail "securityContext.seccompProfile.type must be RuntimeDefault when security hardening is enabled" -}}
+    {{- end -}}
+  {{- end -}}
   {{- $_ := set $context "runAsNonRoot" true -}}
   {{- $_ := set $context "seccompProfile" (dict "type" "RuntimeDefault") -}}
-  {{- if eq (default "" $root.Values.PAAS_PLATFORM) "KUBERNETES" -}}
+  {{- $platform := default "" $root.Values.PAAS_PLATFORM -}}
+  {{- if and (ne $platform "") (ne $platform "KUBERNETES") (ne $platform "OPENSHIFT") -}}
+    {{- fail "PAAS_PLATFORM must be empty, KUBERNETES, or OPENSHIFT" -}}
+  {{- end -}}
+  {{- $hasOpenShiftAppsApi := $root.Capabilities.APIVersions.Has "apps.openshift.io/v1" -}}
+  {{- $hasOpenShiftSecurityApi := $root.Capabilities.APIVersions.Has "security.openshift.io/v1" -}}
+  {{- $isOpenShift := or $hasOpenShiftAppsApi $hasOpenShiftSecurityApi -}}
+  {{- $useKubernetesIds := or (eq $platform "KUBERNETES") (and (eq $platform "") (not $isOpenShift)) -}}
+  {{- if $useKubernetesIds -}}
     {{- if not (hasKey $context "runAsUser") -}}
       {{- $_ := set $context "runAsUser" 1000 -}}
     {{- end -}}
     {{- if not (hasKey $context "runAsGroup") -}}
       {{- $_ := set $context "runAsGroup" 1000 -}}
+    {{- end -}}
+    {{- if not (hasKey $context "fsGroup") -}}
+      {{- $_ := set $context "fsGroup" 1000 -}}
     {{- end -}}
   {{- end -}}
   {{- toYaml $context -}}

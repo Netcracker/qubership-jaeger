@@ -31,6 +31,17 @@
       "title": "GATEWAY_SYSTEM_NAMESPACE",
       "type": "string"
     },
+    "PAAS_PLATFORM": {
+      "default": "",
+      "description": "Optional platform override for pod user and group defaults. An empty value detects OpenShift through the cluster API. Kubernetes workloads use UID/GID 1000 by default, while OpenShift assigns IDs through its Security Context Constraints.\n",
+      "enum": [
+        "",
+        "KUBERNETES",
+        "OPENSHIFT"
+      ],
+      "title": "PAAS_PLATFORM",
+      "type": "string"
+    },
     "cassandraSchemaJob": {
       "properties": {
         "allowedAuthenticators": {
@@ -2633,7 +2644,7 @@
           "type": "object"
         },
         "containerSecurityContext": {
-          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 2000",
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 1000",
           "properties": {
             "allowPrivilegeEscalation": {
               "description": "AllowPrivilegeEscalation controls whether a process can gain more privileges than its parent process.\nDefault: false\n",
@@ -2744,7 +2755,7 @@
           "type": "object"
         },
         "securityContext": {
-          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 2000",
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 1000",
           "title": "securityContext",
           "type": "object"
         },
