@@ -225,6 +225,9 @@ assert_render_fails \
     "securityContext.runAsNonRoot must be true when security hardening is enabled" \
     --set collector.securityContext.runAsNonRoot=false
 assert_render_fails \
+    "minimum: got 0, want 1" \
+    --set collector.securityContext.runAsUser=0
+assert_render_fails \
     "value must be 'RuntimeDefault'" \
     --set collector.securityContext.seccompProfile.type=Unconfined
 assert_render_fails \
@@ -236,6 +239,9 @@ assert_render_fails \
 assert_render_fails \
     "containerSecurityContext.seccompProfile.type must be RuntimeDefault when security hardening is enabled" \
     --set collector.containerSecurityContext.seccompProfile.type=Unconfined
+assert_render_fails \
+    "containerSecurityContext.capabilities.add must be empty when security hardening is enabled" \
+    --set 'collector.containerSecurityContext.capabilities.add[0]=NET_ADMIN'
 assert_render_fails \
     "containerSecurityContext.capabilities.drop must contain ALL when security hardening is enabled" \
     --set 'collector.containerSecurityContext.capabilities.drop[0]=NET_RAW'

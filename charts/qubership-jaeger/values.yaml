@@ -492,7 +492,7 @@ elasticsearch:
       # runAsNonRoot: true
 
       # Seccomp profile for Pod
-      # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+      # Only RuntimeDefault is supported when security hardening is enabled.
       # Type: object
       # Mandatory: no
       #
@@ -681,7 +681,7 @@ elasticsearch:
       # runAsNonRoot: true
 
       # Seccomp profile for Pod
-      # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+      # Only RuntimeDefault is supported when security hardening is enabled.
       # Type: object
       # Mandatory: no
       #
@@ -896,7 +896,7 @@ elasticsearch:
       # runAsNonRoot: true
 
       # Seccomp profile for Pod
-      # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+      # Only RuntimeDefault is supported when security hardening is enabled.
       # Type: object
       # Mandatory: no
       #
@@ -1557,7 +1557,7 @@ collector:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #
@@ -2011,7 +2011,7 @@ hotrod:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #
@@ -2374,7 +2374,7 @@ query:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #
@@ -2526,7 +2526,7 @@ integrationTests:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #
@@ -2599,7 +2599,7 @@ statusProvisioner:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #
@@ -2893,7 +2893,7 @@ spark:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #

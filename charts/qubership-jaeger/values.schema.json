@@ -219,7 +219,8 @@
             "runAsUser": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
               "title": "runAsUser",
-              "type": "integer"
+              "type": "integer",
+              "minimum": 1
             },
             "fsGroup": {
               "description": "A special supplemental group that applies to all containers in a pod.\n Type: integer\n Mandatory: no",
@@ -1098,7 +1099,8 @@
             "runAsUser": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
               "title": "runAsUser",
-              "type": "integer"
+              "type": "integer",
+              "minimum": 1
             },
             "fsGroup": {
               "description": "A special supplemental group that applies to all containers in a pod.\n Type: integer\n Mandatory: no",
@@ -1651,7 +1653,8 @@
                 "runAsUser": {
                   "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no\n",
                   "title": "runAsUser",
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1
                 },
                 "fsGroup": {
                   "description": "A special supplemental group that applies to all containers in a pod.\nType: integer\nMandatory: no",
@@ -1859,7 +1862,8 @@
                 "runAsUser": {
                   "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no",
                   "title": "runAsUser",
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1
                 },
                 "fsGroup": {
                   "description": "The GID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no",
@@ -2091,6 +2095,7 @@
                 "runAsUser": {
                   "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no",
                   "type": "integer",
+                  "minimum": 1,
                   "title": "runAsUser"
                 },
                 "fsGroup": {
@@ -2402,7 +2407,8 @@
             "runAsUser": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
               "title": "runAsUser",
-              "type": "integer"
+              "type": "integer",
+              "minimum": 1
             },
             "fsGroup": {
               "description": "A special supplemental group that applies to all containers in a pod.\n Type: integer\n Mandatory: no",
@@ -2543,6 +2549,12 @@
         "securityContext": {
           "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
           "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process. It must be greater than 0 when security hardening is enabled.",
+              "title": "runAsUser",
+              "type": "integer",
+              "minimum": 1
+            },
             "runAsRoot": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
               "title": "runAsRoot",
@@ -3087,6 +3099,12 @@
         "securityContext": {
           "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
           "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process. It must be greater than 0 when security hardening is enabled.",
+              "title": "runAsUser",
+              "type": "integer",
+              "minimum": 1
+            },
             "runAsRoot": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
               "title": "runAsRoot",
@@ -3511,6 +3529,12 @@
         "securityContext": {
           "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
           "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process. It must be greater than 0 when security hardening is enabled.",
+              "title": "runAsUser",
+              "type": "integer",
+              "minimum": 1
+            },
             "runAsRoot": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
               "title": "runAsRoot",
@@ -3669,6 +3693,12 @@
         "securityContext": {
           "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
           "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process. It must be greater than 0 when security hardening is enabled.",
+              "title": "runAsUser",
+              "type": "integer",
+              "minimum": 1
+            },
             "runAsRoot": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
               "title": "runAsRoot",

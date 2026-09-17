@@ -957,6 +957,12 @@ Return mandatory security settings merged with a container's custom context.
     {{- end -}}
   {{- end -}}
   {{- $capabilities := deepCopy (default dict (get $context "capabilities")) -}}
+  {{- if hasKey $capabilities "add" -}}
+    {{- $add := get $capabilities "add" -}}
+    {{- if or (not (kindIs "slice" $add)) (not (empty $add)) -}}
+      {{- fail "containerSecurityContext.capabilities.add must be empty when security hardening is enabled" -}}
+    {{- end -}}
+  {{- end -}}
   {{- if hasKey $capabilities "drop" -}}
     {{- $drop := get $capabilities "drop" -}}
     {{- if or (not (kindIs "slice" $drop)) (not (has "ALL" $drop)) -}}
@@ -979,6 +985,9 @@ Return mandatory pod security settings merged with a pod's custom context.
   {{- $root := index . 1 -}}
   {{- if and (hasKey $context "runAsNonRoot") (ne (get $context "runAsNonRoot" | toString) "true") -}}
     {{- fail "securityContext.runAsNonRoot must be true when security hardening is enabled" -}}
+  {{- end -}}
+  {{- if and (hasKey $context "runAsUser") (eq (get $context "runAsUser" | toString) "0") -}}
+    {{- fail "securityContext.runAsUser must be greater than 0 when security hardening is enabled" -}}
   {{- end -}}
   {{- if hasKey $context "seccompProfile" -}}
     {{- $seccompProfile := get $context "seccompProfile" -}}
