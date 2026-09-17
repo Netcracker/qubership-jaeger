@@ -216,6 +216,12 @@ helm template jaeger "${chart_dir}" \
     --set collector.securityContext.runAsGroup=2000 \
     --set collector.securityContext.fsGroup=2000 >"${custom_context_file}"
 
+# Deprecated Cassandra schema job security contexts are accepted for upgrade compatibility and ignored by templates.
+helm template jaeger "${chart_dir}" \
+    --namespace jaeger \
+    --set cassandraSchemaJob.securityContext.runAsUser=0 \
+    --set cassandraSchemaJob.securityContext.seccompProfile.type=Unconfined >/dev/null
+
 assert_count '^[[:space:]]+runAsUser: 2000$' 1 "${custom_context_file}"
 assert_count '^[[:space:]]+runAsGroup: 2000$' 1 "${custom_context_file}"
 assert_count '^[[:space:]]+fsGroup: 2000$' 1 "${custom_context_file}"

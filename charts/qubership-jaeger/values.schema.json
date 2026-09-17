@@ -219,8 +219,7 @@
             "runAsUser": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
               "title": "runAsUser",
-              "type": "integer",
-              "minimum": 1
+              "type": "integer"
             },
             "fsGroup": {
               "description": "A special supplemental group that applies to all containers in a pod.\n Type: integer\n Mandatory: no",
@@ -233,18 +232,12 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "description": "The seccomp profile for the container.\n Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Mandatory: no",
               "properties": {
                 "type": {
-                  "enum": [
-                    "RuntimeDefault"
-                  ],
                   "type": "string"
                 }
               },
-              "required": [
-                "type"
-              ],
               "title": "seccompProfile",
               "type": "object"
             }
