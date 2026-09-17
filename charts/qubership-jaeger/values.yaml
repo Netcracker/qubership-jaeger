@@ -40,6 +40,12 @@
 # Default: ""
 PAAS_PLATFORM: ""
 
+# Maximum storage available to each pod through its /tmp emptyDir volume.
+# Type: string
+# Mandatory: no
+# Default: 100Mi
+tmpSizeLimit: 100Mi
+
 jaeger:
   # Name of jaeger service.
   # Type: string

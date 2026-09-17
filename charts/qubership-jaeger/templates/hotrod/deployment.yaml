@@ -77,7 +77,7 @@ spec:
       volumes:
         - name: tmp
           emptyDir:
-            sizeLimit: 100Mi
+            sizeLimit: {{ .Values.tmpSizeLimit }}
       {{- if .Values.hotrod.affinity }}
       affinity:
         {{- toYaml .Values.hotrod.affinity | nindent 8 }}

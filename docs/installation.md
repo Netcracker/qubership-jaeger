@@ -262,6 +262,14 @@ This section describes parameters that can be used to deploy Jaeger and its comp
 Leave `PAAS_PLATFORM` empty for direct Helm installations. The chart detects OpenShift through its application or
 security API and otherwise applies Kubernetes user and group defaults.
 
+### Temporary storage
+
+<!-- markdownlint-disable line-length -->
+| Parameter      | Type   | Mandatory | Default value | Description                                                              |
+| -------------- | ------ | --------- | ------------- | ------------------------------------------------------------------------ |
+| `tmpSizeLimit` | string | no        | `100Mi`       | Maximum storage available to each pod through its `/tmp` emptyDir volume |
+<!-- markdownlint-enable line-length -->
+
 ### Gateway system
 
 These are top-level (cloud passport) parameters that define how Jaeger endpoints are exposed outside the cloud.

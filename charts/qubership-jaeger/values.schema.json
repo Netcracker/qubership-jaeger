@@ -42,6 +42,13 @@
       "title": "PAAS_PLATFORM",
       "type": "string"
     },
+    "tmpSizeLimit": {
+      "default": "100Mi",
+      "description": "Maximum storage available to each pod through its /tmp emptyDir volume.\nType: string\nMandatory: no\n",
+      "minLength": 1,
+      "title": "tmpSizeLimit",
+      "type": "string"
+    },
     "cassandraSchemaJob": {
       "properties": {
         "allowedAuthenticators": {

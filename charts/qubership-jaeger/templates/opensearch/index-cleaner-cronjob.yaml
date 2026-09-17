@@ -122,7 +122,7 @@ spec:
           volumes:
             - name: tmp
               emptyDir:
-                sizeLimit: 100Mi
+                sizeLimit: {{ .Values.tmpSizeLimit }}
           {{- include "jaeger.opensearchCertificateVolumes" . | nindent 12 }}
           {{- range .Values.elasticsearch.indexCleaner.extraConfigmapMounts }}
             - name: {{ .name }}

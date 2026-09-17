@@ -12,6 +12,7 @@ trap 'rm -f "${rendered_file}" "${openshift_file}" "${openshift_override_file}" 
 
 helm template jaeger "${chart_dir}" \
     --namespace jaeger \
+    --set tmpSizeLimit=64Mi \
     --set hotrod.install=true \
     --set integrationTests.install=true \
     --set proxy.install=true \
@@ -170,7 +171,7 @@ assert_count '^[[:space:]]+allowPrivilegeEscalation: false$' 13
 assert_count '^[[:space:]]+readOnlyRootFilesystem: true$' 13
 assert_count '^[[:space:]]+- ALL$' 13
 assert_count '^[[:space:]]+mountPath: /tmp$' 13
-assert_count '^[[:space:]]+sizeLimit: 100Mi$' 10
+assert_count '^[[:space:]]+sizeLimit: 64Mi$' 10
 assert_count '^[[:space:]]+- name: PYTHONDONTWRITEBYTECODE$' 2
 assert_regular_containers_hardened "${rendered_file}"
 
@@ -218,6 +219,7 @@ helm template jaeger "${chart_dir}" \
 assert_count '^[[:space:]]+runAsUser: 2000$' 1 "${custom_context_file}"
 assert_count '^[[:space:]]+runAsGroup: 2000$' 1 "${custom_context_file}"
 assert_count '^[[:space:]]+fsGroup: 2000$' 1 "${custom_context_file}"
+assert_count '^[[:space:]]+sizeLimit: 100Mi$' 3 "${custom_context_file}"
 
 assert_render_fails \
     "securityContext.runAsNonRoot must be true when security hardening is enabled" \

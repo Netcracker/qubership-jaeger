@@ -86,7 +86,7 @@ spec:
       volumes:
         - name: tmp
           emptyDir:
-            sizeLimit: 100Mi
+            sizeLimit: {{ .Values.tmpSizeLimit }}
         - name: output
           emptyDir: {}
 {{- end }}
