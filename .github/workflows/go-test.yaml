@@ -3,19 +3,24 @@ on:
   push: {}
   pull_request:
     types: [ opened, synchronize, reopened ]
-permissions:
-  contents: read
+permissions: {}
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     outputs:
       sonar-project-key: ${{ steps.config.outputs.sonar-project-key }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Resolve sonar project key based on restricted actors
         id: config
         env:
           ACTOR: ${{ github.actor }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
         run: |
           restricted=$(python3 -c "
           import yaml, os
@@ -27,19 +32,57 @@ jobs:
           if [ "$restricted" = "true" ]; then
             echo "sonar-project-key=" >> "$GITHUB_OUTPUT"
           else
-            echo "sonar-project-key=${{ vars.SONAR_PROJECT_KEY }}" >> "$GITHUB_OUTPUT"
+            echo "sonar-project-key=${SONAR_PROJECT_KEY}" >> "$GITHUB_OUTPUT"
           fi
 
   test:
     needs: prepare
+    if: github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork
     name: Build and test with coverage
     uses: Netcracker/qubership-core-infra/.github/workflows/generic-go-build.yaml@8a233b03c5b5355d59c1585ffdaa1f45ea816405 # v2.6.1
     with:
       sonar-project-key: ${{ needs.prepare.outputs.sonar-project-key }}
       go-module-dir: ./readiness-probe
       skip-docker: true
-    secrets: inherit
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN || 'sonar-disabled' }}
     permissions:
       contents: read
       pull-requests: write
       packages: write
+
+  fork-test:
+    needs: prepare
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork
+    name: Build and test fork with coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: readiness-probe/go.mod
+          cache-dependency-path: readiness-probe/go.sum
+      - name: Test with coverage
+        working-directory: readiness-probe
+        run: go test -v ./... -coverpkg=./... -coverprofile=coverage.out
+
+  go-ci-gate:
+    name: Go CI Gate
+    needs: [prepare, test, fork-test]
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require Go validation
+        if: >-
+          needs.prepare.result != 'success' ||
+          (github.event.pull_request.head.repo.fork && needs.fork-test.result != 'success') ||
+          (!github.event.pull_request.head.repo.fork && needs.test.result != 'success')
+        run: exit 1
