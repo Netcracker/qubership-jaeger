@@ -39,6 +39,25 @@ env:
   delay: 10
 
 jobs:
+  Validate-Helm-Security-Hardening:
+    name: Validate Helm security hardening
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        path: qubership-jaeger
+
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      shell: bash
+
+    - name: Validate security hardening
+      run: bash qubership-jaeger/charts/qubership-jaeger/tests/security_hardening_test.sh
+      shell: bash
+
   Run-Integration-Tests:
     runs-on: ubuntu-latest
     timeout-minutes: 15

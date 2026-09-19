@@ -12,3 +12,5 @@ RUN chmod +x /usr/local/bin/tracegen
 
 # Copy tests source code
 COPY robot/ ${ROBOT_HOME}/
+
+USER 1000

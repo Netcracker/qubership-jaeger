@@ -31,6 +31,21 @@
 #
 # GATEWAY_SYSTEM_NAMESPACE: "gateway-system"
 
+# Platform override used for pod user and group defaults.
+# Leave empty to detect OpenShift through the cluster API. Kubernetes workloads use UID/GID 1000 by default,
+# while OpenShift assigns IDs through its Security Context Constraints.
+# Available values: "", "KUBERNETES", "OPENSHIFT"
+# Type: string
+# Mandatory: no
+# Default: ""
+PAAS_PLATFORM: ""
+
+# Maximum storage available to each pod through its /tmp emptyDir volume.
+# Type: string
+# Mandatory: no
+# Default: 100Mi
+tmpSizeLimit: 100Mi
+
 jaeger:
   # Name of jaeger service.
   # Type: string
@@ -159,15 +174,6 @@ proxy:
     requests:
       cpu: 50m
       memory: 100Mi
-
-  # SecurityContext holds pod-level security attributes.
-  # The parameters are required if a Pod Security Policy is enabled
-  #  for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.
-  # Type: object
-  # Mandatory: no
-  # Default:
-  #    securityContext:
-  #      runAsUser: 2000
 
   containerSecurityContext: {}
     # Controls whether a process can gain more privileges than its parent process.
@@ -465,7 +471,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # runAsUser: 2000
+      # runAsUser: 1000
 
       # A special supplemental group that applies to all containers in a pod.
       # Some volume types allow the Kubelet to change the ownership of that volume
@@ -477,7 +483,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # fsGroup: 2000
+      # fsGroup: 1000
 
       # Set mandatory flag to run as non root user
       # Type: bool
@@ -486,7 +492,7 @@ elasticsearch:
       # runAsNonRoot: true
 
       # Seccomp profile for Pod
-      # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+      # Only RuntimeDefault is supported when security hardening is enabled.
       # Type: object
       # Mandatory: no
       #
@@ -654,7 +660,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # runAsUser: 2000
+      # runAsUser: 1000
 
       # A special supplemental group that applies to all containers in a pod.
       # Some volume types allow the Kubelet to change the ownership of that volume
@@ -666,7 +672,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # fsGroup: 2000
+      # fsGroup: 1000
 
       # Set mandatory flag to run as non root user
       # Type: bool
@@ -675,7 +681,7 @@ elasticsearch:
       # runAsNonRoot: true
 
       # Seccomp profile for Pod
-      # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+      # Only RuntimeDefault is supported when security hardening is enabled.
       # Type: object
       # Mandatory: no
       #
@@ -869,7 +875,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # runAsUser: 2000
+      # runAsUser: 1000
 
       # A special supplemental group that applies to all containers in a pod.
       # Some volume types allow the Kubelet to change the ownership of that volume
@@ -881,7 +887,7 @@ elasticsearch:
       # Type: integer
       # Mandatory: no
       #
-      # fsGroup: 2000
+      # fsGroup: 1000
 
       # Set mandatory flag to run as non root user
       # Type: bool
@@ -890,7 +896,7 @@ elasticsearch:
       # runAsNonRoot: true
 
       # Seccomp profile for Pod
-      # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+      # Only RuntimeDefault is supported when security hardening is enabled.
       # Type: object
       # Mandatory: no
       #
@@ -1530,7 +1536,7 @@ collector:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -1542,7 +1548,7 @@ collector:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -1551,7 +1557,7 @@ collector:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #
@@ -1984,7 +1990,7 @@ hotrod:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -1996,7 +2002,7 @@ hotrod:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -2005,7 +2011,7 @@ hotrod:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #
@@ -2347,7 +2353,7 @@ query:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -2359,7 +2365,7 @@ query:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -2368,7 +2374,7 @@ query:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #
@@ -2499,7 +2505,7 @@ integrationTests:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -2511,7 +2517,7 @@ integrationTests:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -2520,7 +2526,7 @@ integrationTests:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #
@@ -2572,7 +2578,7 @@ statusProvisioner:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -2584,7 +2590,7 @@ statusProvisioner:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -2593,7 +2599,7 @@ statusProvisioner:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #
@@ -2866,7 +2872,7 @@ spark:
     # Type: integer
     # Mandatory: no
     #
-    # runAsUser: 2000
+    # runAsUser: 1000
 
     # A special supplemental group that applies to all containers in a pod.
     # Some volume types allow the Kubelet to change the ownership of that volume
@@ -2878,7 +2884,7 @@ spark:
     # Type: integer
     # Mandatory: no
     #
-    # fsGroup: 2000
+    # fsGroup: 1000
 
     # Set mandatory flag to run as non root user
     # Type: bool
@@ -2887,7 +2893,7 @@ spark:
     # runAsNonRoot: true
 
     # Seccomp profile for Pod
-    # Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.
+    # Only RuntimeDefault is supported when security hardening is enabled.
     # Type: object
     # Mandatory: no
     #

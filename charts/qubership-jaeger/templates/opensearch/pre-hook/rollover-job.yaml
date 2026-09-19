@@ -35,7 +35,7 @@ spec:
     spec:
       serviceAccountName: {{ .Values.jaeger.serviceName }}-rollover-init
       securityContext:
-        {{- include "elasticsearch.rolloverjob.securityContext" . }}
+        {{- include "jaeger.hardenedPodSecurityContext" (list .Values.elasticsearch.rollover.securityContext .) | nindent 8 }}
       restartPolicy: OnFailure
       {{- if .Values.elasticsearch.rollover.affinity }}
       affinity:
@@ -93,9 +93,11 @@ spec:
           resources:
             {{- toYaml .Values.elasticsearch.rollover.resources | nindent 12 }}
           securityContext:
-            {{- include "elasticsearch.rolloverjob.containerSecurityContext" . }}
+            {{- include "jaeger.hardenedContainerSecurityContext" .Values.elasticsearch.rollover.containerSecurityContext | nindent 12 }}
           volumeMounts:
-          {{- include "jaeger.opensearchCertificateVolumeMounts" (merge (dict "prehook" true) .) | nindent 10 }}
+            - name: tmp
+              mountPath: /tmp
+          {{- include "jaeger.opensearchCertificateVolumeMounts" (merge (dict "prehook" true) .) | nindent 12 }}
           {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
@@ -109,7 +111,10 @@ spec:
               readOnly: {{ .readOnly }}
           {{- end }}
       volumes:
-      {{- include "jaeger.opensearchCertificateVolumes" (merge (dict "prehook" true) .) | nindent 6 }}
+        - name: tmp
+          emptyDir:
+            sizeLimit: {{ .Values.tmpSizeLimit }}
+      {{- include "jaeger.opensearchCertificateVolumes" (merge (dict "prehook" true) .) | nindent 8 }}
       {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
         - name: {{ .name }}
           configMap:

@@ -31,6 +31,24 @@
       "title": "GATEWAY_SYSTEM_NAMESPACE",
       "type": "string"
     },
+    "PAAS_PLATFORM": {
+      "default": "",
+      "description": "Optional platform override for pod user and group defaults. An empty value detects OpenShift through the cluster API. Kubernetes workloads use UID/GID 1000 by default, while OpenShift assigns IDs through its Security Context Constraints.\n",
+      "enum": [
+        "",
+        "KUBERNETES",
+        "OPENSHIFT"
+      ],
+      "title": "PAAS_PLATFORM",
+      "type": "string"
+    },
+    "tmpSizeLimit": {
+      "default": "100Mi",
+      "description": "Maximum storage available to each pod through its /tmp emptyDir volume.\nType: string\nMandatory: no\n",
+      "minLength": 1,
+      "title": "tmpSizeLimit",
+      "type": "string"
+    },
     "cassandraSchemaJob": {
       "properties": {
         "allowedAuthenticators": {
@@ -217,7 +235,7 @@
               "description": "The seccomp profile for the container.\n Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Mandatory: no",
               "properties": {
                 "type": {
-                  "type":"string"
+                  "type": "string"
                 }
               },
               "title": "seccompProfile",
@@ -1074,7 +1092,8 @@
             "runAsUser": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
               "title": "runAsUser",
-              "type": "integer"
+              "type": "integer",
+              "minimum": 1
             },
             "fsGroup": {
               "description": "A special supplemental group that applies to all containers in a pod.\n Type: integer\n Mandatory: no",
@@ -1087,7 +1106,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container.\n Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -1616,7 +1646,8 @@
                 "runAsUser": {
                   "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no\n",
                   "title": "runAsUser",
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1
                 },
                 "fsGroup": {
                   "description": "A special supplemental group that applies to all containers in a pod.\nType: integer\nMandatory: no",
@@ -1629,7 +1660,18 @@
                   "type": "boolean"
                 },
                 "seccompProfile": {
-                  "description": "The seccomp profile for the container.\nType: object\nMandatory: no\n",
+                  "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no\n",
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "RuntimeDefault"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
                   "title": "seccompProfile",
                   "type": "object"
                 }
@@ -1678,7 +1720,7 @@
               "type": "string"
             },
             "containerSecurityContext": {
-              "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
               "properties": {
                 "allowPrivilegeEscalation": {
                   "default": false,
@@ -1813,7 +1855,8 @@
                 "runAsUser": {
                   "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no",
                   "title": "runAsUser",
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1
                 },
                 "fsGroup": {
                   "description": "The GID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no",
@@ -1826,14 +1869,18 @@
                   "type": "boolean"
                 },
                 "seccompProfile": {
-                  "description": "The seccomp profile for the container. Defines secure computing mode.\nIt is not possible to apply a seccomp profile to a Pod or container running with privileged: true set in the container's securityContext.\nPrivileged containers always run as Unconfined.\nType: object\nMandatory: no",
+                  "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
                   "properties": {
                     "type": {
-                      "description": "Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'",
-                      "type": "string",
-                      "enum": ["RuntimeDefault", "Unconfined", "Localhost"]
+                      "enum": [
+                        "RuntimeDefault"
+                      ],
+                      "type": "string"
                     }
                   },
+                  "required": [
+                    "type"
+                  ],
                   "title": "seccompProfile",
                   "type": "object"
                 }
@@ -1876,7 +1923,7 @@
               "type": "string"
             },
             "containerSecurityContext": {
-              "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
               "properties": {
                 "allowPrivilegeEscalation": {
                   "default": false,
@@ -2041,6 +2088,7 @@
                 "runAsUser": {
                   "description": "The UID to run the entrypoint of the container process.\nDefaults to user specified in image metadata if unspecified.\nType: integer\nMandatory: no",
                   "type": "integer",
+                  "minimum": 1,
                   "title": "runAsUser"
                 },
                 "fsGroup": {
@@ -2054,12 +2102,18 @@
                   "title": "runAsNonRoot"
                 },
                 "seccompProfile": {
-                  "description": "The seccomp profile for the pod.\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no",
+                  "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
                   "properties": {
                     "type": {
+                      "enum": [
+                        "RuntimeDefault"
+                      ],
                       "type": "string"
                     }
                   },
+                  "required": [
+                    "type"
+                  ],
                   "type": "object",
                   "title": "seccompProfile"
                 }
@@ -2105,7 +2159,7 @@
           "type": "object"
         },
         "containerSecurityContext": {
-          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
           "properties": {
             "allowPrivilegeEscalation": {
               "default": false,
@@ -2346,7 +2400,8 @@
             "runAsUser": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.\n Type: integer\n Mandatory: no",
               "title": "runAsUser",
-              "type": "integer"
+              "type": "integer",
+              "minimum": 1
             },
             "fsGroup": {
               "description": "A special supplemental group that applies to all containers in a pod.\n Type: integer\n Mandatory: no",
@@ -2359,7 +2414,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -2391,7 +2457,7 @@
     "integrationTests": {
       "properties": {
         "containerSecurityContext": {
-          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfileType: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
           "properties": {
             "allowPrivilegeEscalation": {
               "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Type: bool\n Mandatory: no",
@@ -2476,6 +2542,12 @@
         "securityContext": {
           "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
           "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process. It must be greater than 0 when security hardening is enabled.",
+              "title": "runAsUser",
+              "type": "integer",
+              "minimum": 1
+            },
             "runAsRoot": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
               "title": "runAsRoot",
@@ -2492,7 +2564,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -2633,7 +2716,7 @@
           "type": "object"
         },
         "containerSecurityContext": {
-          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 2000",
+          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 1000",
           "properties": {
             "allowPrivilegeEscalation": {
               "description": "AllowPrivilegeEscalation controls whether a process can gain more privileges than its parent process.\nDefault: false\n",
@@ -2744,7 +2827,7 @@
           "type": "object"
         },
         "securityContext": {
-          "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\nDefault:\n   securityContext:\n     runAsUser: 2000",
+          "description": "Deprecated. Ignored by the chart because the proxy runs as a sidecar in the query pod. Configure query.securityContext instead.\nType: object\nMandatory: no",
           "title": "securityContext",
           "type": "object"
         },
@@ -2792,7 +2875,7 @@
           "type": "object"
         },
         "containerSecurityContext": {
-          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfileType: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
           "properties": {
             "allowPrivilegeEscalation": {
               "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
@@ -3009,6 +3092,12 @@
         "securityContext": {
           "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
           "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process. It must be greater than 0 when security hardening is enabled.",
+              "title": "runAsUser",
+              "type": "integer",
+              "minimum": 1
+            },
             "runAsRoot": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
               "title": "runAsRoot",
@@ -3025,7 +3114,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -3239,7 +3339,7 @@
           "type": "string"
         },
         "containerSecurityContext": {
-          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfile:\n  type: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
           "properties": {
             "allowPrivilegeEscalation": {
               "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
@@ -3422,6 +3522,12 @@
         "securityContext": {
           "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
           "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process. It must be greater than 0 when security hardening is enabled.",
+              "title": "runAsUser",
+              "type": "integer",
+              "minimum": 1
+            },
             "runAsRoot": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
               "title": "runAsRoot",
@@ -3438,7 +3544,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
@@ -3481,7 +3598,7 @@
     "statusProvisioner": {
       "properties": {
         "containerSecurityContext": {
-          "description": "Seccomp profile for Pod\nValid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\nType: object\nMandatory: no\n\nseccompProfileType: RuntimeDefault",
+          "description": "Container-level security attributes. If seccompProfile is set, its type must be RuntimeDefault.\nType: object\nMandatory: no",
           "properties": {
             "allowPrivilegeEscalation": {
               "description": "Controls whether a process can gain more privileges than its parent process.\n This bool directly controls whether the 'no_new_privs' flag gets set on the container process.\n Mandatory: no\n Type: boolean\n",
@@ -3569,6 +3686,12 @@
         "securityContext": {
           "description": "SecurityContext holds pod-level security attributes.\nThe parameters are required if a Pod Security Policy is enabled\n for Kubernetes cluster and required if a Security Context Constraints is enabled for Kubernetes cluster.\nType: object\nMandatory: no\n",
           "properties": {
+            "runAsUser": {
+              "description": "The UID to run the entrypoint of the container process. It must be greater than 0 when security hardening is enabled.",
+              "title": "runAsUser",
+              "type": "integer",
+              "minimum": 1
+            },
             "runAsRoot": {
               "description": "The UID to run the entrypoint of the container process.\n Defaults to user specified in image metadata if unspecified.",
               "title": "runAsRoot",
@@ -3585,7 +3708,18 @@
               "type": "boolean"
             },
             "seccompProfile": {
-              "description": "The seccomp profile for the container. Valid options for type include 'RuntimeDefault', 'Unconfined', and 'Localhost'.\n Type: object\n Type: object\n Mandatory: no",
+              "description": "The seccomp profile for the pod. Only 'RuntimeDefault' is supported when security hardening is enabled.\nType: object\nMandatory: no",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "RuntimeDefault"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type"
+              ],
               "title": "seccompProfile",
               "type": "object"
             }
