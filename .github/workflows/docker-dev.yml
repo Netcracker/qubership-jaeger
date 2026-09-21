@@ -57,25 +57,26 @@ jobs:
       run: |
         set -euo pipefail
 
+        changed_files="$(mktemp)"
+        git diff --no-renames --name-only "${BASE_SHA}...${HEAD_SHA}" > "${changed_files}"
+
         build=false
         while IFS= read -r path; do
           case "$path" in
-            .github/workflows/docker-dev.yml|.github/workflows/integration-tests.yml)
+            .github/workflows/docker-dev.yml|.github/workflows/integration-tests.yml|.github/docker-dev-config.json|.github/docker-build-config.json|.dockerignore|docs|docs/*)
               build=true
               break
               ;;
-            .github/*|.gitignore|.gitattributes|.gitmodules|.dockerignore|docs/*)
+            .github/*|.gitignore|.gitattributes|.gitmodules)
               ;;
             CODE-OF-CONDUCT.md|CONTRIBUTING.md|LICENSE|README.md|SECURITY.md)
-              ;;
-            *ignore)
               ;;
             *)
               build=true
               break
               ;;
           esac
-        done < <(git diff --no-renames --name-only "${BASE_SHA}...${HEAD_SHA}")
+        done < "${changed_files}"
 
         echo "build=${build}" >> "${GITHUB_OUTPUT}"
 
@@ -143,7 +144,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      packages: ${{ github.event_name == 'pull_request' && 'read' || 'write' }}
     strategy:
       fail-fast: false
       matrix:
@@ -153,7 +154,7 @@ jobs:
       uses: netcracker/qubership-workflow-hub/actions/docker-action@288a6a0d9a78e80dfdefccab1be6497a39deb746 # v2.8.0
       with:
         ref: ${{ github.ref }}
-        dry-run: ${{ inputs.dry-run }}
+        dry-run: ${{ github.event_name == 'pull_request' || inputs.dry-run }}
         download-artifact: false
         component: ${{ toJson(matrix.component) }}
         platforms: ${{ needs.prepare.outputs.platforms }}
