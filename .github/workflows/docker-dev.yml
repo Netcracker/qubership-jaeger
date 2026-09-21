@@ -57,6 +57,7 @@ jobs:
       run: |
         set -euo pipefail
 
+        # Capture git diff before iterating so a failed listing cannot yield build=false.
         changed_files="$(mktemp)"
         git diff --no-renames --name-only "${BASE_SHA}...${HEAD_SHA}" > "${changed_files}"
 
