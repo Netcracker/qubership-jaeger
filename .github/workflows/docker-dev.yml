@@ -7,9 +7,9 @@ on:
     paths:
     - '**'
     - '!.github/**'
-    - '.github/workflows/integration-tests.yaml'
-    - '.github/workflows/build.yaml'
-    - '!docs/**'
+    - '.github/workflows/docker-dev.yml'
+    - '.github/workflows/integration-tests.yml'
+    - '.github/docker-dev-config.json'
     - '!CODE-OF-CONDUCT.md'
     - '!CONTRIBUTING.md'
     - '!LICENSE'
@@ -19,19 +19,6 @@ on:
     types: [opened, synchronize, reopened]
     branches:
     - main
-    paths:
-    - '**'
-    - '!.github/**'
-    - '.github/workflows/integration-tests.yml'
-    - '.github/workflows/docker-dev.yml'
-    - '!.git*'
-    - '!.*ignore'
-    - '!docs/**'
-    - '!CODE-OF-CONDUCT.md'
-    - '!CONTRIBUTING.md'
-    - '!LICENSE'
-    - '!README.md'
-    - '!SECURITY.md'
   workflow_dispatch:
     inputs:
       tags:
@@ -47,10 +34,64 @@ on:
 permissions: {}
 
 jobs:
+  changes:
+    name: Detect Docker build changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      build: ${{ steps.filter.outputs.build }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - name: Detect relevant changes
+      id: filter
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+
+        # Capture git diff before iterating so a failed listing cannot yield build=false.
+        changed_files="$(mktemp)"
+        git diff --no-renames --name-only "${BASE_SHA}...${HEAD_SHA}" > "${changed_files}"
+
+        build=false
+        while IFS= read -r path; do
+          case "$path" in
+            .github/workflows/docker-dev.yml|.github/workflows/integration-tests.yml|.github/docker-dev-config.json|.github/docker-build-config.json|.dockerignore|docs|docs/*)
+              build=true
+              break
+              ;;
+            .github/*|.gitignore|.gitattributes|.gitmodules)
+              ;;
+            CODE-OF-CONDUCT.md|CONTRIBUTING.md|LICENSE|README.md|SECURITY.md)
+              ;;
+            *)
+              build=true
+              break
+              ;;
+          esac
+        done < "${changed_files}"
+
+        echo "build=${build}" >> "${GITHUB_OUTPUT}"
+
   prepare:
     permissions:
       contents: read
     name: "Prepare Images and Metadata"
+    needs: [changes]
+    if: >-
+      always() &&
+      (
+        github.event_name != 'pull_request' ||
+        (needs.changes.result == 'success' && needs.changes.outputs.build == 'true')
+      )
     runs-on: ubuntu-latest
     outputs:
       components: ${{ steps.load_component.outputs.components }}
@@ -59,6 +100,8 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Load Docker Configuration
       id: load_component
@@ -99,7 +142,35 @@ jobs:
   build:
     name: Build Docker Images
     needs: [prepare]
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        component: ${{ fromJson(needs.prepare.outputs.components) }}
+    steps:
+    - name: Docker
+      uses: netcracker/qubership-workflow-hub/actions/docker-action@288a6a0d9a78e80dfdefccab1be6497a39deb746 # v2.8.0
+      with:
+        ref: ${{ github.ref }}
+        dry-run: true
+        download-artifact: false
+        component: ${{ toJson(matrix.component) }}
+        platforms: ${{ needs.prepare.outputs.platforms }}
+        tags: ${{ needs.prepare.outputs.metadata }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    name: Publish Docker Images
+    needs: [prepare]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
@@ -119,3 +190,18 @@ jobs:
         tags: ${{ needs.prepare.outputs.metadata }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker-build-gate:
+    name: Docker Build Gate
+    needs: [changes, prepare, build]
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+    - name: Require Docker build when applicable
+      if: >-
+        needs.changes.result != 'success' ||
+        (needs.changes.outputs.build != 'false' &&
+         (needs.prepare.result != 'success' || needs.build.result != 'success'))
+      run: exit 1
