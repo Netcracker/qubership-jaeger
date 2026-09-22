@@ -9,6 +9,7 @@ on:
     - '!.github/**'
     - '.github/workflows/docker-dev.yml'
     - '.github/workflows/integration-tests.yml'
+    - '.github/docker-dev-config.json'
     - '!CODE-OF-CONDUCT.md'
     - '!CONTRIBUTING.md'
     - '!LICENSE'
