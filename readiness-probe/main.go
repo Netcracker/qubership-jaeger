@@ -20,7 +20,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/gocql/gocql"
+	"github.com/apache/cassandra-gocql-driver/v2"
 )
 
 var Logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
