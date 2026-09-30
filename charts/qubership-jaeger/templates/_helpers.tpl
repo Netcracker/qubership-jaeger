@@ -950,6 +950,15 @@ Return mandatory security settings merged with a container's custom context.
   {{- if and (hasKey $context "readOnlyRootFilesystem") (ne (get $context "readOnlyRootFilesystem" | toString) "true") -}}
     {{- fail "containerSecurityContext.readOnlyRootFilesystem must be true when security hardening is enabled" -}}
   {{- end -}}
+  {{- if and (hasKey $context "runAsNonRoot") (ne (get $context "runAsNonRoot" | toString) "true") -}}
+    {{- fail "containerSecurityContext.runAsNonRoot must be true when security hardening is enabled" -}}
+  {{- end -}}
+  {{- if and (hasKey $context "runAsUser") (eq (get $context "runAsUser" | toString) "0") -}}
+    {{- fail "containerSecurityContext.runAsUser must be greater than 0 when security hardening is enabled" -}}
+  {{- end -}}
+  {{- if and (hasKey $context "privileged") (ne (get $context "privileged" | toString) "false") -}}
+    {{- fail "containerSecurityContext.privileged must be false when security hardening is enabled" -}}
+  {{- end -}}
   {{- if hasKey $context "seccompProfile" -}}
     {{- $seccompProfile := get $context "seccompProfile" -}}
     {{- if or (not (kindIs "map" $seccompProfile)) (ne (default "" (get $seccompProfile "type")) "RuntimeDefault") -}}

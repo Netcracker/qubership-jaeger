@@ -251,5 +251,19 @@ assert_render_fails \
 assert_render_fails \
     "containerSecurityContext.capabilities.drop must contain ALL when security hardening is enabled" \
     --set 'collector.containerSecurityContext.capabilities.drop[0]=NET_RAW'
+assert_render_fails \
+    "containerSecurityContext.runAsNonRoot must be true when security hardening is enabled" \
+    --set collector.containerSecurityContext.runAsNonRoot=false
+assert_render_fails \
+    "containerSecurityContext.runAsUser must be greater than 0 when security hardening is enabled" \
+    --set collector.containerSecurityContext.runAsUser=0
+assert_render_fails \
+    "containerSecurityContext.privileged must be false when security hardening is enabled" \
+    --set collector.containerSecurityContext.privileged=true
+
+helm template jaeger "${chart_dir}" \
+    --namespace jaeger \
+    --set collector.containerSecurityContext.runAsUser=2000 >"${custom_context_file}"
+assert_count '^[[:space:]]+runAsUser: 2000$' 1 "${custom_context_file}"
 
 echo "Security hardening smoke test passed."
