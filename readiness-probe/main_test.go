@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gocql/gocql"
+	"github.com/apache/cassandra-gocql-driver/v2"
 	v1 "k8s.io/api/core/v1"
 )
 
