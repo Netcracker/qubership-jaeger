@@ -2484,6 +2484,12 @@
           "title": "hookDeletePolicy",
           "type": "string"
         },
+        "imagePullPolicy": {
+          "default": "Always",
+          "description": "The imagePullPolicy for a container and the tag of the image affect when the kubelet\nattempts to pull (download) the specified image.\n  Available value : \"IfNotPresent\", \"Always\" and \"Never\"\nDefault: Always\n",
+          "title": "imagePullPolicy",
+          "type": "string"
+        },
         "install": {
           "default": false,
           "description": "Installs integration-tests deployment which runs integration tests",

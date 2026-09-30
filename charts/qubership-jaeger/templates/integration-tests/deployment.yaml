@@ -82,7 +82,7 @@ spec:
             - name: output
               mountPath: /opt/robot/output
           terminationMessagePath: /dev/termination-log
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.integrationTests.imagePullPolicy }}
       volumes:
         - name: tmp
           emptyDir:

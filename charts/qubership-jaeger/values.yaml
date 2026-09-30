@@ -2471,6 +2471,13 @@ query:
 integrationTests:
   install: false
   # image: "ghcr.io/netcracker/jaeger-integration-tests:main"
+
+  # The imagePullPolicy for a container and the tag of the image affect when the kubelet
+  # attempts to pull (download) the specified image.
+  #   Available value : "IfNotPresent", "Always" and "Never"
+  # Default: Always
+  #
+  imagePullPolicy: Always
   tags: "smokeORmemory_limiter"
   hookDeletePolicy: "before-hook-creation,hook-succeeded,hook-failed"
   linkForGenerator: "http://jaeger-collector:9411"
