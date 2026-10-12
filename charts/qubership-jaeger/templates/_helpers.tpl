@@ -444,6 +444,38 @@ Image can be found from:
 {{- end -}}
 
 {{/*
+Return "true" when a CA certificate is configured for the connection to the identity provider.
+*/}}
+{{- define "proxy.oauth2.tls.caEnabled" -}}
+  {{- if and .Values.proxy.install (eq .Values.proxy.type "oauth2") (or .Values.proxy.oauth2.tls.existingSecret .Values.proxy.oauth2.tls.ca) -}}
+    {{- print "true" -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Find the name of the secret with the CA certificate of the identity provider.
+*/}}
+{{- define "proxy.oauth2.tls.secretName" -}}
+  {{- if .Values.proxy.oauth2.tls.existingSecret -}}
+    {{- printf "%s" .Values.proxy.oauth2.tls.existingSecret -}}
+  {{- else -}}
+    {{- print "oauth2-idp-ca" -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Validate the proxy.oauth2.tls parameters.
+A CA certificate without TLS to the identity provider would be silently unused.
+*/}}
+{{- define "proxy.oauth2.tls.validate" -}}
+  {{- if include "proxy.oauth2.tls.caEnabled" . -}}
+    {{- if not (hasPrefix "https://" (.Values.proxy.oauth2.authorizationEndpoint | default "")) -}}
+      {{- fail "proxy.oauth2.tls sets a CA certificate, but proxy.oauth2.authorizationEndpoint does not start with https://, so the proxy connects to the identity provider without TLS. Use https:// endpoints, or remove proxy.oauth2.tls.ca and proxy.oauth2.tls.existingSecret." -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
 Find a hotrod example image in various places.
 Image can be found from:
 * from default values .Values.hotrod.image

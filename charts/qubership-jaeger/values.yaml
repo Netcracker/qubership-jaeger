@@ -78,6 +78,23 @@ proxy:
     # -- Listeners will bind to the port.
     idpPort: 80
 
+    # -- TLS settings for the connection to the identity provider.
+    # They apply only when `authorizationEndpoint` starts with `https://`.
+    tls:
+
+      # -- Name of an existing secret with the CA certificate in the `ca-cert.pem` key. If specified, `ca` is ignored.
+      existingSecret: ""
+
+      # -- CA certificate in PEM format that signed the certificate of the identity provider.
+      # Use it for a self-signed certificate or a certificate signed by an internal CA.
+      # When `ca` or `existingSecret` is set, the proxy verifies the certificate chain of the identity provider,
+      # and checks that the certificate is issued for `idpAddress`. Otherwise the certificate is not verified.
+      ca: ""
+      # ca: |
+      #   -----BEGIN CERTIFICATE-----
+      #   ...
+      #   -----END CERTIFICATE-----
+
   # -- Settings for basic authentication.
   basic:
 

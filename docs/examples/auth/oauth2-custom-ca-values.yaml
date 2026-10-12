@@ -1,0 +1,42 @@
+# Example values for OAuth2 authentication with an identity provider
+# that uses a self-signed certificate or a certificate signed by an internal CA.
+jaeger:
+  storage:
+    type: cassandra
+
+cassandraSchemaJob:
+  host: cassandra.cassandra.svc
+  keyspace: jaeger
+  password: admin
+  username: admin
+  datacenter: dc1
+
+
+collector:
+  install: true
+
+query:
+  install: true
+
+proxy:
+  install: true
+
+  # Enable OAuth2
+  type: oauth2
+  oauth2:
+    tokenEndpoint: https://keycloak.example.com/realms/test/protocol/openid-connect/token
+    authorizationEndpoint: https://keycloak.example.com/realms/test/protocol/openid-connect/auth
+    clientId: jaeger
+    clientToken: client-secret
+    # Must match a DNS name in the certificate of the identity provider
+    idpAddress: keycloak.example.com
+    idpPort: 443
+
+    tls:
+      # CA certificate that signed the certificate of the identity provider
+      ca: |
+        -----BEGIN CERTIFICATE-----
+        ...
+        -----END CERTIFICATE-----
+      # Alternatively, use a secret that has the CA certificate in the "ca-cert.pem" key
+      # existingSecret: corporate-ca
