@@ -26,7 +26,7 @@ $(LOCALBIN):
 helm-docs: $(LOCALBIN) ## Install the pinned helm-docs into ./bin unless that exact version is already there.
 	@if [ ! -x "$(HELM_DOCS)" ] || [ "$$(cat $(HELM_DOCS_STAMP) 2>/dev/null)" != "$(HELM_DOCS_VERSION)" ]; then \
 		echo "installing helm-docs $(HELM_DOCS_VERSION) into $(LOCALBIN)"; \
-		GOBIN=$(LOCALBIN) go install github.com/norwoodj/helm-docs/cmd/helm-docs@$(HELM_DOCS_VERSION); \
+		GOBIN=$(LOCALBIN) go install github.com/norwoodj/helm-docs/cmd/helm-docs@$(HELM_DOCS_VERSION) && \
 		echo "$(HELM_DOCS_VERSION)" > $(HELM_DOCS_STAMP); \
 	fi
 
