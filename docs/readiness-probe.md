@@ -1,12 +1,6 @@
 # Readiness Probe
-## Table of Content
 
-* [Table of Content](#table-of-content)
-* [Parameters](#parameters)
-* [HWE and Limits](#hwe-and-limits)
-* [Command line arguments](#command-line-arguments)
-
-### Parameters
+## Parameters
 
 Probe is installed in Kubernetes as a sidecar for extending its probe.
 
@@ -22,9 +16,10 @@ Probe is installed in Kubernetes as a sidecar for extending its probe.
 | `keyPath`             | String | False     | `-`                    | The path for client-key.pem file                                                              |
 | `tlsEnabled`          | String | False     | `-`                    | Enabling TLS for connection to the storage                                                    |
 | `insecureSkipVerify`  | String | False     | `-`                    | Disabling host verification for TLS                                                    |
-| `retries`             | Int    | False     | `5`                    | The number of retries for checking liveness probe                                             |
-| `errors`              | Int    | False     | `5`                    | The number of allowed errors for checking liveness probe                                      |
-| `timeout`             | Int    | False     | `5`                    | The number of seconds for failing liveness probe by timeout                                   |
+| `retries`             | Int    | False     | `3`                    | The number of non-200 OpenSearch responses allowed in one check                               |
+| `errors`              | Int    | False     | `3`                    | The number of failed attempts after which one check reports the storage as unhealthy          |
+| `timeout`             | Int    | False     | `5`                    | The number of seconds after which one attempt fails                                           |
+| `retryDelay`          | Int    | False     | `5`                    | The number of seconds between two attempts of one check                                       |
 | `storage`             | String | False     | `cassandra`            | The type of storage in the endpoint, possible values: `cassandra`, `opensearch`               |
 | `servicePort`         | Int    | False     | `8080`                 | The port for running liveness-probe container                                                 |
 | `shutdownTimeout`     | Int    | False     | `5`                    | The number of seconds for graceful shutdown before connections are cancelled                  |
@@ -36,10 +31,10 @@ Probe is installed in Kubernetes as a sidecar for extending its probe.
 Example:
 
 ```shell
-/app/probe -endpoint=http://localhost:8080 -authSecretName=auth-secret
+/app/probe -storage=opensearch -host=http://opensearch.opensearch.svc:9200 -authSecretName=auth-secret
 ```
 
-### HWE and Limits
+## HWE and Limits
 
 Probe is installed in Kubernetes as a sidecar container in the pod.
 
@@ -50,6 +45,6 @@ It requires:
 
 But usually will use much much less
 
-### Command line arguments
+## Command line arguments
 
 The entrypoint of is `/app/probe`.

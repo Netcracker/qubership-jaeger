@@ -12,6 +12,14 @@ elasticsearch:
     password: ...replace by password...
     scheme: https
     url: opensearch.opensearch.svc:9200
+  # Optional Jaeger v2 runtime storage tuning:
+  # indices:
+  #   spans:
+  #     shards: 1
+  #     replicas: 0
+  #   services:
+  #     shards: 1
+  #     replicas: 0
   indexCleaner:
     install: true
 

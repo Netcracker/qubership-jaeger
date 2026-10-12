@@ -1,0 +1,34 @@
+{{- $grpcRouteSpec := .Values.collector.grpcRoute | default dict -}}
+{{- $ingressSpec := .Values.collector.ingress.grpc | default dict -}}
+{{- $hostnames := include "collector.gatewayApi.hosts" (dict "ctx" $ "route" $grpcRouteSpec "ingress" $ingressSpec "prefix" "collector-grpc") | fromYamlArray -}}
+{{- $defaultRules := list (dict "backendRefs" (list (dict "name" (printf "%s-collector" $.Values.jaeger.serviceName) "port" 4317))) -}}
+{{- $rules := $grpcRouteSpec.rules | default $defaultRules -}}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $grpcRouteSpec.install $ingressSpec.install) "host" (first $hostnames)) -}}
+{{- $install := or ($grpcRouteSpec.install | default false) (and $exposed (include "jaeger.gatewayApi.enabled" .)) -}}
+{{- if and .Values.collector.install $install (eq ($grpcRouteSpec.kind | default "HTTPRoute") "GRPCRoute") }}
+{{- $resourceName := include "collector.httpRoute.resourceName" (list $ "grpc") }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GRPCRoute
+metadata:
+  name: {{ $resourceName }}
+  labels:
+    app.kubernetes.io/instance: {{ cat $.Values.jaeger.serviceName "-grpc-collector-" $.Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
+    {{- include "jaeger.labels" (dict "ctx" $ "name" $resourceName "component" "collector") | nindent 4 }}
+    {{- if $grpcRouteSpec.labels }}
+      {{- toYaml $grpcRouteSpec.labels | nindent 4 }}
+    {{- end }}
+  {{- if $grpcRouteSpec.annotations }}
+  annotations:
+    {{- toYaml $grpcRouteSpec.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "jaeger.gatewayApi.parentRefs" (dict "ctx" $ "parentRefs" $grpcRouteSpec.parentRefs) | nindent 4 }}
+  {{- if $hostnames }}
+  hostnames:
+    {{- include "jaeger.gatewayApi.hostnames" (dict "ctx" $ "hosts" $hostnames) | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- include "jaeger.gatewayApi.rules" (dict "rules" $rules) | nindent 4 }}
+{{- end }}

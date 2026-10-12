@@ -1,0 +1,31 @@
+{{- if .Values.jaeger.prometheusMonitoring }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Values.jaeger.serviceName }}-collector
+  labels:
+    {{- $name := printf "%s-collector" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "monitoring") | nindent 4 }}
+    {{- if .Values.collector.labels }}
+      {{- toYaml .Values.collector.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.collector.annotations }}
+  annotations:
+    {{- toYaml .Values.collector.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    port: metrics
+    path: /metrics
+    scheme: http
+  jobLabel: k8s
+  selector:
+    matchExpressions:
+      - key: app.kubernetes.io/component
+        operator: In
+        values:
+          - collector
+          - query
+{{- end }}

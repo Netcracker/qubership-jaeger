@@ -1,0 +1,24 @@
+{{- if .Values.query.install }}
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: jaeger-query
+  labels:
+    {{- $name := printf "%s-query" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "jaeger-query") | nindent 4 }}
+    {{- if .Values.query.labels }}
+    {{- toYaml .Values.query.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.query.annotations }}
+  annotations:
+    {{- toYaml .Values.query.annotations | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.jaeger.serviceName }}-query
+roleRef:
+  kind: Role
+  name: jaeger-query
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

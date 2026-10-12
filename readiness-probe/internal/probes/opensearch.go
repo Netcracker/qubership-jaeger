@@ -4,133 +4,133 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
+
+	"tracing-readiness-probe/internal/config"
 )
 
-const (
-	// rateLimitTimeout is the duration to wait when receiving a 429 Too Many Requests response
-	rateLimitTimeout = 5 * time.Second
-)
+// defaultRateLimitDelay is the pause after OpenSearch responds with 429 Too Many Requests.
+const defaultRateLimitDelay = 60 * time.Second
 
-// OpenSearchProbe implements the Probe interface for OpenSearch
+// OpenSearchProbe checks OpenSearch by sending a GET request with basic authentication to its URL.
 type OpenSearchProbe struct {
-	client     *http.Client
-	url        string
-	index      string
-	maxRetries int
-	retryDelay time.Duration
+	client         *http.Client
+	url            string
+	creds          Credentials
+	maxErrors      int
+	maxRetries     int
+	retryDelay     time.Duration
+	rateLimitDelay time.Duration
 }
 
-// OpenSearchConfig extends BaseProbeConfig with OpenSearch-specific settings
-type OpenSearchConfig struct {
-	*BaseProbeConfig
-	Host     string
-	Port     int
-	Index    string
-	Username string
-	Password string
-}
-
-// GetBaseConfig implements the ProbeConfig interface
-func (c *OpenSearchConfig) GetBaseConfig() *BaseProbeConfig {
-	return c.BaseProbeConfig
-}
-
-// NewOpenSearchProbeFromConfig creates a new OpenSearch probe from configuration
-func NewOpenSearchProbeFromConfig(cfg *OpenSearchConfig) (*OpenSearchProbe, error) {
-	client := &http.Client{
-		Timeout: cfg.Timeout,
-	}
-
-	if cfg.TLSEnabled {
-		tlsConfig := &tls.Config{
-			Certificates: []tls.Certificate{},
-			RootCAs:      x509.NewCertPool(),
-		}
-
-		// Load client certificate
-		cert, err := tls.LoadX509KeyPair(cfg.CertFile, cfg.KeyFile)
+// NewOpenSearchProbe returns a probe for the OpenSearch URL from cfg.
+func NewOpenSearchProbe(cfg *config.Config, creds Credentials) (*OpenSearchProbe, error) {
+	client := &http.Client{Timeout: cfg.Timeout}
+	if cfg.TLS.Enabled {
+		tlsConfig, err := newTLSConfig(cfg.TLS)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load client certificate: %w", err)
+			return nil, err
 		}
-		tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
-
-		// Load CA certificate
-		caCert, err := os.ReadFile(cfg.CAFile)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read CA certificate: %w", err)
-		}
-		if !tlsConfig.RootCAs.AppendCertsFromPEM(caCert) {
-			return nil, fmt.Errorf("failed to append CA certificate")
-		}
-
 		client.Transport = &http.Transport{
+			IdleConnTimeout: cfg.Timeout,
 			TLSClientConfig: tlsConfig,
 		}
 	}
-
-	url := fmt.Sprintf("https://%s:%d/%s/_search", cfg.Host, cfg.Port, cfg.Index)
-	if !cfg.TLSEnabled {
-		url = fmt.Sprintf("http://%s:%d/%s/_search", cfg.Host, cfg.Port, cfg.Index)
-	}
-
-	return NewOpenSearchProbe(client, url, cfg.Index, cfg.MaxRetries, cfg.Timeout), nil
-}
-
-// NewOpenSearchProbe creates a new OpenSearch probe
-func NewOpenSearchProbe(client *http.Client, url, index string, maxRetries int, retryDelay time.Duration) *OpenSearchProbe {
 	return &OpenSearchProbe{
-		client:     client,
-		url:        url,
-		index:      index,
-		maxRetries: maxRetries,
-		retryDelay: retryDelay,
-	}
+		client:         client,
+		url:            cfg.Endpoint(),
+		creds:          creds,
+		maxErrors:      cfg.MaxErrors,
+		maxRetries:     cfg.MaxRetries,
+		retryDelay:     cfg.RetryDelay,
+		rateLimitDelay: defaultRateLimitDelay,
+	}, nil
 }
 
-// Check implements the Probe interface
+func newTLSConfig(cfg config.TLS) (*tls.Config, error) {
+	if cfg.InsecureSkipVerify {
+		return &tls.Config{InsecureSkipVerify: true}, nil
+	}
+
+	cert, err := tls.LoadX509KeyPair(cfg.CertFile, cfg.KeyFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load the client certificate and key: %w", err)
+	}
+
+	// Trust the system CAs in addition to the configured one.
+	certPool, err := x509.SystemCertPool()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load the system certificate pool: %w", err)
+	}
+	caCert, err := os.ReadFile(cfg.CAFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read the CA certificate: %w", err)
+	}
+	if !certPool.AppendCertsFromPEM(caCert) {
+		return nil, fmt.Errorf("no valid certificate in the CA file %q", cfg.CAFile)
+	}
+
+	return &tls.Config{
+		RootCAs:      certPool,
+		Certificates: []tls.Certificate{cert},
+	}, nil
+}
+
+// Check implements the Probe interface.
+// Request errors count against maxErrors and non-200 responses count against maxRetries.
 func (p *OpenSearchProbe) Check(ctx context.Context) bool {
-	for i := range make([]struct{}, p.maxRetries) {
-		select {
-		case <-ctx.Done():
-			return false
+	failedRequests, failedResponses := 0, 0
+	for {
+		delay := p.retryDelay
+		status, err := p.get(ctx)
+		switch {
+		case err != nil:
+			failedRequests++
+			slog.Error("Failed to send a request to OpenSearch", "error", err, "remainingAttempts", p.maxErrors-failedRequests)
+			if failedRequests >= p.maxErrors {
+				return false
+			}
+		case status == http.StatusOK:
+			return true
 		default:
-			req, err := http.NewRequestWithContext(ctx, "GET", p.url, nil)
-			if err != nil {
-				slog.Error("Failed to create request", "error", err)
-				continue
+			failedResponses++
+			slog.Error("Unexpected status code from OpenSearch", "status", status, "remainingAttempts", p.maxRetries-failedResponses)
+			if failedResponses >= p.maxRetries {
+				return false
 			}
-
-			resp, err := p.client.Do(req)
-			if err != nil {
-				slog.Error("Failed to execute OpenSearch query", "error", err)
-			} else {
-				resp.Body.Close()
-				if resp.StatusCode == http.StatusOK {
-					return true
-				}
-				if resp.StatusCode == http.StatusTooManyRequests {
-					slog.Warn("Rate limited by OpenSearch, waiting before retry")
-					time.Sleep(rateLimitTimeout)
-					continue
-				}
-				slog.Error("Unexpected status code from OpenSearch", "status", resp.StatusCode)
-			}
-
-			if i < p.maxRetries-1 {
-				slog.Info("Retrying OpenSearch health check", "attempt", i+1, "remaining", p.maxRetries-i-1)
-				time.Sleep(p.retryDelay)
+			if status == http.StatusTooManyRequests {
+				delay = p.rateLimitDelay
 			}
 		}
+		if !wait(ctx, delay) {
+			return false
+		}
 	}
-	return false
 }
 
-// Name implements the Probe interface
+func (p *OpenSearchProbe) get(ctx context.Context) (int, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.url, http.NoBody)
+	if err != nil {
+		return 0, err
+	}
+	req.SetBasicAuth(p.creds.Username, p.creds.Password)
+
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	if err := resp.Body.Close(); err != nil && !errors.Is(err, context.Canceled) {
+		slog.Warn("Failed to close the OpenSearch response body", "error", err)
+	}
+	return resp.StatusCode, nil
+}
+
+// Name implements the Probe interface.
 func (p *OpenSearchProbe) Name() string {
-	return "opensearch"
+	return config.StorageOpenSearch
 }

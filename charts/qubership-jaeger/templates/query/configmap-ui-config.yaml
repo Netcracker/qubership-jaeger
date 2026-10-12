@@ -1,0 +1,38 @@
+{{- if .Values.query.install }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.jaeger.serviceName }}-ui-configuration
+  labels:
+    {{- $name := printf "%s-ui-configuration" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "query") | nindent 4 }}
+    {{- if .Values.query.labels }}
+      {{- toYaml .Values.query.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.query.annotations }}
+  annotations:
+    {{- toYaml .Values.query.annotations | nindent 4 }}
+  {{- end }}
+data:
+  query-ui-config.json: >-
+    { "dependencies": {
+      "dagMaxNumServices": 200,
+      "menuEnabled": true
+      },
+      "menu":[
+        {
+          "items":[
+            {
+              "label":"Documentation",
+              "url":"https://www.jaegertracing.io/docs/latest"
+            }
+          ],
+          "label":"About"
+        }
+      ],
+      "monitor": {
+        "menuEnabled": false
+      }
+    }
+{{- end }}

@@ -5,11 +5,8 @@ kind: Job
 metadata:
   name: {{ .Values.jaeger.serviceName }}-rollover-init
   labels:
-    name: {{ .Values.jaeger.serviceName }}-rollover-init
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-rollover-init
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-rollover-init-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-rollover-init" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 4 }}
     {{- if .Values.elasticsearch.rollover.labels }}
       {{- toYaml .Values.elasticsearch.rollover.labels | nindent 4 }}
     {{- end }}
@@ -30,19 +27,15 @@ spec:
         {{- toYaml .Values.elasticsearch.rollover.annotations | nindent 8 }}
       {{- end }}
       labels:
-        name: {{ .Values.jaeger.serviceName }}-rollover-init
-        app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-rollover-init
-        app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-rollover-init-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-        app.kubernetes.io/component: jaeger
-        {{- include "jaeger.commonLabels" . | nindent 8 }}
-        app.kubernetes.io/managed-by: Helm
+        {{- $name := printf "%s-rollover-init" .Values.jaeger.serviceName -}}
+        {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 8 }}
         {{- if .Values.elasticsearch.rollover.labels }}
           {{- toYaml .Values.elasticsearch.rollover.labels | nindent 8 }}
         {{- end }}
     spec:
       serviceAccountName: {{ .Values.jaeger.serviceName }}-rollover-init
       securityContext:
-        {{- include "elasticsearch.rolloverjob.securityContext" . }}
+        {{- include "jaeger.hardenedPodSecurityContext" (list .Values.elasticsearch.rollover.securityContext .) | nindent 8 }}
       restartPolicy: OnFailure
       {{- if .Values.elasticsearch.rollover.affinity }}
       affinity:
@@ -100,22 +93,11 @@ spec:
           resources:
             {{- toYaml .Values.elasticsearch.rollover.resources | nindent 12 }}
           securityContext:
-            {{- include "elasticsearch.rolloverjob.containerSecurityContext" . }}
+            {{- include "jaeger.hardenedContainerSecurityContext" .Values.elasticsearch.rollover.containerSecurityContext | nindent 12 }}
           volumeMounts:
-          {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-            - name: {{ .Values.jaeger.serviceName }}-es-pre-hook-tls-assets
-              mountPath: "/es-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-es-pre-hook-tls-assets
-              mountPath: "/es-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-es-pre-hook-tls-assets
-              mountPath: "/es-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-          {{- end }}
+            - name: tmp
+              mountPath: /tmp
+          {{- include "jaeger.opensearchCertificateVolumeMounts" (merge (dict "prehook" true) .) | nindent 12 }}
           {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
@@ -129,11 +111,10 @@ spec:
               readOnly: {{ .readOnly }}
           {{- end }}
       volumes:
-      {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-        - name: {{ .Values.jaeger.serviceName }}-es-pre-hook-tls-assets
-          secret:
-            secretName: {{ template "elasticsearch.tls.secretName" (merge (dict "prehook" true) .) }}
-      {{- end }}
+        - name: tmp
+          emptyDir:
+            sizeLimit: {{ .Values.tmpSizeLimit }}
+      {{- include "jaeger.opensearchCertificateVolumes" (merge (dict "prehook" true) .) | nindent 8 }}
       {{- range .Values.elasticsearch.rollover.extraConfigmapMounts }}
         - name: {{ .name }}
           configMap:

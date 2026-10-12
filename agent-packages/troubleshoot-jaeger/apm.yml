@@ -1,0 +1,4 @@
+name: troubleshoot-jaeger
+version: 1.0.0
+description: Diagnose failures of Qubership Jaeger (collector, query, Cassandra storage, OpenSearch/Elasticsearch storage, readiness probe, Envoy auth proxy, Helm install) from a pasted problem description and logs, with no live system access.
+author: Qubership

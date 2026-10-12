@@ -2,164 +2,159 @@ package main
 
 import (
 	"context"
+	"errors"
+	"flag"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
-	"sync"
+	"sync/atomic"
+	"syscall"
 	"time"
+
+	"k8s.io/client-go/kubernetes"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"tracing-readiness-probe/internal/config"
 	"tracing-readiness-probe/internal/probes"
+	"tracing-readiness-probe/internal/secret"
 )
 
-var logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+// checkInterval is the pause between two storage health checks.
+const checkInterval = 10 * time.Second
+
+var Logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 type Server struct {
-	cfg        *config.Config
-	probe      probes.Probe
-	isHealthy  bool
-	healthLock sync.RWMutex
+	probe   probes.Probe
+	healthy atomic.Bool
 }
 
 func main() {
-	slog.SetDefault(logger)
+	slog.SetDefault(Logger)
 	slog.Info("Starting the service")
 
-	cfg := config.LoadConfig()
-	s := &Server{
-		cfg: cfg,
+	cfg, err := config.Parse(os.Args[1:], os.Stderr)
+	if errors.Is(err, flag.ErrHelp) {
+		os.Exit(0)
+	}
+	if err != nil {
+		slog.Error("Invalid configuration", "error", err)
+		os.Exit(1)
 	}
 
-	// Initialize the appropriate probe
-	s.initProbe()
-
-	// Start health check in background
-	go s.runHealthCheck()
-
-	// Setup HTTP server
-	host := "0.0.0.0:" + strconv.Itoa(cfg.ServicePort)
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", s.livenessProbe)
-	mux.HandleFunc("/ready", s.readinessProbe)
-
-	server := &http.Server{
-		Addr:    host,
-		Handler: mux,
-	}
-
-	// Setup graceful shutdown
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	probe, err := newProbe(ctx, cfg)
+	if err != nil {
+		slog.Error("Failed to initialize the probe", "error", err)
+		os.Exit(1)
+	}
+	s := &Server{probe: probe}
+
+	host := "0.0.0.0:" + strconv.Itoa(cfg.ServicePort)
+	server := &http.Server{
+		Addr:    host,
+		Handler: s.handler(),
+	}
+
 	go func() {
-		slog.Info("Server is listening", "address", host)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			slog.Error("Server error", "error", err)
+		slog.Info("The service is listening", "address", host)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("The HTTP server failed", "error", err)
 			os.Exit(1)
 		}
 	}()
 
-	<-ctx.Done()
-	stop()
+	go s.runHealthChecks(ctx, checkInterval)
 
+	<-ctx.Done()
+
+	stop()
 	slog.Info("Shutting down gracefully, press Ctrl+C again to force")
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.ShutdownTimeout)*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		slog.Error("Server shutdown error", "error", err)
+		slog.Error("Failed to shut down the HTTP server", "error", err)
 		os.Exit(1)
 	}
 }
 
-func (s *Server) initProbe() {
-	baseCfg := &probes.BaseProbeConfig{
-		MaxRetries: s.cfg.MaxRetries,
-		Timeout:    s.cfg.Timeout,
-		TLSEnabled: s.cfg.TLSEnabled,
-		CAFile:     s.cfg.CAFile,
-		CertFile:   s.cfg.CertFile,
-		KeyFile:    s.cfg.KeyFile,
-	}
-
-	var cfg probes.ProbeConfig
-	switch s.cfg.StorageType {
-	case "cassandra":
-		slog.Info("Initializing Cassandra probe", "host", s.cfg.CassandraHost, "port", s.cfg.CassandraPort)
-		cfg = &probes.CassandraConfig{
-			BaseProbeConfig: baseCfg,
-			Host:            s.cfg.CassandraHost,
-			Port:            s.cfg.CassandraPort,
-			Keyspace:        s.cfg.CassandraKeyspace,
-			Datacenter:      s.cfg.CassandraDatacenter,
-			TestTable:       s.cfg.CassandraTestTable,
-			Username:        s.cfg.CassandraUsername,
-			Password:        s.cfg.CassandraPassword,
-		}
-	case "opensearch":
-		slog.Info("Initializing OpenSearch probe", "host", s.cfg.OpenSearchHost, "port", s.cfg.OpenSearchPort)
-		cfg = &probes.OpenSearchConfig{
-			BaseProbeConfig: baseCfg,
-			Host:            s.cfg.OpenSearchHost,
-			Port:            s.cfg.OpenSearchPort,
-			Index:           s.cfg.OpenSearchIndex,
-			Username:        s.cfg.OpenSearchUsername,
-			Password:        s.cfg.OpenSearchPassword,
-		}
-	}
-
-	var err error
-	s.probe, err = probes.NewProbe(s.cfg.StorageType, cfg)
+func newProbe(ctx context.Context, cfg *config.Config) (probes.Probe, error) {
+	creds, err := readCredentials(ctx, cfg)
 	if err != nil {
-		slog.Error("Failed to initialize probe", "error", err)
-		os.Exit(1)
+		return nil, err
 	}
+	if cfg.Storage == config.StorageOpenSearch {
+		return probes.NewOpenSearchProbe(cfg, creds)
+	}
+	return probes.NewCassandraProbe(ctx, cfg, creds)
 }
 
-func (s *Server) runHealthCheck() {
-	ticker := time.NewTicker(10 * time.Second)
+func readCredentials(ctx context.Context, cfg *config.Config) (probes.Credentials, error) {
+	restConfig, err := ctrl.GetConfig()
+	if err != nil {
+		return probes.Credentials{}, fmt.Errorf("failed to load the Kubernetes client configuration: %w", err)
+	}
+	client, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return probes.Credentials{}, fmt.Errorf("failed to create the Kubernetes client: %w", err)
+	}
+	return secret.ReadCredentials(ctx, client, cfg.Namespace, cfg.AuthSecretName)
+}
+
+func (s *Server) handler() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", s.readinessProbe)
+	mux.HandleFunc("/livez", s.livenessProbe)
+	return mux
+}
+
+// runHealthChecks checks the storage right away and then after every interval until ctx is canceled.
+func (s *Server) runHealthChecks(ctx context.Context, interval time.Duration) {
+	slog.Info("Readiness probe process is starting", "storage", s.probe.Name())
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	ctx := context.Background()
 	for {
+		healthy := s.probe.Check(ctx)
+		if ctx.Err() != nil {
+			return
+		}
+		s.healthy.Store(healthy)
+		slog.Info("Health check completed", "healthy", healthy, "storage", s.probe.Name())
+
 		select {
+		case <-ctx.Done():
+			return
 		case <-ticker.C:
-			healthy := s.probe.Check(ctx)
-			s.healthLock.Lock()
-			s.isHealthy = healthy
-			s.healthLock.Unlock()
-			slog.Info("Health check completed", "healthy", healthy, "probe", s.probe.Name())
 		}
 	}
 }
 
 func (s *Server) livenessProbe(w http.ResponseWriter, _ *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/text")
-	_, err := io.WriteString(w, http.StatusText(http.StatusOK))
-	if err != nil {
-		slog.Error("Failed to send response", "error", err)
-	}
+	writeOK(w)
 }
 
 func (s *Server) readinessProbe(w http.ResponseWriter, _ *http.Request) {
-	s.healthLock.RLock()
-	healthy := s.isHealthy
-	s.healthLock.RUnlock()
-
-	if healthy {
-		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "application/text")
-		_, err := io.WriteString(w, http.StatusText(http.StatusOK))
-		if err != nil {
-			slog.Error("Failed to send response", "error", err)
-		}
-	} else {
+	if !s.healthy.Load() {
 		slog.Error("Readiness probe failed")
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	writeOK(w)
+}
+
+func writeOK(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	if _, err := io.WriteString(w, http.StatusText(http.StatusOK)); err != nil {
+		slog.Error("Failed to send the response", "error", err)
 	}
 }

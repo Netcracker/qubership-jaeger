@@ -1,0 +1,71 @@
+# Default values for jaeger.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+query:
+  install: true
+
+  # Custom config for the query
+  customConfig:
+    service:
+      extensions: [jaeger_storage, jaeger_query, healthcheckv2]
+      pipelines:
+        traces:
+          receivers: [jaeger]
+          processors: [batch]
+          exporters: [debug]
+      telemetry:
+        resource:
+          service.name: jaeger-query
+        metrics:
+          level: detailed
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
+        logs:
+          level: info
+    extensions:
+      healthcheckv2:
+        use_v2: true
+        http:
+          endpoint: 0.0.0.0:13133
+      jaeger_query:
+        storage:
+          traces: main_cassandra
+        grpc:
+          endpoint: 0.0.0.0:16685
+        http:
+          endpoint: 0.0.0.0:16686
+
+      jaeger_storage:
+        backends:
+          main_cassandra:
+            cassandra:
+              schema:
+                create: true
+                keyspace: "jaeger"
+                datacenter: "dc1"
+              connection:
+                local_dc: "dc1"
+                servers:
+                  - cassandra.cassandra.svc
+                port: 9042
+                tls:
+                  insecure: true
+                auth:
+                  basic:
+                    username: admin
+                    password: admin
+    receivers:
+      jaeger:
+        protocols:
+          thrift_binary: ~
+          thrift_compact: ~
+          thrift_http: ~
+    processors:
+      batch: ~
+    exporters:
+      debug: ~

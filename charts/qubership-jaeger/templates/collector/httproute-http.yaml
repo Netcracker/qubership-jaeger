@@ -1,0 +1,40 @@
+{{- $httpRouteSpec := .Values.collector.httpRoute | default dict -}}
+{{- $ingressSpec := .Values.collector.ingress.http | default dict -}}
+{{- $hostnames := include "collector.gatewayApi.hosts" (dict "ctx" $ "route" $httpRouteSpec "ingress" $ingressSpec "prefix" "collector") | fromYamlArray -}}
+{{- $defaultRules := list
+      (dict "prefix" "/" "service" (dict "port" 13133))
+      (dict "prefix" "/zipkin" "rewritePrefix" "/" "service" (dict "port" 9411))
+      (dict "prefix" "/otlp/http" "rewritePrefix" "/" "service" (dict "port" 4318))
+      (dict "prefix" "/thrift/tchannel" "rewritePrefix" "/" "service" (dict "port" 14250))
+      (dict "prefix" "/thrift/http" "rewritePrefix" "/" "service" (dict "port" 14268))
+-}}
+{{- $rules := $httpRouteSpec.defaultPaths | default $defaultRules -}}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $httpRouteSpec.install $ingressSpec.install) "host" (first $hostnames)) -}}
+{{- $install := or ($httpRouteSpec.install | default false) (and $exposed (include "jaeger.gatewayApi.enabled" .)) -}}
+{{- if and .Values.collector.install $install }}
+{{- $resourceName := include "collector.httpRoute.resourceName" (list $ "http") }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $resourceName }}
+  labels:
+    app.kubernetes.io/instance: {{ cat $.Values.jaeger.serviceName "-http-collector-" $.Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
+    {{- include "jaeger.labels" (dict "ctx" $ "name" $resourceName "component" "collector") | nindent 4 }}
+    {{- if $httpRouteSpec.labels }}
+      {{- toYaml $httpRouteSpec.labels | nindent 4 }}
+    {{- end }}
+  {{- if $httpRouteSpec.annotations }}
+  annotations:
+    {{- toYaml $httpRouteSpec.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "jaeger.gatewayApi.parentRefs" (dict "ctx" $ "parentRefs" $httpRouteSpec.parentRefs) | nindent 4 }}
+  {{- if $hostnames }}
+  hostnames:
+    {{- include "jaeger.gatewayApi.hostnames" (dict "ctx" $ "hosts" $hostnames) | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- include "collector.httpRoute.rules" (list $ $rules) | trim | nindent 4 }}
+{{- end }}

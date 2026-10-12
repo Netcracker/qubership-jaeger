@@ -2,3 +2,23 @@
 *.tar.gz
 .vscode
 **/last
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# MkDocs build output
+site/
+
+# APM install artifacts (regenerate with apm install / apm compile)
+.agents/
+.cursor/
+.claude/
+apm_modules/
+apm.lock.yaml
+
+# IDE
+.idea/
+
+# Locally installed tooling (make helm-docs)
+bin/

@@ -1,0 +1,25 @@
+{{- if .Values.collector.install }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.jaeger.serviceName }}-sampling-configuration
+  labels:
+    {{- $name := printf "%s-sampling-configuration" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "collector") | nindent 4 }}
+    {{- if .Values.collector.labels }}
+      {{- toYaml .Values.collector.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.collector.annotations }}
+  annotations:
+    {{- toYaml .Values.collector.annotations | nindent 4 }}
+  {{- end }}
+data:
+  sampling: |
+    {
+      "default_strategy":{
+        "param":1,
+        "type":"probabilistic"
+      }
+    }
+{{- end }}

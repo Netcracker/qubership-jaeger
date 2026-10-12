@@ -10,11 +10,12 @@ kind: Deployment
 metadata:
   name: {{ .Values.jaeger.serviceName }}-collector
   labels:
-    name: {{ .Values.jaeger.serviceName }}-collector
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-collector
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-collector-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: collector
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-collector" .Values.jaeger.serviceName -}}
+    {{- $instance := printf "%s-collector-%s" .Values.jaeger.serviceName .Release.Namespace | trunc 63 | trimSuffix "-" -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "collector") | nindent 4 }}
+    app.kubernetes.io/instance: {{ $instance }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/technology: go
     {{- if .Values.collector.labels }}
       {{- toYaml .Values.collector.labels | nindent 4 }}
     {{- end }}
@@ -38,15 +39,15 @@ spec:
   template:
     metadata:
       labels:
-        name: {{ .Values.jaeger.serviceName }}-collector
-        app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-collector
-        app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-collector-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-        app.kubernetes.io/component: collector
-        {{- include "jaeger.commonLabels" . | nindent 8 }}
+        {{- $name := printf "%s-collector" .Values.jaeger.serviceName -}}
+        {{- $instance := printf "%s-collector-%s" .Values.jaeger.serviceName .Release.Namespace | trunc 63 | trimSuffix "-" -}}
+        {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "collector") | nindent 8 }}
+        app.kubernetes.io/instance: {{ $instance }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+        app.kubernetes.io/technology: go
         {{- if .Values.collector.labels }}
         {{- toYaml .Values.collector.labels | nindent 8 }}
         {{- end }}
-        app.kubernetes.io/managed-by: Helm
       {{- if .Values.collector.annotations }}
       annotations:
         {{- toYaml .Values.collector.annotations | nindent 8 }}
@@ -57,7 +58,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        {{- include "collector.securityContext" . }}
+        {{- include "jaeger.hardenedPodSecurityContext" (list .Values.collector.securityContext .) | nindent 8 }}
       {{- if .Values.collector.priorityClassName }}
       priorityClassName: {{ .Values.collector.priorityClassName }}
       {{- end }}
@@ -68,55 +69,23 @@ spec:
           imagePullPolicy: {{ .Values.collector.imagePullPolicy }}
           args:
             {{- template "collector.args" . }}
+          {{- with (include "collector.env" . | trim) }}
           env:
-            {{- /* Section with Cassandra environment variables */}}
-            {{- if eq .Values.jaeger.storage.type "cassandra" }}
-            - name: CASSANDRA_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "cassandraSchemaJob.secretName" . }}
-                  key: username
-            - name: CASSANDRA_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "cassandraSchemaJob.secretName" . }}
-                  key: password
-            {{- /* Section with ElasticSearch/OpenSearch environment variables */}}
-            {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
-            - name: ES_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ if .Values.elasticsearch.existingSecret }}{{ .Values.elasticsearch.existingSecret }}{{- else }}jaeger-elasticsearch{{- end }}
-                  key: username
-            - name: ES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ if .Values.elasticsearch.existingSecret }}{{ .Values.elasticsearch.existingSecret }}{{- else }}jaeger-elasticsearch{{- end }}
-                  key: password
-            {{- end }}
-          livenessProbe:
-            failureThreshold: 5
-            httpGet:
-              path: /status
-              port: healthcheck
-              scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 15
-            successThreshold: 1
-            timeoutSeconds: 1
+            {{- . | nindent 12 }}
+          {{- end }}
           {{- if .Values.readinessProbe.install }}
-          readinessProbe:
-            failureThreshold: 1
+          livenessProbe:
+            failureThreshold: 3
             httpGet:
               path: /health
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 1
+            initialDelaySeconds: 15
             periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 10 }}
             successThreshold: 1
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 5 }}
           {{- else }}
-          readinessProbe:
+          livenessProbe:
             failureThreshold: 3
             httpGet:
               path: /status
@@ -127,12 +96,20 @@ spec:
             successThreshold: 1
             timeoutSeconds: 1
           {{- end }}
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /status
+              port: healthcheck
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
           ports:
-            {{- if .Values.collector.zipkinPort }}
             - containerPort: {{ .Values.collector.zipkinPort }}
               name: zipkin
               protocol: TCP
-            {{- end }}
             - containerPort: 13133
               name: healthcheck
               protocol: TCP
@@ -141,10 +118,6 @@ spec:
               protocol: TCP
             - containerPort: 14268
               name: thrift-http
-              protocol: TCP
-            # TODO: is it still actual?
-            - containerPort: 14269
-              name: admin-http
               protocol: TCP
             - containerPort: 4317
               name: otlp-grpc
@@ -164,187 +137,86 @@ spec:
           resources:
             {{- toYaml .Values.collector.resources | nindent 12 }}
           securityContext:
-            {{- include "collector.containerSecurityContext" . }}
+            {{- include "jaeger.hardenedContainerSecurityContext" .Values.collector.containerSecurityContext | nindent 12 }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-            - mountPath: /etc/jaeger/sampling
-              name: {{ .Values.jaeger.serviceName }}-sampling-configuration-volume
+            - name: tmp
+              mountPath: /tmp
+            - name: sampling-config
+              mountPath: /etc/jaeger/sampling
               readOnly: true
-            - mountPath: /conf
-              name: jaeger-collector-configuration-volume
+            - name: collector-runtime-config
+              mountPath: /conf
               readOnly: true
-            {{- if .Values.cassandraSchemaJob.tls.enabled }}
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-            {{- end }}
-            {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-            {{- end }}
-            {{- if and .Values.remotegRPC.tls.enabled (not .Values.remotegRPC.tls.insecureSkipVerify) }}
-            - name: {{ .Values.jaeger.serviceName }}-remotegrpc-tls-assets
-              mountPath: "/grpc-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-remotegrpc-tls-assets
-              mountPath: "/grpc-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-remotegrpc-tls-assets
-              mountPath: "/grpc-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-            {{- end }}
-            {{- if or .Values.collector.tlsConfig.otelHttp.enabled
-                    .Values.collector.tlsConfig.otelgRPC.enabled
-                    .Values.collector.tlsConfig.jaegerHttp.enabled
-                    .Values.collector.tlsConfig.jaegergRPC.enabled
-                    .Values.collector.tlsConfig.zipkin.enabled }}
-            {{- if .Values.collector.tlsConfig.existingSecret }}
-            - name: {{ .Values.collector.tlsConfig.existingSecret }}
-              mountPath: "/collector-tls/ca.crt"
-              subPath: "ca.crt"
-              readOnly: true
-            - name: {{ .Values.collector.tlsConfig.existingSecret }}
-              mountPath: "/collector-tls/tls.crt"
-              subPath: "tls.crt"
-              readOnly: true
-            - name: {{ .Values.collector.tlsConfig.existingSecret }}
-              mountPath: "/collector-tls/tls.key"
-              subPath: "tls.key"
-              readOnly: true
-            {{- else }}
-            - name: {{ default "jaeger-collector-tls-secret" .Values.collector.tlsConfig.newSecretName }}
-              mountPath: "/collector-tls/ca.crt"
-              subPath: "ca.crt"
-              readOnly: true
-            - name: {{ default "jaeger-collector-tls-secret" .Values.collector.tlsConfig.newSecretName }}
-              mountPath: "/collector-tls/tls.crt"
-              subPath: "tls.crt"
-              readOnly: true
-            - name: {{ default "jaeger-collector-tls-secret" .Values.collector.tlsConfig.newSecretName }}
-              mountPath: "/collector-tls/tls.key"
-              subPath: "tls.key"
-              readOnly: true
-            {{- end }}
+            {{- with (include "jaeger.certificateVolumeMounts" . | trim) }}
+            {{- . | nindent 12 }}
             {{- end }}
         {{- if .Values.readinessProbe.install }}
-        - name: readiness-probe
+        - name: probe
           image: {{ template "readiness-probe.image" . }}
           imagePullPolicy: {{ .Values.readinessProbe.imagePullPolicy }}
           command: ["/app/probe"]
           args:
-            {{- template "readinessProbe.args" . }}
+            {{- include "readinessProbe.args" . }}
           ports:
             - containerPort: 8080
               protocol: TCP
           livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+          readinessProbe:
             failureThreshold: 1
             httpGet:
               path: /health
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            initialDelaySeconds: 15
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 10 }}
             successThreshold: 1
-            timeoutSeconds: 10
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 5 }}
           resources:
             {{- toYaml .Values.readinessProbe.resources | nindent 12 }}
           securityContext:
-            {{- include "readinessProbe.containerSecurityContext" . }}
+            {{- include "jaeger.hardenedContainerSecurityContext" .Values.readinessProbe.containerSecurityContext | nindent 12 }}
           volumeMounts:
-            {{- if .Values.cassandraSchemaJob.tls.enabled }}
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-              mountPath: "/cassandra-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-            {{- end }}
-            {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/ca-cert.pem"
-              subPath: "ca-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/client-cert.pem"
-              subPath: "client-cert.pem"
-              readOnly: true
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              mountPath: "/es-tls/client-key.pem"
-              subPath: "client-key.pem"
-              readOnly: true
-            {{- end }}
+            - name: tmp
+              mountPath: /tmp
+          {{- with (include "jaeger.certificateVolumeMounts" . | trim) }}
+            {{- . | nindent 12 }}
+          {{- end }}
         {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: {{ .Values.jaeger.serviceName }}-sampling-configuration-volume
+        - name: tmp
+          emptyDir:
+            sizeLimit: {{ .Values.tmpSizeLimit }}
+        - name: sampling-config
           configMap:
             name: {{ .Values.jaeger.serviceName }}-sampling-configuration
             defaultMode: 420
             items:
               - key: sampling
                 path: sampling.json
-        - name: {{ .Values.jaeger.serviceName }}-collector-configuration-volume
-          configMap:
-            name: {{ .Values.jaeger.serviceName }}-collector-configuration
+        - name: collector-runtime-config
+          secret:
+            secretName: {{ include "collector.runtimeConfig.secretName" . }}
             items:
-              - key: config.yaml
+              - key: {{ include "collector.runtimeConfig.key" . }}
                 path: config.yaml
             defaultMode: 420
-        {{- if .Values.cassandraSchemaJob.tls.enabled }}
-        - name: {{ template "cassandraSchemaJob.tls.secretName" . }}
-          secret:
-            secretName: {{ template "cassandraSchemaJob.tls.secretName" . }}
-        {{- end }}
-        {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-        - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-          secret:
-            secretName: {{ template "elasticsearch.tls.secretName" . }}
-        {{- end }}
-        {{- if and .Values.remotegRPC.tls.enabled (not .Values.remotegRPC.tls.insecureSkipVerify) }}
-        - name: {{ .Values.jaeger.serviceName }}-remotegrpc-tls-assets
-          secret:
-            secretName: {{ if .Values.remotegRPC.existingSecret }}{{ .Values.remotegRPC.existingSecret }}{{ else }}{{  default "jaeger-remotegrpc-tls-assets" .Values.collector.tlsConfig.newSecretName }}{{- end -}}
-        {{- end }}
-        {{- if .Values.collector.tlsConfig.existingSecret }}
-        - name: {{ .Values.collector.tlsConfig.existingSecret }}
-          secret:
-            secretName: {{ .Values.collector.tlsConfig.existingSecret }}
-        {{- else }}
-        - name: {{ default "jaeger-collector-tls-secret" .Values.collector.tlsConfig.newSecretName }}
-          secret:
-            secretName: {{  default "jaeger-collector-tls-secret" .Values.collector.tlsConfig.newSecretName }}
+        {{- with (include "jaeger.certificateVolumes" . | trim) }}
+        {{- . | nindent 8 }}
         {{- end }}
       {{- if .Values.collector.affinity }}
       affinity:

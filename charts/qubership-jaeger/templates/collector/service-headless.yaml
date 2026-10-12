@@ -1,0 +1,65 @@
+{{- if .Values.collector.install }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.jaeger.serviceName }}-collector-headless
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: {{ .Values.jaeger.serviceName }}-collector-headless-tls
+  labels:
+    {{- $name := printf "%s-collector-headless" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "collector") | nindent 4 }}
+    {{- if .Values.collector.labels }}
+      {{- toYaml .Values.collector.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.collector.annotations }}
+  annotations:
+    {{- toYaml .Values.collector.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  clusterIP: None
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      protocol: TCP
+      targetPort: 4317
+    - name: otlp-http
+      port: 4318
+      protocol: TCP
+      targetPort: 4318
+    - name: sampling-http
+      port: 5778
+      protocol: TCP
+      targetPort: 5778
+    - name: sampling-grpc
+      port: 5779
+      protocol: TCP
+      targetPort: 5779
+    - name: metrics
+      port: 8888
+      protocol: TCP
+      targetPort: 8888
+    - name: zipkin
+      port: {{ .Values.collector.zipkinPort }}
+      protocol: TCP
+      targetPort: 9411
+    - name: healthcheck
+      port: 13133
+      targetPort: 13133
+      protocol: TCP
+    - name: thrift-grpc
+      port: 14250
+      protocol: TCP
+      targetPort: 14250
+    - name: thrift-http
+      port: 14268
+      protocol: TCP
+      targetPort: 14268
+  selector:
+    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-collector
+    app.kubernetes.io/component: collector
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+{{- end }}

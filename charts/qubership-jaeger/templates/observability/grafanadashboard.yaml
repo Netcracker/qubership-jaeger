@@ -1,0 +1,13 @@
+{{- if .Values.jaeger.prometheusMonitoringDashboard }}
+---
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDashboard
+metadata:
+  name: {{ .Values.jaeger.serviceName }}-overview
+  labels:
+    {{- $name := printf "%s-overview" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "monitoring") | nindent 4 }}
+spec:
+  json: >
+    {{ .Files.Get "monitoring/dashboard-for-grafana.json" | nindent 4 }}
+{{- end }}

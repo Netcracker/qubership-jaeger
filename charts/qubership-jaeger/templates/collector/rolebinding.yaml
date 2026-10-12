@@ -1,0 +1,24 @@
+{{- if .Values.collector.install }}
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: jaeger-collector
+  labels:
+    {{- $name := printf "%s-collector" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "collector") | nindent 4 }}
+    {{- if .Values.collector.labels }}
+      {{- toYaml .Values.collector.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.collector.annotations }}
+  annotations:
+    {{- toYaml .Values.collector.annotations | nindent 4 }}
+  {{- end }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.jaeger.serviceName }}-collector
+roleRef:
+  kind: Role
+  name: jaeger-collector
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

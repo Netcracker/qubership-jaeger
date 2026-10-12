@@ -1,0 +1,72 @@
+# Recipe — dependency migration (Python)
+
+Concrete moves for Layer 4 §4.1 (`dependencyMigration`) — see common
+[`models/4-transformation.md`](../../opentelemetry-tracing-common/models/4-transformation.md)
+§4.1.
+
+Read versions from the target manifest (`requirements.txt`, `pyproject.toml`,
+`poetry.lock`, `Pipfile`); do not hardcode versions here.
+
+**Prerequisite:** complete Python [`models/4-transformation.md`](../models/4-transformation.md)
+Step 0 (framework stack) before emitting §4.1 rows — dependency moves follow
+`discovery-result.service.framework`, not a free choice.
+
+## Framework stack → dependency path
+
+§4.1 is the **baseline below** plus the instrumentor the detected stack needs —
+per-stack instrumentors and the best-effort mapping for `framework: unknown`:
+[`../reference/framework-coverage.md`](../reference/framework-coverage.md).
+Record in `gaps` whatever the `unknown` row had to assume.
+
+## Legacy → OTel moves
+
+Applies to every framework stack when these are the active tracing dependencies:
+
+- remove: `opentracing`, `opentracing-instrumentation`, `jaeger-client`,
+  `py-zipkin`, framework shims (`flask-opentracing`,
+  `django-opentracing`), and the retired `opentelemetry-exporter-jaeger*`
+  (when they form the active stack).
+- add: `opentelemetry-api`, `opentelemetry-sdk`, the OTLP HTTP exporter, and the B3 propagator
+  module (baseline below), plus the framework instrumentation package from the table above.
+
+## Target baseline modules
+
+Required for `pure-python`, and as the SDK foundation for every framework path:
+
+- `opentelemetry-api`
+- `opentelemetry-sdk`
+- `opentelemetry-exporter-otlp-proto-http`
+- `opentelemetry-propagator-b3`
+
+Use `opentelemetry-exporter-otlp-proto-grpc` only when the environment explicitly
+requires gRPC OTLP.
+
+Zero-code auto-instrumentation (optional, chosen at Step 0b — **not** alongside
+manual `.instrument()` calls):
+
+- `opentelemetry-distro`
+- `opentelemetry-instrumentation` (provides the `opentelemetry-instrument` and
+  `opentelemetry-bootstrap` commands)
+
+`opentelemetry-bootstrap -a install` adds the instrumentation packages that match
+the libraries already installed — useful for reproducing the auto path, but pin
+the resulting set in the manifest rather than running it at container start.
+
+## Manifest guardrails
+
+- Keep the tracing packages in the **runtime** dependency set, not `dev`/`test`
+  extras — they must be present in the built image.
+- OTel packages version-lock together; mixing an old `opentelemetry-api` with a
+  newer SDK/exporter raises `ImportError` on moved symbols. Install them as one
+  coherent set from a single index, let the resolver align them, and record the
+  resolved set in the plan — never leave a split version set. If the service pins
+  an old `opentelemetry-api` for an unrelated reason, upgrade the whole OTel set
+  together (or record an unresolvable conflict in `gaps`), never partially.
+- **Coherence overrides "defer versions" on a split.** [`SKILL.md`](../SKILL.md)
+  *Defer versions* forbids **inventing** version numbers — not constraining a
+  broken resolution back to coherence. Default: don't pin, let the resolver
+  align. But if it yields a split (different release trains, or the OTLP exporter
+  fails to import — see [`fresh-build-and-image.md`](fresh-build-and-image.md)
+  §Step 1), pin the **whole** OTel stack to **one** release train taken from the
+  resolution already produced (e.g. the `api`/`sdk` version, not an invented one)
+  and install it from a single index (PyPI) so it locks. Record the pinned set.

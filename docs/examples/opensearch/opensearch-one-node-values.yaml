@@ -12,6 +12,20 @@ elasticsearch:
     password: admin
     scheme: https
     url: elasticsearch.elasticsearch.svc:9200
+  useAliases: true
+  indices:
+    spans:
+      shards: 1
+      replicas: 0
+    services:
+      shards: 1
+      replicas: 0
+    dependencies:
+      shards: 1
+      replicas: 0
+    sampling:
+      shards: 1
+      replicas: 0
   rollover:
     install: true
     schedule: "10 0 * * *"
@@ -28,17 +42,9 @@ elasticsearch:
 
 collector:
   install: true
-  extraEnv:
-  # Specify 0 replicas
-  - name: ES_NUM_REPLICAS
-    value: "0"
 
 query:
   install: true
-  extraEnv:
-  # Specify 0 replicas
-  - name: ES_NUM_REPLICAS
-    value: "0"
   ingress:
     install: true
     host: query.<cloud_dns_name>

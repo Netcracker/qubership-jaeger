@@ -1,28 +1,35 @@
-{{- if and .Values.query.install .Values.query.ingress.install }}
+{{- $ingressSpec := .Values.query.ingress | default dict -}}
+{{- $host := include "query.ingress" . -}}
+{{- $exposed := include "jaeger.exposureEnabled" (dict "flags" (list $ingressSpec.install) "host" $host) -}}
+{{- if and .Values.query.install $exposed (include "jaeger.legacyIngress.enabled" .) }}
+{{- $annotations := deepCopy (.Values.query.annotations | default dict) -}}
+{{- if or .Values.query.ingress.addGatewayApiAnnotation (include "jaeger.gatewayApi.enabled" .) }}
+{{- $_ := set $annotations "gateway-api-converter.netcracker.com/ignore" "true" -}}
+{{- end }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.jaeger.serviceName }}-query
   labels:
-    name: {{ .Values.jaeger.serviceName }}-query
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-query
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-query-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: query
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-query" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "query") | nindent 4 }}
     {{- if .Values.query.labels }}
       {{- toYaml .Values.query.labels | nindent 4 }}
     {{- end }}
-  {{- if .Values.query.annotations }}
+    {{- if .Values.query.ingress.labels }}
+      {{- toYaml .Values.query.ingress.labels | nindent 4 }}
+    {{- end }}
+  {{- if $annotations }}
   annotations:
-    {{- toYaml .Values.query.annotations | nindent 4 }}
+    {{- toYaml $annotations | nindent 4 }}
   {{- end }}
 spec:
   {{- if .Values.query.ingress.className }}
   ingressClassName: {{ .Values.query.ingress.className }}
   {{- end }}
   rules:
-    - host: {{ include "query.ingress" . }}
+    - host: {{ $host | quote }}
       http:
         paths:
           - path: /

@@ -14,7 +14,8 @@ Check Deployments
 
 Check Collector Pods Are Running
     [Tags]  smoke
-    Check Collector Pods
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Check Collector Pods
 
 Check Query Pods Are Running
     [Tags]  smoke
@@ -23,7 +24,8 @@ Check Query Pods Are Running
 
 Jaeger can serve spans
     [Tags]  smoke
-    Check Jaeger Alive
+    Wait Until Keyword Succeeds  ${OPERATION_RETRY_COUNT}  ${OPERATION_RETRY_INTERVAL}
+    ...  Check Jaeger Alive
     ${trace} =  JaegerLibrary.generate_trace
     Post Random Spans  ${trace}
     Get Trace From Jaeger With Attempts  ${trace[0]['traceId']}

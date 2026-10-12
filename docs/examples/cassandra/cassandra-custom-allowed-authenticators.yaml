@@ -7,7 +7,6 @@ cassandraSchemaJob:
   port: 9043
   username: admin
   password: admin
-  mode: prod
   keyspace: jaeger
   datacenter: dc1
 

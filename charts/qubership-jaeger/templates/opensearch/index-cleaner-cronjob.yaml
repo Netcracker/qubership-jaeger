@@ -5,11 +5,8 @@ kind: CronJob
 metadata:
   name: {{ .Values.jaeger.serviceName }}-index-cleaner
   labels:
-    name: {{ .Values.jaeger.serviceName }}-index-cleaner
-    app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-index-cleaner
-    app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-index-cleaner-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger
-    {{- include "jaeger.commonLabels" . | nindent 4 }}
+    {{- $name := printf "%s-index-cleaner" .Values.jaeger.serviceName -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 4 }}
     {{- if .Values.elasticsearch.indexCleaner.labels }}
       {{- toYaml .Values.elasticsearch.indexCleaner.labels | nindent 4 }}
     {{- end }}
@@ -35,19 +32,15 @@ spec:
             {{- toYaml .Values.elasticsearch.indexCleaner.annotations | nindent 12 }}
           {{- end }}
           labels:
-            name: {{ .Values.jaeger.serviceName }}-index-cleaner
-            app.kubernetes.io/name: {{ .Values.jaeger.serviceName }}-index-cleaner
-            app.kubernetes.io/instance: {{ cat .Values.jaeger.serviceName "-index-cleaner-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-            app.kubernetes.io/component: jaeger
-            {{- include "jaeger.commonLabels" . | nindent 12 }}
-            app.kubernetes.io/managed-by: Helm
+            {{- $name := printf "%s-index-cleaner" .Values.jaeger.serviceName -}}
+            {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "jaeger") | nindent 12 }}
             {{- if .Values.elasticsearch.indexCleaner.labels }}
               {{- toYaml .Values.elasticsearch.indexCleaner.labels | nindent 12 }}
             {{- end }}
         spec:
           serviceAccountName: {{ .Values.jaeger.serviceName }}-index-cleaner
           securityContext:
-            {{- include "elasticsearch.indexCleaner.securityContext" . }}
+            {{- include "jaeger.hardenedPodSecurityContext" (list .Values.elasticsearch.indexCleaner.securityContext .) | nindent 12 }}
           {{- with .Values.elasticsearch.indexCleaner.imagePullSecrets }}
           imagePullSecrets:
             {{- toYaml . | nindent 12 }}
@@ -96,22 +89,11 @@ spec:
             resources:
               {{- toYaml .Values.elasticsearch.indexCleaner.resources | nindent 14 }}
             securityContext:
-              {{- include "elasticsearch.indexCleaner.containerSecurityContext" . }}
+              {{- include "jaeger.hardenedContainerSecurityContext" .Values.elasticsearch.indexCleaner.containerSecurityContext | nindent 14 }}
             volumeMounts:
-            {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-              - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-                mountPath: "/es-tls/ca-cert.pem"
-                subPath: "ca-cert.pem"
-                readOnly: true
-              - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-                mountPath: "/es-tls/client-cert.pem"
-                subPath: "client-cert.pem"
-                readOnly: true
-              - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-                mountPath: "/es-tls/client-key.pem"
-                subPath: "client-key.pem"
-                readOnly: true
-            {{- end }}
+              - name: tmp
+                mountPath: /tmp
+            {{- include "jaeger.opensearchCertificateVolumeMounts" . | nindent 14 }}
             {{- range .Values.elasticsearch.indexCleaner.extraConfigmapMounts }}
               - name: {{ .name }}
                 mountPath: {{ .mountPath }}
@@ -138,11 +120,10 @@ spec:
             {{- toYaml .Values.elasticsearch.indexCleaner.tolerations | nindent 12 }}
           {{- end }}
           volumes:
-          {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
-            - name: {{ .Values.jaeger.serviceName }}-elasticsearch-tls-assets
-              secret:
-                secretName: {{ template "elasticsearch.tls.secretName" . }}
-          {{- end }}
+            - name: tmp
+              emptyDir:
+                sizeLimit: {{ .Values.tmpSizeLimit }}
+          {{- include "jaeger.opensearchCertificateVolumes" . | nindent 12 }}
           {{- range .Values.elasticsearch.indexCleaner.extraConfigmapMounts }}
             - name: {{ .name }}
               configMap:

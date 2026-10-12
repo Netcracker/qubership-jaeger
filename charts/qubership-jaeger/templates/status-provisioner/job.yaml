@@ -5,12 +5,8 @@ apiVersion: batch/v1
 metadata:
   name: integration-tests-status-provisioner
   labels:
-    name: integration-tests-status-provisioner
-    app.kubernetes.io/name: integration-tests-status-provisioner
-    app.kubernetes.io/instance: {{ cat "integration-tests-status-provisioner-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-    app.kubernetes.io/component: jaeger-integration-tests
-    app.kubernetes.io/part-of: jaeger
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- $name := "integration-tests-status-provisioner" -}}
+    {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "jaeger-integration-tests") | nindent 4 }}
   annotations:
     # This is what defines this resource as a hook. Without this line, the
     # job is considered part of the release.
@@ -26,16 +22,11 @@ spec:
   template:
     metadata:
       labels:
-        name: integration-tests-status-provisioner
-        app.kubernetes.io/name: integration-tests-status-provisioner
-        app.kubernetes.io/instance: {{ cat "integration-tests-status-provisioner-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-        app.kubernetes.io/component: jaeger-integration-tests
-        app.kubernetes.io/part-of: jaeger
-        app.kubernetes.io/version: {{ .Chart.AppVersion }}
-        app.kubernetes.io/managed-by: Helm
+        {{- $name := "integration-tests-status-provisioner" -}}
+        {{- include "jaeger.labels" (dict "ctx" . "name" $name "component" "jaeger-integration-tests") | nindent 8 }}
     spec:
       securityContext:
-        {{- include "statusProvisioner.securityContext" . }}
+        {{- include "jaeger.hardenedPodSecurityContext" (list .Values.statusProvisioner.securityContext .) | nindent 8 }}
       restartPolicy: Never
       serviceAccountName: integration-tests-status-provisioner
       {{- if .Values.statusProvisioner.priorityClassName }}
@@ -47,6 +38,8 @@ spec:
         imagePullPolicy: Always
         resources: {{ toYaml .Values.statusProvisioner.resources | nindent 10 }}
         env:
+          - name: PYTHONDONTWRITEBYTECODE
+            value: "1"
           - name: NAMESPACE
             valueFrom:
               fieldRef:
@@ -58,7 +51,7 @@ spec:
           - name: TEMP
             value: /opt/robot/target
           - name: RESOURCE_TO_SET_STATUS
-            value: "batch v1 jobs integration-tests-status-provisioner"
+            value: {{ printf "apps v1 deployments %s" .Values.statusProvisioner.resourceToSetStatus }}
           - name: CONDITION_REASON
             value: "IntegrationTestsExecutionStatus"
           - name: MONITORED_RESOURCES
@@ -68,6 +61,8 @@ spec:
           {{- if and .Values.integrationTests.install .Values.integrationTests.statusWriting.enabled }}
           - name: INTEGRATION_TESTS_RESOURCE
             value: {{ printf "apps v1 deployments %s" .Values.integrationTests.service.name }}
+          - name: INTEGRATION_TESTS_TIMEOUT
+            value: {{ .Values.statusProvisioner.integrationTestsTimeout | default 900 | quote }}
           - name: ONLY_INTEGRATION_TESTS
             value: {{ .Values.integrationTests.statusWriting.onlyIntegrationTests | quote }}
           - name: IS_SHORT_STATUS_MESSAGE
@@ -80,11 +75,16 @@ spec:
             value: "Successful"
           {{- end }}
         volumeMounts:
+          - name: tmp
+            mountPath: /tmp
           - name: robot-storage
             mountPath: /opt/robot/target
         securityContext:
-          {{- include "statusProvisioner.containerSecurityContext" . }}
+          {{- include "jaeger.hardenedContainerSecurityContext" .Values.statusProvisioner.containerSecurityContext | nindent 10 }}
       volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: {{ .Values.tmpSizeLimit }}
         - name: robot-storage
           emptyDir: {}
       nodeSelector: {}

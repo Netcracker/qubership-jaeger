@@ -10,14 +10,20 @@ on:
         description: "Number of days to keep container versions"
         required: false
         default: "7"
+      # Include to cleanup images for all tags, branches
+      # Using the "excluded-tags" we will remove from the delete process all images that should be saved
       included-tags:
         description: "Tags to include for deletion"
         required: false
-        default: ""
+        default: "*"
+      # Exclude (by default) from cleanup docker images the following patterns:
+      # * "main", "latest" - branch names
+      # * "release/*" - release branch names
+      # * "*.*" - tag names, like (1.2.3, etc)
       excluded-tags:
         description: "Tags to exclude from deletion"
         required: false
-        default: "release*"
+        default: "main,latest,release*,*.*"
       dry-run:
         description: "Enable dry-run mode"
         required: false
@@ -32,16 +38,17 @@ jobs:
         run: |
           echo "**Event**: ${{ github.event_name }}"
           echo "**Actor**: ${{ github.actor }}"
-          echo "**Threshold days**: ${{ github.event.inputs.threshold-days || 8 }}"
-          echo "**Included tags**: ${{ github.event.inputs.included-tags || 'dev*' }}"
-          echo "**Excluded tags**: ${{ github.event.inputs.excluded-tags || 'release*' }}"
+          echo "**Threshold days**: ${{ github.event.inputs.threshold-days || 7 }}"
+          echo "**Included tags**: ${{ github.event.inputs.included-tags || '*' }}"
+          echo "**Excluded tags**: ${{ github.event.inputs.excluded-tags || 'main,latest,release*,*.*' }}"
           echo "**Dry-run**: ${{ github.event.inputs.dry-run || 'false' }}"
       - name: Run Container Package Cleanup Action
-        uses: Netcracker/qubership-workflow-hub/actions/container-package-cleanup@main
+        uses: Netcracker/qubership-workflow-hub/actions/container-package-cleanup@0eefd4976131d113c986281eed8bc642b6da303d # v2.8.1
         with:
-          threshold-days: ${{ github.event.inputs.threshold-days || 8 }}
-          included-tags: ${{ github.event.inputs.included-tags || 'dev*' }}
-          excluded-tags: ${{ github.event.inputs.excluded-tags || 'release*' }}
+          threshold-days: ${{ github.event.inputs.threshold-days || 7 }}
+          included-tags: ${{ github.event.inputs.included-tags || '*' }}
+          excluded-tags: ${{ github.event.inputs.excluded-tags || 'main,latest,release*,*.*' }}
           dry-run: ${{ github.event.inputs.dry-run || 'false' }}
+          package-type: container
         env:
-          PACKAGE_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          PACKAGE_TOKEN: ${{ secrets.GH_RWD_PACKAGE_TOKEN }}

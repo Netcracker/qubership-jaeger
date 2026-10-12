@@ -1,6 +1,20 @@
 name: Build Docker with Matrix Strategy
-
+run-name: "Image for ${{ github.event.repository.name }}: ${{ github.run_number }} - ${{ github.actor }}"
 on:
+  push:
+    branches:
+    - '**'
+    paths:
+    - '**'
+    - '!.github/**'
+    - '.github/workflows/docker-dev.yml'
+    - '.github/workflows/integration-tests.yml'
+    - '.github/docker-dev-config.json'
+    - '!CODE-OF-CONDUCT.md'
+    - '!CONTRIBUTING.md'
+    - '!LICENSE'
+    - '!README.md'
+    - '!SECURITY.md'
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
@@ -20,17 +34,74 @@ on:
 permissions: {}
 
 jobs:
-  load_config:
+  changes:
+    name: Detect Docker build changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
-    name: "Load Docker Configuration"
+    outputs:
+      build: ${{ steps.filter.outputs.build }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - name: Detect relevant changes
+      id: filter
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+
+        # Capture git diff before iterating so a failed listing cannot yield build=false.
+        changed_files="$(mktemp)"
+        git diff --no-renames --name-only "${BASE_SHA}...${HEAD_SHA}" > "${changed_files}"
+
+        build=false
+        while IFS= read -r path; do
+          case "$path" in
+            .github/workflows/docker-dev.yml|.github/workflows/integration-tests.yml|.github/docker-dev-config.json|.github/docker-build-config.json|.dockerignore|docs|docs/*)
+              build=true
+              break
+              ;;
+            .github/*|.gitignore|.gitattributes|.gitmodules)
+              ;;
+            CODE-OF-CONDUCT.md|CONTRIBUTING.md|LICENSE|README.md|SECURITY.md)
+              ;;
+            *)
+              build=true
+              break
+              ;;
+          esac
+        done < "${changed_files}"
+
+        echo "build=${build}" >> "${GITHUB_OUTPUT}"
+
+  prepare:
+    permissions:
+      contents: read
+    name: "Prepare Images and Metadata"
+    needs: [changes]
+    if: >-
+      always() &&
+      (
+        github.event_name != 'pull_request' ||
+        (needs.changes.result == 'success' && needs.changes.outputs.build == 'true')
+      )
     runs-on: ubuntu-latest
     outputs:
       components: ${{ steps.load_component.outputs.components }}
       platforms: ${{ steps.load_component.outputs.platforms }}
+      metadata: "${{ steps.metadata.outputs.result }}"
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Load Docker Configuration
       id: load_component
@@ -58,63 +129,79 @@ jobs:
         echo "components=${components}" >> "$GITHUB_OUTPUT"
         echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
 
-  perform-version:
-    runs-on: ubuntu-latest
-    needs: [load_config]
-    permissions:
-      contents: read
-    outputs:
-      metadata: "${{ steps.metadata.outputs.result }}"
-      tags: "${{ steps.prepare_tags.outputs.tags }}"
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Create name
-      uses: netcracker/qubership-workflow-hub/actions/metadata-action@main
+    - name: Create tags for images
+      uses: netcracker/qubership-workflow-hub/actions/metadata-action@0eefd4976131d113c986281eed8bc642b6da303d # v2.8.1
       id: metadata
       with:
-        configuration-path: .github/dev-metadata-config.yml
         short-sha: 11
+        extra-tags: ${{ github.event.inputs.tags }}
+        default-template: "{{ref-name}}-{{timestamp}}, {{ref-name}}-{{short-sha}}, {{ref-name}}, {{short-sha}}"
+        default-tag: "dev"
+        dry-run: ${{ inputs.dry-run }}
 
-    - name: Echo metadata
-      run: echo "Metadata result ${{ steps.metadata.outputs.result }}" >> $GITHUB_STEP_SUMMARY
-
-    - name: Prepare tags
-      id: prepare_tags
-      env:
-        HEAD_REF: ${{ github.head_ref }}
-      run: |
-        BASE_TAG="${{ steps.metadata.outputs.result }}"
-        EXTRA_TAG="${{ github.event.inputs.tags }}"
-        if [ -n "$EXTRA_TAG" ]; then
-          TAGS="${BASE_TAG}, ${EXTRA_TAG}"
-        else
-          TAGS="${BASE_TAG}"
-        fi
-        echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-        echo "tags: ${TAGS}" >> $GITHUB_STEP_SUMMARY
-        echo "github.head_ref = $HEAD_REF"
   build:
-    name: "Build Docker Images"
-    needs: [load_config, perform-version]
+    name: Build Docker Images
+    needs: [prepare]
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        component: ${{ fromJson(needs.prepare.outputs.components) }}
+    steps:
+    - name: Docker
+      uses: netcracker/qubership-workflow-hub/actions/docker-action@0eefd4976131d113c986281eed8bc642b6da303d # v2.8.1
+      with:
+        ref: ${{ github.ref }}
+        dry-run: true
+        download-artifact: false
+        component: ${{ toJson(matrix.component) }}
+        platforms: ${{ needs.prepare.outputs.platforms }}
+        tags: ${{ needs.prepare.outputs.metadata }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    name: Publish Docker Images
+    needs: [prepare]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
     strategy:
       fail-fast: false
       matrix:
-        component: ${{ fromJson(needs.load_config.outputs.components) }}
+        component: ${{ fromJson(needs.prepare.outputs.components) }}
     steps:
     - name: Docker
-      uses: netcracker/qubership-workflow-hub/actions/docker-action@main
+      uses: netcracker/qubership-workflow-hub/actions/docker-action@0eefd4976131d113c986281eed8bc642b6da303d # v2.8.1
       with:
         ref: ${{ github.ref }}
         dry-run: ${{ inputs.dry-run }}
         download-artifact: false
         component: ${{ toJson(matrix.component) }}
-        platforms: ${{ needs.load_config.outputs.platforms }}
-        tags: ${{ needs.perform-version.outputs.tags }}
+        platforms: ${{ needs.prepare.outputs.platforms }}
+        tags: ${{ needs.prepare.outputs.metadata }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker-build-gate:
+    name: Docker Build Gate
+    needs: [changes, prepare, build]
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+    - name: Require Docker build when applicable
+      if: >-
+        needs.changes.result != 'success' ||
+        (needs.changes.outputs.build != 'false' &&
+         (needs.prepare.result != 'success' || needs.build.result != 'success'))
+      run: exit 1

@@ -2,47 +2,31 @@ package probes
 
 import (
 	"context"
-	"fmt"
 	"time"
 )
 
-// Probe defines the interface for storage health checks
+// Probe checks the health of a storage.
 type Probe interface {
-	// Check performs the health check and returns true if healthy, false otherwise
+	// Check reports whether the storage is healthy. It returns false when ctx is canceled before an attempt succeeds.
 	Check(ctx context.Context) bool
-	// Name returns the name of the probe
+	// Name returns the storage name for logs.
 	Name() string
 }
 
-// BaseProbeConfig holds common configuration for all probes
-type BaseProbeConfig struct {
-	MaxRetries          int
-	Timeout             time.Duration
-	TLSEnabled          bool
-	CAFile              string
-	CertFile            string
-	KeyFile             string
+// Credentials holds the username and password for the storage.
+type Credentials struct {
+	Username string
+	Password string
 }
 
-// ProbeConfig is the interface for probe-specific configurations
-type ProbeConfig interface {
-	GetBaseConfig() *BaseProbeConfig
-}
-
-// NewProbe creates a new probe based on the storage type
-func NewProbe(storageType string, cfg ProbeConfig) (Probe, error) {
-	switch storageType {
-	case "cassandra":
-		if cassandraCfg, ok := cfg.(*CassandraConfig); ok {
-			return NewCassandraProbeFromConfig(cassandraCfg)
-		}
-		return nil, fmt.Errorf("invalid configuration type for Cassandra probe")
-	case "opensearch":
-		if osCfg, ok := cfg.(*OpenSearchConfig); ok {
-			return NewOpenSearchProbeFromConfig(osCfg)
-		}
-		return nil, fmt.Errorf("invalid configuration type for OpenSearch probe")
-	default:
-		return nil, fmt.Errorf("unsupported storage type: %s", storageType)
+// wait pauses for d and reports false if ctx is canceled first.
+func wait(ctx context.Context, d time.Duration) bool {
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-timer.C:
+		return true
 	}
 }

@@ -12,16 +12,21 @@ end_of_line = lf
 [{*.bat,*.cmd}]
 end_of_line = crlf
 
+[*.go]
+# gofmt defaults to LF for all the platforms: https://github.com/golang/go/issues/16355
+end_of_line = lf
+
 [*.md]
 # Trailing whitespace is important in Markdown (they distinguish a new line from a new paragraph)
 eclint_indent_style = unset
 trim_trailing_whitespace = false
 
-[*.json]
-insert_final_newline = false
-
 [{go.mod,go.sum,*.go,.gitmodules}]
 indent_size = 4
+indent_style = tab
+
+[{Makefile,*.mk}]
+# make requires recipe lines to start with a tab
 indent_style = tab
 
 [Dockerfile]
