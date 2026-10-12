@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -33,64 +34,49 @@ type Server struct {
 	healthy atomic.Bool
 }
 
+// credentialsReader returns the storage credentials. Tests replace the reader that calls Kubernetes.
+type credentialsReader func(ctx context.Context, cfg *config.Config) (probes.Credentials, error)
+
 func main() {
 	slog.SetDefault(Logger)
 	slog.Info("Starting the service")
 
-	cfg, err := config.Parse(os.Args[1:], os.Stderr)
-	if errors.Is(err, flag.ErrHelp) {
-		os.Exit(0)
-	}
-	if err != nil {
-		slog.Error("Invalid configuration", "error", err)
-		os.Exit(1)
-	}
-
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
+	// Restore the default signal handling after the first signal, so that a second one stops the process at once.
+	context.AfterFunc(ctx, stop)
 
-	probe, err := newProbe(ctx, cfg)
-	if err != nil {
-		slog.Error("Failed to initialize the probe", "error", err)
-		os.Exit(1)
-	}
-	s := &Server{probe: probe}
-
-	host := "0.0.0.0:" + strconv.Itoa(cfg.ServicePort)
-	server := &http.Server{
-		Addr:    host,
-		Handler: s.handler(),
-	}
-
-	go func() {
-		slog.Info("The service is listening", "address", host)
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("The HTTP server failed", "error", err)
-			os.Exit(1)
-		}
-	}()
-
-	go s.runHealthChecks(ctx, checkInterval)
-
-	<-ctx.Done()
-
+	err := run(ctx, os.Args[1:], os.Stderr, readCredentials)
 	stop()
-	slog.Info("Shutting down gracefully, press Ctrl+C again to force")
-
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
-	defer cancel()
-
-	if err := server.Shutdown(shutdownCtx); err != nil {
-		slog.Error("Failed to shut down the HTTP server", "error", err)
+	if err != nil && !errors.Is(err, flag.ErrHelp) {
+		slog.Error("The service failed", "error", err)
 		os.Exit(1)
 	}
 }
 
-func newProbe(ctx context.Context, cfg *config.Config) (probes.Probe, error) {
-	creds, err := readCredentials(ctx, cfg)
+// run starts the probe service with the command-line arguments args and blocks until ctx is canceled.
+func run(ctx context.Context, args []string, output io.Writer, readCreds credentialsReader) error {
+	cfg, err := config.Parse(args, output)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("invalid configuration: %w", err)
 	}
+	creds, err := readCreds(ctx, cfg)
+	if err != nil {
+		return err
+	}
+	probe, err := newProbe(ctx, cfg, creds)
+	if err != nil {
+		return fmt.Errorf("failed to initialize the probe: %w", err)
+	}
+
+	listener, err := net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(cfg.ServicePort))
+	if err != nil {
+		return fmt.Errorf("failed to listen on port %d: %w", cfg.ServicePort, err)
+	}
+	s := &Server{probe: probe}
+	return s.serve(ctx, listener, cfg.ShutdownTimeout)
+}
+
+func newProbe(ctx context.Context, cfg *config.Config, creds probes.Credentials) (probes.Probe, error) {
 	if cfg.Storage == config.StorageOpenSearch {
 		return probes.NewOpenSearchProbe(cfg, creds)
 	}
@@ -107,6 +93,35 @@ func readCredentials(ctx context.Context, cfg *config.Config) (probes.Credential
 		return probes.Credentials{}, fmt.Errorf("failed to create the Kubernetes client: %w", err)
 	}
 	return secret.ReadCredentials(ctx, client, cfg.Namespace, cfg.AuthSecretName)
+}
+
+// serve answers HTTP requests on listener and runs the health checks until ctx is canceled.
+// Then it shuts the HTTP server down within shutdownTimeout. It closes listener before it returns.
+func (s *Server) serve(ctx context.Context, listener net.Listener, shutdownTimeout time.Duration) error {
+	server := &http.Server{Handler: s.handler()}
+	serveErr := make(chan error, 1)
+	go func() {
+		slog.Info("The service is listening", "address", listener.Addr().String())
+		serveErr <- server.Serve(listener)
+	}()
+
+	go s.runHealthChecks(ctx, checkInterval)
+
+	select {
+	case err := <-serveErr:
+		return fmt.Errorf("the HTTP server failed: %w", err)
+	case <-ctx.Done():
+	}
+
+	slog.Info("Shutting down gracefully, press Ctrl+C again to force")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		return fmt.Errorf("failed to shut down the HTTP server: %w", err)
+	}
+	return nil
 }
 
 func (s *Server) handler() http.Handler {

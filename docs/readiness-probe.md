@@ -16,9 +16,9 @@ Probe is installed in Kubernetes as a sidecar for extending its probe.
 | `keyPath`             | String | False     | `-`                    | The path for client-key.pem file                                                              |
 | `tlsEnabled`          | String | False     | `-`                    | Enabling TLS for connection to the storage                                                    |
 | `insecureSkipVerify`  | String | False     | `-`                    | Disabling host verification for TLS                                                           |
-| `retries`             | Int    | False     | `3`                    | The number of non-200 OpenSearch responses allowed in one check                               |
+| `retries`             | Int    | False     | `3`                    | The number of non-200 OpenSearch responses that count as one failed attempt                   |
 | `errors`              | Int    | False     | `3`                    | The number of failed attempts after which one check reports the storage as unhealthy          |
-| `timeout`             | Int    | False     | `5`                    | The number of seconds after which one attempt fails                                           |
+| `timeout`             | Int    | False     | `5`                    | The number of seconds after which one attempt fails, `0` for no limit                         |
 | `retryDelay`          | Int    | False     | `5`                    | The number of seconds between two attempts of one check                                       |
 | `storage`             | String | False     | `cassandra`            | The type of storage in the endpoint, possible values: `cassandra`, `opensearch`               |
 | `servicePort`         | Int    | False     | `8080`                 | The port for running liveness-probe container                                                 |

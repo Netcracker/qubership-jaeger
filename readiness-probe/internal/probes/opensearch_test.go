@@ -83,8 +83,9 @@ func TestOpenSearchCheckFailsWithWrongCredentials(t *testing.T) {
 	if probe.Check(context.Background()) {
 		t.Fatal("expected an unhealthy result")
 	}
-	if calls.Load() != 3 {
-		t.Errorf("expected 3 requests, got %d", calls.Load())
+	// Every one of the 3 allowed errors covers 3 non-200 responses.
+	if calls.Load() != 9 {
+		t.Errorf("expected 9 requests, got %d", calls.Load())
 	}
 }
 
@@ -100,16 +101,35 @@ func TestOpenSearchCheckRetriesAfterNon200Response(t *testing.T) {
 	}
 }
 
-func TestOpenSearchCheckFailsAfterMaxRetries(t *testing.T) {
+// The probe tolerates more non-200 responses than MaxRetries, as long as MaxErrors is not used up.
+func TestOpenSearchCheckRecoversAfterMoreResponsesThanMaxRetries(t *testing.T) {
 	srv, calls := statusServer(t, httptest.NewServer,
 		http.StatusServiceUnavailable, http.StatusServiceUnavailable, http.StatusServiceUnavailable)
 	probe := newTestOpenSearchProbe(t, openSearchTestConfig(srv.URL), testCredentials)
 
+	if !probe.Check(context.Background()) {
+		t.Fatal("expected a healthy result on the fourth response")
+	}
+	if calls.Load() != 4 {
+		t.Errorf("expected 4 requests, got %d", calls.Load())
+	}
+}
+
+func TestOpenSearchCheckFailsAfterMaxRetries(t *testing.T) {
+	statuses := make([]int, 10)
+	for i := range statuses {
+		statuses[i] = http.StatusServiceUnavailable
+	}
+	srv, calls := statusServer(t, httptest.NewServer, statuses...)
+	cfg := openSearchTestConfig(srv.URL)
+	cfg.MaxErrors = 2
+	probe := newTestOpenSearchProbe(t, cfg, testCredentials)
+
 	if probe.Check(context.Background()) {
 		t.Fatal("expected an unhealthy result")
 	}
-	if calls.Load() != 3 {
-		t.Errorf("expected 3 requests, got %d", calls.Load())
+	if calls.Load() != 6 {
+		t.Errorf("expected 6 requests, got %d", calls.Load())
 	}
 }
 
@@ -140,6 +160,43 @@ func TestOpenSearchCheckWaitsAfterRateLimit(t *testing.T) {
 	}
 	if calls.Load() != 1 {
 		t.Errorf("expected 1 request, got %d", calls.Load())
+	}
+}
+
+// The probe backs off after the last allowed 429 too, so that the next check does not start right away.
+func TestOpenSearchCheckWaitsAfterLastRateLimit(t *testing.T) {
+	srv, calls := statusServer(t, httptest.NewServer, http.StatusTooManyRequests)
+	cfg := openSearchTestConfig(srv.URL)
+	cfg.MaxErrors = 1
+	cfg.MaxRetries = 1
+	probe := newTestOpenSearchProbe(t, cfg, testCredentials)
+	probe.rateLimitDelay = 50 * time.Millisecond
+
+	start := time.Now()
+	if probe.Check(context.Background()) {
+		t.Fatal("expected an unhealthy result")
+	}
+	if elapsed := time.Since(start); elapsed < probe.rateLimitDelay {
+		t.Errorf("expected the check to wait at least %s, it returned after %s", probe.rateLimitDelay, elapsed)
+	}
+	if calls.Load() != 1 {
+		t.Errorf("expected 1 request, got %d", calls.Load())
+	}
+}
+
+func TestOpenSearchCheckFailsWithInvalidURL(t *testing.T) {
+	probe := newTestOpenSearchProbe(t, openSearchTestConfig("http://opensearch\x7f:9200"), testCredentials)
+
+	if probe.Check(context.Background()) {
+		t.Fatal("expected an unhealthy result for an invalid URL")
+	}
+}
+
+func TestOpenSearchProbeName(t *testing.T) {
+	probe := newTestOpenSearchProbe(t, openSearchTestConfig("http://opensearch:9200"), testCredentials)
+
+	if probe.Name() != config.StorageOpenSearch {
+		t.Errorf("expected name %q, got %q", config.StorageOpenSearch, probe.Name())
 	}
 }
 

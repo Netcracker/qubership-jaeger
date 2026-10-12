@@ -3,6 +3,7 @@ package probes
 import (
 	"context"
 	"errors"
+	"net"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 )
 
 // fakeExecutor returns the queued errors one by one and nil after the queue is empty.
+// Like a real session, it fails when the context is already done.
 type fakeExecutor struct {
 	errs        []error
 	calls       int
@@ -23,6 +25,9 @@ func (f *fakeExecutor) Exec(ctx context.Context, stmt string) error {
 	f.calls++
 	f.stmt = stmt
 	_, f.hasDeadline = ctx.Deadline()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	if len(f.errs) == 0 {
 		return nil
 	}
@@ -59,6 +64,24 @@ func TestCassandraCheckSucceedsOnFirstAttempt(t *testing.T) {
 	}
 	if !executor.hasDeadline {
 		t.Error("expected the query context to have a deadline")
+	}
+}
+
+// A zero timeout must not turn into a deadline that has already expired.
+func TestCassandraCheckWithoutTimeout(t *testing.T) {
+	cfg := cassandraTestConfig()
+	cfg.Timeout = 0
+	executor := &fakeExecutor{}
+	probe := newCassandraProbe(executor, cfg)
+
+	if !probe.Check(context.Background()) {
+		t.Fatal("expected a healthy result")
+	}
+	if executor.calls != 1 {
+		t.Errorf("expected 1 query, got %d", executor.calls)
+	}
+	if executor.hasDeadline {
+		t.Error("expected the query context to have no deadline")
 	}
 }
 
@@ -102,6 +125,39 @@ func TestCassandraCheckStopsWhenContextIsCanceled(t *testing.T) {
 	if executor.calls != 1 {
 		t.Errorf("expected 1 query, got %d", executor.calls)
 	}
+}
+
+func TestCassandraProbeName(t *testing.T) {
+	probe := newCassandraProbe(&fakeExecutor{}, cassandraTestConfig())
+
+	if probe.Name() != config.StorageCassandra {
+		t.Errorf("expected name %q, got %q", config.StorageCassandra, probe.Name())
+	}
+}
+
+func TestNewCassandraProbeFailsWhenCassandraIsUnreachable(t *testing.T) {
+	cfg := cassandraTestConfig()
+	cfg.Host = "127.0.0.1"
+	cfg.Port = closedPort(t)
+	cfg.MaxErrors = 1
+
+	if _, err := NewCassandraProbe(context.Background(), cfg, Credentials{}); err == nil {
+		t.Fatal("expected an error, got nil")
+	}
+}
+
+// closedPort returns a local port that nothing listens on.
+func closedPort(t *testing.T) int {
+	t.Helper()
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("failed to listen: %v", err)
+	}
+	port := listener.Addr().(*net.TCPAddr).Port
+	if err := listener.Close(); err != nil {
+		t.Fatalf("failed to close the listener: %v", err)
+	}
+	return port
 }
 
 func TestNewCassandraClusterWithVerifiedTLS(t *testing.T) {

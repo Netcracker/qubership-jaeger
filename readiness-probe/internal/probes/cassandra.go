@@ -115,9 +115,13 @@ func (p *CassandraProbe) Check(ctx context.Context) bool {
 	return false
 }
 
+// exec runs the test query. A zero timeout means no deadline: context.WithTimeout would expire at once and fail every query.
 func (p *CassandraProbe) exec(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, p.timeout)
-	defer cancel()
+	if p.timeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, p.timeout)
+		defer cancel()
+	}
 	return p.executor.Exec(ctx, p.stmt)
 }
 

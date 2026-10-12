@@ -83,8 +83,10 @@ func newTLSConfig(cfg config.TLS) (*tls.Config, error) {
 }
 
 // Check implements the Probe interface.
-// Request errors count against maxErrors and non-200 responses count against maxRetries.
+// Request errors count against maxErrors. Non-200 responses count against maxErrors*maxRetries,
+// because every failed attempt allows maxRetries such responses.
 func (p *OpenSearchProbe) Check(ctx context.Context) bool {
+	maxFailedResponses := p.maxErrors * p.maxRetries
 	failedRequests, failedResponses := 0, 0
 	for {
 		delay := p.retryDelay
@@ -100,12 +102,16 @@ func (p *OpenSearchProbe) Check(ctx context.Context) bool {
 			return true
 		default:
 			failedResponses++
-			slog.Error("Unexpected status code from OpenSearch", "status", status, "remainingAttempts", p.maxRetries-failedResponses)
-			if failedResponses >= p.maxRetries {
-				return false
-			}
+			slog.Error("Unexpected status code from OpenSearch", "status", status, "remainingAttempts", maxFailedResponses-failedResponses)
 			if status == http.StatusTooManyRequests {
 				delay = p.rateLimitDelay
+			}
+			if failedResponses >= maxFailedResponses {
+				if status == http.StatusTooManyRequests {
+					// Back off after the last 429 as well. Otherwise the next check starts within seconds.
+					wait(ctx, delay)
+				}
+				return false
 			}
 		}
 		if !wait(ctx, delay) {

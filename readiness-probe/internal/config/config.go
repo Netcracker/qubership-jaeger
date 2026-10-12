@@ -37,9 +37,10 @@ type Config struct {
 
 	// MaxErrors is the number of failed attempts after which a check reports the storage as unhealthy.
 	MaxErrors int
-	// MaxRetries is the number of non-200 responses from OpenSearch after which a check reports it as unhealthy.
+	// MaxRetries is the number of non-200 responses from OpenSearch that make up one failed attempt.
+	// A check reports OpenSearch as unhealthy after MaxErrors*MaxRetries such responses.
 	MaxRetries int
-	// Timeout limits a single attempt.
+	// Timeout limits a single attempt. Zero means no limit.
 	Timeout time.Duration
 	// RetryDelay is the pause between two attempts of one check.
 	RetryDelay time.Duration
@@ -74,8 +75,8 @@ func Parse(args []string, output io.Writer) (*Config, error) {
 	fs.IntVar(&cfg.Port, "port", 0, "The storage port")
 
 	fs.IntVar(&cfg.MaxErrors, "errors", 3, "The number of failed attempts allowed in one check")
-	fs.IntVar(&cfg.MaxRetries, "retries", 3, "The number of non-200 OpenSearch responses allowed in one check")
-	fs.IntVar(&timeout, "timeout", 5, "The number of seconds after which one attempt fails")
+	fs.IntVar(&cfg.MaxRetries, "retries", 3, "The number of non-200 OpenSearch responses that count as one failed attempt")
+	fs.IntVar(&timeout, "timeout", 5, "The number of seconds after which one attempt fails, 0 for no limit")
 	fs.IntVar(&retryDelay, "retryDelay", 5, "The number of seconds between two attempts of one check")
 
 	fs.BoolVar(&cfg.TLS.Enabled, "tlsEnabled", false, "Enable TLS for the connection to the storage")
