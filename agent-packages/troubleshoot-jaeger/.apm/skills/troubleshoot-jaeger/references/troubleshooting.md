@@ -1774,7 +1774,7 @@ if a check fails. Two checks can fail:
 1. The certificate chain does not lead to the configured CA certificate. The usual causes are a CA certificate of
    another environment, a missing intermediate certificate, or an expired certificate.
 2. The certificate is not issued for `proxy.oauth2.idpAddress`. This happens when `idpAddress` is an internal service
-   name or an IP address, while the certificate lists only the public host name.
+   name or an IP address, while the certificate lists only the public hostname.
 
 A CA certificate replaced in an existing secret has no effect until the query pod restarts, because Envoy reads the
 file only at startup.
@@ -1782,7 +1782,7 @@ file only at startup.
 **How to check:**
 
 1. Read the TLS counters of the `auth` cluster from the Envoy admin endpoint. A growing `fail_verify_error` points to
-   the certificate chain, and a growing `fail_verify_san` points to the host name.
+   the certificate chain, and a growing `fail_verify_san` points to the hostname.
 
    ```bash
    kubectl port-forward <query-pod> -n <namespace> 9901:9901
@@ -1812,7 +1812,7 @@ file only at startup.
 1. If the chain fails, set the CA certificate that signed the certificate of the identity provider. For a self-signed
    certificate, use the certificate itself. Include intermediate certificates in the same PEM file if the identity
    provider does not send them.
-2. If the host name fails, set `idpAddress` and the endpoints to a name that the certificate lists, or reissue the
+2. If the hostname fails, set `idpAddress` and the endpoints to a name that the certificate lists, or reissue the
    certificate with the name in use.
 3. If the secret was updated in place, restart the query pod.
 
