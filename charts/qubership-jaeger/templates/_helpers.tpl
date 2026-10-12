@@ -445,9 +445,11 @@ Image can be found from:
 
 {{/*
 Return "true" when a CA certificate is configured for the connection to the identity provider.
+The tls map is absent when "helm upgrade --reuse-values" keeps the values of an older chart,
+so every access to it goes through parentheses, which turn a missing map into an empty value.
 */}}
 {{- define "proxy.oauth2.tls.caEnabled" -}}
-  {{- if and .Values.proxy.install (eq .Values.proxy.type "oauth2") (or .Values.proxy.oauth2.tls.existingSecret .Values.proxy.oauth2.tls.ca) -}}
+  {{- if and .Values.proxy.install (eq .Values.proxy.type "oauth2") (or (.Values.proxy.oauth2.tls).existingSecret (.Values.proxy.oauth2.tls).ca) -}}
     {{- print "true" -}}
   {{- end -}}
 {{- end -}}
@@ -456,8 +458,8 @@ Return "true" when a CA certificate is configured for the connection to the iden
 Find the name of the secret with the CA certificate of the identity provider.
 */}}
 {{- define "proxy.oauth2.tls.secretName" -}}
-  {{- if .Values.proxy.oauth2.tls.existingSecret -}}
-    {{- printf "%s" .Values.proxy.oauth2.tls.existingSecret -}}
+  {{- if (.Values.proxy.oauth2.tls).existingSecret -}}
+    {{- printf "%s" (.Values.proxy.oauth2.tls).existingSecret -}}
   {{- else -}}
     {{- print "oauth2-idp-ca" -}}
   {{- end -}}

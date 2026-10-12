@@ -80,6 +80,13 @@ assert_count 'validation_context:' 0
 assert_count 'name: oauth2-idp-ca$' 0
 assert_count 'checksum/proxy-oauth2-ca' 0
 
+# "helm upgrade --reuse-values" keeps the values of an older chart, which have no tls map.
+render "${oauth2_args[@]}" --set proxy.oauth2.tls=null >"${rendered_file}"
+assert_count 'sni: idp\.example\.com$' 1
+assert_count 'validation_context:' 0
+assert_count 'name: oauth2-idp-ca$' 0
+assert_count 'checksum/proxy-oauth2-ca' 0
+
 # An inline CA certificate creates a Secret, mounts it, and turns the verification on.
 render "${oauth2_args[@]}" --set-file "proxy.oauth2.tls.ca=${work_dir}/ca.pem" >"${rendered_file}"
 assert_count 'validation_context:' 1
