@@ -130,7 +130,7 @@ jobs:
         echo "platforms=${platforms}" >> "$GITHUB_OUTPUT"
 
     - name: Create tags for images
-      uses: netcracker/qubership-workflow-hub/actions/metadata-action@288a6a0d9a78e80dfdefccab1be6497a39deb746 # v2.8.0
+      uses: netcracker/qubership-workflow-hub/actions/metadata-action@0eefd4976131d113c986281eed8bc642b6da303d # v2.8.1
       id: metadata
       with:
         short-sha: 11
@@ -154,7 +154,7 @@ jobs:
         component: ${{ fromJson(needs.prepare.outputs.components) }}
     steps:
     - name: Docker
-      uses: netcracker/qubership-workflow-hub/actions/docker-action@288a6a0d9a78e80dfdefccab1be6497a39deb746 # v2.8.0
+      uses: netcracker/qubership-workflow-hub/actions/docker-action@0eefd4976131d113c986281eed8bc642b6da303d # v2.8.1
       with:
         ref: ${{ github.ref }}
         dry-run: true
@@ -180,7 +180,7 @@ jobs:
         component: ${{ fromJson(needs.prepare.outputs.components) }}
     steps:
     - name: Docker
-      uses: netcracker/qubership-workflow-hub/actions/docker-action@288a6a0d9a78e80dfdefccab1be6497a39deb746 # v2.8.0
+      uses: netcracker/qubership-workflow-hub/actions/docker-action@0eefd4976131d113c986281eed8bc642b6da303d # v2.8.1
       with:
         ref: ${{ github.ref }}
         dry-run: ${{ inputs.dry-run }}
