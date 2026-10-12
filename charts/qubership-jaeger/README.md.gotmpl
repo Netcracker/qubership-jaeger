@@ -24,4 +24,13 @@ and for the installation procedure see the [Installation Guide](https://github.c
 
 {{ template "chart.requirementsSection" . }}
 
+{{- /* Keys are rendered as inline code, so prose linters do not read them as words. */ -}}
+{{ define "chart.valuesTable" }}
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+{{- range .Values }}
+| `{{ .Key }}` | {{ .Type }} | {{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }} | {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }} |
+{{- end }}
+{{- end }}
+
 {{ template "chart.valuesSection" . }}

@@ -15,6 +15,15 @@
 # -- Namespace of the shared external Gateway the created routes are attached to. Used only when the route does not specify its own "httpRoute/grpcRoute.parentRefs".
 # GATEWAY_SYSTEM_NAMESPACE: "gateway-system"
 
+# -- Platform override used for pod user and group defaults.
+# Leave empty to detect OpenShift through the cluster API. Kubernetes workloads use UID/GID 1000 by default,
+# while OpenShift assigns IDs through its Security Context Constraints.
+# Available values: "", "KUBERNETES", "OPENSHIFT"
+PAAS_PLATFORM: ""
+
+# -- Maximum storage available to each pod through its /tmp emptyDir volume.
+tmpSizeLimit: 100Mi
+
 # -- Global jaeger configuration
 jaeger:
   # -- Name of jaeger service.
@@ -26,7 +35,7 @@ jaeger:
   # -- Allow creating a grafana dashboard for jaeger.
   prometheusMonitoringDashboard: true
 
-  # -- Specify type of storage for jaeger. E.g. 'elasticsearch', 'cassandra' or 'remotegRPC'.
+  # -- Specify type of storage for jaeger. E.g. `elasticsearch`, `cassandra` or `remotegRPC`.
   storage:
     type: cassandra
 
@@ -90,11 +99,6 @@ proxy:
       cpu: 50m
       memory: 100Mi
 
-  # -- SecurityContext holds pod-level security attributes.
-  securityContext: {}
-  #   runAsUser: 2000
-  #   fsGroup: 2000
-
   # -- SecurityContext holds container-level security attributes.
   containerSecurityContext: {}
     # -- Controls whether a process can gain more privileges than its parent process.
@@ -108,10 +112,10 @@ proxy:
 # -- OpenSearch/Elasticsearch configuration
 # @default -- see the rows below
 elasticsearch:
-  # -- Name of existing secret with elasticsearch username and password.
+  # -- Name of existing secret with Elasticsearch username and password.
   existingSecret: ""
 
-  # -- Index prefix for elasticsearch.
+  # -- Index prefix for Elasticsearch.
   indexPrefix: ""
 
   # -- Elasticsearch related extra env vars to be configured on the concerned components.
@@ -198,7 +202,7 @@ elasticsearch:
     # --This is the URL with port used to connect to Elasticsearch.
     url: ""
 
-    # -- Scheme for elasticsearch.
+    # -- Scheme for Elasticsearch.
     scheme: http
 
     tls:
@@ -260,7 +264,7 @@ elasticsearch:
     labels: {}
     #  label-key: label-value
 
-    # Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
+    # Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
     # They are not queryable and should be preserved when modifying objects.
     annotations: {}
     #  annotation-key: annotation-value
@@ -342,7 +346,7 @@ elasticsearch:
     # -- Map of string keys and values that can be used to organize and categorize (scope and select) objects.
     labels: {}
 
-    # -- Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
+    # -- Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
     annotations: {}
 
     # -- It specifies how to treat concurrent executions of a job that is created by this cron job.
@@ -436,7 +440,7 @@ elasticsearch:
     # -- Map of string keys and values that can be used to organize and categorize (scope and select) objects.
     labels: {}
 
-    # -- Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
+    # -- Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
     annotations: {}
 
     # -- It specifies how to treat concurrent executions of a job that is created by this cron job.
@@ -504,7 +508,7 @@ cassandraSchemaJob:
   # -- This is the port used to connect to Cassandra.
   port: 9042
 
-  # -- Name of existing secret with cassandra username and password.
+  # -- Name of existing secret with Cassandra username and password.
   existingSecret: ""
 
   # -- List of allowed authenticators for gocql driver
@@ -558,7 +562,7 @@ cassandraSchemaJob:
   # -- Map of string keys and values that can be used to organize and categorize (scope and select) objects.
   labels: {}
 
-  # Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
+  # Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
   annotations: {}
 
   # -- TTL settings
@@ -893,7 +897,7 @@ collector:
   # -- Map of string keys and values that can be used to organize and categorize (scope and select) objects.
   labels: {}
 
-  # Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
+  # Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
   annotations: {}
 
   # -- Ingress configuration.
@@ -1105,7 +1109,7 @@ collector:
     rules: []
 
   # -- Jaeger collector config, contains only several options to configure, other part of parameters take from
-  # cassandraSchemaJob and elasticsearch sections
+  # `cassandraSchemaJob` and `elasticsearch` sections
   config:
     service:
       telemetry:
@@ -1182,7 +1186,7 @@ hotrod:
   # -- Map of string keys and values that can be used to organize and categorize (scope and select) objects.
   labels: {}
 
-  # -- Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
+  # -- Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
   annotations: {}
 
   # --SecurityContext holds pod-level security attributes.
@@ -1424,11 +1428,11 @@ query:
   # -- Map of string keys and values that can be used to organize and categorize (scope and select) objects.
   labels: {}
 
-  # -- Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
+  # -- Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
   annotations: {}
 
   # -- Jaeger query config, contains only several options to configure, other part of parameters take from
-  # cassandraSchemaJob and elasticsearch sections
+  # `cassandraSchemaJob` and `elasticsearch` sections
   config:
     service:
       telemetry:
@@ -1451,6 +1455,10 @@ integrationTests:
 
   # -- A docker image to use for integration tests container.
   # image: "ghcr.io/netcracker/jaeger-integration-tests:main"
+
+  # -- The imagePullPolicy for a container and the tag of the image affect when the kubelet
+  # attempts to pull (download) the specified image. Available value : "IfNotPresent", "Always" and "Never"
+  imagePullPolicy: Always
 
   # -- Tags for the integration tests.
   tags: "smokeORmemory_limiter"
@@ -1600,7 +1608,7 @@ spark:
   # -- Map of string keys and values that can be used to organize and categorize (scope and select) objects.
   labels: {}
 
-  # -- Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
+  # -- Annotations is an unstructured key-value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata.
   annotations: {}
 
   # -- A docker image to use for SparkDependencies container.

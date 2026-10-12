@@ -87,9 +87,16 @@ For Kubernetes 1.25+ if `restricted` PSS is specified on namespace using
 `pod-security.kubernetes.io/enforce: restricted`, then it is necessary to configure
 `securityContext` and `containerSecurityContext` appropriately.
 
-At the pod level, `runAsNonRoot: true` and `seccompProfile.type: "RuntimeDefault"` will be added automatically.
-At the container level, `allowPrivilegeEscalation: false` and `capabilities.drop: - ALL` will be added automatically.
-It is recommended not to override these values because Kubernetes `restricted`` PSS expects these values.
+The chart enforces `runAsNonRoot: true` and `seccompProfile.type: RuntimeDefault` at the pod level. It enforces
+`allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true`, and `capabilities.drop: [ALL]` for regular
+containers. Helm rendering fails when values explicitly conflict with these settings. Other pod and container
+security context fields remain configurable.
+
+On Kubernetes, the chart defaults `runAsUser`, `runAsGroup`, and `fsGroup` to `1000`. Explicit user and group values
+take precedence. On OpenShift, the chart omits these defaults so that Security Context Constraints can assign them.
+The chart detects OpenShift through the cluster API unless `PAAS_PLATFORM` provides an explicit platform override.
+Existing init containers do not receive container-level hardening settings. They still inherit the pod-level
+security context, including `runAsNonRoot` and the platform-specific user and group settings.
 
 ### Azure
 
@@ -243,6 +250,25 @@ Support matrix Jaeger as third-party:
 ## Parameters
 
 This section describes parameters that can be used to deploy Jaeger and its components in the Cloud.
+
+### Platform
+
+<!-- markdownlint-disable line-length -->
+| Parameter       | Type   | Mandatory | Default value | Description                                                                                                          |
+| --------------- | ------ | --------- | ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `PAAS_PLATFORM` | string | no        | `""`          | Overrides platform detection. Supported values are `KUBERNETES` and `OPENSHIFT`; an empty value detects the platform |
+<!-- markdownlint-enable line-length -->
+
+Leave `PAAS_PLATFORM` empty for direct Helm installations. The chart detects OpenShift through its application or
+security API and otherwise applies Kubernetes user and group defaults.
+
+### Temporary storage
+
+<!-- markdownlint-disable line-length -->
+| Parameter      | Type   | Mandatory | Default value | Description                                                              |
+| -------------- | ------ | --------- | ------------- | ------------------------------------------------------------------------ |
+| `tmpSizeLimit` | string | no        | `100Mi`       | Maximum storage available to each pod through its `/tmp` emptyDir volume |
+<!-- markdownlint-enable line-length -->
 
 ### Gateway system
 
@@ -431,13 +457,15 @@ collector:
       cpu: 1000m
       memory: 200m
   securityContext:
-    runAsUser: 2000
-    fsGroup: 2000
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
   containerSecurityContext:
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop:
         - ALL
@@ -854,13 +882,15 @@ query:
       cpu: 200m
       memory: 256Mi
   securityContext:
-    runAsUser: 2000
-    fsGroup: 2000
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
   containerSecurityContext:
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop:
         - ALL
@@ -950,36 +980,36 @@ cassandraSchemaJob:
 <!-- markdownlint-disable line-length MD060 -->
 | Parameter                  | Type                                                                                                                          | Mandatory | Default value                                                                                                                             | Description                                                                                                                                                                                                                                                                                                                                           |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `image`                    | string                                                                                                                        | no        | -                                                                                                                                         | **Deprecated.** Former Docker image for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                                                                          |
-| `name`                     | string                                                                                                                        | no        | cassandra-schema-job                                                                                                                      | **Deprecated.** Former name of the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                                                                                             |
-| `imagePullPolicy`          | string                                                                                                                        | no        | IfNotPresent                                                                                                                              | **Deprecated.** Former image pull policy for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                 |
-| `imagePullSecrets`         | object                                                                                                                        | no        | []                                                                                                                                        | **Deprecated.** Former image pull secrets for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                                                                                                   |
+| `image`                    | string                                                                                                                        | no        | -                                                                                                                                         | **Deprecated.** Former Docker image for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                       |
+| `name`                     | string                                                                                                                        | no        | cassandra-schema-job                                                                                                                      | **Deprecated.** Former name of the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                |
+| `imagePullPolicy`          | string                                                                                                                        | no        | IfNotPresent                                                                                                                              | **Deprecated.** Former image pull policy for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                  |
+| `imagePullSecrets`         | object                                                                                                                        | no        | []                                                                                                                                        | **Deprecated.** Former image pull secrets for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                 |
 | `host`                     | string                                                                                                                        | no        | -                                                                                                                                         | The host used to connect to Cassandra                                                                                                                                                                                                                                                                                                                 |
 | `port`                     | string                                                                                                                        | no        | 9042                                                                                                                                      | The port used to connect to Cassandra                                                                                                                                                                                                                                                                                                                 |
 | `username`                 | string                                                                                                                        | no        | -                                                                                                                                         | A username for Cassandra with access to HTTP API                                                                                                                                                                                                                                                                                                      |
 | `password`                 | string                                                                                                                        | no        | -                                                                                                                                         | A password for Cassandra with access to HTTP API                                                                                                                                                                                                                                                                                                      |
-| `enablePreHook`            | boolean                                                                                                                       | no        | false                                                                                                                                     | **Deprecated.** Former Helm pre-hook that deployed a Cassandra schema Job. Schema initialization now runs in collector/query. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                        |
-| `mode`                     | string                                                                                                                        | no        | test                                                                                                                                      | **Deprecated.** Former Cassandra replication mode (`prod` or `test`) for the schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                                                                           |
+| `enablePreHook`            | boolean                                                                                                                       | no        | false                                                                                                                                     | **Deprecated.** Former Helm pre-hook that deployed a Cassandra schema Job. Schema initialization now runs in collector/query. Kept in the schema for backward compatibility.                                                                                                                                                                          |
+| `mode`                     | string                                                                                                                        | no        | test                                                                                                                                      | **Deprecated.** Former Cassandra replication mode (`prod` or `test`) for the schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                |
 | `datacenter`               | string                                                                                                                        | no        | -                                                                                                                                         | The Cassandra datacenter                                                                                                                                                                                                                                                                                                                              |
 | `keyspace`                 | string                                                                                                                        | no        | jaeger                                                                                                                                    | The Cassandra keyspace for Jaeger                                                                                                                                                                                                                                                                                                                     |
 | `allowedAuthenticators`    | array                                                                                                                         | no        | All values from gocql driver                                                                                                              | List of allowed authenticators for gocql driver. Full list of supported authenticators can be found in the gocql source code [https://github.com/apache/cassandra-gocql-driver/blob/34fdeebefcbf183ed7f916f931aa0586fdaa1b40/conn.go#L27](https://github.com/apache/cassandra-gocql-driver/blob/34fdeebefcbf183ed7f916f931aa0586fdaa1b40/conn.go#L27) |
 | `existingSecret`           | object                                                                                                                        | no        | -                                                                                                                                         | The name of the existing secret with Cassandra username and password                                                                                                                                                                                                                                                                                  |
-| `extraEnv`                 | object                                                                                                                        | no        | []                                                                                                                                        | **Deprecated.** Former extra environment variables for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                                          |
-| `labels`                   | map                                                                                                                           | no        | {}                                                                                                                                        | Labels for Cassandra connection secrets and related resources.                                                                                                                                                                                                                                                  |
-| `resources`                | object                                                                                                                        | no        | {}                                                                                                                                        | **Deprecated.** Former resource requests and limits for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                                                                                |
-| `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                                                                                        | **Deprecated.** Former pod security context for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                                                                                                   |
-| `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                                                                                        | **Deprecated.** Former container security context for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                                                                                             |
+| `extraEnv`                 | object                                                                                                                        | no        | []                                                                                                                                        | **Deprecated.** Former extra environment variables for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                        |
+| `labels`                   | map                                                                                                                           | no        | {}                                                                                                                                        | Labels for Cassandra connection secrets and related resources.                                                                                                                                                                                                                                                                                        |
+| `resources`                | object                                                                                                                        | no        | {}                                                                                                                                        | **Deprecated.** Former resource requests and limits for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                       |
+| `securityContext`          | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                                                                                        | **Deprecated.** Former pod security context for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                               |
+| `containerSecurityContext` | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                                                                                        | **Deprecated.** Former container security context for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                         |
 | `tls.enabled`              | boolean                                                                                                                       | no        | false                                                                                                                                     | Enabling or disabling TLS connection to Cassandra                                                                                                                                                                                                                                                                                                     |
 | `tls.existingSecret`       | string                                                                                                                        | no        | -                                                                                                                                         | The name of the existing secret with SSL certificates. If specified, all subsequent parameters in tls section are ignored.                                                                                                                                                                                                                            |
 | `tls.commonName`           | string                                                                                                                        | no        | -                                                                                                                                         | The common name - server name protected by the SSL certificate. Ignored if the `existingSecret` is specified.                                                                                                                                                                                                                                         |
 | `tls.ca`                   | string                                                                                                                        | no        | -                                                                                                                                         | CA certificate. It use to provide a list of trusted CA who issued the certificates. The mandatory field when using an SSL connection to Cassandra. Ignored if the `existingSecret`is specified.                                                                                                                                                       |
 | `tls.key`                  | string                                                                                                                        | no        | -                                                                                                                                         | The public key of the certificate. The mandatory field when using an SSL connection to Cassandra. Ignored if the `existingSecret` is specified.                                                                                                                                                                                                       |
 | `tls.cert`                 | string                                                                                                                        | no        | -                                                                                                                                         | The private part of the certificate. The mandatory field when using an SSL connection to Cassandra. Ignored if the `existingSecret` is specified.                                                                                                                                                                                                     |
-| `tls.cqlshrc`              | string                                                                                                                        | no        | [ssl]<br/>certfile = /cassandra-tls/ca-cert.pem<br/>usercert = /cassandra-tls/client-cert.pem<br/>userkey = /cassandra-tls/client-key.pem | **Deprecated.** Former cqlsh SSL configuration for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                       |
+| `tls.cqlshrc`              | string                                                                                                                        | no        | [ssl]<br/>certfile = /cassandra-tls/ca-cert.pem<br/>usercert = /cassandra-tls/client-cert.pem<br/>userkey = /cassandra-tls/client-key.pem | **Deprecated.** Former cqlsh SSL configuration for the Cassandra schema pre-hook Job. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                            |
 | `ttl.trace`                | integer                                                                                                                       | no        | -                                                                                                                                         | Time to live for traces (in seconds, minutes, hours) data                                                                                                                                                                                                                                                                                             |
 | `ttl.dependencies`         | integer                                                                                                                       | no        | -                                                                                                                                         | Time to live for dependencies (in seconds, minutes, hours) data                                                                                                                                                                                                                                                                                       |
 | `priorityClassName`        | string                                                                                                                        | no        | `-`                                                                                                                                       | PriorityClassName assigned to the Pods to prevent them from evicting.                                                                                                                                                                                                                                                                                 |
-| `ttlSecondsAfterFinished`  | integer                                                                                                                       | no        | 0                                                                                                                                         | **Deprecated.** Former TTL for the Cassandra schema pre-hook Job pod after completion. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                                                                                           |
+| `ttlSecondsAfterFinished`  | integer                                                                                                                       | no        | 0                                                                                                                                         | **Deprecated.** Former TTL for the Cassandra schema pre-hook Job pod after completion. Ignored by the chart. Kept in the schema for backward compatibility.                                                                                                                                                                                           |
 | `annotations`              | map                                                                                                                           | no        | {}                                                                                                                                        | Annotations for Cassandra connection secrets and related resources.                                                                                                                                                                                                                                                                                   |
 <!-- markdownlint-enable line-length -->
 <!-- markdownlint-enable no-inline-html -->
@@ -1186,13 +1216,15 @@ elasticsearch:
         cpu: 100m
         memory: 128Mi
     securityContext:
-      runAsUser: 2000
-      fsGroup: 2000
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
     containerSecurityContext:
       allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
       capabilities:
         drop:
           - ALL
@@ -1309,13 +1341,15 @@ elasticsearch:
         cpu: 500m
         memory: 512Mi
     securityContext:
-      runAsUser: 2000
-      fsGroup: 2000
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
     containerSecurityContext:
       allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
       capabilities:
         drop:
           - ALL
@@ -1417,13 +1451,15 @@ elasticsearch:
         cpu: 100m
         memory: 128Mi
     securityContext:
-      runAsUser: 2000
-      fsGroup: 2000
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
     containerSecurityContext:
       allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
       capabilities:
         drop:
           - ALL
@@ -1463,9 +1499,10 @@ proxy:
 | `oauth2.idpAddress`            | string                                                                                                                        | no        | -                                                                           | The address for this socket                                                                                       |
 | `oauth2.idpPort`               | string                                                                                                                        | no        | 80                                                                          | The listeners will bind to the port                                                                               |
 | `resources`                    | object                                                                                                                        | no        | `{requests: {cpu: 50m, memory: 100Mi}, limits: {cpu: 100m, memory: 200Mi}}` | Describes computing resource requests and limits for single Pods                                                  |
-| `securityContext`              | [core/v1.PodSecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core) | no        | {}                                                                          | Describes pod-level security attributes                                                                           |
 | `containerSecurityContext`     | [core/v1.SecurityContext](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core)       | no        | {}                                                                          | Holds container-level security attributes                                                                         |
 <!-- markdownlint-enable line-length -->
+
+The proxy runs as a sidecar in the query pod. Configure pod-level settings through `query.securityContext`.
 
 Examples:
 
@@ -1496,14 +1533,9 @@ proxy:
     limits:
       cpu: 100m
       memory: 200Mi
-  securityContext:
-    runAsUser: 2000
-    fsGroup: 2000
-    runAsNonRoot: true
-    seccompProfile:
-      type: RuntimeDefault
   containerSecurityContext:
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop:
         - ALL
@@ -1601,13 +1633,15 @@ hotrod:
       cpu: 100m
       memory: 128Mi
   securityContext:
-    runAsUser: 2000
-    fsGroup: 2000
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
   containerSecurityContext:
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop:
         - ALL
@@ -1686,13 +1720,15 @@ integrationTests:
     create: true
     name: "jaeger-integration-tests"
   securityContext:
-    runAsUser: 2000
-    fsGroup: 2000
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
   containerSecurityContext:
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop:
         - ALL
@@ -1744,13 +1780,15 @@ statusProvisioner:
       memory: "100Mi"
       cpu: "100m"
   securityContext:
-    runAsUser: 2000
-    fsGroup: 2000
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
   containerSecurityContext:
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop:
         - ALL
