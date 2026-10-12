@@ -15,7 +15,7 @@ Probe is installed in Kubernetes as a sidecar for extending its probe.
 | `crtPath`             | String | False     | `-`                    | The path for client-cert.pem file                                                             |
 | `keyPath`             | String | False     | `-`                    | The path for client-key.pem file                                                              |
 | `tlsEnabled`          | String | False     | `-`                    | Enabling TLS for connection to the storage                                                    |
-| `insecureSkipVerify`  | String | False     | `-`                    | Disabling host verification for TLS                                                    |
+| `insecureSkipVerify`  | String | False     | `-`                    | Disabling host verification for TLS                                                           |
 | `retries`             | Int    | False     | `3`                    | The number of non-200 OpenSearch responses allowed in one check                               |
 | `errors`              | Int    | False     | `3`                    | The number of failed attempts after which one check reports the storage as unhealthy          |
 | `timeout`             | Int    | False     | `5`                    | The number of seconds after which one attempt fails                                           |

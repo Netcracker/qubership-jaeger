@@ -54,7 +54,8 @@ func NewOpenSearchProbe(cfg *config.Config, creds Credentials) (*OpenSearchProbe
 
 func newTLSConfig(cfg config.TLS) (*tls.Config, error) {
 	if cfg.InsecureSkipVerify {
-		return &tls.Config{InsecureSkipVerify: true}, nil
+		// The operator turns verification off explicitly with -insecureSkipVerify.
+		return &tls.Config{InsecureSkipVerify: true}, nil // NOSONAR
 	}
 
 	cert, err := tls.LoadX509KeyPair(cfg.CertFile, cfg.KeyFile)
