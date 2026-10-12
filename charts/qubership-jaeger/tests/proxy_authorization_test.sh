@@ -117,18 +117,18 @@ assert_count 'exact: "bob"' 1
 # Roles and users combine in one policy. A claim name can be a URI, and values can contain YAML syntax.
 cat >"${work_dir}/values.yaml" <<'EOF'
 proxy:
-  oauth2:
-    authorization:
-      issuer: https://idp.example.com/adfs
-      audiences:
-        - jaeger
-      rolesClaim:
-        - http://schemas.microsoft.com/ws/2008/06/identity/claims/role
-      allowedRoles:
-        - 'CN=Jaeger Users,OU=Groups: "Tracing"'
-      userClaim: upn
-      allowedUsers:
-        - alice@example.com
+    oauth2:
+        authorization:
+            issuer: https://idp.example.com/adfs
+            audiences:
+                - jaeger
+            rolesClaim:
+                - http://schemas.microsoft.com/ws/2008/06/identity/claims/role
+            allowedRoles:
+                - 'CN=Jaeger Users,OU=Groups: "Tracing"'
+            userClaim: upn
+            allowedUsers:
+                - alice@example.com
 EOF
 render "${config_template}" "${oauth2_args[@]}" "${authorization_args[@]}" \
     --values "${work_dir}/values.yaml" >"${rendered_file}"
@@ -180,8 +180,9 @@ render "${deployment_template}" >"${work_dir}/deployment-no-proxy.yaml"
 assert_count '^ +checksum/proxy-config: [0-9a-f]{64}$' 1 "${work_dir}/deployment-alice.yaml"
 assert_count '^ +checksum/proxy-config: [0-9a-f]{64}$' 1 "${work_dir}/deployment-bob.yaml"
 assert_count 'checksum/proxy-config' 0 "${work_dir}/deployment-no-proxy.yaml"
-if [[ "$(grep 'checksum/proxy-config' "${work_dir}/deployment-alice.yaml")" == \
-    "$(grep 'checksum/proxy-config' "${work_dir}/deployment-bob.yaml")" ]]; then
+alice_checksum="$(grep 'checksum/proxy-config' "${work_dir}/deployment-alice.yaml")"
+bob_checksum="$(grep 'checksum/proxy-config' "${work_dir}/deployment-bob.yaml")"
+if [[ "${alice_checksum}" == "${bob_checksum}" ]]; then
     echo "Expected checksum/proxy-config to change when allowedUsers changes." >&2
     exit 1
 fi
@@ -189,8 +190,8 @@ fi
 # The checksum must stay stable between renders, otherwise every upgrade restarts the pod.
 render "${deployment_template}" "${oauth2_args[@]}" "${authorization_args[@]}" \
     --set 'proxy.oauth2.authorization.allowedUsers={alice}' >"${work_dir}/deployment-alice-again.yaml"
-if [[ "$(grep 'checksum/proxy-config' "${work_dir}/deployment-alice.yaml")" != \
-    "$(grep 'checksum/proxy-config' "${work_dir}/deployment-alice-again.yaml")" ]]; then
+alice_again_checksum="$(grep 'checksum/proxy-config' "${work_dir}/deployment-alice-again.yaml")"
+if [[ "${alice_checksum}" != "${alice_again_checksum}" ]]; then
     echo "Expected checksum/proxy-config to stay the same for identical values." >&2
     exit 1
 fi

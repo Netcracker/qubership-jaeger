@@ -2006,11 +2006,9 @@ chart's defaults.
 * **The identity provider's certificate is not verified.** The `auth` cluster's TLS context sets only `sni` and no
   validation context. Per Envoy's documentation, certificate verification is not enabled unless the validation context
   specifies trusted authority certificates — so the token exchange is not protected against an interposed server.
-* **The chart implements no user or group authorization.** `docs/examples/auth.md` documents `oauth2.issuerUrl`,
-  `oauth2.allowedUsers`, and `oauth2.allowedGroups`, but the chart has none of those keys — the real ones are
-  `tokenEndpoint`, `authorizationEndpoint`, `clientId`, `clientToken`, `idpAddress`, and `idpPort`. Any user who can
-  authenticate against the configured realm reaches the UI. Do not rely on that document's allow-lists: they do
-  nothing.
+* **User authorization is off by default.** Unless `proxy.oauth2.authorization.enabled` is `true`, any user who can
+  authenticate against the configured realm reaches the UI. Turn it on and set `allowedRoles` or `allowedUsers` to
+  restrict access.
 
 **Sources:**
 

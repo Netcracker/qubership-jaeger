@@ -16,13 +16,13 @@ behavior after an upgrade.
 
 Add two native Envoy HTTP filters after the existing `oauth2` filter. No new container or image is needed.
 
-| Order | Filter      | Status   | Responsibility                                                              |
-| ----- | ----------- | -------- | --------------------------------------------------------------------------- |
-| 1     | `lua`       | existing | Returns 401 for `/api/*` requests without the `OauthHMAC` cookie            |
-| 2     | `oauth2`    | existing | Runs the login flow and forwards the access token as `Authorization`        |
-| 3     | `jwt_authn` | new      | Verifies the token signature against the IdP JWKS and exposes the claims    |
-| 4     | `rbac`      | new      | Allows the request if a role claim or the user claim matches, else 403      |
-| 5     | `router`    | existing | Proxies to Jaeger Query on port 16686                                       |
+| Order | Filter      | Status   | Responsibility                                                           |
+| ----- | ----------- | -------- | ------------------------------------------------------------------------ |
+| 1     | `lua`       | existing | Returns 401 for `/api/*` requests without the `OauthHMAC` cookie         |
+| 2     | `oauth2`    | existing | Runs the login flow and forwards the access token as `Authorization`     |
+| 3     | `jwt_authn` | new      | Verifies the token signature against the IdP JWKS and exposes the claims |
+| 4     | `rbac`      | new      | Allows the request if a role claim or the user claim matches, else 403   |
+| 5     | `router`    | existing | Proxies to Jaeger Query on port 16686                                    |
 
 The `rbac` filter uses one `ALLOW` policy. Envoy ORs the principals of a policy, which gives the "role or allowlist"
 semantics without extra logic.
@@ -41,7 +41,7 @@ semantics without extra logic.
   with both allowlists empty. An empty policy would lock everyone out.
 - **The access token is the only token source.** It must be a JWT. Reading the ID token from the `IdToken` cookie is
   out of scope until someone needs it.
-- **Matching is exact and case-sensitive.** No prefix, regex, or case folding.
+- **Matching is exact and case-sensitive.** No prefix, pattern, or case folding.
 
 ## Values
 
@@ -159,12 +159,12 @@ edited allowlist takes effect only after a manual restart.
 - [x] Run the new script in `.github/workflows/integration-tests.yml` next to `security_hardening_test.sh`.
 - [ ] Verify manually on a kind cluster with Keycloak. Record the result in the PR description.
 
-| User                                  | Expected result                         |
-| ------------------------------------- | --------------------------------------- |
-| Has an allowed role                   | UI opens                                |
-| No role, listed in `allowedUsers`     | UI opens                                |
-| No role, not listed                   | 403 with the custom body on `/` and `/api/services` |
-| Not signed in                         | Redirect to the IdP login page          |
+| User                              | Expected result                                     |
+| --------------------------------- | --------------------------------------------------- |
+| Has an allowed role               | UI opens                                            |
+| No role, listed in `allowedUsers` | UI opens                                            |
+| No role, not listed               | 403 with the custom body on `/` and `/api/services` |
+| Not signed in                     | Redirect to the IdP login page                      |
 
 ### 6. Documentation
 
