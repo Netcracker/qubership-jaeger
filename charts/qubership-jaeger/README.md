@@ -273,7 +273,16 @@ and for the installation procedure see the [Installation Guide](https://github.c
 | `proxy.basic.users` | list | `["YWRtaW46YWRtaW4=","dGVzdDp0ZXN0"]` | List of login:password in base64. For example:   admin:admin -> YWRtaW46YWRtaW4=   test:test -> dGVzdDp0ZXN0 |
 | `proxy.containerSecurityContext` | object | `{}` | SecurityContext holds container-level security attributes. |
 | `proxy.install` | bool | `false` | Allow disabling create envoy proxy container. |
-| `proxy.oauth2` | object | `{"authorizationEndpoint":"","clientId":"","clientToken":"","idpAddress":"","idpPort":80,"tokenEndpoint":""}` | Settings for oauth2 authentication. |
+| `proxy.oauth2` | object | `{"authorization":{"allowedRoles":[],"allowedUsers":[],"audiences":[],"enabled":false,"issuer":"","jwksUri":"","rolesClaim":["realm_access","roles"],"userClaim":"preferred_username"},"authorizationEndpoint":"","clientId":"","clientToken":"","idpAddress":"","idpPort":80,"tokenEndpoint":""}` | Settings for oauth2 authentication. |
+| `proxy.oauth2.authorization` | object | `{"allowedRoles":[],"allowedUsers":[],"audiences":[],"enabled":false,"issuer":"","jwksUri":"","rolesClaim":["realm_access","roles"],"userClaim":"preferred_username"}` | Settings for the authorization check that runs after a successful OAuth2 login. A user gets access if the access token carries one of `allowedRoles`, or if the user is in `allowedUsers`. The access token must be a JWT. |
+| `proxy.oauth2.authorization.allowedRoles` | list | `[]` | Roles or groups that grant access. The match is exact and case-sensitive. |
+| `proxy.oauth2.authorization.allowedUsers` | list | `[]` | Users that get access regardless of their roles. The match is exact and case-sensitive. |
+| `proxy.oauth2.authorization.audiences` | list | `[]` | Accepted values of the `aud` claim. Leave empty to skip the audience check. |
+| `proxy.oauth2.authorization.enabled` | bool | `false` | Enable the authorization check. When disabled, every user who can log in gets access. |
+| `proxy.oauth2.authorization.issuer` | string | `""` | Expected value of the `iss` claim. Leave empty to skip the issuer check. Example: `http://my-keycloak.com/auth/realms/test` |
+| `proxy.oauth2.authorization.jwksUri` | string | `""` | URL of the identity provider JWKS endpoint. Must be served by `idpAddress`. Required when `enabled` is true. Example: `http://my-keycloak.com/auth/realms/test/protocol/openid-connect/certs` |
+| `proxy.oauth2.authorization.rolesClaim` | list | `["realm_access","roles"]` | Path to the claim that holds the roles or groups of the user, one key per list item. The claim value can be a list of strings or a single string. |
+| `proxy.oauth2.authorization.userClaim` | string | `"preferred_username"` | Name of the top-level claim that identifies the user. |
 | `proxy.oauth2.authorizationEndpoint` | string | `""` | The endpoint redirect to for authorization in response to unauthorized requests. Example: `http://my-keycloak.com/auth/realms/test/protocol/openid-connect/auth` |
 | `proxy.oauth2.clientId` | string | `""` | The client_id to be used in the authorize calls. This value will be URL encoded when sent to the OAuth server. |
 | `proxy.oauth2.clientToken` | string | `""` | The secret used to retrieve the access token. This value will be URL encoded when sent to the OAuth server. |

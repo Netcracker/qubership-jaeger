@@ -78,6 +78,40 @@ proxy:
     # -- Listeners will bind to the port.
     idpPort: 80
 
+    # -- Settings for the authorization check that runs after a successful OAuth2 login.
+    # A user gets access if the access token carries one of `allowedRoles`, or if the user is in `allowedUsers`.
+    # The access token must be a JWT.
+    authorization:
+
+      # -- Enable the authorization check. When disabled, every user who can log in gets access.
+      enabled: false
+
+      # -- URL of the identity provider JWKS endpoint. Must be served by `idpAddress`. Required when `enabled` is true.
+      # Example: `http://my-keycloak.com/auth/realms/test/protocol/openid-connect/certs`
+      jwksUri: ""
+
+      # -- Expected value of the `iss` claim. Leave empty to skip the issuer check.
+      # Example: `http://my-keycloak.com/auth/realms/test`
+      issuer: ""
+
+      # -- Accepted values of the `aud` claim. Leave empty to skip the audience check.
+      audiences: []
+
+      # -- Path to the claim that holds the roles or groups of the user, one key per list item.
+      # The claim value can be a list of strings or a single string.
+      rolesClaim:
+      - realm_access
+      - roles
+
+      # -- Roles or groups that grant access. The match is exact and case-sensitive.
+      allowedRoles: []
+
+      # -- Name of the top-level claim that identifies the user.
+      userClaim: preferred_username
+
+      # -- Users that get access regardless of their roles. The match is exact and case-sensitive.
+      allowedUsers: []
+
   # -- Settings for basic authentication.
   basic:
 
