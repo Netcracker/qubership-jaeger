@@ -81,6 +81,14 @@ assert_count 'envoy\.filters\.http\.jwt_authn' 0
 assert_count 'envoy\.filters\.http\.rbac' 0
 assert_count 'local_reply_config' 0
 
+# "helm upgrade --reuse-values" keeps the values of an older chart, which have no authorization map.
+render "${config_template}" "${oauth2_args[@]}" --set proxy.oauth2.authorization=null >"${rendered_file}"
+assert_count 'envoy\.filters\.http\.oauth2$' 1
+assert_count 'envoy\.filters\.http\.jwt_authn' 0
+assert_count 'envoy\.filters\.http\.rbac' 0
+render "${deployment_template}" "${oauth2_args[@]}" --set proxy.oauth2.authorization=null >"${rendered_file}"
+assert_count '^ +checksum/proxy-config: [0-9a-f]{64}$' 1
+
 # Basic authentication ignores the authorization parameters.
 render "${config_template}" \
     --set proxy.install=true \
