@@ -1,5 +1,7 @@
-import yaml, base64
-from robot.libraries.BuiltIn import BuiltIn
+import base64
+
+import yaml
+
 
 def clean_secret(secret_obj):
     secret_dict = secret_obj.to_dict()
@@ -7,11 +9,13 @@ def clean_secret(secret_obj):
         secret_dict["metadata"].pop(key, None)
     return secret_dict
 
+
 def replace_basic_auth_structured(secret):
     if not hasattr(secret, 'data') or 'config.yaml' not in secret.data:
-        raise ValueError("Secret doesnt contain config.yaml in data")
+        raise ValueError("Secret doesn't contain config.yaml in data")
     raw_yaml = base64.b64decode(secret.data['config.yaml']).decode()
     parsed = yaml.safe_load(raw_yaml)
+
     def rec(o):
         if isinstance(o, dict):
             for k, v in o.items():
@@ -23,6 +27,6 @@ def replace_basic_auth_structured(secret):
             for i in o:
                 rec(i)
     rec(parsed)
-    updated_yaml = base64.b64encode(yaml.dump(parsed, default_flow_style=False, sort_keys=False, allow_unicode=True).encode()).decode()
-    secret.data['config.yaml'] = updated_yaml
+    dumped_yaml = yaml.dump(parsed, default_flow_style=False, sort_keys=False, allow_unicode=True)
+    secret.data['config.yaml'] = base64.b64encode(dumped_yaml.encode()).decode()
     return secret

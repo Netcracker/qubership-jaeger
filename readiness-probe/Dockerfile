@@ -18,6 +18,7 @@ RUN go mod download -x
 
 # Copy the go source
 COPY main.go main.go
+COPY internal/ internal/
 
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -a -o probe .
 
