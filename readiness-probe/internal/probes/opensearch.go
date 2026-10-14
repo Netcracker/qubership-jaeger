@@ -83,8 +83,8 @@ func newTLSConfig(cfg config.TLS) (*tls.Config, error) {
 }
 
 // Check implements the Probe interface.
-// Request errors count against maxErrors. Non-200 responses count against maxErrors*maxRetries,
-// because every failed attempt allows maxRetries such responses.
+// After maxErrors request errors, the check still sends one more request, as the probe always has.
+// Non-200 responses count against maxErrors*maxRetries, because every failed attempt allows maxRetries such responses.
 func (p *OpenSearchProbe) Check(ctx context.Context) bool {
 	maxFailedResponses := p.maxErrors * p.maxRetries
 	failedRequests, failedResponses := 0, 0
@@ -94,8 +94,8 @@ func (p *OpenSearchProbe) Check(ctx context.Context) bool {
 		switch {
 		case err != nil:
 			failedRequests++
-			slog.Error("Failed to send a request to OpenSearch", "error", err, "remainingAttempts", p.maxErrors-failedRequests)
-			if failedRequests >= p.maxErrors {
+			slog.Error("Failed to send a request to OpenSearch", "error", err, "remainingAttempts", p.maxErrors-failedRequests+1)
+			if failedRequests > p.maxErrors {
 				return false
 			}
 		case status == http.StatusOK:

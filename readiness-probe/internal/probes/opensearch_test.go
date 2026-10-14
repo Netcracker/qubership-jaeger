@@ -8,6 +8,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"errors"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
@@ -210,6 +211,47 @@ func TestOpenSearchCheckFailsAfterMaxErrors(t *testing.T) {
 
 	if probe.Check(context.Background()) {
 		t.Fatal("expected an unhealthy result for a closed server")
+	}
+}
+
+// failingTransport fails the first failures requests and forwards the rest.
+type failingTransport struct {
+	failures int
+	calls    atomic.Int32
+}
+
+func (f *failingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if int(f.calls.Add(1)) <= f.failures {
+		return nil, errors.New("connection refused")
+	}
+	return http.DefaultTransport.RoundTrip(req)
+}
+
+func TestOpenSearchCheckRecoversAfterMaxErrors(t *testing.T) {
+	srv, _ := statusServer(t, httptest.NewServer)
+	probe := newTestOpenSearchProbe(t, openSearchTestConfig(srv.URL), testCredentials)
+	transport := &failingTransport{failures: 3}
+	probe.client.Transport = transport
+
+	if !probe.Check(context.Background()) {
+		t.Fatal("expected a healthy result after three request errors")
+	}
+	if calls := transport.calls.Load(); calls != 4 {
+		t.Errorf("expected 4 requests, got %d", calls)
+	}
+}
+
+func TestOpenSearchCheckFailsAfterOneErrorMoreThanMaxErrors(t *testing.T) {
+	srv, _ := statusServer(t, httptest.NewServer)
+	probe := newTestOpenSearchProbe(t, openSearchTestConfig(srv.URL), testCredentials)
+	transport := &failingTransport{failures: 4}
+	probe.client.Transport = transport
+
+	if probe.Check(context.Background()) {
+		t.Fatal("expected an unhealthy result after four request errors")
+	}
+	if calls := transport.calls.Load(); calls != 4 {
+		t.Errorf("expected 4 requests, got %d", calls)
 	}
 }
 

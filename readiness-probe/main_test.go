@@ -239,7 +239,12 @@ func TestRunReturnsHelpError(t *testing.T) {
 }
 
 func TestRunFails(t *testing.T) {
-	busy := listenLocal(t)
+	// run listens on the wildcard address. Some systems, such as macOS, let a wildcard listener
+	// coexist with a loopback listener on the same port, so reserve the wildcard address too.
+	busy, err := net.Listen("tcp", "0.0.0.0:0")
+	if err != nil {
+		t.Fatalf("failed to listen: %v", err)
+	}
 	t.Cleanup(func() { _ = busy.Close() })
 	busyPort := strconv.Itoa(busy.Addr().(*net.TCPAddr).Port)
 
