@@ -1,0 +1,47 @@
+# Example values for OAuth2 authentication with an authorization check.
+# Only users with the "jaeger-user" realm role, and the user "alice", can open Jaeger UI.
+jaeger:
+  storage:
+    type: cassandra
+
+cassandraSchemaJob:
+  host: cassandra.cassandra.svc
+  keyspace: jaeger
+  password: admin
+  username: admin
+  datacenter: dc1
+
+
+collector:
+  install: true
+
+query:
+  install: true
+
+proxy:
+  install: true
+
+  # Enable OAuth2
+  type: oauth2
+  oauth2:
+    tokenEndpoint: https://keycloak.example.com/realms/test/protocol/openid-connect/token
+    authorizationEndpoint: https://keycloak.example.com/realms/test/protocol/openid-connect/auth
+    clientId: jaeger
+    clientToken: client-secret
+    idpAddress: keycloak.example.com
+    idpPort: 443
+
+    # Enable the authorization check
+    authorization:
+      enabled: true
+      jwksUri: https://keycloak.example.com/realms/test/protocol/openid-connect/certs
+      issuer: https://keycloak.example.com/realms/test
+      # Keycloak puts realm roles in the "realm_access.roles" claim
+      rolesClaim:
+      - realm_access
+      - roles
+      allowedRoles:
+      - jaeger-user
+      userClaim: preferred_username
+      allowedUsers:
+      - alice

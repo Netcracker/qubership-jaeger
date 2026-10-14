@@ -24,7 +24,7 @@ echo -n "admin:admin" | base64
 
 ## OAuth2 Authentication
 
-Enterprise OAuth2 integration with external providers.
+Log in through an external identity provider, for example Keycloak.
 
 ```yaml title="oauth2-values.yaml"
 --8<-- "examples/auth/oauth2-values.yaml"
@@ -32,25 +32,115 @@ Enterprise OAuth2 integration with external providers.
 
 **Key parameters:**
 - `proxy.type: oauth2` - Enables OAuth2 authentication
-- `oauth2.issuerUrl` - Identity provider endpoint
-- `oauth2.allowedUsers` - Authorized user emails
-- `oauth2.allowedGroups` - Authorized groups
+- `proxy.oauth2.tokenEndpoint` - Token endpoint of the identity provider
+- `proxy.oauth2.authorizationEndpoint` - Endpoint that users are redirected to for login
+- `proxy.oauth2.clientId` and `proxy.oauth2.clientToken` - Client ID and client secret registered in the identity
+  provider
+- `proxy.oauth2.idpAddress` and `proxy.oauth2.idpPort` - Host and port of the identity provider
 
+Register `https://<jaeger-host>/callback` as a valid redirect URI of the client.
 
+Without the authorization check, every user who can log in to the identity provider can open Jaeger UI.
+
+## OAuth2 Authorization
+
+Restrict Jaeger UI to selected users. The check applies to the whole UI and to the query API behind it.
+
+```yaml title="oauth2-authorization-values.yaml"
+--8<-- "examples/auth/oauth2-authorization-values.yaml"
+```
+
+**Key parameters:**
+- `proxy.oauth2.authorization.enabled: true` - Enables the authorization check
+- `proxy.oauth2.authorization.jwksUri` - JWKS endpoint used to verify the token signature. It must be served by
+  `proxy.oauth2.idpAddress`
+- `proxy.oauth2.authorization.rolesClaim` - Path to the roles or groups claim, one key per list item
+- `proxy.oauth2.authorization.allowedRoles` - Roles or groups that grant access
+- `proxy.oauth2.authorization.userClaim` - Claim that identifies the user
+- `proxy.oauth2.authorization.allowedUsers` - Users that get access regardless of their roles
+
+**How access is decided:**
+
+A user gets access if the access token carries one of `allowedRoles`, or if the user is in `allowedUsers`. Use
+`allowedUsers` for individual users who are not members of an allowed group. Other users get a 403 response after the
+login.
+
+Values are compared exactly and case-sensitively. Set at least one of `allowedRoles` and `allowedUsers`, otherwise the
+chart fails to render.
+
+**Requirements:**
+- The access token is a JWT. Opaque access tokens are not supported.
+- The proxy image is Envoy 1.35 or later. The chart default meets this requirement.
+
+**Roles claim by identity provider:**
+
+<!-- markdownlint-disable line-length -->
+| Identity provider and source | `rolesClaim`                            | Setup in the identity provider                                        |
+| ---------------------------- | --------------------------------------- | --------------------------------------------------------------------- |
+| Keycloak realm roles         | `[realm_access, roles]`                 | Create a realm role and assign it to the user                         |
+| Keycloak client roles        | `[resource_access, <client-id>, roles]` | Create a role in the client and assign it to the user                 |
+| Keycloak groups              | `[groups]`                              | Add a Group Membership mapper with the token claim name `groups`      |
+| ADFS groups or roles         | The claim name from the token           | Add an issuance transform rule that sends group membership as a claim |
+<!-- markdownlint-enable line-length -->
+
+To find the claim names that your identity provider sends, decode the payload of an access token. After a login, the
+browser keeps the token in the `BearerToken` cookie.
+
+```bash
+echo '<access-token>' | cut -d. -f2 | tr '_-' '/+' | base64 -d
+```
+
+**Changing access:**
+- A role granted or revoked in the identity provider takes effect when the user gets a new token. Ask the user to open
+  `/signout` and log in again.
+- A change of `allowedRoles` or `allowedUsers` takes effect after `helm upgrade`, which restarts the query pod.
+
+## OAuth2 with a Custom CA Certificate
+
+Use this setup when the identity provider has a self-signed certificate or a certificate signed by an internal CA.
+
+```yaml title="oauth2-custom-ca-values.yaml"
+--8<-- "examples/auth/oauth2-custom-ca-values.yaml"
+```
+
+**Key parameters:**
+- `proxy.oauth2.tls.ca` - CA certificate in PEM format. The chart stores it in the `oauth2-idp-ca` secret
+- `proxy.oauth2.tls.existingSecret` - Name of an existing secret with the CA certificate in the `ca-cert.pem` key.
+  If specified, `proxy.oauth2.tls.ca` is ignored
+
+**How the certificate is verified:**
+
+Without these parameters, the proxy encrypts the connection to the identity provider but does not verify its
+certificate. With one of them, the proxy checks two things and refuses the connection if either check fails:
+
+- The certificate chain of the identity provider leads to the configured CA certificate.
+- The certificate is issued for `proxy.oauth2.idpAddress`. A wildcard name such as `*.example.com` matches. If
+  `idpAddress` is an IP address, the certificate must list that address.
+
+For a self-signed certificate, pass the certificate itself as the CA certificate. To trust several CAs, put all the
+certificates into one PEM file.
+
+**Requirements:**
+- `proxy.oauth2.authorizationEndpoint` and `proxy.oauth2.tokenEndpoint` start with `https://`. The chart fails to
+  render if a CA certificate is set for an `http://` endpoint.
+- The browser of the user must trust the certificate as well. The chart cannot configure that.
+
+**Creating the secret:**
+
+```bash
+kubectl create secret generic corporate-ca -n <namespace> --from-file=ca-cert.pem=<path-to-ca-certificate>
+```
+
+**Replacing the CA certificate:**
+- With `proxy.oauth2.tls.ca`, run `helm upgrade`. The chart restarts the query pod.
+- With `proxy.oauth2.tls.existingSecret`, update the secret and restart the query pod yourself. The proxy reads the
+  certificate only at startup.
 
 ## Usage
 
-1. Choose authentication method
-2. Update configuration parameters
-3. Create required secrets:
-
-```bash
-# For OAuth2
-kubectl create secret generic oauth2-config \
-  --from-literal=client-secret=your-secret
-```
-
-4. Deploy with Helm:
+1. Choose the authentication method.
+2. Copy the matching example and replace the endpoints, the credentials, and the allowed roles and users.
+3. Deploy with Helm:
 
 ```bash
 helm install jaeger qubership-jaeger/qubership-jaeger -f auth-values.yaml
