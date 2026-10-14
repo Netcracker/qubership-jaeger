@@ -1885,6 +1885,126 @@ Envoy, not Jaeger, so the pod can be Ready and still serve 503.
 * [Access logging response flags — Envoy](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage)
 <!-- markdownlint-enable line-length -->
 
+### Jaeger UI returns 403 after a successful OAuth2 login
+
+**Symptoms:**
+
+* The login at the identity provider succeeds, then the UI shows:
+
+  ```text
+  Access to Jaeger UI is denied: RBAC: access denied.
+  Ask your administrator for access, or open /signout to sign in as another user.
+  ```
+
+* The same page shows `Audiences in Jwt are not allowed` instead of `RBAC: access denied`.
+
+**Root cause:**
+
+`proxy.oauth2.authorization.enabled` is `true` and the access token does not pass the check:
+
+* `RBAC: access denied` means that the token has none of `allowedRoles` and the user is not in `allowedUsers`. Values
+  are compared exactly and case-sensitively. A role granted after the login is missing from the token until the user
+  logs in again. A wrong `rolesClaim` or `userClaim` has the same effect, because the proxy looks for the values in a
+  claim that the token does not have.
+* `Audiences in Jwt are not allowed` means that the `aud` claim of the token matches none of
+  `proxy.oauth2.authorization.audiences`.
+
+**How to check:**
+
+1. Decode the payload of the access token. The browser keeps the token in the `BearerToken` cookie.
+
+   ```bash
+   echo '<access-token>' | cut -d. -f2 | tr '_-' '/+' | base64 -d
+   ```
+
+2. Compare the claims with `rolesClaim`, `allowedRoles`, `userClaim`, `allowedUsers`, and `audiences` in the values.
+3. Read the counters of the authorization filter from the Envoy admin endpoint.
+
+   ```bash
+   kubectl port-forward <query-pod> -n <namespace> 9901:9901
+   curl -s localhost:9901/stats | grep -E 'rbac\.(allowed|denied)'
+   ```
+
+**How to fix:**
+
+1. If the user has to get access through a role, assign the role in the identity provider. Then ask the user to open
+   `/signout` and log in again.
+2. If the user has to get access individually, add the value of the user claim to
+   `proxy.oauth2.authorization.allowedUsers` and run `helm upgrade`.
+3. If the claim names differ from the values, correct `rolesClaim` or `userClaim` and run `helm upgrade`.
+4. If the audience is rejected, add the `aud` value of the token to `audiences`, or clear `audiences` to skip the check.
+
+**Data to collect:**
+
+* The decoded token payload, without the signature.
+* The `proxy.oauth2.authorization` values.
+* The `rbac` and `jwt_authn` counters from the Envoy admin endpoint.
+
+**Sources:**
+
+<!-- markdownlint-disable line-length -->
+* [Role Based Access Control (RBAC) Filter — Envoy](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/rbac_filter)
+<!-- markdownlint-enable line-length -->
+
+### Jaeger UI returns 401 with a `Jwt` message after a successful OAuth2 login
+
+**Symptoms:**
+
+* The login at the identity provider succeeds, then the UI shows one of these messages:
+
+  ```text
+  Jwks remote fetch is failed
+  Jwt issuer is not configured
+  Jwt verification fails
+  Jwt is expired
+  ```
+
+**Root cause:**
+
+`proxy.oauth2.authorization.enabled` is `true` and the proxy cannot verify the access token:
+
+* `Jwks remote fetch is failed`: the proxy cannot download the signing keys from `jwksUri`. The request goes to
+  `proxy.oauth2.idpAddress` and `proxy.oauth2.idpPort`, so a JWKS endpoint on another host does not work.
+* `Jwt issuer is not configured`: the `iss` claim of the token differs from `proxy.oauth2.authorization.issuer`.
+* `Jwt verification fails`: the token is not signed by a key from `jwksUri`, for example because `jwksUri` points to
+  another realm. An opaque access token that is not a JWT is also rejected.
+* `Jwt is expired`: the token outlived its `exp` claim.
+
+**How to check:**
+
+1. Read the JWKS counters from the Envoy admin endpoint. A growing `jwks_fetch_failed` confirms a connectivity or URL
+   problem.
+
+   ```bash
+   kubectl port-forward <query-pod> -n <namespace> 9901:9901
+   curl -s localhost:9901/stats | grep -E 'jwt_authn\.(allowed|denied|jwks_fetch)'
+   ```
+
+2. Decode the payload of the access token from the `BearerToken` cookie and compare its `iss` claim with `issuer`.
+
+   ```bash
+   echo '<access-token>' | cut -d. -f2 | tr '_-' '/+' | base64 -d
+   ```
+
+**How to fix:**
+
+1. Set `jwksUri` to the JWKS endpoint of the realm that issues the tokens. For Keycloak, it ends with
+   `/protocol/openid-connect/certs`.
+2. Set `issuer` to the exact `iss` value of the token, or clear it to skip the issuer check.
+3. If the token is expired, open `/signout` and log in again.
+
+**Data to collect:**
+
+* The message shown in the browser.
+* The `jwt_authn` counters from the Envoy admin endpoint.
+* The `proxy.oauth2` values, without `clientToken`.
+
+**Sources:**
+
+<!-- markdownlint-disable line-length -->
+* [JWT Authentication — Envoy](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/jwt_authn_filter)
+<!-- markdownlint-enable line-length -->
+
 ### Query pod crash-loops with an Envoy configuration error
 
 **Symptoms:**
@@ -1968,11 +2088,9 @@ chart's defaults.
   Per Envoy's documentation, certificate verification is not enabled unless the validation context specifies trusted
   authority certificates — so the token exchange is not protected against an interposed server. Set one of the two
   parameters to turn the verification on.
-* **The chart implements no user or group authorization.** `docs/examples/auth.md` documents `oauth2.issuerUrl`,
-  `oauth2.allowedUsers`, and `oauth2.allowedGroups`, but the chart has none of those keys — the real ones are
-  `tokenEndpoint`, `authorizationEndpoint`, `clientId`, `clientToken`, `idpAddress`, and `idpPort`. Any user who can
-  authenticate against the configured realm reaches the UI. Do not rely on that document's allow-lists: they do
-  nothing.
+* **User authorization is off by default.** Unless `proxy.oauth2.authorization.enabled` is `true`, any user who can
+  authenticate against the configured realm reaches the UI. Turn it on and set `allowedRoles` or `allowedUsers` to
+  restrict access.
 
 **Sources:**
 

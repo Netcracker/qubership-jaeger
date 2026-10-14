@@ -44,8 +44,12 @@ spec:
         {{- toYaml .Values.query.labels | nindent 8 }}
         {{- end }}
       {{- $proxyCaChecksum := and (include "proxy.oauth2.tls.caEnabled" .) (not (.Values.proxy.oauth2.tls).existingSecret) }}
-      {{- if or .Values.query.annotations $proxyCaChecksum }}
+      {{- if or .Values.query.annotations .Values.proxy.install }}
       annotations:
+        {{- if .Values.proxy.install }}
+        # Envoy reads its configuration only at startup, so a configuration change must restart the pod.
+        checksum/proxy-config: {{ include (print $.Template.BasePath "/query/auth-proxy/proxy-secret-config.yaml") . | sha256sum }}
+        {{- end }}
         {{- if $proxyCaChecksum }}
         # Envoy reads the CA certificate only at startup, so a new certificate must restart the pod.
         checksum/proxy-oauth2-ca: {{ (.Values.proxy.oauth2.tls).ca | trim | sha256sum }}
