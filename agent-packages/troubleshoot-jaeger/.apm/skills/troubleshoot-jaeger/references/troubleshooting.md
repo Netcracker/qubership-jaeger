@@ -1753,6 +1753,86 @@ Keep `tokenEndpoint` and `authorizationEndpoint` on the same scheme.
 * `docs/examples/auth/oauth2-values.yaml` — `https://` endpoints with `idpPort: 80`
 * [Service discovery](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/service_discovery)
 
+### OAuth2 login fails after setting a CA certificate for the identity provider
+
+**Symptoms:**
+
+* Login fails after the callback, and Envoy reports a generic OAuth flow failure.
+* Envoy reports a certificate error for the connection to the identity provider:
+
+  ```text
+  TLS_error:|268435581:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED:TLS_error_end
+  ```
+
+* The login worked before `proxy.oauth2.tls.ca` or `proxy.oauth2.tls.existingSecret` was set.
+
+**Root cause:**
+
+With a CA certificate configured, Envoy verifies the certificate of the identity provider and refuses the connection
+if a check fails. Two checks can fail:
+
+1. The certificate chain does not lead to the configured CA certificate. The usual causes are a CA certificate of
+   another environment, a missing intermediate certificate, or an expired certificate.
+2. The certificate is not issued for `proxy.oauth2.idpAddress`. This happens when `idpAddress` is an internal service
+   name or an IP address, while the certificate lists only the public hostname.
+
+A CA certificate replaced in an existing secret has no effect until the query pod restarts, because Envoy reads the
+file only at startup.
+
+**How to check:**
+
+1. Read the TLS counters of the `auth` cluster from the Envoy admin endpoint. A growing `fail_verify_error` points to
+   the certificate chain, and a growing `fail_verify_san` points to the hostname.
+
+   ```bash
+   kubectl port-forward <query-pod> -n <namespace> 9901:9901
+   curl -s localhost:9901/stats | grep cluster.auth.ssl.fail_verify
+   ```
+
+2. Read the CA certificate that the proxy uses. The secret is `oauth2-idp-ca`, or the one named in
+   `proxy.oauth2.tls.existingSecret`.
+
+   <!-- markdownlint-disable line-length -->
+   ```bash
+   kubectl get secret oauth2-idp-ca -n <namespace> -o jsonpath='{.data.ca-cert\.pem}' | base64 -d | openssl x509 -noout -subject -enddate
+   ```
+   <!-- markdownlint-enable line-length -->
+
+3. Read the certificate that the identity provider presents, and compare its issuer and names with the CA certificate
+   and with `idpAddress`.
+
+   <!-- markdownlint-disable line-length -->
+   ```bash
+   openssl s_client -connect <idp-host>:<idp-port> -servername <idp-host> </dev/null 2>/dev/null | openssl x509 -noout -issuer -ext subjectAltName
+   ```
+   <!-- markdownlint-enable line-length -->
+
+**How to fix:**
+
+1. If the chain fails, set the CA certificate that signed the certificate of the identity provider. For a self-signed
+   certificate, use the certificate itself. Include intermediate certificates in the same PEM file if the identity
+   provider does not send them.
+2. If the hostname fails, set `idpAddress` and the endpoints to a name that the certificate lists, or reissue the
+   certificate with the name in use.
+3. If the secret was updated in place, restart the query pod.
+
+   ```bash
+   kubectl rollout restart deployment/<jaeger-service-name>-query -n <namespace>
+   ```
+
+**Data to collect:**
+
+* The `cluster.auth.ssl` counters from the Envoy admin endpoint.
+* The subject, issuer, and names of the certificate that the identity provider presents.
+* The subject and expiry date of the configured CA certificate.
+
+**Sources:**
+
+<!-- markdownlint-disable line-length -->
+* [Securing Envoy — Envoy](https://www.envoyproxy.io/docs/envoy/latest/start/quick-start/securing)
+* [Cluster TLS statistics — Envoy](https://www.envoyproxy.io/docs/envoy/latest/configuration/upstream/cluster_manager/cluster_stats)
+<!-- markdownlint-enable line-length -->
+
 ### Jaeger UI returns 503 after a successful login
 
 **Symptoms:**
@@ -2003,9 +2083,11 @@ chart's defaults.
 * **Envoy runs as root.** The chart sets `ENVOY_UID` and `ENVOY_GID` to `0`, overriding the image's non-root default.
   Envoy's documentation notes that running as root "has the potential to weaken the security of your running
   container".
-* **The identity provider's certificate is not verified.** The `auth` cluster's TLS context sets only `sni` and no
-  validation context. Per Envoy's documentation, certificate verification is not enabled unless the validation context
-  specifies trusted authority certificates — so the token exchange is not protected against an interposed server.
+* **The identity provider's certificate is not verified by default.** Unless `proxy.oauth2.tls.ca` or
+  `proxy.oauth2.tls.existingSecret` is set, the `auth` cluster's TLS context sets only `sni` and no validation context.
+  Per Envoy's documentation, certificate verification is not enabled unless the validation context specifies trusted
+  authority certificates — so the token exchange is not protected against an interposed server. Set one of the two
+  parameters to turn the verification on.
 * **User authorization is off by default.** Unless `proxy.oauth2.authorization.enabled` is `true`, any user who can
   authenticate against the configured realm reaches the UI. Turn it on and set `allowedRoles` or `allowedUsers` to
   restrict access.

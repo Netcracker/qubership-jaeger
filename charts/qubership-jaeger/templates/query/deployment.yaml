@@ -43,11 +43,16 @@ spec:
         {{- if .Values.query.labels }}
         {{- toYaml .Values.query.labels | nindent 8 }}
         {{- end }}
+      {{- $proxyCaChecksum := and (include "proxy.oauth2.tls.caEnabled" .) (not (.Values.proxy.oauth2.tls).existingSecret) }}
       {{- if or .Values.query.annotations .Values.proxy.install }}
       annotations:
         {{- if .Values.proxy.install }}
         # Envoy reads its configuration only at startup, so a configuration change must restart the pod.
         checksum/proxy-config: {{ include (print $.Template.BasePath "/query/auth-proxy/proxy-secret-config.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if $proxyCaChecksum }}
+        # Envoy reads the CA certificate only at startup, so a new certificate must restart the pod.
+        checksum/proxy-oauth2-ca: {{ (.Values.proxy.oauth2.tls).ca | trim | sha256sum }}
         {{- end }}
         {{- with .Values.query.annotations }}
         {{- toYaml . | nindent 8 }}
@@ -201,6 +206,11 @@ spec:
               mountPath: /envoy/oauth2
               readOnly: true
             {{- end }}
+            {{- if include "proxy.oauth2.tls.caEnabled" . }}
+            - name: oauth2-idp-ca
+              mountPath: /envoy/idp-ca
+              readOnly: true
+            {{- end }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           securityContext:
@@ -278,6 +288,15 @@ spec:
           secret:
             secretName: oauth2-token
             defaultMode: 420
+          {{- end }}
+          {{- if include "proxy.oauth2.tls.caEnabled" . }}
+        - name: oauth2-idp-ca
+          secret:
+            secretName: {{ include "proxy.oauth2.tls.secretName" . }}
+            defaultMode: 420
+            items:
+            - key: ca-cert.pem
+              path: ca-cert.pem
           {{- end }}
         {{- end }}
         {{- with (include "jaeger.certificateVolumes" . | trim) }}

@@ -2854,6 +2854,25 @@
               "title": "idpPort",
               "type": "integer"
             },
+            "tls": {
+              "description": "TLS settings for the connection to the identity provider.\nThey apply only when authorizationEndpoint starts with https://.\n",
+              "properties": {
+                "ca": {
+                  "default": "",
+                  "description": "CA certificate in PEM format that signed the certificate of the identity provider.\nUse it for a self-signed certificate or a certificate signed by an internal CA.\nWhen ca or existingSecret is set, the proxy verifies the certificate chain of the identity provider,\nand checks that the certificate is issued for idpAddress. Otherwise the certificate is not verified.\nType: string\nMandatory: no\nDefault: no\n",
+                  "title": "ca",
+                  "type": "string"
+                },
+                "existingSecret": {
+                  "default": "",
+                  "description": "Name of an existing secret with the CA certificate in the ca-cert.pem key. If specified, ca is ignored.\nType: string\nMandatory: no\nDefault: no\n",
+                  "title": "existingSecret",
+                  "type": "string"
+                }
+              },
+              "title": "tls",
+              "type": "object"
+            },
             "tokenEndpoint": {
               "default": "",
               "description": "Endpoint on the authorization server to retrieve the access token from.\nType: string\nMandatory: yes\nDefault: no\nExample: \"http://my-keycloak.com/auth/realms/test/protocol/openid-connect/token\"\n",
