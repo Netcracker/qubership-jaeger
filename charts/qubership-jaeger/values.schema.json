@@ -2753,6 +2753,77 @@
         "oauth2": {
           "description": "Settings for oauth2 authentication.\n",
           "properties": {
+            "authorization": {
+              "description": "Settings for the authorization check that runs after a successful OAuth2 login.\nA user gets access if the access token carries one of allowedRoles, or if the user is in allowedUsers.\nThe access token must be a JWT.\n",
+              "properties": {
+                "allowedRoles": {
+                  "default": [],
+                  "description": "Roles or groups that grant access. The match is exact and case-sensitive.\nType: array\nMandatory: no\nDefault: []\n",
+                  "items": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "title": "allowedRoles",
+                  "type": "array"
+                },
+                "allowedUsers": {
+                  "default": [],
+                  "description": "Users that get access regardless of their roles. The match is exact and case-sensitive.\nType: array\nMandatory: no\nDefault: []\n",
+                  "items": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "title": "allowedUsers",
+                  "type": "array"
+                },
+                "audiences": {
+                  "default": [],
+                  "description": "Accepted values of the aud claim. Leave empty to skip the audience check.\nType: array\nMandatory: no\nDefault: []\n",
+                  "items": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "title": "audiences",
+                  "type": "array"
+                },
+                "enabled": {
+                  "default": false,
+                  "description": "Enable the authorization check. When disabled, every user who can log in gets access.\nType: boolean\nDefault: false\n",
+                  "title": "enabled",
+                  "type": "boolean"
+                },
+                "issuer": {
+                  "default": "",
+                  "description": "Expected value of the iss claim. Leave empty to skip the issuer check.\nType: string\nMandatory: no\nDefault: no\nExample: \"http://my-keycloak.com/auth/realms/test\"\n",
+                  "title": "issuer",
+                  "type": "string"
+                },
+                "jwksUri": {
+                  "default": "",
+                  "description": "URL of the identity provider JWKS endpoint. Must be served by idpAddress.\nType: string\nMandatory: yes, when enabled is true\nDefault: no\nExample: \"http://my-keycloak.com/auth/realms/test/protocol/openid-connect/certs\"\n",
+                  "title": "jwksUri",
+                  "type": "string"
+                },
+                "rolesClaim": {
+                  "default": ["realm_access", "roles"],
+                  "description": "Path to the claim that holds the roles or groups of the user, one key per list item.\nThe claim value can be a list of strings or a single string.\nType: array\nMandatory: no\nDefault: [\"realm_access\", \"roles\"]\n",
+                  "items": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "title": "rolesClaim",
+                  "type": "array"
+                },
+                "userClaim": {
+                  "default": "preferred_username",
+                  "description": "Name of the top-level claim that identifies the user.\nType: string\nMandatory: no\nDefault: \"preferred_username\"\n",
+                  "title": "userClaim",
+                  "type": "string"
+                }
+              },
+              "title": "authorization",
+              "type": "object"
+            },
             "authorizationEndpoint": {
               "default": "",
               "description": "The endpoint to which the user is redirected for authorization when a request is unauthorized.\nType: string\nMandatory: yes\nDefault: no\nExample: \"http://my-keycloak.com/auth/realms/test/protocol/openid-connect/auth\"\n",

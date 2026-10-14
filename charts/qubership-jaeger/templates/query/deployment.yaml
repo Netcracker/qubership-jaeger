@@ -43,9 +43,15 @@ spec:
         {{- if .Values.query.labels }}
         {{- toYaml .Values.query.labels | nindent 8 }}
         {{- end }}
-      {{- if .Values.query.annotations }}
+      {{- if or .Values.query.annotations .Values.proxy.install }}
       annotations:
-        {{- toYaml .Values.query.annotations | nindent 8 }}
+        {{- if .Values.proxy.install }}
+        # Envoy reads its configuration only at startup, so a configuration change must restart the pod.
+        checksum/proxy-config: {{ include (print $.Template.BasePath "/query/auth-proxy/proxy-secret-config.yaml") . | sha256sum }}
+        {{- end }}
+        {{- with .Values.query.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
     spec:
       {{- with .Values.query.imagePullSecrets }}

@@ -444,6 +444,28 @@ Image can be found from:
 {{- end -}}
 
 {{/*
+Validate the proxy.oauth2.authorization parameters.
+Rendering fails instead of producing a policy that cannot be evaluated or that denies every user.
+*/}}
+{{- define "proxy.oauth2.authorization.validate" -}}
+  {{- $authz := .Values.proxy.oauth2.authorization -}}
+  {{- if $authz.enabled -}}
+    {{- if not $authz.jwksUri -}}
+      {{- fail "proxy.oauth2.authorization.enabled is true, but jwksUri is empty. Set proxy.oauth2.authorization.jwksUri to the JWKS endpoint of the identity provider." -}}
+    {{- end -}}
+    {{- if not (or $authz.allowedRoles $authz.allowedUsers) -}}
+      {{- fail "proxy.oauth2.authorization.enabled is true, but allowedRoles and allowedUsers are both empty, so no user can get access. Set at least one of them." -}}
+    {{- end -}}
+    {{- if and $authz.allowedRoles (not $authz.rolesClaim) -}}
+      {{- fail "proxy.oauth2.authorization.allowedRoles is set, but rolesClaim is empty. Set proxy.oauth2.authorization.rolesClaim to the path of the roles claim." -}}
+    {{- end -}}
+    {{- if and $authz.allowedUsers (not $authz.userClaim) -}}
+      {{- fail "proxy.oauth2.authorization.allowedUsers is set, but userClaim is empty. Set proxy.oauth2.authorization.userClaim to the name of the user claim." -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
 Find a hotrod example image in various places.
 Image can be found from:
 * from default values .Values.hotrod.image

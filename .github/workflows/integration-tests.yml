@@ -58,6 +58,10 @@ jobs:
       run: bash qubership-jaeger/charts/qubership-jaeger/tests/security_hardening_test.sh
       shell: bash
 
+    - name: Validate proxy authorization
+      run: bash qubership-jaeger/charts/qubership-jaeger/tests/proxy_authorization_test.sh
+      shell: bash
+
   Run-Integration-Tests:
     runs-on: ubuntu-latest
     timeout-minutes: 25
