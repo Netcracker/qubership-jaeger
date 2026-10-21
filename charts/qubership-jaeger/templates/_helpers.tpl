@@ -820,12 +820,6 @@ Render index options for Jaeger v2 Elasticsearch/OpenSearch storage.
 */}}
 {{- define "elasticsearch.runtime.indexOptions" -}}
 {{- $index := . -}}
-{{- if hasKey $index "dateLayout" }}
-date_layout: {{ get $index "dateLayout" | quote }}
-{{- end }}
-{{- if hasKey $index "rolloverFrequency" }}
-rollover_frequency: {{ get $index "rolloverFrequency" | quote }}
-{{- end }}
 {{- if hasKey $index "shards" }}
 shards: {{ get $index "shards" }}
 {{- end }}
@@ -838,39 +832,65 @@ priority: {{ get $index "priority" }}
 {{- end -}}
 
 {{/*
+Render the rotation block of one index type for Jaeger v2 Elasticsearch/OpenSearch storage.
+Precedence: explicit indices.<type>.rotation > useIlm (auto_rollover)
+> useAliases (manual_rollover) > dateLayout/rolloverFrequency (periodic).
+Arguments: list of the root context and the elasticsearch.indices.<type> values.
+*/}}
+{{- define "elasticsearch.runtime.rotation" -}}
+{{- $root := index . 0 -}}
+{{- $index := index . 1 | default dict -}}
+{{- $explicit := get $index "rotation" -}}
+{{- if $explicit }}
+  {{- if or (hasKey $index "dateLayout") (hasKey $index "rolloverFrequency") }}
+    {{- fail "elasticsearch.indices.<type>.rotation cannot be combined with dateLayout or rolloverFrequency; use rotation.periodic instead" }}
+  {{- end }}
+rotation:
+  {{- toYaml $explicit | nindent 2 }}
+{{- else if eq (toString $root.Values.elasticsearch.useIlm) "true" }}
+  {{- if ne (toString $root.Values.elasticsearch.useAliases) "true" }}
+    {{- fail "elasticsearch.useIlm=true requires elasticsearch.useAliases=true. Alternatively set elasticsearch.indices.<type>.rotation.auto_rollover explicitly." }}
+  {{- end }}
+  {{- if ne (toString (get $root.Values.elasticsearch "createMappings")) "false" }}
+    {{- fail "elasticsearch.useIlm=true requires elasticsearch.createMappings=false, so that Jaeger does not overwrite the index templates created by the rollover init job. The chart does not create the ILM/ISM policy; it must already exist. Alternatively set elasticsearch.indices.<type>.rotation.auto_rollover explicitly." }}
+  {{- end }}
+rotation:
+  auto_rollover: {}
+{{- else if eq (toString $root.Values.elasticsearch.useAliases) "true" }}
+rotation:
+  manual_rollover: {}
+{{- else if or (hasKey $index "dateLayout") (hasKey $index "rolloverFrequency") }}
+rotation:
+  periodic:
+    {{- if hasKey $index "dateLayout" }}
+    date_layout: {{ get $index "dateLayout" | quote }}
+    {{- end }}
+    {{- if hasKey $index "rolloverFrequency" }}
+    rollover_frequency: {{ get $index "rolloverFrequency" | quote }}
+    {{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Render indices section for Jaeger v2 Elasticsearch/OpenSearch storage.
 */}}
 {{- define "elasticsearch.runtime.indices" -}}
 {{- if .Values.elasticsearch.indexPrefix }}
 index_prefix: {{ .Values.elasticsearch.indexPrefix | quote }}
 {{- end }}
-{{- with .Values.elasticsearch.indices }}
-{{- with .spans }}
-{{- $spans := include "elasticsearch.runtime.indexOptions" . | trim }}
-{{- if $spans }}
-spans:
-{{ $spans | nindent 2 }}
+{{- $root := . }}
+{{- $configured := .Values.elasticsearch.indices | default dict }}
+{{- range $type := list "spans" "services" "dependencies" "sampling" }}
+{{- $index := get $configured $type | default dict }}
+{{- $options := include "elasticsearch.runtime.indexOptions" $index | trim }}
+{{- $rotation := include "elasticsearch.runtime.rotation" (list $root $index) | trim }}
+{{- if or $options $rotation }}
+{{ $type }}:
+{{- if $options }}
+{{- $options | nindent 2 }}
 {{- end }}
-{{- end }}
-{{- with .services }}
-{{- $services := include "elasticsearch.runtime.indexOptions" . | trim }}
-{{- if $services }}
-services:
-{{ $services | nindent 2 }}
-{{- end }}
-{{- end }}
-{{- with .dependencies }}
-{{- $dependencies := include "elasticsearch.runtime.indexOptions" . | trim }}
-{{- if $dependencies }}
-dependencies:
-{{ $dependencies | nindent 2 }}
-{{- end }}
-{{- end }}
-{{- with .sampling }}
-{{- $sampling := include "elasticsearch.runtime.indexOptions" . | trim }}
-{{- if $sampling }}
-sampling:
-{{ $sampling | nindent 2 }}
+{{- if $rotation }}
+{{- $rotation | nindent 2 }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -936,14 +956,8 @@ elasticsearch:
   indices:
 {{ $indices | nindent 4 }}
   {{- end }}
-  {{- if hasKey .Values.elasticsearch "useAliases" }}
-  use_aliases: {{ .Values.elasticsearch.useAliases }}
-  {{- end }}
   {{- if hasKey .Values.elasticsearch "createMappings" }}
   create_mappings: {{ .Values.elasticsearch.createMappings }}
-  {{- end }}
-  {{- if hasKey .Values.elasticsearch "useIlm" }}
-  use_ilm: {{ .Values.elasticsearch.useIlm }}
   {{- end }}
   {{- if hasKey .Values.elasticsearch "maxDocCount" }}
   max_doc_count: {{ .Values.elasticsearch.maxDocCount }}

@@ -66,6 +66,31 @@ jobs:
       run: bash qubership-jaeger/charts/qubership-jaeger/tests/proxy_oauth2_tls_test.sh
       shell: bash
 
+    - name: Install Jaeger for configuration validation
+      env:
+        JAEGER_VERSION: 2.20.0
+        # The release's jaeger-<version>-linux-amd64.sha256sum.txt only lists the extracted
+        # executables, not the .tar.gz, so the archive hash is pinned here. It was computed
+        # from the official release asset and is not published by Jaeger. When updating
+        # JAEGER_VERSION, recompute it and copy the binary hash from the release's sha256sum.txt.
+        JAEGER_ARCHIVE_SHA256: c967368ba09be356089ef7e8aab2a76d170dc007ff6ccf7925c8167ede2900d7
+        # Published in the release's sha256sum.txt for jaeger-<version>-linux-amd64/jaeger.
+        JAEGER_BINARY_SHA256: 9ee6dc46b776137ea3fa4d56a54a14d64e4b97714441b4196fb519af2c25e5c8
+      run: |
+        archive="jaeger-${JAEGER_VERSION}-linux-amd64.tar.gz"
+        mkdir -p "${RUNNER_TEMP}/jaeger"
+        cd "${RUNNER_TEMP}/jaeger"
+        curl -fsSLO "https://github.com/jaegertracing/jaeger/releases/download/v${JAEGER_VERSION}/${archive}"
+        echo "${JAEGER_ARCHIVE_SHA256}  ${archive}" | sha256sum -c -
+        tar -xzf "${archive}"
+        echo "${JAEGER_BINARY_SHA256}  jaeger-${JAEGER_VERSION}-linux-amd64/jaeger" | sha256sum -c -
+        echo "JAEGER_BIN=${RUNNER_TEMP}/jaeger/jaeger-${JAEGER_VERSION}-linux-amd64/jaeger" >> "${GITHUB_ENV}"
+      shell: bash
+
+    - name: Validate Elasticsearch rotation configuration
+      run: bash qubership-jaeger/charts/qubership-jaeger/tests/elasticsearch_rotation_test.sh
+      shell: bash
+
   Run-Integration-Tests:
     runs-on: ubuntu-latest
     timeout-minutes: 25
