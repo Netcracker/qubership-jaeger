@@ -277,23 +277,23 @@ spec:
             items:
               - key: {{ include "query.runtimeConfig.key" . }}
                 path: config.yaml
-            defaultMode: 420
+            defaultMode: 0400
         {{- if .Values.proxy.install }}
         - name: envoy-config
           secret:
             secretName: proxy-config
-            defaultMode: 420
+            defaultMode: 0400
           {{- if eq .Values.proxy.type "oauth2" }}
         - name: oauth2-token
           secret:
             secretName: oauth2-token
-            defaultMode: 420
+            defaultMode: 0400
           {{- end }}
           {{- if include "proxy.oauth2.tls.caEnabled" . }}
         - name: oauth2-idp-ca
           secret:
             secretName: {{ include "proxy.oauth2.tls.secretName" . }}
-            defaultMode: 420
+            defaultMode: 0400
             items:
             - key: ca-cert.pem
               path: ca-cert.pem
