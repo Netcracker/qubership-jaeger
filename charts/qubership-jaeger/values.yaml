@@ -1375,7 +1375,7 @@ query:
   # -- Jaeger version of `query.image`, for example `2.20.0`. It selects the
   # Elasticsearch/OpenSearch index rotation format of the query configuration:
   # `indices.<type>.rotation` for 2.20.0 and later, `use_aliases`/`use_ilm` before.
-  # If empty, the version is taken from the image tag (`2.20.0` or `v2.20.0`, a pre-release
+  # If empty, the version is taken from the image tag (`2.20.0` or `v2.20.0`, a prerelease
   # suffix such as `2.20.0-custom` counts as that version, a digest suffix is ignored).
   # If the tag is not a version (digest only, `latest`, custom tags), no rotation settings
   # are rendered, and configuring `useAliases`, `useIlm`, `dateLayout`, `rolloverFrequency` or

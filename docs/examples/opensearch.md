@@ -39,7 +39,7 @@ Automatic index management for large deployments.
 
 **Key parameters:**
 - `indexCleaner.numberOfDays: 7` - Retain 7 days of data
-- `elasticsearch.useAliases: true` - Renders `indices.<type>.rotation.manual_rollover` (Jaeger 2.20.0 and later) or `use_aliases: true` (older Jaeger versions) in the query service configuration, so the query service reads through the rollover aliases (for example `<prefix>-jaeger-span-read`). The collector configuration is not generated from this value and is unchanged. This example does not set it; add it together with `rollover.install`
+- `elasticsearch.useAliases: true` - Makes the query service read through the rollover aliases (for example `<prefix>-jaeger-span-read`) by rendering `indices.<type>.rotation.manual_rollover` (Jaeger 2.20.0+) or `use_aliases: true` (older versions). The collector configuration does not use this value. This example does not set it; add it together with `rollover.install`
 - `elasticsearch.indices.<type>.rotation` - Optional explicit rotation (`periodic`, `manual_rollover` or `auto_rollover`) in the query service configuration; takes precedence over `useAliases`, `useIlm`, `dateLayout` and `rolloverFrequency`. Requires Jaeger 2.20.0 or later
 - `query.jaegerVersion` - The rotation format follows the Jaeger version of `query.image`, taken from its tag. Set this value when the tag is not a version (digest only, `latest`, custom tags); otherwise the rotation settings above fail the rendering
 - `elasticsearch.rollover.initHook.extraEnv` - Pass init job env such as `SHARDS` and `REPLICAS`

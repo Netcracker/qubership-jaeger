@@ -166,20 +166,20 @@ assert_count rotation_example '^\s+shards: 1$' 4
 # Explicit per-index rotation takes precedence over useAliases, other types keep manual_rollover.
 cat >"${work_dir}/explicit-values.yaml" <<'EOF'
 elasticsearch:
-  useAliases: true
-  indexPrefix: prod
-  indices:
-    spans:
-      shards: 3
-      rotation:
-        periodic:
-          date_layout: "2006-01-02"
-    services:
-      rotation:
-        auto_rollover:
-          read_alias: custom-read
-          write_alias: custom-write
-          policy_name: jaeger-ilm-policy
+    useAliases: true
+    indexPrefix: prod
+    indices:
+        spans:
+            shards: 3
+            rotation:
+                periodic:
+                    date_layout: "2006-01-02"
+        services:
+            rotation:
+                auto_rollover:
+                    read_alias: custom-read
+                    write_alias: custom-write
+                    policy_name: jaeger-ilm-policy
 EOF
 render rotation_explicit --set query.image="${rotation_image}" -f "${work_dir}/explicit-values.yaml"
 assert_no_deprecated rotation_explicit
@@ -209,11 +209,11 @@ done
 
 cat >"${work_dir}/rotation-and-date-values.yaml" <<'EOF'
 elasticsearch:
-  indices:
-    spans:
-      dateLayout: "2006-01-02"
-      rotation:
-        manual_rollover: {}
+    indices:
+        spans:
+            dateLayout: "2006-01-02"
+            rotation:
+                manual_rollover: {}
 EOF
 expect_render_error rotation_and_date \
     "cannot be combined with dateLayout or rolloverFrequency" \
