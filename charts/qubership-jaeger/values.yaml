@@ -188,6 +188,11 @@ elasticsearch:
   #
   # useAliases: true
   # createMappings: false
+  # `useIlm: true` renders `rotation.auto_rollover` for all index types in the query
+  # service configuration for Jaeger 2.20.0 and later, and `use_ilm: true` for older
+  # versions (the collector configuration is unchanged). It requires
+  # `useAliases: true` and `createMappings: false`; the chart does not create the
+  # ILM/ISM policy. For finer control use `indices.<type>.rotation` below (Jaeger 2.20.0+).
   # useIlm: true
   #
   # maxDocCount: 20000
@@ -214,6 +219,15 @@ elasticsearch:
   #   configFile: /etc/jaeger/tags-as-fields.yaml
   #   include: http.status_code,error
   #
+  # Index rotation is rendered in the query service configuration only. Its format
+  # depends on the Jaeger version of `query.image` (see `query.jaegerVersion`):
+  # * Jaeger 2.20.0 and later: `indices.<type>.rotation`, with this precedence:
+  #   explicit `rotation` > `useIlm` (auto_rollover) > `useAliases` (manual_rollover)
+  #   > `dateLayout`/`rolloverFrequency` (periodic). `rotation` accepts exactly one of
+  #   `periodic`, `manual_rollover` or `auto_rollover` and cannot be combined with
+  #   `dateLayout`/`rolloverFrequency` on the same index type.
+  # * Older versions: `use_aliases`, `use_ilm` and index level `date_layout`/`rollover_frequency`.
+  #   `rotation` is not supported and fails the rendering.
   indices: {}
     # spans:
     #   dateLayout: "2006-01-02"
@@ -221,6 +235,12 @@ elasticsearch:
     #   shards: 1
     #   replicas: 0
     #   priority: 100
+    #   # Alternative to dateLayout/rolloverFrequency/useAliases/useIlm, Jaeger 2.20.0+ only:
+    #   rotation:
+    #     auto_rollover:
+    #       read_alias: jaeger-span-read
+    #       write_alias: jaeger-span-write
+    #       policy_name: jaeger-ilm-policy
     #
     # services:
     #   dateLayout: "2006-01-02"
@@ -286,12 +306,15 @@ elasticsearch:
 
       # insecureSkipVerify: false
 
-  # -- Enables Jaeger Elasticsearch/OpenSearch read/write aliases by setting
-  # `use_aliases: true` in jaeger_storage Elasticsearch backend configuration.
-  # This option is required when Elasticsearch/OpenSearch rollover is used.
-  # Rollover init job must create aliases/templates before collector and query
-  # start using this option. Without aliases Jaeger writes to daily indices such
-  # as `jaeger-span-YYYY-MM-DD`.
+  # -- Makes the query service use Elasticsearch/OpenSearch rollover aliases by
+  # rendering `indices.<type>.rotation.manual_rollover` for all index types (Jaeger 2.20.0
+  # and later) or `use_aliases` (older Jaeger versions) in the
+  # query jaeger_storage Elasticsearch backend configuration.
+  # The collector configuration is not generated from this value and is not changed by it.
+  # This option is required for the query service when Elasticsearch/OpenSearch rollover is used.
+  # Rollover init job must create aliases/templates before the query service
+  # starts using this option. Without aliases the query service reads daily indices
+  # such as `jaeger-span-YYYY-MM-DD`.
   useAliases: false
 
   indexCleaner:
@@ -456,10 +479,10 @@ elasticsearch:
     # priorityClassName: "priorityClassName"
 
   # -- `elasticsearch.rollover.install=true` only creates and manages rollover
-  # indices/aliases. Collector and query must also be configured with
-  # `elasticsearch.useAliases=true`; otherwise they continue writing to daily
-  # indices and may fail with `index_not_found_exception` if index auto-creation
-  # is disabled.
+  # indices/aliases. The query service reads them only if it is configured with
+  # `elasticsearch.useAliases=true` (or an explicit `elasticsearch.indices.<type>.rotation`);
+  # otherwise it queries daily indices. These settings are rendered into the query
+  # configuration only; the collector configuration is not generated from them.
   # @default -- see the rows below
   rollover:
     # -- Allow disabling create rollover cronJob.
@@ -1348,6 +1371,16 @@ query:
 
   # -- A docker image to use for query deployment.
   # image: "jaegertracing/jaeger:2.9.0"
+
+  # -- Jaeger version of `query.image`, for example `2.20.0`. It selects the
+  # Elasticsearch/OpenSearch index rotation format of the query configuration:
+  # `indices.<type>.rotation` for 2.20.0 and later, `use_aliases`/`use_ilm` before.
+  # If empty, the version is taken from the image tag (`2.20.0` or `v2.20.0`, a prerelease
+  # suffix such as `2.20.0-custom` counts as that version, a digest suffix is ignored).
+  # If the tag is not a version (digest only, `latest`, custom tags), no rotation settings
+  # are rendered, and configuring `useAliases`, `useIlm`, `dateLayout`, `rolloverFrequency` or
+  # `indices.<type>.rotation` fails the rendering until this value is set.
+  jaegerVersion: ""
 
   # -- The imagePullPolicy for a container and the tag of the image affect when the kubelet
   # attempts to pull (download) the specified image. Available value : "IfNotPresent", "Always" and "Never"
