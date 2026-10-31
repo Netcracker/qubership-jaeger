@@ -167,6 +167,8 @@ assert_count '^[[:space:]]+type: RuntimeDefault$' 10
 assert_count '^[[:space:]]+runAsUser: 1000$' 10
 assert_count '^[[:space:]]+runAsGroup: 1000$' 10
 assert_count '^[[:space:]]+fsGroup: 1000$' 10
+assert_count '^[[:space:]]+(secretName:|projected:$)' 10
+assert_count '^[[:space:]]+defaultMode: 0400$' 10
 assert_count '^[[:space:]]+allowPrivilegeEscalation: false$' 13
 assert_count '^[[:space:]]+readOnlyRootFilesystem: true$' 13
 assert_count '^[[:space:]]+- ALL$' 13
