@@ -124,5 +124,6 @@ spec:
         - name: {{ .name }}
           secret:
             secretName: {{ .secretName }}
+            defaultMode: 0400
       {{- end }}
 {{- end }}

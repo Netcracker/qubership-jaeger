@@ -98,6 +98,11 @@ The chart detects OpenShift through the cluster API unless `PAAS_PLATFORM` provi
 Existing init containers do not receive container-level hardening settings. They still inherit the pod-level
 security context, including `runAsNonRoot` and the platform-specific user and group settings.
 
+The chart mounts every volume backed by a Kubernetes Secret with `defaultMode: 0400`. The kubelet adds group read
+access for the pod's `fsGroup`, so the files appear as `0440` and only the pod's own user and group can read them.
+Pods without an `fsGroup` cannot read their Secret volumes. On OpenShift, use a Security Context Constraint that
+assigns `fsGroup`, such as `restricted-v2`.
+
 ### Azure
 
 <!-- markdownlint-disable line-length table-column-style -->
