@@ -403,6 +403,31 @@ Image can be found from:
 {{- end -}}
 
 {{/*
+Return the Jaeger version of the query image without the leading "v", or an empty string
+when it cannot be determined. .Values.query.jaegerVersion takes precedence over the image tag.
+Only the tag of the last path segment is used (a registry port is not a tag) and a digest
+suffix is ignored, so "registry:5000/jaeger:2.20.0@sha256:..." resolves to 2.20.0.
+*/}}
+{{- define "query.jaegerVersion" -}}
+  {{- $semver := "^v?[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?$" -}}
+  {{- if .Values.query.jaegerVersion -}}
+    {{- $version := toString .Values.query.jaegerVersion -}}
+    {{- if not (regexMatch $semver $version) -}}
+      {{- fail (printf "query.jaegerVersion %q is not a semantic version such as 2.20.0" $version) -}}
+    {{- end -}}
+    {{- trimPrefix "v" $version -}}
+  {{- else -}}
+    {{- $name := include "query.image" . | splitList "@" | first | splitList "/" | last -}}
+    {{- if contains ":" $name -}}
+      {{- $tag := splitList ":" $name | last -}}
+      {{- if regexMatch $semver $tag -}}
+        {{- trimPrefix "v" $tag -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
 Return collector runtime config secret name.
 */}}
 {{- define "collector.runtimeConfig.secretName" -}}
@@ -816,15 +841,67 @@ Return password for OpenSearch/Elasticsearch.
 {{- end -}}
 
 {{/*
+Return the index rotation config format supported by the query image:
+* "rotation" - indices.<type>.rotation, Jaeger 2.20.0 and later. Jaeger 2.20.0 rejects the legacy keys.
+* "legacy" - use_aliases/use_ilm and index level date_layout/rollover_frequency, Jaeger before 2.20.0.
+  These versions reject indices.<type>.rotation.
+* "none" - the version is unknown and no rotation is configured, so neither format is rendered.
+If the version is unknown and rotation is configured, rendering fails instead of guessing.
+*/}}
+{{- define "elasticsearch.runtime.rotationFormat" -}}
+  {{- $version := include "query.jaegerVersion" . -}}
+  {{- if $version -}}
+    {{- if semverCompare ">=2.20.0-0" $version -}}
+      {{- print "rotation" -}}
+    {{- else -}}
+      {{- print "legacy" -}}
+    {{- end -}}
+  {{- else -}}
+    {{- $es := .Values.elasticsearch -}}
+    {{- $configured := or (eq (toString $es.useAliases) "true") (eq (toString $es.useIlm) "true") -}}
+    {{- range $index := values ($es.indices | default dict) -}}
+      {{- if and (kindIs "map" $index) (or (hasKey $index "rotation") (hasKey $index "dateLayout") (hasKey $index "rolloverFrequency")) -}}
+        {{- $configured = true -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if $configured -}}
+      {{- fail (printf "cannot determine the Jaeger version of query image %q, it selects the Elasticsearch/OpenSearch rotation config format (indices.<type>.rotation since Jaeger 2.20.0, use_aliases/use_ilm before). Set query.jaegerVersion, for example to 2.20.0." (include "query.image" .)) -}}
+    {{- end -}}
+    {{- print "none" -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Fail if elasticsearch.useIlm=true lacks the settings Jaeger requires for it.
+Arguments: list of the root context and the rotation format.
+*/}}
+{{- define "elasticsearch.runtime.validateIlm" -}}
+{{- $root := index . 0 -}}
+{{- $hint := "" -}}
+{{- if eq (index . 1) "rotation" -}}
+  {{- $hint = " Alternatively set elasticsearch.indices.<type>.rotation.auto_rollover explicitly." -}}
+{{- end -}}
+{{- if ne (toString $root.Values.elasticsearch.useAliases) "true" }}
+  {{- fail (printf "elasticsearch.useIlm=true requires elasticsearch.useAliases=true.%s" $hint) }}
+{{- end }}
+{{- if ne (toString (get $root.Values.elasticsearch "createMappings")) "false" }}
+  {{- fail (printf "elasticsearch.useIlm=true requires elasticsearch.createMappings=false, so that Jaeger does not overwrite the index templates created by the rollover init job. The chart does not create the ILM/ISM policy; it must already exist.%s" $hint) }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Render index options for Jaeger v2 Elasticsearch/OpenSearch storage.
+Arguments: list of the elasticsearch.indices.<type> values and the rotation format.
 */}}
 {{- define "elasticsearch.runtime.indexOptions" -}}
-{{- $index := . -}}
+{{- $index := index . 0 -}}
+{{- if eq (index . 1) "legacy" }}
 {{- if hasKey $index "dateLayout" }}
 date_layout: {{ get $index "dateLayout" | quote }}
 {{- end }}
 {{- if hasKey $index "rolloverFrequency" }}
 rollover_frequency: {{ get $index "rolloverFrequency" | quote }}
+{{- end }}
 {{- end }}
 {{- if hasKey $index "shards" }}
 shards: {{ get $index "shards" }}
@@ -838,39 +915,67 @@ priority: {{ get $index "priority" }}
 {{- end -}}
 
 {{/*
+Render the rotation block of one index type for Jaeger v2 Elasticsearch/OpenSearch storage.
+Precedence: explicit indices.<type>.rotation > useIlm (auto_rollover)
+> useAliases (manual_rollover) > dateLayout/rolloverFrequency (periodic).
+Arguments: list of the root context and the elasticsearch.indices.<type> values.
+*/}}
+{{- define "elasticsearch.runtime.rotation" -}}
+{{- $root := index . 0 -}}
+{{- $index := index . 1 | default dict -}}
+{{- $explicit := get $index "rotation" -}}
+{{- if $explicit }}
+  {{- if or (hasKey $index "dateLayout") (hasKey $index "rolloverFrequency") }}
+    {{- fail "elasticsearch.indices.<type>.rotation cannot be combined with dateLayout or rolloverFrequency; use rotation.periodic instead" }}
+  {{- end }}
+rotation:
+  {{- toYaml $explicit | nindent 2 }}
+{{- else if eq (toString $root.Values.elasticsearch.useIlm) "true" }}
+  {{- include "elasticsearch.runtime.validateIlm" (list $root "rotation") }}
+rotation:
+  auto_rollover: {}
+{{- else if eq (toString $root.Values.elasticsearch.useAliases) "true" }}
+rotation:
+  manual_rollover: {}
+{{- else if or (hasKey $index "dateLayout") (hasKey $index "rolloverFrequency") }}
+rotation:
+  periodic:
+    {{- if hasKey $index "dateLayout" }}
+    date_layout: {{ get $index "dateLayout" | quote }}
+    {{- end }}
+    {{- if hasKey $index "rolloverFrequency" }}
+    rollover_frequency: {{ get $index "rolloverFrequency" | quote }}
+    {{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Render indices section for Jaeger v2 Elasticsearch/OpenSearch storage.
+Arguments: list of the root context and the rotation format.
 */}}
 {{- define "elasticsearch.runtime.indices" -}}
-{{- if .Values.elasticsearch.indexPrefix }}
-index_prefix: {{ .Values.elasticsearch.indexPrefix | quote }}
+{{- $root := index . 0 }}
+{{- $format := index . 1 }}
+{{- if $root.Values.elasticsearch.indexPrefix }}
+index_prefix: {{ $root.Values.elasticsearch.indexPrefix | quote }}
 {{- end }}
-{{- with .Values.elasticsearch.indices }}
-{{- with .spans }}
-{{- $spans := include "elasticsearch.runtime.indexOptions" . | trim }}
-{{- if $spans }}
-spans:
-{{ $spans | nindent 2 }}
+{{- $configured := $root.Values.elasticsearch.indices | default dict }}
+{{- range $type := list "spans" "services" "dependencies" "sampling" }}
+{{- $index := get $configured $type | default dict }}
+{{- $options := include "elasticsearch.runtime.indexOptions" (list $index $format) | trim }}
+{{- $rotation := "" }}
+{{- if eq $format "rotation" }}
+{{- $rotation = include "elasticsearch.runtime.rotation" (list $root $index) | trim }}
+{{- else if get $index "rotation" }}
+{{- fail (printf "elasticsearch.indices.%s.rotation requires Jaeger 2.20.0 or later, but the query image is Jaeger %s; use useAliases, useIlm, dateLayout or rolloverFrequency instead, or set query.image to Jaeger 2.20.0 or later" $type (include "query.jaegerVersion" $root)) }}
 {{- end }}
+{{- if or $options $rotation }}
+{{ $type }}:
+{{- if $options }}
+{{- $options | nindent 2 }}
 {{- end }}
-{{- with .services }}
-{{- $services := include "elasticsearch.runtime.indexOptions" . | trim }}
-{{- if $services }}
-services:
-{{ $services | nindent 2 }}
-{{- end }}
-{{- end }}
-{{- with .dependencies }}
-{{- $dependencies := include "elasticsearch.runtime.indexOptions" . | trim }}
-{{- if $dependencies }}
-dependencies:
-{{ $dependencies | nindent 2 }}
-{{- end }}
-{{- end }}
-{{- with .sampling }}
-{{- $sampling := include "elasticsearch.runtime.indexOptions" . | trim }}
-{{- if $sampling }}
-sampling:
-{{ $sampling | nindent 2 }}
+{{- if $rotation }}
+{{- $rotation | nindent 2 }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -931,18 +1036,22 @@ elasticsearch:
   {{- if hasKey .Values.elasticsearch "logLevel" }}
   log_level: {{ .Values.elasticsearch.logLevel | quote }}
   {{- end }}
-  {{- $indices := include "elasticsearch.runtime.indices" . | trim }}
+  {{- $format := include "elasticsearch.runtime.rotationFormat" . }}
+  {{- $indices := include "elasticsearch.runtime.indices" (list . $format) | trim }}
   {{- if $indices }}
   indices:
 {{ $indices | nindent 4 }}
   {{- end }}
-  {{- if hasKey .Values.elasticsearch "useAliases" }}
+  {{- if and (eq $format "legacy") (hasKey .Values.elasticsearch "useAliases") }}
   use_aliases: {{ .Values.elasticsearch.useAliases }}
   {{- end }}
   {{- if hasKey .Values.elasticsearch "createMappings" }}
   create_mappings: {{ .Values.elasticsearch.createMappings }}
   {{- end }}
-  {{- if hasKey .Values.elasticsearch "useIlm" }}
+  {{- if and (eq $format "legacy") (hasKey .Values.elasticsearch "useIlm") }}
+  {{- if eq (toString .Values.elasticsearch.useIlm) "true" }}
+  {{- include "elasticsearch.runtime.validateIlm" (list . $format) }}
+  {{- end }}
   use_ilm: {{ .Values.elasticsearch.useIlm }}
   {{- end }}
   {{- if hasKey .Values.elasticsearch "maxDocCount" }}
