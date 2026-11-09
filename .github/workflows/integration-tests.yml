@@ -66,6 +66,10 @@ jobs:
       run: bash qubership-jaeger/charts/qubership-jaeger/tests/proxy_oauth2_tls_test.sh
       shell: bash
 
+    - name: Validate Elasticsearch rotation configuration
+      run: bash qubership-jaeger/charts/qubership-jaeger/tests/elasticsearch_rotation_test.sh
+      shell: bash
+
   Run-Integration-Tests:
     runs-on: ubuntu-latest
     timeout-minutes: 25

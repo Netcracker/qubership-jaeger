@@ -51,6 +51,18 @@ Supported Elasticsearch versions:
 * 6.x
 * 5.x
 
+**Note:** The index rotation settings (`elasticsearch.useAliases`, `elasticsearch.useIlm`,
+`elasticsearch.indices.<type>.dateLayout`, `rolloverFrequency` and `rotation`) are rendered into the query service
+configuration in the format of the Jaeger version of `query.image`:
+
+* Jaeger 2.20.0 and later: `indices.<type>.rotation`. These versions reject the legacy `use_aliases` and `use_ilm` keys.
+* Older versions: `use_aliases`, `use_ilm` and index level `date_layout`/`rollover_frequency`. These versions reject
+  `indices.<type>.rotation`, so an explicit `elasticsearch.indices.<type>.rotation` fails the rendering.
+
+The version is taken from the `query.image` tag, for example `2.20.0` or `v2.20.0`. If the tag is not a version
+(digest only, `latest` or a custom tag), set `query.jaegerVersion`; until then no rotation settings are rendered and
+configuring any of them fails the rendering. See the [OpenSearch examples](examples/opensearch.md).
+
 ### Kubernetes
 
 To deploy Jaeger in the Kubernetes/OpenShift you must have at least a namespace admin role.
