@@ -7,7 +7,7 @@ ENV SERVICE_CHECKER_SCRIPT=${ROBOT_HOME}/jaeger_pods_checker.py
 
 # Install tracegen for reliable load generation
 # Copy binary from official jaeger-tracegen Docker image (located at /go/bin/tracegen-linux)
-COPY --from=jaegertracing/jaeger-tracegen:2.22.0@sha256:d1d1d5219633c524b170442255c5902e65fd91364e77696f5758b795bf7b0c68 /go/bin/tracegen-linux /usr/local/bin/tracegen
+COPY --from=jaegertracing/jaeger-tracegen:2.23.0@sha256:b5e10a6363ce2c1257ed84a4557df59ab23e9f14f7193a89b9f12f63019753cb /go/bin/tracegen-linux /usr/local/bin/tracegen
 RUN chmod +x /usr/local/bin/tracegen
 
 # Copy tests source code
