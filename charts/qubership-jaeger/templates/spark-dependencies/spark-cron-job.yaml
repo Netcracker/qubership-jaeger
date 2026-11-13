@@ -59,10 +59,12 @@ spec:
             - name: cassandra-ca-cert
               secret:
                 secretName: {{ template "cassandraSchemaJob.tls.secretName" . }}
+                defaultMode: 0400
             {{- else if eq .Values.jaeger.storage.type "elasticsearch" }}
             - name: elasticsearch-ca-cert
               secret:
                 secretName: {{ template "elasticsearch.tls.secretName" . }}
+                defaultMode: 0400
             {{- end }}
           initContainers:
             - name: create-jks-truststore
