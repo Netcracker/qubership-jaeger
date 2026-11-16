@@ -2,9 +2,23 @@
 name: Link Checker
 
 on:
-  push: null
+  push:
+    branches: [release/0.22]
+    tags: ["**"]
   repository_dispatch: null
   workflow_dispatch: null
+  pull_request:
+    branches:
+      - main
+      - release/0.22
+      - release/0.23
+      - release/0.24
+      - release/0.25
+      - release/0.26
+      - release/0.27
+      - release/0.28
+      - release/1.x
+    types: [opened, reopened, synchronize]
 
 jobs:
   linkChecker:
