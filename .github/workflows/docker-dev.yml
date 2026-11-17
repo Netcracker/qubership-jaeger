@@ -3,7 +3,7 @@ run-name: "Image for ${{ github.event.repository.name }}: ${{ github.run_number 
 on:
   push:
     branches:
-    - '**'
+    - main
     paths:
     - '**'
     - '!.github/**'

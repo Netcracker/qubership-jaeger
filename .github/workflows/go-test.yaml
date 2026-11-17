@@ -1,6 +1,7 @@
 name: Go test with Sonar
 on:
-  push: {}
+  push:
+    branches: [main]
   pull_request:
     types: [ opened, synchronize, reopened ]
 permissions: {}
