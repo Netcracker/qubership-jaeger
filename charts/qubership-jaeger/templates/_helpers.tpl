@@ -1300,6 +1300,7 @@ Generate certificate volumes for TLS configuration
 {{- if .Values.cassandraSchemaJob.tls.enabled }}
 - name: "cassandra-tls-assets"
   projected:
+    defaultMode: 0400
     sources:
     - secret:
         name: {{ template "cassandraSchemaJob.tls.secretName" . }}
@@ -1314,6 +1315,7 @@ Generate certificate volumes for TLS configuration
 {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
 - name: "es-tls-assets"
   projected:
+    defaultMode: 0400
     sources:
     - secret:
         name: {{ template "elasticsearch.tls.secretName" . }}
@@ -1328,6 +1330,7 @@ Generate certificate volumes for TLS configuration
 {{- if and .Values.remotegRPC.tls.enabled (not .Values.remotegRPC.tls.insecureSkipVerify) }}
 - name: "grpc-tls-assets"
   projected:
+    defaultMode: 0400
     sources:
     - secret:
         name: {{ if .Values.remotegRPC.existingSecret }}{{ .Values.remotegRPC.existingSecret }}{{ else }}{{ default "jaeger-remotegrpc-tls-assets" .Values.collector.tlsConfig.newSecretName }}{{- end -}}
@@ -1346,6 +1349,7 @@ Generate certificate volumes for TLS configuration
         .Values.collector.tlsConfig.zipkin.enabled }}
 - name: "http-tls-secret"
   projected:
+    defaultMode: 0400
     sources:
     - secret:
         name: {{ if .Values.collector.tlsConfig.existingSecret }}{{ .Values.collector.tlsConfig.existingSecret }}{{ else }}{{ default "jaeger-collector-tls-secret" .Values.collector.tlsConfig.newSecretName }}{{ end }}
@@ -1396,6 +1400,7 @@ Generate certificate volumes for OpenSearch jobs TLS configuration
 {{- if and .Values.elasticsearch.client.tls.enabled (not .Values.elasticsearch.client.tls.insecureSkipVerify) }}
 - name: "es-tls-assets"
   projected:
+    defaultMode: 0400
     sources:
     - secret:
         name: {{ template "elasticsearch.tls.secretName" . }}

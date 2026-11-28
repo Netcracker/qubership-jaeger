@@ -214,7 +214,7 @@ spec:
             items:
               - key: {{ include "collector.runtimeConfig.key" . }}
                 path: config.yaml
-            defaultMode: 420
+            defaultMode: 0400
         {{- with (include "jaeger.certificateVolumes" . | trim) }}
         {{- . | nindent 8 }}
         {{- end }}
